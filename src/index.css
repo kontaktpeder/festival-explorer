@@ -2,95 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Cosmic Universe Design System */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Cosmic Dark Base */
+    --background: 240 10% 6%;
+    --foreground: 45 20% 92%;
+    
+    /* Surface layers */
+    --card: 240 8% 10%;
+    --card-foreground: 45 20% 92%;
+    --popover: 240 10% 8%;
+    --popover-foreground: 45 20% 92%;
+    
+    /* Primary - subtle cosmic */
+    --primary: 45 20% 92%;
+    --primary-foreground: 240 10% 6%;
+    
+    /* Secondary - muted cosmic */
+    --secondary: 240 6% 16%;
+    --secondary-foreground: 45 15% 80%;
+    
+    /* Muted surfaces */
+    --muted: 240 6% 14%;
+    --muted-foreground: 45 10% 55%;
+    
+    /* Accent - ORANGE only for CTAs */
+    --accent: 24 95% 53%;
+    --accent-foreground: 240 10% 6%;
+    
+    /* Destructive */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 45 20% 92%;
+    
+    /* Borders & inputs */
+    --border: 240 6% 18%;
+    --input: 240 6% 14%;
+    --ring: 24 95% 53%;
+    
+    --radius: 0.625rem;
+    
+    /* Cosmic custom tokens */
+    --cosmic-grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    --cosmic-overlay: linear-gradient(180deg, hsl(240 10% 6% / 0.3) 0%, hsl(240 10% 6% / 0.9) 100%);
+    --cosmic-glow: 0 0 60px hsl(24 95% 53% / 0.15);
+    --cosmic-border: 1px solid hsl(240 6% 18% / 0.6);
+    
+    /* Shadow system */
+    --shadow-sm: 0 2px 8px hsl(240 10% 3% / 0.3);
+    --shadow-md: 0 4px 16px hsl(240 10% 3% / 0.4);
+    --shadow-lg: 0 8px 32px hsl(240 10% 3% / 0.5);
+    --shadow-glow: 0 0 40px hsl(24 95% 53% / 0.2);
+    
+    /* Typography scale */
+    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    
+    /* Sidebar (keeping for shadcn compatibility) */
+    --sidebar-background: 240 10% 8%;
+    --sidebar-foreground: 45 20% 92%;
+    --sidebar-primary: 24 95% 53%;
+    --sidebar-primary-foreground: 240 10% 6%;
+    --sidebar-accent: 240 6% 16%;
+    --sidebar-accent-foreground: 45 20% 92%;
+    --sidebar-border: 240 6% 18%;
+    --sidebar-ring: 24 95% 53%;
   }
 }
 
@@ -98,8 +76,194 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
+  
+  html {
+    font-family: var(--font-display);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
   body {
     @apply bg-background text-foreground;
+    min-height: 100vh;
+    position: relative;
+  }
+  
+  /* Grain overlay on body */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: var(--cosmic-grain);
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 9999;
+  }
+}
+
+@layer components {
+  /* Cosmic Hero Section */
+  .cosmic-hero {
+    @apply relative overflow-hidden;
+    background: linear-gradient(
+      180deg,
+      hsl(var(--background)) 0%,
+      hsl(240 12% 8%) 50%,
+      hsl(var(--background)) 100%
+    );
+  }
+  
+  .cosmic-hero::after {
+    content: '';
+    @apply absolute inset-0;
+    background: radial-gradient(
+      ellipse at 50% 0%,
+      hsl(24 95% 53% / 0.08) 0%,
+      transparent 60%
+    );
+  }
+  
+  /* Card variants */
+  .cosmic-card {
+    @apply bg-card rounded-lg;
+    border: var(--cosmic-border);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .cosmic-card:hover {
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+    border-color: hsl(var(--accent) / 0.3);
+    transform: translateY(-2px);
+  }
+  
+  /* Event card */
+  .event-card {
+    @apply cosmic-card p-4;
+  }
+  
+  /* Text styles */
+  .text-display {
+    @apply font-bold tracking-tight;
+    font-family: var(--font-display);
+  }
+  
+  .text-mono {
+    font-family: var(--font-mono);
+    @apply text-sm tracking-wide uppercase;
+  }
+  
+  /* Accent line */
+  .accent-line {
+    @apply h-px w-full;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--accent) / 0.5) 50%,
+      transparent 100%
+    );
+  }
+  
+  /* CTA Button accent style */
+  .btn-accent {
+    @apply bg-accent text-accent-foreground font-semibold;
+    @apply px-6 py-3 rounded-lg;
+    @apply transition-all duration-300;
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .btn-accent:hover {
+    @apply brightness-110;
+    box-shadow: 0 0 50px hsl(24 95% 53% / 0.35);
+    transform: translateY(-1px);
+  }
+  
+  /* Ghost button for secondary actions */
+  .btn-ghost {
+    @apply text-foreground/80 font-medium;
+    @apply px-4 py-2 rounded-lg;
+    @apply border border-border/50;
+    @apply transition-all duration-200;
+  }
+  
+  .btn-ghost:hover {
+    @apply bg-secondary text-foreground;
+    @apply border-border;
+  }
+  
+  /* Bottom navigation */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0;
+    @apply bg-background/95 backdrop-blur-xl;
+    @apply border-t border-border/50;
+    @apply safe-area-inset-bottom;
+  }
+  
+  /* Tag/badge */
+  .cosmic-tag {
+    @apply inline-flex items-center;
+    @apply px-2.5 py-1 rounded-full;
+    @apply text-xs font-medium uppercase tracking-wider;
+    @apply bg-secondary text-secondary-foreground;
+  }
+  
+  .cosmic-tag-accent {
+    @apply cosmic-tag;
+    @apply bg-accent/15 text-accent;
+  }
+  
+  /* Lineup item */
+  .lineup-item {
+    @apply flex items-center gap-3 py-3;
+    @apply border-b border-border/30 last:border-0;
+  }
+  
+  /* Page section */
+  .section {
+    @apply py-8 px-4;
+  }
+  
+  .section-title {
+    @apply text-xs font-semibold uppercase tracking-widest;
+    @apply text-muted-foreground mb-4;
+  }
+}
+
+@layer utilities {
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
