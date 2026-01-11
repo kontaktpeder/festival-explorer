@@ -234,6 +234,31 @@
     @apply py-12 px-4;
   }
 
+  /* Fullskjerm seksjon for festival */
+  .fullscreen-section {
+    @apply min-h-screen relative flex flex-col justify-center;
+    @apply py-16 px-4;
+  }
+
+  .fullscreen-section-end {
+    @apply min-h-screen relative flex flex-col justify-end;
+    @apply pb-16 px-4;
+  }
+
+  /* Section overlays */
+  .section-grain {
+    background-image: var(--cosmic-grain);
+    @apply opacity-30;
+  }
+
+  .section-vignette {
+    background: radial-gradient(ellipse at center, transparent 0%, hsl(240 10% 6% / 0.4) 100%);
+  }
+
+  .section-gradient {
+    background: linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.7) 30%, transparent 100%);
+  }
+
   .section-bg-about {
     background: hsl(240 8% 10%);
   }

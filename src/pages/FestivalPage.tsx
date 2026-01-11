@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Compass } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useFestival } from "@/hooks/useFestival";
@@ -9,7 +9,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
 import { FestivalEventAccordion } from "@/components/ui/FestivalEventAccordion";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
-import { Calendar } from "lucide-react";
+import giggenLogo from "@/assets/giggen-logo.png";
 
 export default function FestivalPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -64,14 +64,21 @@ export default function FestivalPage() {
     (fe) => fe.event && fe.event.status === "published"
   );
 
-  // Hent alle unike artister fra events
-  const allArtists = validEvents
-    .flatMap((fe) => (fe.event as any)?.lineup || [])
-    .map((ep: any) => ep.project)
-    .filter((project: any, index: number, self: any[]) =>
-      project && self.findIndex((p) => p?.id === project.id) === index
-    )
-    .slice(0, 6);
+  // Hardkodede bakgrunnsbilder
+  const sectionBackgrounds = {
+    program: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1920",
+    about: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1920",
+    artists: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1920",
+    practical: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1920",
+    footer: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1920",
+  };
+
+  // Hardkodede featured artister
+  const featuredArtists = [
+    { name: "Lunar Echo", tagline: "Ambient soundscapes", slug: "lunar-echo" },
+    { name: "Erik Nordahl", tagline: "Electronic experiments", slug: "erik-nordahl" },
+    { name: "Neon Shapes", tagline: "Live eksperiment", slug: "neon-shapes" },
+  ];
 
   // Kort beskrivelse for hero (maks 15 ord)
   const shortDescription = festival.description
@@ -80,18 +87,16 @@ export default function FestivalPage() {
 
   return (
     <PageLayout>
-      {/* 1. HERO - Full screen */}
-      <HeroSection imageUrl={heroImage} fullScreen>
-        {/* Top navigation */}
-        <div className="absolute top-4 left-4 z-20">
-          <Link
-            to="/explore"
-            className="inline-flex items-center gap-2 text-sm text-foreground/60 hover:text-accent transition-colors"
-          >
-            <Compass className="w-4 h-4" />
-            <span>Utforsk</span>
-          </Link>
-        </div>
+      {/* SEKSJON 1: HERO - Fullskjerm, bg-fixed */}
+      <HeroSection imageUrl={heroImage} fullScreen backgroundFixed>
+        {/* Logo oppe til venstre */}
+        <Link to="/explore" className="absolute top-4 left-4 z-20">
+          <img 
+            src={giggenLogo} 
+            alt="Giggen" 
+            className="h-10 md:h-12 w-auto opacity-90 hover:opacity-100 transition-opacity"
+          />
+        </Link>
 
         <div className="animate-slide-up pb-8">
           {dateRange && (
@@ -108,26 +113,52 @@ export default function FestivalPage() {
         </div>
       </HeroSection>
 
-      {/* 2. PROGRAM */}
-      <section className="section-chapter" id="program">
-        <h2 className="section-title">Program</h2>
-        {validEvents.length > 0 ? (
-          <FestivalEventAccordion events={validEvents as any} />
-        ) : (
-          <EmptyState
-            title="Ingen events ennå"
-            description="Programmet for denne festivalen er ikke klart ennå."
-          />
-        )}
+      {/* SEKSJON 2: PROGRAM - Fullskjerm, bg-scroll */}
+      <section 
+        className="fullscreen-section relative"
+        id="program"
+        style={{ 
+          backgroundImage: `url(${sectionBackgrounds.program})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        {/* Overlays */}
+        <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
+        <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
+        <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
+        
+        <div className="relative z-10 max-w-4xl mx-auto w-full">
+          <h2 className="section-title">Program</h2>
+          {validEvents.length > 0 ? (
+            <FestivalEventAccordion events={validEvents as any} />
+          ) : (
+            <EmptyState
+              title="Ingen events ennå"
+              description="Programmet for denne festivalen er ikke klart ennå."
+            />
+          )}
+        </div>
       </section>
 
-      <div className="accent-line" />
-
-      {/* 3. OM GIGGEN */}
-      <section className="section-chapter section-bg-about">
-        <div className="max-w-xl">
+      {/* SEKSJON 3: OM GIGGEN - Fullskjerm, bg-fixed */}
+      <section 
+        className="fullscreen-section relative"
+        style={{ 
+          backgroundImage: `url(${sectionBackgrounds.about})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        {/* Overlays */}
+        <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
+        <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
+        <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
+        
+        <div className="relative z-10 max-w-xl">
           <h2 className="section-title">Om Giggen</h2>
-          <div className="space-y-4 text-foreground/80 text-lg leading-relaxed">
+          <div className="space-y-4 text-foreground/90 text-xl md:text-2xl leading-relaxed">
             <p>Giggen er et rom for levende musikk.</p>
             <p>Vi bygger der det vanligvis ikke bygges.</p>
             <p className="text-muted-foreground">Dette er første kapittel.</p>
@@ -135,121 +166,140 @@ export default function FestivalPage() {
         </div>
       </section>
 
-      {/* 4. ARTISTER */}
-      {allArtists.length > 0 && (
-        <section className="section-chapter section-bg-artists">
+      {/* SEKSJON 4: ARTISTER - Fullskjerm, bg-scroll */}
+      <section 
+        className="fullscreen-section relative"
+        style={{ 
+          backgroundImage: `url(${sectionBackgrounds.artists})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        {/* Overlays */}
+        <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
+        <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
+        <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
+        
+        <div className="relative z-10 max-w-4xl mx-auto w-full">
           <h2 className="section-title">Artister</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {allArtists.map((project) => {
-              if (!project) return null;
-              return (
-                <Link 
-                  key={project.id} 
-                  to={`/project/${project.slug}`}
-                  className="group block"
-                >
-                  {project.hero_image_url && (
-                    <div className="aspect-square mb-4 overflow-hidden">
-                      <img 
-                        src={project.hero_image_url} 
-                        alt={project.name}
-                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
-                      />
-                    </div>
-                  )}
-                  <h3 className="text-display text-xl group-hover:text-accent transition-colors">
-                    {project.name}
-                  </h3>
-                  {project.tagline && (
-                    <p className="text-muted-foreground text-sm mt-1">
-                      {project.tagline}
-                    </p>
-                  )}
-                  <span className="text-xs text-muted-foreground/60 mt-3 inline-block group-hover:text-accent transition-colors">
-                    Les mer →
-                  </span>
-                </Link>
-              );
-            })}
+          <div className="space-y-8">
+            {featuredArtists.map((artist) => (
+              <Link 
+                key={artist.slug}
+                to={`/project/${artist.slug}`}
+                className="block group"
+              >
+                <h3 className="text-display text-3xl md:text-4xl group-hover:text-accent transition-colors">
+                  {artist.name}
+                </h3>
+                {artist.tagline && (
+                  <p className="text-muted-foreground text-lg mt-1">
+                    {artist.tagline}
+                  </p>
+                )}
+                <span className="text-sm text-muted-foreground/60 mt-2 inline-block group-hover:text-accent transition-colors">
+                  Les mer →
+                </span>
+              </Link>
+            ))}
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
-      {/* 5. VENUE */}
-      {venue && (
-        <section className="section-chapter section-bg-venue">
-          <HeroSection imageUrl={venue.hero_image_url || undefined} compact>
-            <div className="max-w-xl">
-              <h2 className="section-title">Venue</h2>
-              <h3 className="text-display text-3xl md:text-4xl mb-4">{venue.name}</h3>
+      {/* SEKSJON 5: VENUE-PLAKAT - Fullskjerm, bg-fixed */}
+      <section 
+        className="fullscreen-section-end relative"
+        style={{ 
+          backgroundImage: `url(${venue?.hero_image_url || sectionBackgrounds.about})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        {/* Overlays */}
+        <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
+        <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
+        <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
+        
+        <div className="relative z-10 max-w-xl">
+          <h2 className="section-title">Venue</h2>
+          {venue ? (
+            <>
+              <h3 className="text-display text-4xl md:text-5xl mb-4">{venue.name}</h3>
               {venue.description && (
-                <p className="text-foreground/70 text-base leading-relaxed mb-6">
+                <p className="text-foreground/70 text-lg leading-relaxed mb-6">
                   {venue.description}
                 </p>
               )}
-              
-              {/* Tidslinje */}
-              <div className="space-y-2 text-mono text-sm text-muted-foreground mt-8 border-l border-border/30 pl-4">
-                {validEvents.map((fe) => {
-                  if (!fe.event) return null;
-                  const startTime = new Date(fe.event.start_at);
-                  return (
-                    <div key={fe.event_id} className="py-1">
-                      <span className="text-accent">{format(startTime, "HH:mm")}</span>
-                      <span className="mx-2">→</span>
-                      <span>{fe.event.title}</span>
-                    </div>
-                  );
-                })}
-              </div>
-
               {venue.slug && (
                 <Link 
                   to={`/venue/${venue.slug}`}
-                  className="inline-block mt-6 text-sm text-muted-foreground hover:text-accent transition-colors"
+                  className="text-sm text-muted-foreground hover:text-accent transition-colors"
                 >
                   Utforsk venue →
                 </Link>
               )}
-            </div>
-          </HeroSection>
-        </section>
-      )}
-
-      {/* 6. PRAKTISK */}
-      <section className="section-chapter section-bg-practical">
-        <h2 className="section-title">Praktisk</h2>
-        <div className="space-y-3 text-foreground/80 mb-8 max-w-md">
-          <p className="flex justify-between border-b border-border/20 pb-2">
-            <span className="text-muted-foreground">Dører åpner</span>
-            <span>20:00</span>
-          </p>
-          <p className="flex justify-between border-b border-border/20 pb-2">
-            <span className="text-muted-foreground">Aldersgrense</span>
-            <span>18 år</span>
-          </p>
-          <p className="flex justify-between border-b border-border/20 pb-2">
-            <span className="text-muted-foreground">Billetter</span>
-            <span>Dør eller forhåndsbestill</span>
-          </p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <button className="btn-accent text-center">
-            Kjøp billett
-          </button>
-          <button className="btn-ghost text-center">
-            Følg festivalen
-          </button>
+            </>
+          ) : (
+            <p className="text-foreground/60">Venue-informasjon kommer snart.</p>
+          )}
         </div>
       </section>
 
-      <div className="accent-line" />
+      {/* SEKSJON 6: PRAKTISK - Fullskjerm, bg-scroll */}
+      <section 
+        className="fullscreen-section relative"
+        style={{ 
+          backgroundImage: `url(${sectionBackgrounds.practical})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        {/* Overlays */}
+        <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
+        <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
+        <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
+        
+        <div className="relative z-10 max-w-md">
+          <h2 className="section-title">Praktisk</h2>
+          <div className="space-y-4 text-foreground/80 text-lg mb-10">
+            <p>Dører åpner: 20:00</p>
+            <p>Aldersgrense: 18 år</p>
+            <p>Billetter: Kjøp på døren eller forhåndsbestill</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <button className="btn-accent text-center">
+              Kjøp billett
+            </button>
+            <button className="btn-ghost text-center">
+              Følg festivalen
+            </button>
+          </div>
+        </div>
+      </section>
 
-      {/* 7. FOOTER */}
-      <footer className="section-chapter section-bg-footer">
-        <div className="max-w-xl">
-          <h2 className="text-display text-2xl mb-4">Giggen</h2>
-          <p className="text-muted-foreground text-sm mb-8">
+      {/* SEKSJON 7: FOOTER - Fullskjerm, bg-fixed */}
+      <footer 
+        className="fullscreen-section relative"
+        style={{ 
+          backgroundImage: `url(${sectionBackgrounds.footer})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        {/* Overlays */}
+        <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
+        <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
+        <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
+        
+        <div className="relative z-10 max-w-xl">
+          <img 
+            src={giggenLogo} 
+            alt="Giggen" 
+            className="h-16 md:h-20 w-auto mb-6"
+          />
+          <p className="text-muted-foreground text-lg mb-8">
             En plattform for levende musikk og opplevelser.
           </p>
           <div className="flex flex-wrap gap-6 text-sm">
