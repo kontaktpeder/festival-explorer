@@ -21,7 +21,7 @@ export function EventCard({ event, showDate = true }: EventCardProps) {
         <div className="relative h-32 -mx-4 -mt-4 mb-3 overflow-hidden rounded-t-lg">
           <img
             src={event.hero_image_url}
-            alt={event.name}
+            alt={event.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
@@ -36,7 +36,7 @@ export function EventCard({ event, showDate = true }: EventCardProps) {
         )}
 
         <h3 className="text-display text-lg leading-tight group-hover:text-accent transition-colors">
-          {event.name}
+          {event.title}
         </h3>
 
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -56,7 +56,7 @@ export function EventCard({ event, showDate = true }: EventCardProps) {
           <div className="pt-2 flex flex-wrap gap-1.5">
             {event.lineup.slice(0, 3).map((ep) =>
               ep.project ? (
-                <span key={ep.id} className="cosmic-tag">
+                <span key={ep.project_id} className="cosmic-tag">
                   {ep.project.name}
                 </span>
               ) : null

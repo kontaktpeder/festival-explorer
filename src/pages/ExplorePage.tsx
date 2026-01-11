@@ -5,6 +5,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { EventCard } from "@/components/ui/EventCard";
 import { ProjectCard } from "@/components/ui/ProjectCard";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
+import type { Event, Project } from "@/types/database";
 
 type Tab = "events" | "projects";
 
@@ -61,7 +62,7 @@ export default function ExplorePage() {
                 className="animate-slide-up"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
-                <EventCard event={event as any} />
+                <EventCard event={event as Event & { venue?: { name: string; slug: string } | null }} />
               </div>
             ))
           ) : (
@@ -83,7 +84,7 @@ export default function ExplorePage() {
                 className="animate-slide-up"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
-                <ProjectCard project={project} />
+                <ProjectCard project={project as Project} />
               </div>
             ))
           ) : (

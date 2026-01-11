@@ -12,10 +12,10 @@ export function ProjectCard({ project, size = "md" }: ProjectCardProps) {
       to={`/project/${project.slug}`}
       className="cosmic-card block group overflow-hidden"
     >
-      {project.profile_image_url ? (
+      {project.hero_image_url ? (
         <div className={`relative ${size === "sm" ? "h-24 w-24" : "h-40"} overflow-hidden`}>
           <img
-            src={project.profile_image_url}
+            src={project.hero_image_url}
             alt={project.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
