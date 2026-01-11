@@ -223,10 +223,36 @@
   .section {
     @apply py-8 px-4;
   }
-  
+
   .section-title {
     @apply text-xs font-semibold uppercase tracking-widest;
     @apply text-muted-foreground mb-4;
+  }
+
+  /* Festival section backgrounds - kapittel-følelse */
+  .section-chapter {
+    @apply py-12 px-4;
+  }
+
+  .section-bg-about {
+    background: hsl(240 8% 10%);
+  }
+
+  .section-bg-artists {
+    background: hsl(240 6% 14%);
+  }
+
+  .section-bg-venue {
+    background: hsl(240 10% 8%);
+    background-attachment: fixed;
+  }
+
+  .section-bg-practical {
+    background: hsl(240 12% 12%);
+  }
+
+  .section-bg-footer {
+    background: hsl(240 10% 6%);
   }
 }
 

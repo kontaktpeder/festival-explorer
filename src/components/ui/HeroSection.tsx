@@ -4,11 +4,18 @@ interface HeroSectionProps {
   imageUrl?: string;
   children: ReactNode;
   compact?: boolean;
+  fullScreen?: boolean;
 }
 
-export function HeroSection({ imageUrl, children, compact }: HeroSectionProps) {
+export function HeroSection({ imageUrl, children, compact, fullScreen }: HeroSectionProps) {
+  const heightClass = fullScreen 
+    ? "min-h-screen" 
+    : compact 
+      ? "min-h-[40vh]" 
+      : "min-h-[60vh]";
+
   return (
-    <div className={`cosmic-hero relative ${compact ? "min-h-[40vh]" : "min-h-[60vh]"}`}>
+    <div className={`cosmic-hero relative ${heightClass}`}>
       {imageUrl && (
         <div
           className="absolute inset-0 bg-cover bg-center"
