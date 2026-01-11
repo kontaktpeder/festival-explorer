@@ -34,7 +34,7 @@ export function useFestival(slug: string) {
 
       if (eventsError) throw eventsError;
 
-      // For each event, get the lineup preview (first 3 projects)
+      // For each event, get the FULL lineup (not limited)
       const eventsWithLineup = await Promise.all(
         (festivalEvents || []).map(async (fe) => {
           if (!fe.event) return fe;
@@ -46,8 +46,7 @@ export function useFestival(slug: string) {
               project:projects(*)
             `)
             .eq("event_id", fe.event.id)
-            .order("billing_order", { ascending: true })
-            .limit(3);
+            .order("billing_order", { ascending: true });
 
           return {
             ...fe,
@@ -97,9 +96,19 @@ export function useEvent(slug: string) {
 
       if (lineupError) throw lineupError;
 
+      // Check if event belongs to a festival
+      const { data: festivalEvent } = await supabase
+        .from("festival_events")
+        .select(`
+          festival:festivals(slug, name)
+        `)
+        .eq("event_id", event.id)
+        .maybeSingle();
+
       return {
         ...event,
         lineup: lineup || [],
+        festival: festivalEvent?.festival || null,
       };
     },
     enabled: !!slug,

@@ -1,11 +1,11 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Calendar } from "lucide-react";
+import { Calendar, Compass } from "lucide-react";
 import { useFestival } from "@/hooks/useFestival";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
-import { EventCard } from "@/components/ui/EventCard";
+import { FestivalEventAccordion } from "@/components/ui/FestivalEventAccordion";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 
 export default function FestivalPage() {
@@ -42,8 +42,24 @@ export default function FestivalPage() {
   // Get hero image from theme if festival doesn't have one
   const heroImage = festival.theme?.hero_image_url || undefined;
 
+  // Filter events with valid event data
+  const validEvents = (festival.festivalEvents || []).filter(
+    (fe) => fe.event && fe.event.status === "published"
+  );
+
   return (
     <PageLayout>
+      {/* Top navigation for explore */}
+      <div className="section pt-4 pb-0">
+        <Link
+          to="/explore"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-accent transition-colors"
+        >
+          <Compass className="w-4 h-4" />
+          <span>Utforsk</span>
+        </Link>
+      </div>
+
       <HeroSection imageUrl={heroImage}>
         <div className="animate-slide-up">
           {dateRange && (
@@ -62,23 +78,12 @@ export default function FestivalPage() {
 
       <div className="accent-line" />
 
-      <section className="section">
+      {/* Program Section */}
+      <section className="section" id="program">
         <h2 className="section-title">Program</h2>
 
-        {festival.festivalEvents && festival.festivalEvents.length > 0 ? (
-          <div className="space-y-4">
-            {festival.festivalEvents.map((fe, index) =>
-              fe.event ? (
-                <div
-                  key={fe.event_id}
-                  className="animate-slide-up"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <EventCard event={fe.event as any} />
-                </div>
-              ) : null
-            )}
-          </div>
+        {validEvents.length > 0 ? (
+          <FestivalEventAccordion events={validEvents as any} />
         ) : (
           <EmptyState
             title="Ingen events ennå"
@@ -86,6 +91,9 @@ export default function FestivalPage() {
           />
         )}
       </section>
+
+      {/* Footer spacer for scroll */}
+      <div className="h-20" />
     </PageLayout>
   );
 }
