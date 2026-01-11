@@ -6,6 +6,7 @@ import { useEvent } from "@/hooks/useFestival";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
 import { LineupItem } from "@/components/ui/LineupItem";
+import { BackToFestival } from "@/components/ui/BackToFestival";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 
 export default function EventPage() {
@@ -37,6 +38,16 @@ export default function EventPage() {
 
   return (
     <PageLayout>
+      {/* Back to festival button */}
+      {event.festival && (
+        <div className="section pt-4 pb-0">
+          <BackToFestival
+            festivalSlug={event.festival.slug}
+            festivalName={event.festival.name}
+          />
+        </div>
+      )}
+
       <HeroSection imageUrl={event.hero_image_url || undefined} compact>
         <div className="animate-slide-up">
           <div className="text-mono text-accent mb-2">
