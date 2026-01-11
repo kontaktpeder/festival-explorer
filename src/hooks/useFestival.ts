@@ -114,7 +114,7 @@ export function useProject(slug: string) {
         .from("projects")
         .select("*")
         .eq("slug", slug)
-        .eq("status", "published")
+        .eq("is_published", true)
         .maybeSingle();
 
       if (error) throw error;
@@ -149,7 +149,7 @@ export function useVenue(slug: string) {
         .from("venues")
         .select("*")
         .eq("slug", slug)
-        .eq("status", "published")
+        .eq("is_published", true)
         .maybeSingle();
 
       if (error) throw error;

@@ -43,7 +43,7 @@ export default function EventPage() {
             {format(startDate, "EEEE d. MMMM", { locale: nb })}
           </div>
           <h1 className="text-display text-3xl md:text-4xl mb-3">
-            {event.name}
+            {event.title}
           </h1>
         </div>
       </HeroSection>
@@ -92,7 +92,7 @@ export default function EventPage() {
         {event.lineup && event.lineup.length > 0 ? (
           <div className="divide-y divide-border/30">
             {event.lineup.map((item) => (
-              <LineupItem key={item.id} item={item} showBilling />
+              <LineupItem key={item.project_id} item={item} showBilling />
             ))}
           </div>
         ) : (

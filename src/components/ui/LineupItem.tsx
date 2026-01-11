@@ -13,9 +13,9 @@ export function LineupItem({ item, showBilling }: LineupItemProps) {
   return (
     <Link to={`/project/${project.slug}`} className="lineup-item group">
       <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-secondary">
-        {project.profile_image_url ? (
+        {project.hero_image_url ? (
           <img
-            src={project.profile_image_url}
+            src={project.hero_image_url}
             alt={project.name}
             className="w-full h-full object-cover"
           />
@@ -36,12 +36,6 @@ export function LineupItem({ item, showBilling }: LineupItemProps) {
           <p className="text-sm text-muted-foreground truncate">{project.tagline}</p>
         )}
       </div>
-
-      {item.set_time && (
-        <div className="text-mono text-muted-foreground flex-shrink-0">
-          {item.set_time}
-        </div>
-      )}
 
       {showBilling && item.billing_order === 1 && (
         <span className="cosmic-tag-accent flex-shrink-0">Headliner</span>

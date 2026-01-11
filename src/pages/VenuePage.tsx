@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { MapPin, Calendar, Users } from "lucide-react";
+import { MapPin, Calendar } from "lucide-react";
 import { useVenue } from "@/hooks/useFestival";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
@@ -51,12 +51,6 @@ export default function VenuePage() {
               <span>{venue.address}</span>
             </div>
           )}
-          {venue.capacity && (
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-accent" />
-              <span>Kapasitet: {venue.capacity}</span>
-            </div>
-          )}
         </div>
 
         {/* Description */}
@@ -92,7 +86,7 @@ export default function VenuePage() {
 
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold truncate group-hover:text-accent transition-colors">
-                      {event.name}
+                      {event.title}
                     </h3>
                     <p className="text-sm text-muted-foreground">
                       {format(new Date(event.start_at), "EEEE HH:mm", { locale: nb })}

@@ -29,7 +29,7 @@ export function useExploreProjects() {
       const { data, error } = await supabase
         .from("projects")
         .select("*")
-        .eq("status", "published")
+        .eq("is_published", true)
         .order("name", { ascending: true })
         .limit(20);
 
@@ -50,14 +50,14 @@ export function useSearch(query: string) {
       const [eventsResult, projectsResult] = await Promise.all([
         supabase
           .from("events")
-          .select("id, name, slug, start_at, hero_image_url")
+          .select("id, title, slug, start_at, hero_image_url")
           .eq("status", "published")
-          .ilike("name", searchPattern)
+          .ilike("title", searchPattern)
           .limit(10),
         supabase
           .from("projects")
-          .select("id, name, slug, tagline, profile_image_url")
-          .eq("status", "published")
+          .select("id, name, slug, tagline, hero_image_url")
+          .eq("is_published", true)
           .ilike("name", searchPattern)
           .limit(10),
       ]);

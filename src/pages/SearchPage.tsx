@@ -79,13 +79,13 @@ export default function SearchPage() {
                       {event.hero_image_url && (
                         <img
                           src={event.hero_image_url}
-                          alt={event.name}
+                          alt={event.title}
                           className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
                         />
                       )}
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold truncate group-hover:text-accent transition-colors">
-                          {event.name}
+                          {event.title}
                         </h3>
                         <p className="text-sm text-muted-foreground">
                           {format(new Date(event.start_at), "d. MMM yyyy", {
@@ -114,9 +114,9 @@ export default function SearchPage() {
                       className="cosmic-card p-3 flex items-center gap-3 group"
                     >
                       <div className="w-12 h-12 rounded-lg overflow-hidden bg-secondary flex-shrink-0">
-                        {project.profile_image_url ? (
+                        {project.hero_image_url ? (
                           <img
-                            src={project.profile_image_url}
+                            src={project.hero_image_url}
                             alt={project.name}
                             className="w-full h-full object-cover"
                           />

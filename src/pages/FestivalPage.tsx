@@ -33,15 +33,18 @@ export default function FestivalPage() {
   }
 
   const dateRange =
-    festival.start_date && festival.end_date
-      ? `${format(new Date(festival.start_date), "d. MMM", { locale: nb })} – ${format(new Date(festival.end_date), "d. MMM yyyy", { locale: nb })}`
-      : festival.start_date
-        ? format(new Date(festival.start_date), "d. MMMM yyyy", { locale: nb })
+    festival.start_at && festival.end_at
+      ? `${format(new Date(festival.start_at), "d. MMM", { locale: nb })} – ${format(new Date(festival.end_at), "d. MMM yyyy", { locale: nb })}`
+      : festival.start_at
+        ? format(new Date(festival.start_at), "d. MMMM yyyy", { locale: nb })
         : null;
+
+  // Get hero image from theme if festival doesn't have one
+  const heroImage = festival.theme?.hero_image_url || undefined;
 
   return (
     <PageLayout>
-      <HeroSection imageUrl={festival.hero_image_url || undefined}>
+      <HeroSection imageUrl={heroImage}>
         <div className="animate-slide-up">
           {dateRange && (
             <div className="text-mono text-accent mb-2">{dateRange}</div>
@@ -67,7 +70,7 @@ export default function FestivalPage() {
             {festival.festivalEvents.map((fe, index) =>
               fe.event ? (
                 <div
-                  key={fe.id}
+                  key={fe.event_id}
                   className="animate-slide-up"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >

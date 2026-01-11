@@ -60,30 +60,32 @@ export default function ProjectPage() {
                 const profile = member.profile;
                 if (!profile) return null;
 
+                const displayName = profile.display_name || profile.handle || "Ukjent";
+
                 return (
-                  <div key={member.id} className="flex items-center gap-4">
+                  <div key={member.profile_id} className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-full overflow-hidden bg-secondary flex-shrink-0">
                       {profile.avatar_url ? (
                         <img
                           src={profile.avatar_url}
-                          alt={profile.full_name || ""}
+                          alt={displayName}
                           className="w-full h-full object-cover"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <span className="text-lg font-bold text-muted-foreground/40">
-                            {(profile.full_name || "?").charAt(0)}
+                            {displayName.charAt(0)}
                           </span>
                         </div>
                       )}
                     </div>
                     <div>
                       <div className="font-semibold">
-                        {profile.full_name || "Ukjent"}
+                        {displayName}
                       </div>
-                      {member.role && (
+                      {member.role_label && (
                         <div className="text-sm text-muted-foreground">
-                          {member.role}
+                          {member.role_label}
                         </div>
                       )}
                     </div>
