@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, ImageIcon } from "lucide-react";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
 
@@ -28,6 +29,7 @@ export default function AdminProjectEdit() {
     hero_image_url: "",
     is_published: false,
   });
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
 
   // Fetch project data
   const { data: project, isLoading } = useQuery({
@@ -200,13 +202,36 @@ export default function AdminProjectEdit() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="hero_image_url">Hero-bilde URL</Label>
-            <Input
-              id="hero_image_url"
-              value={formData.hero_image_url}
-              onChange={(e) => setFormData((prev) => ({ ...prev, hero_image_url: e.target.value }))}
-              placeholder="https://..."
-            />
+            <Label htmlFor="hero_image_url">Hero-bilde</Label>
+            <div className="flex gap-2">
+              <Input
+                id="hero_image_url"
+                value={formData.hero_image_url}
+                onChange={(e) => setFormData((prev) => ({ ...prev, hero_image_url: e.target.value }))}
+                placeholder="https://... eller velg fra filbank"
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setMediaPickerOpen(true)}
+                className="flex-shrink-0"
+              >
+                <ImageIcon className="h-4 w-4 mr-2" />
+                Velg fra filbank
+              </Button>
+            </div>
+            {mediaPickerOpen && (
+              <MediaPicker
+                open={mediaPickerOpen}
+                onOpenChange={(open) => !open && setMediaPickerOpen(false)}
+                onSelect={(mediaId, publicUrl) => {
+                  setFormData((prev) => ({ ...prev, hero_image_url: publicUrl }));
+                  setMediaPickerOpen(false);
+                }}
+                fileType="image"
+              />
+            )}
           </div>
 
           <div className="space-y-2">
