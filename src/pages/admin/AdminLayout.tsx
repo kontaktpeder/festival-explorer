@@ -3,6 +3,7 @@ import { LayoutDashboard, Calendar, MapPin, Music, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { AdminErrorBoundary } from "@/components/admin/AdminErrorBoundary";
 
 export default function AdminLayout() {
   const location = useLocation();
@@ -82,7 +83,9 @@ export default function AdminLayout() {
       {/* Main content */}
       <main className="flex-1 overflow-auto">
         <div className="p-8">
-          <Outlet />
+          <AdminErrorBoundary>
+            <Outlet />
+          </AdminErrorBoundary>
         </div>
       </main>
     </div>

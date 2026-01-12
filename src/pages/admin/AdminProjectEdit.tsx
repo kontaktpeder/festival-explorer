@@ -33,14 +33,16 @@ export default function AdminProjectEdit() {
     queryKey: ["admin-project", id],
     queryFn: async () => {
       if (isNew) return null;
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("projects")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
+      if (error) throw error;
       return data;
     },
     enabled: !isNew,
+    retry: 1,
   });
 
   // Populate form when project data loads

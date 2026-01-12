@@ -33,14 +33,16 @@ export default function AdminVenueEdit() {
     queryKey: ["admin-venue", id],
     queryFn: async () => {
       if (isNew) return null;
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("venues")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
+      if (error) throw error;
       return data;
     },
     enabled: !isNew,
+    retry: 1,
   });
 
   // Populate form when venue data loads
