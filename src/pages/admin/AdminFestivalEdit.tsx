@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Layers, Save } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { getAuthenticatedUser } from "@/lib/admin-helpers";
 
 export default function AdminFestivalEdit() {
   const { id } = useParams<{ id: string }>();
@@ -89,8 +90,7 @@ export default function AdminFestivalEdit() {
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Ikke innlogget");
+      const user = await getAuthenticatedUser();
 
       const payload = {
         ...formData,
