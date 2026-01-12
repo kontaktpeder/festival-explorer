@@ -6,6 +6,7 @@ import { useVenue } from "@/hooks/useFestival";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
+import { ScrollAnimatedLogo } from "@/components/ui/ScrollAnimatedLogo";
 
 export default function VenuePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -33,6 +34,9 @@ export default function VenuePage() {
 
   return (
     <PageLayout>
+      {/* Scroll-animert logo */}
+      <ScrollAnimatedLogo />
+
       <HeroSection imageUrl={venue.hero_image_url || undefined} compact>
         <div className="animate-slide-up">
           {venue.city && (
