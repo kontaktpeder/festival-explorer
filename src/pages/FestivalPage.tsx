@@ -10,6 +10,7 @@ import { HeroSection } from "@/components/ui/HeroSection";
 import { FestivalEventAccordion } from "@/components/ui/FestivalEventAccordion";
 import { SectionRenderer } from "@/components/festival/SectionRenderer";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
+import { ScrollAnimatedLogo } from "@/components/ui/ScrollAnimatedLogo";
 import giggenLogo from "@/assets/giggen-logo.png";
 
 export default function FestivalPage() {
@@ -121,14 +122,8 @@ export default function FestivalPage() {
   if (festival.sections && festival.sections.length > 0) {
     return (
       <PageLayout>
-        {/* Logo overlay (alltid øverst) */}
-        <Link to="/explore" className="fixed top-4 left-4 z-50">
-          <img
-            src={giggenLogo}
-            alt="Giggen"
-            className="h-10 md:h-12 w-auto opacity-90 hover:opacity-100 transition-opacity"
-          />
-        </Link>
+        {/* Scroll-animert logo */}
+        <ScrollAnimatedLogo />
 
         {/* Render sections dynamisk */}
         {festival.sections.map((section) => {
@@ -168,15 +163,6 @@ export default function FestivalPage() {
             />
           );
         })}
-
-        {/* Admin snarvei */}
-        <Link
-          to="/admin"
-          className="fixed bottom-4 right-4 z-50 p-2 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
-          title="Admin"
-        >
-          <Settings className="w-4 h-4" />
-        </Link>
       </PageLayout>
     );
   }
@@ -222,17 +208,11 @@ export default function FestivalPage() {
 
   return (
     <PageLayout>
+      {/* Scroll-animert logo */}
+      <ScrollAnimatedLogo />
+
       {/* SEKSJON 1: HERO - Fullskjerm, bg-fixed */}
       <HeroSection imageUrl={heroImage} fullScreen backgroundFixed>
-        {/* Logo oppe til venstre */}
-        <Link to="/explore" className="absolute top-4 left-4 z-20">
-          <img
-            src={giggenLogo}
-            alt="Giggen"
-            className="h-10 md:h-12 w-auto opacity-90 hover:opacity-100 transition-opacity"
-          />
-        </Link>
-
         <div className="animate-slide-up pb-8">
           {dateRange && (
             <div className="text-mono text-accent mb-3">{dateRange}</div>
@@ -431,36 +411,29 @@ export default function FestivalPage() {
           <p className="text-muted-foreground text-lg mb-8">
             En plattform for levende musikk og opplevelser.
           </p>
-          <div className="flex flex-wrap gap-6 text-sm">
-            <Link
-              to="/explore"
-              className="text-foreground/60 hover:text-accent transition-colors"
-            >
+          <div className="flex flex-wrap gap-6 text-sm mb-8">
+            <span className="text-foreground/60">
               Utforsk
-            </Link>
-            <Link
-              to="/explore"
-              className="text-foreground/60 hover:text-accent transition-colors"
-            >
+            </span>
+            <span className="text-foreground/60">
               Artister
-            </Link>
-            <Link
-              to="/explore"
-              className="text-foreground/60 hover:text-accent transition-colors"
-            >
+            </span>
+            <span className="text-foreground/60">
               Kommende events
+            </span>
+          </div>
+          
+          {/* Diskret admin-link */}
+          <div className="pt-4 border-t border-border/10">
+            <Link 
+              to="/admin" 
+              className="text-muted-foreground/20 hover:text-muted-foreground/40 transition-colors"
+              title="Admin"
+            >
+              <Settings className="w-3 h-3" />
             </Link>
           </div>
         </div>
-
-        {/* Admin snarvei */}
-        <Link
-          to="/admin"
-          className="fixed bottom-4 right-4 z-50 p-2 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
-          title="Admin"
-        >
-          <Settings className="w-4 h-4" />
-        </Link>
       </footer>
     </PageLayout>
   );

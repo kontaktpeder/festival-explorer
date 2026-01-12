@@ -8,6 +8,7 @@ import { HeroSection } from "@/components/ui/HeroSection";
 import { LineupItem } from "@/components/ui/LineupItem";
 import { BackToFestival } from "@/components/ui/BackToFestival";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
+import { ScrollAnimatedLogo } from "@/components/ui/ScrollAnimatedLogo";
 
 export default function EventPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -38,9 +39,12 @@ export default function EventPage() {
 
   return (
     <PageLayout>
+      {/* Scroll-animert logo */}
+      <ScrollAnimatedLogo />
+
       {/* Back to festival button */}
       {event.festival && (
-        <div className="section pt-4 pb-0">
+        <div className="section pt-16 pb-0">
           <BackToFestival
             festivalSlug={event.festival.slug}
             festivalName={event.festival.name}

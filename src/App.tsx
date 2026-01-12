@@ -43,7 +43,8 @@ const App = () => (
           <Route path="/event/:slug" element={<EventPage />} />
           <Route path="/project/:slug" element={<ProjectPage />} />
           <Route path="/venue/:slug" element={<VenuePage />} />
-          <Route path="/explore" element={<ExplorePage />} />
+          {/* TODO: Reaktiver etter MVP - explore blir global navigasjon */}
+          {/* <Route path="/explore" element={<ExplorePage />} /> */}
           <Route path="/search" element={<SearchPage />} />
           
           {/* Admin routes */}
