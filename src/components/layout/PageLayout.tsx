@@ -8,12 +8,14 @@ interface PageLayoutProps {
 
 export function PageLayout({ children }: PageLayoutProps) {
   const location = useLocation();
-  const isFestivalRoute = location.pathname.startsWith("/festival");
+  
+  // Only show BottomNav on explore and search pages
+  const showBottomNav = location.pathname === "/explore" || location.pathname === "/search";
 
   return (
     <div className="min-h-screen flex flex-col">
-      <main className={`flex-1 ${!isFestivalRoute ? "pb-20" : ""}`}>{children}</main>
-      {!isFestivalRoute && <BottomNav />}
+      <main className={`flex-1 ${showBottomNav ? "pb-20" : ""}`}>{children}</main>
+      {showBottomNav && <BottomNav />}
     </div>
   );
 }

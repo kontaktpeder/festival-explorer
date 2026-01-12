@@ -39,6 +39,9 @@ interface SectionRendererProps {
     description?: string | null;
     hero_image_url?: string | null;
   } | null;
+  dateRange?: string | null;
+  festivalDescription?: string | null;
+  festivalName?: string | null;
 }
 
 export function SectionRenderer({
@@ -46,6 +49,9 @@ export function SectionRenderer({
   validEvents,
   featuredArtists,
   venue,
+  dateRange,
+  festivalDescription,
+  festivalName,
 }: SectionRendererProps) {
   const bgStyle = section.bg_image_url
     ? {
@@ -67,11 +73,21 @@ export function SectionRenderer({
           id="program"
           style={bgStyle}
         >
-          <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
           <div className="relative z-10 max-w-4xl mx-auto w-full">
+            {festivalName && (
+              <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">{festivalName}</h1>
+            )}
+            {dateRange && (
+              <div className="text-mono text-accent mb-6">{dateRange}</div>
+            )}
+            {festivalDescription && (
+              <p className="text-foreground/70 text-lg md:text-xl max-w-lg leading-relaxed mb-8">
+                {festivalDescription}
+              </p>
+            )}
             <h2 className="section-title">{section.title || "Program"}</h2>
             {validEvents.length > 0 ? (
               <FestivalEventAccordion events={validEvents as any} />
@@ -88,11 +104,21 @@ export function SectionRenderer({
     case "om":
       return (
         <section className="fullscreen-section relative" style={bgStyle}>
-          <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
           <div className="relative z-10 max-w-xl">
+            {festivalName && (
+              <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">{festivalName}</h1>
+            )}
+            {dateRange && (
+              <div className="text-mono text-accent mb-6">{dateRange}</div>
+            )}
+            {festivalDescription && (
+              <p className="text-foreground/70 text-lg md:text-xl max-w-lg leading-relaxed mb-8">
+                {festivalDescription}
+              </p>
+            )}
             <h2 className="section-title">{section.title || "Om Giggen"}</h2>
             <div className="space-y-4 text-foreground/90 text-xl md:text-2xl leading-relaxed">
               {contentJson?.text ? (
@@ -116,11 +142,21 @@ export function SectionRenderer({
     case "artister":
       return (
         <section className="fullscreen-section relative" style={bgStyle}>
-          <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
           <div className="relative z-10 max-w-4xl mx-auto w-full">
+            {festivalName && (
+              <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">{festivalName}</h1>
+            )}
+            {dateRange && (
+              <div className="text-mono text-accent mb-6">{dateRange}</div>
+            )}
+            {festivalDescription && (
+              <p className="text-foreground/70 text-lg md:text-xl max-w-lg leading-relaxed mb-8">
+                {festivalDescription}
+              </p>
+            )}
             <h2 className="section-title">{section.title || "Artister"}</h2>
             <div className="space-y-8">
               {featuredArtists.length > 0 ? (
@@ -164,11 +200,21 @@ export function SectionRenderer({
               : bgStyle.backgroundImage,
           }}
         >
-          <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
           <div className="relative z-10 max-w-xl">
+            {festivalName && (
+              <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">{festivalName}</h1>
+            )}
+            {dateRange && (
+              <div className="text-mono text-accent mb-6">{dateRange}</div>
+            )}
+            {festivalDescription && (
+              <p className="text-foreground/70 text-lg md:text-xl max-w-lg leading-relaxed mb-8">
+                {festivalDescription}
+              </p>
+            )}
             <h2 className="section-title">{section.title || "Venue"}</h2>
             {venue ? (
               <>
@@ -201,11 +247,21 @@ export function SectionRenderer({
     case "praktisk":
       return (
         <section className="fullscreen-section relative" style={bgStyle}>
-          <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
           <div className="relative z-10 max-w-md">
+            {festivalName && (
+              <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">{festivalName}</h1>
+            )}
+            {dateRange && (
+              <div className="text-mono text-accent mb-6">{dateRange}</div>
+            )}
+            {festivalDescription && (
+              <p className="text-foreground/70 text-lg md:text-xl max-w-lg leading-relaxed mb-8">
+                {festivalDescription}
+              </p>
+            )}
             <h2 className="section-title">{section.title || "Praktisk"}</h2>
             <div className="space-y-4 text-foreground/80 text-lg mb-10">
               {contentJson?.info && Array.isArray(contentJson.info) ? (
@@ -231,11 +287,21 @@ export function SectionRenderer({
     case "footer":
       return (
         <footer className="fullscreen-section relative" style={bgStyle}>
-          <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
           <div className="relative z-10 max-w-xl">
+            {festivalName && (
+              <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">{festivalName}</h1>
+            )}
+            {dateRange && (
+              <div className="text-mono text-accent mb-6">{dateRange}</div>
+            )}
+            {festivalDescription && (
+              <p className="text-foreground/70 text-lg md:text-xl max-w-lg leading-relaxed mb-8">
+                {festivalDescription}
+              </p>
+            )}
             <img
               src={giggenLogo}
               alt="Giggen"
