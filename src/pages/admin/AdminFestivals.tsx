@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { Plus, ExternalLink, Settings, Layers } from "lucide-react";
+import { Plus, ExternalLink, Settings, Layers, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -75,6 +75,12 @@ export default function AdminFestivals() {
               </div>
 
               <div className="flex gap-2">
+                <Button asChild variant="ghost" size="sm">
+                  <Link to={`/admin/festivals/${festival.id}/program`}>
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Program
+                  </Link>
+                </Button>
                 <Button asChild variant="ghost" size="sm">
                   <Link to={`/admin/festivals/${festival.id}/sections`}>
                     <Layers className="h-4 w-4 mr-2" />

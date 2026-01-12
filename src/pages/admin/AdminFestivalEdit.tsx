@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Layers, Save } from "lucide-react";
+import { ArrowLeft, Layers, Save, Calendar } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
 
@@ -287,13 +287,21 @@ export default function AdminFestivalEdit() {
             {saveMutation.isPending ? "Lagrer..." : "Lagre"}
           </Button>
           
-          {!isNew && (
-            <Button asChild variant="outline">
-              <Link to={`/admin/festivals/${id}/sections`}>
-                <Layers className="h-4 w-4 mr-2" />
-                Seksjoner
-              </Link>
-            </Button>
+        {!isNew && (
+            <>
+              <Button asChild variant="outline">
+                <Link to={`/admin/festivals/${id}/program`}>
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Program
+                </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to={`/admin/festivals/${id}/sections`}>
+                  <Layers className="h-4 w-4 mr-2" />
+                  Seksjoner
+                </Link>
+              </Button>
+            </>
           )}
         </div>
       </form>
