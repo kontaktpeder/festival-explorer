@@ -160,24 +160,25 @@ export default function AdminFestivalProgram() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button asChild variant="ghost" size="sm">
+    <div className="space-y-4 md:space-y-6">
+      {/* Header */}
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
+        <Button asChild variant="ghost" size="sm" className="w-fit">
           <Link to={`/admin/festivals/${id}`}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Tilbake
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Program</h1>
-          <p className="text-muted-foreground">{festival?.name}</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Program</h1>
+          <p className="text-sm text-muted-foreground">{festival?.name}</p>
         </div>
       </div>
 
       {/* Add event */}
-      <div className="flex gap-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
         <Select value={selectedEvent} onValueChange={setSelectedEvent}>
-          <SelectTrigger className="w-64">
+          <SelectTrigger className="w-full sm:w-64">
             <SelectValue placeholder="Velg event..." />
           </SelectTrigger>
           <SelectContent>
@@ -191,9 +192,11 @@ export default function AdminFestivalProgram() {
         <Button
           onClick={() => selectedEvent && addEvent.mutate(selectedEvent)}
           disabled={!selectedEvent}
+          size="sm"
+          className="sm:w-auto"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Legg til event
+          Legg til
         </Button>
       </div>
 
@@ -202,85 +205,148 @@ export default function AdminFestivalProgram() {
         {festivalEvents?.map((fe, index) => (
           <div
             key={fe.event_id}
-            className={`bg-card border rounded-lg p-4 flex items-center gap-4 ${
+            className={`bg-card border rounded-lg p-3 md:p-4 ${
               fe.show_in_program ? "border-border" : "border-border/50 opacity-60"
             }`}
           >
-            <span className="text-muted-foreground w-8 text-center">{index + 1}</span>
-            
-            <div className="flex-1">
-              <p className="font-medium text-foreground">{fe.event?.title}</p>
+            {/* Mobile layout */}
+            <div className="flex flex-col gap-2 md:hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-xs text-muted-foreground w-5 flex-shrink-0">{index + 1}</span>
+                  <p className="font-medium text-sm text-foreground truncate">{fe.event?.title}</p>
+                </div>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <Button
+                    variant={fe.is_featured ? "default" : "ghost"}
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => toggleIsFeatured.mutate({
+                      eventId: fe.event_id,
+                      isFeatured: !fe.is_featured,
+                    })}
+                  >
+                    <Star className={`h-3 w-3 ${fe.is_featured ? "fill-current" : ""}`} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => toggleShowInProgram.mutate({
+                      eventId: fe.event_id,
+                      showInProgram: !fe.show_in_program,
+                    })}
+                  >
+                    {fe.show_in_program ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                  </Button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => moveEvent.mutate({ eventId: fe.event_id, direction: "up" })}
+                    disabled={index === 0}
+                  >
+                    <ArrowUp className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => moveEvent.mutate({ eventId: fe.event_id, direction: "down" })}
+                    disabled={index === festivalEvents.length - 1}
+                  >
+                    <ArrowDown className="h-3 w-3" />
+                  </Button>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => {
+                    if (confirm("Fjern fra festival?")) {
+                      removeEvent.mutate(fe.event_id);
+                    }
+                  }}
+                >
+                  <Trash2 className="h-3 w-3 text-destructive" />
+                </Button>
+              </div>
             </div>
 
-            {/* Featured toggle */}
-            <Button
-              variant={fe.is_featured ? "default" : "ghost"}
-              size="sm"
-              onClick={() => toggleIsFeatured.mutate({
-                eventId: fe.event_id,
-                isFeatured: !fe.is_featured,
-              })}
-              title={fe.is_featured ? "Fjern fra featured" : "Sett som featured"}
-            >
-              <Star className={`h-4 w-4 ${fe.is_featured ? "fill-current" : ""}`} />
-            </Button>
+            {/* Desktop layout */}
+            <div className="hidden md:flex items-center gap-4">
+              <span className="text-muted-foreground w-8 text-center">{index + 1}</span>
+              
+              <div className="flex-1">
+                <p className="font-medium text-foreground">{fe.event?.title}</p>
+              </div>
 
-            {/* Show in program toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => toggleShowInProgram.mutate({
-                eventId: fe.event_id,
-                showInProgram: !fe.show_in_program,
-              })}
-              title={fe.show_in_program ? "Skjul fra program" : "Vis i program"}
-            >
-              {fe.show_in_program ? (
-                <Eye className="h-4 w-4" />
-              ) : (
-                <EyeOff className="h-4 w-4" />
-              )}
-            </Button>
+              <Button
+                variant={fe.is_featured ? "default" : "ghost"}
+                size="sm"
+                onClick={() => toggleIsFeatured.mutate({
+                  eventId: fe.event_id,
+                  isFeatured: !fe.is_featured,
+                })}
+                title={fe.is_featured ? "Fjern fra featured" : "Sett som featured"}
+              >
+                <Star className={`h-4 w-4 ${fe.is_featured ? "fill-current" : ""}`} />
+              </Button>
 
-            {/* Move buttons */}
-            <div className="flex gap-1">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => moveEvent.mutate({ eventId: fe.event_id, direction: "up" })}
-                disabled={index === 0}
+                onClick={() => toggleShowInProgram.mutate({
+                  eventId: fe.event_id,
+                  showInProgram: !fe.show_in_program,
+                })}
+                title={fe.show_in_program ? "Skjul fra program" : "Vis i program"}
               >
-                <ArrowUp className="h-4 w-4" />
+                {fe.show_in_program ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
               </Button>
+
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => moveEvent.mutate({ eventId: fe.event_id, direction: "up" })}
+                  disabled={index === 0}
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => moveEvent.mutate({ eventId: fe.event_id, direction: "down" })}
+                  disabled={index === festivalEvents.length - 1}
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </Button>
+              </div>
+
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => moveEvent.mutate({ eventId: fe.event_id, direction: "down" })}
-                disabled={index === festivalEvents.length - 1}
+                onClick={() => {
+                  if (confirm("Fjern fra festival?")) {
+                    removeEvent.mutate(fe.event_id);
+                  }
+                }}
               >
-                <ArrowDown className="h-4 w-4" />
+                <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
             </div>
-
-            {/* Remove button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                if (confirm("Fjern fra festival?")) {
-                  removeEvent.mutate(fe.event_id);
-                }
-              }}
-            >
-              <Trash2 className="h-4 w-4 text-destructive" />
-            </Button>
           </div>
         ))}
 
         {festivalEvents?.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground border border-dashed border-border rounded-lg">
-            <p>Ingen events i programmet ennå.</p>
-            <p className="text-sm mt-2">Velg en event fra listen over for å legge til.</p>
+          <div className="text-center py-8 md:py-12 text-muted-foreground border border-dashed border-border rounded-lg">
+            <p className="text-sm">Ingen events i programmet ennå.</p>
+            <p className="text-xs mt-2">Velg en event fra listen over.</p>
           </div>
         )}
       </div>
