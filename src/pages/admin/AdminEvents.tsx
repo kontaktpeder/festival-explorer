@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { Plus, ExternalLink, Settings, Music, Trash2 } from "lucide-react";
+import { Plus, ExternalLink, Settings, Music, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -35,13 +35,14 @@ export default function AdminEvents() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-foreground">Events</h1>
-        <Button asChild>
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Events</h1>
+        <Button asChild size="sm" className="md:size-default">
           <Link to="/admin/events/new">
-            <Plus className="h-4 w-4 mr-2" />
-            Ny event
+            <Plus className="h-4 w-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Ny event</span>
+            <span className="sm:hidden">Ny</span>
           </Link>
         </Button>
       </div>
@@ -50,57 +51,60 @@ export default function AdminEvents() {
         {events?.map((event) => (
           <div
             key={event.id}
-            className="bg-card border border-border rounded-lg p-6"
+            className="bg-card border border-border rounded-lg p-4 md:p-6"
           >
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col gap-4">
               <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <Music className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-xl font-semibold text-foreground">
-                    {event.title}
-                  </h2>
-                  <Badge variant={event.status === "published" ? "default" : "secondary"}>
-                    {event.status === "published" ? "Publisert" : "Utkast"}
-                  </Badge>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Music className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <h2 className="text-lg md:text-xl font-semibold text-foreground">
+                      {event.title}
+                    </h2>
+                    <Badge variant={event.status === "published" ? "default" : "secondary"}>
+                      {event.status === "published" ? "Publisert" : "Utkast"}
+                    </Badge>
+                  </div>
+                  <Button asChild variant="ghost" size="icon" className="shrink-0">
+                    <Link to={`/event/${event.slug}`} target="_blank">
+                      <ExternalLink className="h-4 w-4" />
+                    </Link>
+                  </Button>
                 </div>
                 
-                <p className="text-muted-foreground">
-                  {format(new Date(event.start_at), "d. MMMM yyyy 'kl.' HH:mm", { locale: nb })}
+                <p className="text-sm text-muted-foreground">
+                  {format(new Date(event.start_at), "d. MMM yyyy 'kl.' HH:mm", { locale: nb })}
                   {event.venue && ` · ${event.venue.name}`}
                 </p>
               </div>
 
-              <div className="flex gap-2">
-                <Button asChild variant="ghost" size="sm">
+              <div className="flex flex-wrap gap-2">
+                <Button asChild variant="outline" size="sm">
                   <Link to={`/admin/events/${event.id}/lineup`}>
+                    <Users className="h-4 w-4 mr-1" />
                     Lineup
                   </Link>
                 </Button>
-                <Button asChild variant="ghost" size="sm">
+                <Button asChild variant="outline" size="sm">
                   <Link to={`/admin/events/${event.id}`}>
-                    <Settings className="h-4 w-4 mr-2" />
+                    <Settings className="h-4 w-4 mr-1" />
                     Rediger
                   </Link>
                 </Button>
-                <Button asChild variant="ghost" size="sm">
-                  <Link to={`/event/${event.slug}`} target="_blank">
-                    <ExternalLink className="h-4 w-4" />
-                  </Link>
+              </div>
+
+              <div className="pt-3 border-t border-border">
+                <Button
+                  variant={event.status === "published" ? "outline" : "default"}
+                  size="sm"
+                  onClick={() => toggleStatus.mutate({
+                    id: event.id,
+                    status: event.status === "published" ? "draft" : "published"
+                  })}
+                >
+                  {event.status === "published" ? "Gjør til utkast" : "Publiser"}
                 </Button>
               </div>
-            </div>
-
-            <div className="mt-4 pt-4 border-t border-border flex gap-2">
-              <Button
-                variant={event.status === "published" ? "outline" : "default"}
-                size="sm"
-                onClick={() => toggleStatus.mutate({
-                  id: event.id,
-                  status: event.status === "published" ? "draft" : "published"
-                })}
-              >
-                {event.status === "published" ? "Gjør til utkast" : "Publiser"}
-              </Button>
             </div>
           </div>
         ))}

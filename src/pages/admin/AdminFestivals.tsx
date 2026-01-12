@@ -38,13 +38,14 @@ export default function AdminFestivals() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-foreground">Festivaler</h1>
-        <Button asChild>
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Festivaler</h1>
+        <Button asChild size="sm" className="md:size-default">
           <Link to="/admin/festivals/new">
-            <Plus className="h-4 w-4 mr-2" />
-            Ny festival
+            <Plus className="h-4 w-4 mr-1 md:mr-2" />
+            <span className="hidden sm:inline">Ny festival</span>
+            <span className="sm:hidden">Ny</span>
           </Link>
         </Button>
       </div>
@@ -53,65 +54,67 @@ export default function AdminFestivals() {
         {festivals?.map((festival) => (
           <div
             key={festival.id}
-            className="bg-card border border-border rounded-lg p-6"
+            className="bg-card border border-border rounded-lg p-4 md:p-6"
           >
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col gap-4">
               <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-semibold text-foreground">
-                    {festival.name}
-                  </h2>
-                  <Badge variant={festival.status === "published" ? "default" : "secondary"}>
-                    {festival.status === "published" ? "Publisert" : "Utkast"}
-                  </Badge>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-lg md:text-xl font-semibold text-foreground">
+                      {festival.name}
+                    </h2>
+                    <Badge variant={festival.status === "published" ? "default" : "secondary"}>
+                      {festival.status === "published" ? "Publisert" : "Utkast"}
+                    </Badge>
+                  </div>
+                  <Button asChild variant="ghost" size="icon" className="shrink-0">
+                    <Link to={`/festival/${festival.slug}`} target="_blank">
+                      <ExternalLink className="h-4 w-4" />
+                    </Link>
+                  </Button>
                 </div>
                 
                 {festival.start_at && (
-                  <p className="text-muted-foreground">
-                    {format(new Date(festival.start_at), "d. MMMM yyyy", { locale: nb })}
-                    {festival.end_at && ` – ${format(new Date(festival.end_at), "d. MMMM yyyy", { locale: nb })}`}
+                  <p className="text-sm text-muted-foreground">
+                    {format(new Date(festival.start_at), "d. MMM yyyy", { locale: nb })}
+                    {festival.end_at && ` – ${format(new Date(festival.end_at), "d. MMM yyyy", { locale: nb })}`}
                   </p>
                 )}
               </div>
 
-              <div className="flex gap-2">
-                <Button asChild variant="ghost" size="sm">
+              <div className="flex flex-wrap gap-2">
+                <Button asChild variant="outline" size="sm">
                   <Link to={`/admin/festivals/${festival.id}/program`}>
-                    <Calendar className="h-4 w-4 mr-2" />
+                    <Calendar className="h-4 w-4 mr-1" />
                     Program
                   </Link>
                 </Button>
-                <Button asChild variant="ghost" size="sm">
+                <Button asChild variant="outline" size="sm">
                   <Link to={`/admin/festivals/${festival.id}/sections`}>
-                    <Layers className="h-4 w-4 mr-2" />
+                    <Layers className="h-4 w-4 mr-1" />
                     Seksjoner
                   </Link>
                 </Button>
-                <Button asChild variant="ghost" size="sm">
+                <Button asChild variant="outline" size="sm">
                   <Link to={`/admin/festivals/${festival.id}`}>
-                    <Settings className="h-4 w-4 mr-2" />
+                    <Settings className="h-4 w-4 mr-1" />
                     Rediger
                   </Link>
                 </Button>
-                <Button asChild variant="ghost" size="sm">
-                  <Link to={`/festival/${festival.slug}`} target="_blank">
-                    <ExternalLink className="h-4 w-4" />
-                  </Link>
+              </div>
+
+              <div className="pt-3 border-t border-border">
+                <Button
+                  variant={festival.status === "published" ? "outline" : "default"}
+                  size="sm"
+                  onClick={() => toggleStatus.mutate({
+                    id: festival.id,
+                    status: festival.status === "published" ? "draft" : "published"
+                  })}
+                >
+                  {festival.status === "published" ? "Gjør til utkast" : "Publiser"}
                 </Button>
               </div>
-            </div>
-
-            <div className="mt-4 pt-4 border-t border-border flex gap-2">
-              <Button
-                variant={festival.status === "published" ? "outline" : "default"}
-                size="sm"
-                onClick={() => toggleStatus.mutate({
-                  id: festival.id,
-                  status: festival.status === "published" ? "draft" : "published"
-                })}
-              >
-                {festival.status === "published" ? "Gjør til utkast" : "Publiser"}
-              </Button>
             </div>
           </div>
         ))}
