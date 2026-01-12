@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff, GripVertical, ImageIcon } from "lucide-react";
+import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff, GripVertical, ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -55,6 +55,12 @@ export default function AdminSections() {
   // Add section mutation
   const addSection = useMutation({
     mutationFn: async () => {
+      // Sjekk autentisering først
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        throw new Error("Du må være innlogget for å legge til seksjoner.");
+      }
+
       const maxOrder = sections?.length || 0;
       const { error } = await supabase.from("festival_sections").insert({
         festival_id: id,
@@ -64,11 +70,25 @@ export default function AdminSections() {
         bg_mode: "scroll",
         is_enabled: true,
       });
-      if (error) throw error;
+      
+      if (error) {
+        console.error("Feil ved opprettelse av seksjon:", error);
+        if (error.code === "42501") {
+          throw new Error("Du har ikke tilgang til å redigere denne festivalen. Sjekk at du er logget inn med riktig bruker.");
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-festival-sections", id] });
       toast({ title: "Seksjon lagt til" });
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Kunne ikke legge til seksjon", 
+        description: error.message,
+        variant: "destructive" 
+      });
     },
   });
 
@@ -79,10 +99,20 @@ export default function AdminSections() {
         .from("festival_sections")
         .update(updates)
         .eq("id", sectionId);
-      if (error) throw error;
+      if (error) {
+        console.error("Feil ved oppdatering av seksjon:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-festival-sections", id] });
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Kunne ikke oppdatere seksjon", 
+        description: error.message,
+        variant: "destructive" 
+      });
     },
   });
 
@@ -121,11 +151,21 @@ export default function AdminSections() {
         .from("festival_sections")
         .delete()
         .eq("id", sectionId);
-      if (error) throw error;
+      if (error) {
+        console.error("Feil ved sletting av seksjon:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-festival-sections", id] });
       toast({ title: "Seksjon slettet" });
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Kunne ikke slette seksjon", 
+        description: error.message,
+        variant: "destructive" 
+      });
     },
   });
 
@@ -158,9 +198,9 @@ export default function AdminSections() {
               Se live →
             </Link>
           </Button>
-          <Button onClick={() => addSection.mutate()}>
+          <Button onClick={() => addSection.mutate()} disabled={addSection.isPending}>
             <Plus className="h-4 w-4 mr-2" />
-            Legg til seksjon
+            {addSection.isPending ? "Legger til..." : "Legg til seksjon"}
           </Button>
         </div>
       </div>
@@ -274,7 +314,35 @@ export default function AdminSections() {
             </div>
 
             {/* Background image URL */}
-            <div className="mt-3 pl-9">
+            <div className="mt-3 pl-9 space-y-2">
+              {/* Vis thumbnail hvis bilde er valgt */}
+              {section.bg_image_url && (
+                <div className="relative w-40 h-24 rounded border border-border overflow-hidden bg-muted">
+                  <img
+                    src={section.bg_image_url}
+                    alt="Seksjonsbakgrunn"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-1 right-1 h-6 w-6 p-0 bg-background/90 hover:bg-background border border-border"
+                    onClick={() =>
+                      updateSection.mutate({
+                        sectionId: section.id,
+                        updates: { bg_image_url: null },
+                      })
+                    }
+                    title="Fjern bilde"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+              
               <div className="flex gap-2">
                 <Input
                   value={section.bg_image_url || ""}
@@ -288,15 +356,16 @@ export default function AdminSections() {
                   className="text-sm flex-1"
                 />
                 <Button
-                  variant="outline"
+                  variant={section.bg_image_url ? "outline" : "default"}
                   size="sm"
                   onClick={() => setMediaPickerOpen(section.id)}
                   className="flex-shrink-0"
                 >
                   <ImageIcon className="h-4 w-4 mr-2" />
-                  Velg fra filbank
+                  {section.bg_image_url ? "Endre bilde" : "Velg fra filbank"}
                 </Button>
               </div>
+              
               {mediaPickerOpen === section.id && (
                 <MediaPicker
                   open={true}
@@ -319,9 +388,9 @@ export default function AdminSections() {
         {sections?.length === 0 && (
           <div className="text-center py-12 text-muted-foreground border border-dashed border-border rounded-lg">
             <p>Ingen seksjoner ennå.</p>
-            <Button onClick={() => addSection.mutate()} className="mt-4">
+            <Button onClick={() => addSection.mutate()} className="mt-4" disabled={addSection.isPending}>
               <Plus className="h-4 w-4 mr-2" />
-              Legg til første seksjon
+              {addSection.isPending ? "Legger til..." : "Legg til første seksjon"}
             </Button>
           </div>
         )}
