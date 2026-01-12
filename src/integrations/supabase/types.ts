@@ -18,16 +18,22 @@ export type Database = {
         Row: {
           billing_order: number
           event_id: string
+          feature_order: number | null
+          is_featured: boolean | null
           project_id: string
         }
         Insert: {
           billing_order?: number
           event_id: string
+          feature_order?: number | null
+          is_featured?: boolean | null
           project_id: string
         }
         Update: {
           billing_order?: number
           event_id?: string
+          feature_order?: number | null
+          is_featured?: boolean | null
           project_id?: string
         }
         Relationships: [
@@ -114,16 +120,22 @@ export type Database = {
         Row: {
           event_id: string
           festival_id: string
+          is_featured: boolean | null
+          show_in_program: boolean | null
           sort_order: number
         }
         Insert: {
           event_id: string
           festival_id: string
+          is_featured?: boolean | null
+          show_in_program?: boolean | null
           sort_order?: number
         }
         Update: {
           event_id?: string
           festival_id?: string
+          is_featured?: boolean | null
+          show_in_program?: boolean | null
           sort_order?: number
         }
         Relationships: [
@@ -136,6 +148,62 @@ export type Database = {
           },
           {
             foreignKeyName: "festival_events_festival_id_fkey"
+            columns: ["festival_id"]
+            isOneToOne: false
+            referencedRelation: "festivals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      festival_sections: {
+        Row: {
+          accent_override: string | null
+          bg_image_url: string | null
+          bg_mode: string
+          content_json: Json | null
+          created_at: string | null
+          festival_id: string
+          id: string
+          is_enabled: boolean | null
+          overlay_strength: number | null
+          sort_order: number
+          title: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          accent_override?: string | null
+          bg_image_url?: string | null
+          bg_mode?: string
+          content_json?: Json | null
+          created_at?: string | null
+          festival_id: string
+          id?: string
+          is_enabled?: boolean | null
+          overlay_strength?: number | null
+          sort_order?: number
+          title: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          accent_override?: string | null
+          bg_image_url?: string | null
+          bg_mode?: string
+          content_json?: Json | null
+          created_at?: string | null
+          festival_id?: string
+          id?: string
+          is_enabled?: boolean | null
+          overlay_strength?: number | null
+          sort_order?: number
+          title?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "festival_sections_festival_id_fkey"
             columns: ["festival_id"]
             isOneToOne: false
             referencedRelation: "festivals"
