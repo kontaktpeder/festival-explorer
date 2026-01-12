@@ -1,12 +1,18 @@
 import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
-import { LayoutDashboard, Calendar, MapPin, Music, Users, FolderOpen } from "lucide-react";
+import { LayoutDashboard, Calendar, MapPin, Music, Users, FolderOpen, Menu, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { AdminErrorBoundary } from "@/components/admin/AdminErrorBoundary";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useState } from "react";
 
 export default function AdminLayout() {
   const location = useLocation();
+  const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Check if user is authenticated
   const { data: session, isLoading } = useQuery({
@@ -38,52 +44,81 @@ export default function AdminLayout() {
     return <Navigate to="/admin/login" replace />;
   }
 
+  const NavContent = () => (
+    <>
+      <div className="p-4 md:p-6 border-b border-border">
+        <Link to="/admin" className="text-lg md:text-xl font-bold text-foreground" onClick={() => setSidebarOpen(false)}>
+          GIGGEN <span className="text-muted-foreground font-normal text-sm">Admin</span>
+        </Link>
+      </div>
+      
+      <nav className="flex-1 p-3 md:p-4 space-y-1">
+        {navItems.map(({ to, icon: Icon, label, exact }) => {
+          const isActive = exact 
+            ? location.pathname === to 
+            : location.pathname.startsWith(to) && (exact || to !== "/admin");
+          
+          return (
+            <Link
+              key={to}
+              to={to}
+              onClick={() => setSidebarOpen(false)}
+              className={`flex items-center gap-3 px-3 md:px-4 py-3 rounded-lg transition-colors ${
+                isActive
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <Icon className="h-5 w-5" />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="p-3 md:p-4 border-t border-border">
+        <Link 
+          to="/" 
+          onClick={() => setSidebarOpen(false)}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          ← Tilbake til siden
+        </Link>
+      </div>
+    </>
+  );
+
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-card border-r border-border flex flex-col">
-        <div className="p-6 border-b border-border">
-          <Link to="/admin" className="text-xl font-bold text-foreground">
+    <div className="min-h-screen bg-background flex flex-col md:flex-row">
+      {/* Mobile header */}
+      {isMobile && (
+        <header className="sticky top-0 z-50 bg-card border-b border-border p-3 flex items-center justify-between">
+          <Link to="/admin" className="text-lg font-bold text-foreground">
             GIGGEN <span className="text-muted-foreground font-normal text-sm">Admin</span>
           </Link>
-        </div>
-        
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map(({ to, icon: Icon, label, exact }) => {
-            const isActive = exact 
-              ? location.pathname === to 
-              : location.pathname.startsWith(to);
-            
-            return (
-              <Link
-                key={to}
-                to={to}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
+          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-0 flex flex-col">
+              <NavContent />
+            </SheetContent>
+          </Sheet>
+        </header>
+      )}
 
-        <div className="p-4 border-t border-border">
-          <Link 
-            to="/" 
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            ← Tilbake til siden
-          </Link>
-        </div>
-      </aside>
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <aside className="w-64 bg-card border-r border-border flex flex-col shrink-0">
+          <NavContent />
+        </aside>
+      )}
 
       {/* Main content */}
       <main className="flex-1 overflow-auto">
-        <div className="p-8">
+        <div className="p-4 md:p-8">
           <AdminErrorBoundary>
             <Outlet />
           </AdminErrorBoundary>
