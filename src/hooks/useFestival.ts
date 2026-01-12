@@ -58,9 +58,20 @@ export function useFestival(slug: string) {
         })
       );
 
+      // Hent festival sections fra database
+      const { data: sections, error: sectionsError } = await supabase
+        .from("festival_sections")
+        .select("*")
+        .eq("festival_id", festival.id)
+        .eq("is_enabled", true)
+        .order("sort_order", { ascending: true });
+
+      if (sectionsError) throw sectionsError;
+
       return {
         ...festival,
         festivalEvents: eventsWithLineup,
+        sections: sections || [],
       };
     },
     enabled: !!slug,
