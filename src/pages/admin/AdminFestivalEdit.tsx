@@ -34,14 +34,16 @@ export default function AdminFestivalEdit() {
     queryKey: ["admin-festival", id],
     queryFn: async () => {
       if (isNew) return null;
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("festivals")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
+      if (error) throw error;
       return data;
     },
     enabled: !isNew,
+    retry: 1,
   });
 
   // Fetch venues for dropdown
@@ -225,13 +227,14 @@ export default function AdminFestivalEdit() {
           <div className="space-y-2">
             <Label htmlFor="venue_id">Venue</Label>
             <Select
-              value={formData.venue_id}
-              onValueChange={(value) => setFormData((prev) => ({ ...prev, venue_id: value }))}
+              value={formData.venue_id || undefined}
+              onValueChange={(value) => setFormData((prev) => ({ ...prev, venue_id: value === "__none__" ? "" : value }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Velg venue (valgfritt)" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="__none__">Ingen venue</SelectItem>
                 {venues?.map((venue) => (
                   <SelectItem key={venue.id} value={venue.id}>
                     {venue.name}
@@ -244,13 +247,14 @@ export default function AdminFestivalEdit() {
           <div className="space-y-2">
             <Label htmlFor="theme_id">Theme</Label>
             <Select
-              value={formData.theme_id}
-              onValueChange={(value) => setFormData((prev) => ({ ...prev, theme_id: value }))}
+              value={formData.theme_id || undefined}
+              onValueChange={(value) => setFormData((prev) => ({ ...prev, theme_id: value === "__none__" ? "" : value }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Velg theme (valgfritt)" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="__none__">Ingen theme</SelectItem>
                 {themes?.map((theme) => (
                   <SelectItem key={theme.id} value={theme.id}>
                     {theme.name}
