@@ -1,10 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { Calendar, Compass, Search } from "lucide-react";
+import { Calendar, Compass, Search, Settings } from "lucide-react";
 
 const navItems = [
   { to: "/festival/giggen-sessions", icon: Calendar, label: "Festival" },
   { to: "/explore", icon: Compass, label: "Utforsk" },
   { to: "/search", icon: Search, label: "Søk" },
+  { to: "/admin", icon: Settings, label: "Admin" },
 ];
 
 export function BottomNav() {
