@@ -27,6 +27,7 @@ import AdminProjects from "./pages/admin/AdminProjects";
 import AdminProjectEdit from "./pages/admin/AdminProjectEdit";
 import AdminVenues from "./pages/admin/AdminVenues";
 import AdminVenueEdit from "./pages/admin/AdminVenueEdit";
+import AdminMedia from "./pages/admin/AdminMedia";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
             <Route path="projects/:id" element={<AdminProjectEdit />} />
             <Route path="venues" element={<AdminVenues />} />
             <Route path="venues/:id" element={<AdminVenueEdit />} />
+            <Route path="media" element={<AdminMedia />} />
           </Route>
           
           <Route path="*" element={<NotFound />} />
