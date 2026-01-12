@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
-import { LayoutDashboard, Calendar, MapPin, Music, Users } from "lucide-react";
+import { LayoutDashboard, Calendar, MapPin, Music, Users, FolderOpen } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -23,6 +23,7 @@ export default function AdminLayout() {
     { to: "/admin/events", icon: Music, label: "Events" },
     { to: "/admin/projects", icon: Users, label: "Artister" },
     { to: "/admin/venues", icon: MapPin, label: "Venues" },
+    { to: "/admin/media", icon: FolderOpen, label: "Filbank" },
   ];
 
   if (isLoading) {

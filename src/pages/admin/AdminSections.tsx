@@ -1,13 +1,14 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff, GripVertical } from "lucide-react";
+import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff, GripVertical, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 
 const SECTION_TYPES = [
   { value: "hero", label: "Hero" },
@@ -23,6 +24,7 @@ export default function AdminSections() {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [mediaPickerOpen, setMediaPickerOpen] = useState<string | null>(null);
 
   // Fetch festival info
   const { data: festival } = useQuery({
@@ -273,17 +275,43 @@ export default function AdminSections() {
 
             {/* Background image URL */}
             <div className="mt-3 pl-9">
-              <Input
-                value={section.bg_image_url || ""}
-                onChange={(e) =>
-                  updateSection.mutate({
-                    sectionId: section.id,
-                    updates: { bg_image_url: e.target.value || null },
-                  })
-                }
-                placeholder="Bakgrunnsbilde URL (valgfritt)"
-                className="text-sm"
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={section.bg_image_url || ""}
+                  onChange={(e) =>
+                    updateSection.mutate({
+                      sectionId: section.id,
+                      updates: { bg_image_url: e.target.value || null },
+                    })
+                  }
+                  placeholder="Bakgrunnsbilde URL (valgfritt)"
+                  className="text-sm flex-1"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setMediaPickerOpen(section.id)}
+                  className="flex-shrink-0"
+                >
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  Velg fra filbank
+                </Button>
+              </div>
+              {mediaPickerOpen === section.id && (
+                <MediaPicker
+                  open={true}
+                  onOpenChange={(open) => !open && setMediaPickerOpen(null)}
+                  onSelect={(mediaId, publicUrl) => {
+                    updateSection.mutate({
+                      sectionId: section.id,
+                      updates: { bg_image_url: publicUrl },
+                    });
+                    setMediaPickerOpen(null);
+                    toast({ title: "Bilde valgt fra filbank" });
+                  }}
+                  fileType="image"
+                />
+              )}
             </div>
           </div>
         ))}
