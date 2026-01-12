@@ -66,6 +66,20 @@ export default function AdminVenueEdit() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Ikke innlogget");
 
+      // Sjekk om profil eksisterer, opprett hvis ikke
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!existingProfile) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert({ id: user.id });
+        if (profileError) throw new Error("Kunne ikke opprette profil: " + profileError.message);
+      }
+
       const payload = {
         ...formData,
         hero_image_url: formData.hero_image_url || null,
