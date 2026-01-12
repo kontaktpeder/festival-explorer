@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { getAuthenticatedUser } from "@/lib/admin-helpers";
 
 export default function AdminVenueEdit() {
   const { id } = useParams<{ id: string }>();
@@ -63,22 +64,7 @@ export default function AdminVenueEdit() {
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Ikke innlogget");
-
-      // Sjekk om profil eksisterer, opprett hvis ikke
-      const { data: existingProfile } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (!existingProfile) {
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .insert({ id: user.id });
-        if (profileError) throw new Error("Kunne ikke opprette profil: " + profileError.message);
-      }
+      const user = await getAuthenticatedUser();
 
       const payload = {
         ...formData,
