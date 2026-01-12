@@ -35,14 +35,16 @@ export default function AdminEventEdit() {
     queryKey: ["admin-event", id],
     queryFn: async () => {
       if (isNew) return null;
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("events")
         .select("*")
         .eq("id", id)
-        .single();
+        .maybeSingle();
+      if (error) throw error;
       return data;
     },
     enabled: !isNew,
+    retry: 1,
   });
 
   // Fetch venues for dropdown
@@ -214,13 +216,14 @@ export default function AdminEventEdit() {
           <div className="space-y-2">
             <Label htmlFor="venue_id">Venue</Label>
             <Select
-              value={formData.venue_id}
-              onValueChange={(value) => setFormData((prev) => ({ ...prev, venue_id: value }))}
+              value={formData.venue_id || undefined}
+              onValueChange={(value) => setFormData((prev) => ({ ...prev, venue_id: value === "__none__" ? "" : value }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Velg venue (valgfritt)" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="__none__">Ingen venue</SelectItem>
                 {venues?.map((venue) => (
                   <SelectItem key={venue.id} value={venue.id}>
                     {venue.name}
