@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
@@ -106,6 +106,21 @@ export default function AdminFestivalProgram() {
     },
   });
 
+  // Toggle is_featured mutation
+  const toggleIsFeatured = useMutation({
+    mutationFn: async ({ eventId, isFeatured }: { eventId: string; isFeatured: boolean }) => {
+      const { error } = await supabase
+        .from("festival_events")
+        .update({ is_featured: isFeatured })
+        .eq("festival_id", id)
+        .eq("event_id", eventId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-festival-events", id] });
+    },
+  });
+
   // Move event mutation
   const moveEvent = useMutation({
     mutationFn: async ({ eventId, direction }: { eventId: string; direction: "up" | "down" }) => {
@@ -197,6 +212,19 @@ export default function AdminFestivalProgram() {
               <p className="font-medium text-foreground">{fe.event?.title}</p>
             </div>
 
+            {/* Featured toggle */}
+            <Button
+              variant={fe.is_featured ? "default" : "ghost"}
+              size="sm"
+              onClick={() => toggleIsFeatured.mutate({
+                eventId: fe.event_id,
+                isFeatured: !fe.is_featured,
+              })}
+              title={fe.is_featured ? "Fjern fra featured" : "Sett som featured"}
+            >
+              <Star className={`h-4 w-4 ${fe.is_featured ? "fill-current" : ""}`} />
+            </Button>
+
             {/* Show in program toggle */}
             <Button
               variant="ghost"
@@ -205,6 +233,7 @@ export default function AdminFestivalProgram() {
                 eventId: fe.event_id,
                 showInProgram: !fe.show_in_program,
               })}
+              title={fe.show_in_program ? "Skjul fra program" : "Vis i program"}
             >
               {fe.show_in_program ? (
                 <Eye className="h-4 w-4" />

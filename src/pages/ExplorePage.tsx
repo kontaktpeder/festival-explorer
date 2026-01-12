@@ -1,20 +1,32 @@
 import { useState } from "react";
-import { Compass, Calendar, Music } from "lucide-react";
-import { useExploreEvents, useExploreProjects } from "@/hooks/useExplore";
+import { useSearchParams } from "react-router-dom";
+import { Compass, Calendar, Music, ArrowRight } from "lucide-react";
+import { useExploreEvents, useExploreProjects, useExploreFeaturedEvents } from "@/hooks/useExplore";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { EventCard } from "@/components/ui/EventCard";
 import { ProjectCard } from "@/components/ui/ProjectCard";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
+import { Button } from "@/components/ui/button";
 import type { Event, Project } from "@/types/database";
 
 type Tab = "events" | "projects";
 
 export default function ExplorePage() {
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<Tab>("events");
-  const { data: events, isLoading: loadingEvents } = useExploreEvents();
+  const [showAllEvents, setShowAllEvents] = useState(
+    searchParams.get("all") === "true"
+  );
+  
+  const { data: featuredEvents, isLoading: loadingFeatured } = useExploreFeaturedEvents();
+  const { data: allEvents, isLoading: loadingAllEvents } = useExploreEvents();
   const { data: projects, isLoading: loadingProjects } = useExploreProjects();
 
-  const isLoading = activeTab === "events" ? loadingEvents : loadingProjects;
+  const isLoading = activeTab === "events" 
+    ? (showAllEvents ? loadingAllEvents : loadingFeatured) 
+    : loadingProjects;
+  
+  const events = showAllEvents ? allEvents : featuredEvents;
 
   return (
     <PageLayout>
@@ -56,20 +68,41 @@ export default function ExplorePage() {
       {!isLoading && activeTab === "events" && (
         <div className="px-4 space-y-4">
           {events && events.length > 0 ? (
-            events.map((event, index) => (
-              <div
-                key={event.id}
-                className="animate-slide-up"
-                style={{ animationDelay: `${index * 0.05}s` }}
-              >
-                <EventCard event={event as Event & { venue?: { name: string; slug: string } | null }} />
-              </div>
-            ))
+            <>
+              {events.map((event, index) => (
+                <div
+                  key={event.id}
+                  className="animate-slide-up"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
+                  <EventCard event={event as Event & { venue?: { name: string; slug: string } | null }} />
+                </div>
+              ))}
+              
+              {!showAllEvents && (
+                <div className="pt-4">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setShowAllEvents(true)}
+                  >
+                    <span className="flex items-center gap-2">
+                      Se alle konserter
+                      <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </Button>
+                </div>
+              )}
+            </>
           ) : (
             <EmptyState
               icon={<Calendar className="w-12 h-12" />}
-              title="Ingen kommende events"
-              description="Det er ingen publiserte events for øyeblikket."
+              title={showAllEvents ? "Ingen kommende events" : "Ingen featured events"}
+              description={
+                showAllEvents 
+                  ? "Det er ingen publiserte events for øyeblikket."
+                  : "Det er ingen featured events for øyeblikket."
+              }
             />
           )}
         </div>

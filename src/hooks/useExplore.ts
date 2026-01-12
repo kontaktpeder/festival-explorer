@@ -39,6 +39,37 @@ export function useExploreProjects() {
   });
 }
 
+export function useExploreFeaturedEvents() {
+  return useQuery({
+    queryKey: ["explore", "featured-events"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("festival_events")
+        .select(`
+          event:events(
+            *,
+            venue:venues(name, slug)
+          )
+        `)
+        .eq("is_featured", true)
+        .order("sort_order", { ascending: true })
+        .limit(10);
+
+      if (error) throw error;
+      
+      // Flatten and filter to published future events
+      return (data || [])
+        .map((fe) => fe.event)
+        .filter((event): event is NonNullable<typeof event> => {
+          if (!event) return false;
+          return event.status === "published" && 
+                 new Date(event.start_at) >= new Date();
+        })
+        .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime());
+    },
+  });
+}
+
 export function useSearch(query: string) {
   return useQuery({
     queryKey: ["search", query],
