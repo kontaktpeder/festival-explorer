@@ -127,6 +127,11 @@ export default function FestivalPage() {
 
         {/* Render sections dynamisk */}
         {festival.sections.map((section) => {
+          // Determine which details to show in this section
+          const showDateRange = section.id === festival.date_range_section_id ? dateRange : null;
+          const showDescription = section.id === festival.description_section_id ? shortDescription : null;
+          const showName = section.id === festival.name_section_id ? festival.name : null;
+
           // Spesialhåndtering for hero (må ha logo og festival-info)
           if (section.type === "hero") {
             return (
@@ -137,15 +142,17 @@ export default function FestivalPage() {
                 backgroundFixed={section.bg_mode === "fixed"}
               >
                 <div className="animate-slide-up pb-8">
-                  {dateRange && (
-                    <div className="text-mono text-accent mb-3">{dateRange}</div>
+                  {showDateRange && (
+                    <div className="text-mono text-accent mb-3">{showDateRange}</div>
                   )}
-                  <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">
-                    {festival.name}
-                  </h1>
-                  {shortDescription && (
+                  {showName && (
+                    <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">
+                      {showName}
+                    </h1>
+                  )}
+                  {showDescription && (
                     <p className="text-foreground/70 text-lg md:text-xl max-w-lg leading-relaxed">
-                      {shortDescription}
+                      {showDescription}
                     </p>
                   )}
                 </div>
@@ -160,9 +167,23 @@ export default function FestivalPage() {
               validEvents={validEvents}
               featuredArtists={featuredArtists}
               venue={venue}
+              dateRange={showDateRange}
+              festivalDescription={showDescription}
+              festivalName={showName}
             />
           );
         })}
+
+        {/* Diskret admin-link i footer */}
+        <div className="fixed bottom-4 right-4 z-40">
+          <Link 
+            to="/admin" 
+            className="text-muted-foreground/20 hover:text-muted-foreground/40 transition-colors"
+            title="Admin"
+          >
+            <Settings className="w-3 h-3" />
+          </Link>
+        </div>
       </PageLayout>
     );
   }
@@ -238,7 +259,6 @@ export default function FestivalPage() {
           backgroundPosition: "center",
         }}
       >
-        <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
         <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
         <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
@@ -265,7 +285,6 @@ export default function FestivalPage() {
           backgroundAttachment: "fixed",
         }}
       >
-        <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
         <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
         <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
@@ -288,7 +307,6 @@ export default function FestivalPage() {
           backgroundPosition: "center",
         }}
       >
-        <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
         <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
         <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
@@ -328,7 +346,6 @@ export default function FestivalPage() {
           backgroundAttachment: "fixed",
         }}
       >
-        <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
         <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
         <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
@@ -370,7 +387,6 @@ export default function FestivalPage() {
           backgroundPosition: "center",
         }}
       >
-        <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
         <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
         <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
@@ -398,7 +414,6 @@ export default function FestivalPage() {
           backgroundAttachment: "fixed",
         }}
       >
-        <div className="absolute inset-0 section-grain pointer-events-none z-[1]" />
         <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
         <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 

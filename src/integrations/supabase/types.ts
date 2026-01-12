@@ -215,10 +215,13 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string
+          date_range_section_id: string | null
           description: string | null
+          description_section_id: string | null
           end_at: string | null
           id: string
           name: string
+          name_section_id: string | null
           slug: string
           start_at: string | null
           status: Database["public"]["Enums"]["publish_status"]
@@ -229,10 +232,13 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by: string
+          date_range_section_id?: string | null
           description?: string | null
+          description_section_id?: string | null
           end_at?: string | null
           id?: string
           name: string
+          name_section_id?: string | null
           slug: string
           start_at?: string | null
           status?: Database["public"]["Enums"]["publish_status"]
@@ -243,10 +249,13 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string
+          date_range_section_id?: string | null
           description?: string | null
+          description_section_id?: string | null
           end_at?: string | null
           id?: string
           name?: string
+          name_section_id?: string | null
           slug?: string
           start_at?: string | null
           status?: Database["public"]["Enums"]["publish_status"]
@@ -260,6 +269,27 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "festivals_date_range_section_id_fkey"
+            columns: ["date_range_section_id"]
+            isOneToOne: false
+            referencedRelation: "festival_sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "festivals_description_section_id_fkey"
+            columns: ["description_section_id"]
+            isOneToOne: false
+            referencedRelation: "festival_sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "festivals_name_section_id_fkey"
+            columns: ["name_section_id"]
+            isOneToOne: false
+            referencedRelation: "festival_sections"
             referencedColumns: ["id"]
           },
           {

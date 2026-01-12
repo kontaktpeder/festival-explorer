@@ -28,6 +28,9 @@ export default function AdminFestivalEdit() {
     venue_id: "",
     theme_id: "",
     status: "draft" as "draft" | "submitted" | "published",
+    date_range_section_id: "",
+    description_section_id: "",
+    name_section_id: "",
   });
 
   // Fetch festival data
@@ -45,6 +48,22 @@ export default function AdminFestivalEdit() {
     },
     enabled: !isNew,
     retry: 1,
+  });
+
+  // Fetch sections for this festival
+  const { data: sections } = useQuery({
+    queryKey: ["admin-festival-sections", id],
+    queryFn: async () => {
+      if (isNew || !id) return [];
+      const { data } = await supabase
+        .from("festival_sections")
+        .select("id, title, type")
+        .eq("festival_id", id)
+        .eq("is_enabled", true)
+        .order("sort_order");
+      return data || [];
+    },
+    enabled: !isNew && !!id,
   });
 
   // Fetch venues for dropdown
@@ -74,6 +93,7 @@ export default function AdminFestivalEdit() {
   // Populate form when festival data loads
   useEffect(() => {
     if (festival) {
+      const festivalData = festival as any;
       setFormData({
         name: festival.name || "",
         slug: festival.slug || "",
@@ -83,6 +103,9 @@ export default function AdminFestivalEdit() {
         venue_id: festival.venue_id || "",
         theme_id: festival.theme_id || "",
         status: festival.status || "draft",
+        date_range_section_id: festivalData.date_range_section_id || "",
+        description_section_id: festivalData.description_section_id || "",
+        name_section_id: festivalData.name_section_id || "",
       });
     }
   }, [festival]);
@@ -92,12 +115,18 @@ export default function AdminFestivalEdit() {
     mutationFn: async () => {
       const user = await getAuthenticatedUser();
 
-      const payload = {
-        ...formData,
+      const payload: any = {
+        name: formData.name,
+        slug: formData.slug,
+        description: formData.description,
+        status: formData.status,
         start_at: formData.start_at ? new Date(formData.start_at).toISOString() : null,
         end_at: formData.end_at ? new Date(formData.end_at).toISOString() : null,
         venue_id: formData.venue_id || null,
         theme_id: formData.theme_id || null,
+        date_range_section_id: formData.date_range_section_id || null,
+        description_section_id: formData.description_section_id || null,
+        name_section_id: formData.name_section_id || null,
       };
 
       if (isNew) {
@@ -279,6 +308,74 @@ export default function AdminFestivalEdit() {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Section selection for festival details */}
+          {!isNew && sections && sections.length > 0 && (
+            <div className="border-t border-border pt-4 mt-4 space-y-4">
+              <h3 className="text-lg font-semibold text-foreground">Vis festivaldetaljer i seksjoner</h3>
+              <p className="text-sm text-muted-foreground">Velg hvilke seksjoner som skal vise festivalnavn, dato og beskrivelse.</p>
+              
+              <div className="space-y-2">
+                <Label htmlFor="name_section_id">Vis festivalnavn i seksjon</Label>
+                <Select
+                  value={formData.name_section_id || undefined}
+                  onValueChange={(value) => setFormData((prev) => ({ ...prev, name_section_id: value === "__none__" ? "" : value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg seksjon (valgfritt)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">Ikke vis</SelectItem>
+                    {sections?.map((section) => (
+                      <SelectItem key={section.id} value={section.id}>
+                        {section.title} ({section.type})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="date_range_section_id">Vis dato i seksjon</Label>
+                <Select
+                  value={formData.date_range_section_id || undefined}
+                  onValueChange={(value) => setFormData((prev) => ({ ...prev, date_range_section_id: value === "__none__" ? "" : value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg seksjon (valgfritt)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">Ikke vis</SelectItem>
+                    {sections?.map((section) => (
+                      <SelectItem key={section.id} value={section.id}>
+                        {section.title} ({section.type})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description_section_id">Vis beskrivelse i seksjon</Label>
+                <Select
+                  value={formData.description_section_id || undefined}
+                  onValueChange={(value) => setFormData((prev) => ({ ...prev, description_section_id: value === "__none__" ? "" : value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Velg seksjon (valgfritt)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">Ikke vis</SelectItem>
+                    {sections?.map((section) => (
+                      <SelectItem key={section.id} value={section.id}>
+                        {section.title} ({section.type})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex gap-3 pt-4 border-t border-border">

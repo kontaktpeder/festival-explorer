@@ -29,11 +29,6 @@ export function HeroSection({
           style={{ backgroundImage: `url(${imageUrl})` }}
         />
       )}
-      {/* Grain overlay */}
-      <div 
-        className="absolute inset-0 opacity-30 pointer-events-none z-[1]"
-        style={{ backgroundImage: 'var(--cosmic-grain)' }}
-      />
       {/* Vignette overlay */}
       <div 
         className="absolute inset-0 pointer-events-none z-[2]"

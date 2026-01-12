@@ -72,6 +72,10 @@ export function useFestival(slug: string) {
         ...festival,
         festivalEvents: eventsWithLineup,
         sections: sections || [],
+        // Cast to include new fields that may not be in generated types yet
+        date_range_section_id: (festival as any).date_range_section_id as string | null,
+        description_section_id: (festival as any).description_section_id as string | null,
+        name_section_id: (festival as any).name_section_id as string | null,
       };
     },
     enabled: !!slug,
