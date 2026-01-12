@@ -12,6 +12,22 @@ import ExplorePage from "./pages/ExplorePage";
 import SearchPage from "./pages/SearchPage";
 import NotFound from "./pages/NotFound";
 
+// Admin pages
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminFestivals from "./pages/admin/AdminFestivals";
+import AdminFestivalEdit from "./pages/admin/AdminFestivalEdit";
+import AdminSections from "./pages/admin/AdminSections";
+import AdminFestivalProgram from "./pages/admin/AdminFestivalProgram";
+import AdminEvents from "./pages/admin/AdminEvents";
+import AdminEventEdit from "./pages/admin/AdminEventEdit";
+import AdminEventLineup from "./pages/admin/AdminEventLineup";
+import AdminProjects from "./pages/admin/AdminProjects";
+import AdminProjectEdit from "./pages/admin/AdminProjectEdit";
+import AdminVenues from "./pages/admin/AdminVenues";
+import AdminVenueEdit from "./pages/admin/AdminVenueEdit";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -28,6 +44,24 @@ const App = () => (
           <Route path="/venue/:slug" element={<VenuePage />} />
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/search" element={<SearchPage />} />
+          
+          {/* Admin routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="festivals" element={<AdminFestivals />} />
+            <Route path="festivals/:id" element={<AdminFestivalEdit />} />
+            <Route path="festivals/:id/sections" element={<AdminSections />} />
+            <Route path="festivals/:id/program" element={<AdminFestivalProgram />} />
+            <Route path="events" element={<AdminEvents />} />
+            <Route path="events/:id" element={<AdminEventEdit />} />
+            <Route path="events/:id/lineup" element={<AdminEventLineup />} />
+            <Route path="projects" element={<AdminProjects />} />
+            <Route path="projects/:id" element={<AdminProjectEdit />} />
+            <Route path="venues" element={<AdminVenues />} />
+            <Route path="venues/:id" element={<AdminVenueEdit />} />
+          </Route>
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
