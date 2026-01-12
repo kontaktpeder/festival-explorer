@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Calendar } from "lucide-react";
+import { Calendar, Settings } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useFestival } from "@/hooks/useFestival";
@@ -168,6 +168,15 @@ export default function FestivalPage() {
             />
           );
         })}
+
+        {/* Admin snarvei */}
+        <Link
+          to="/admin"
+          className="fixed bottom-4 right-4 z-50 p-2 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+          title="Admin"
+        >
+          <Settings className="w-4 h-4" />
+        </Link>
       </PageLayout>
     );
   }
@@ -443,6 +452,15 @@ export default function FestivalPage() {
             </Link>
           </div>
         </div>
+
+        {/* Admin snarvei */}
+        <Link
+          to="/admin"
+          className="fixed bottom-4 right-4 z-50 p-2 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+          title="Admin"
+        >
+          <Settings className="w-4 h-4" />
+        </Link>
       </footer>
     </PageLayout>
   );
