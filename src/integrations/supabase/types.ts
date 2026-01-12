@@ -278,6 +278,86 @@ export type Database = {
           },
         ]
       }
+      media: {
+        Row: {
+          alt_text: string | null
+          created_at: string | null
+          created_by: string
+          description: string | null
+          duration: number | null
+          external_provider: string | null
+          external_url: string | null
+          file_type: string
+          filename: string
+          height: number | null
+          id: string
+          is_public: boolean | null
+          mime_type: string
+          original_filename: string
+          original_size_bytes: number | null
+          public_url: string
+          size_bytes: number
+          storage_path: string
+          tags: string[] | null
+          updated_at: string | null
+          width: number | null
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          duration?: number | null
+          external_provider?: string | null
+          external_url?: string | null
+          file_type: string
+          filename: string
+          height?: number | null
+          id?: string
+          is_public?: boolean | null
+          mime_type: string
+          original_filename: string
+          original_size_bytes?: number | null
+          public_url: string
+          size_bytes: number
+          storage_path: string
+          tags?: string[] | null
+          updated_at?: string | null
+          width?: number | null
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          duration?: number | null
+          external_provider?: string | null
+          external_url?: string | null
+          file_type?: string
+          filename?: string
+          height?: number | null
+          id?: string
+          is_public?: boolean | null
+          mime_type?: string
+          original_filename?: string
+          original_size_bytes?: number | null
+          public_url?: string
+          size_bytes?: number
+          storage_path?: string
+          tags?: string[] | null
+          updated_at?: string | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
