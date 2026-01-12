@@ -10,30 +10,54 @@ export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    if (isSignUp) {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: window.location.origin + "/admin",
+        },
+      });
 
-    if (error) {
-      toast({
-        title: "Feil",
-        description: error.message,
-        variant: "destructive",
-      });
+      if (error) {
+        toast({
+          title: "Feil",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Sjekk e-posten din",
+          description: "Vi har sendt deg en bekreftelseslenke.",
+        });
+      }
     } else {
-      toast({
-        title: "Logget inn",
-        description: "Velkommen til admin!",
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-      navigate("/admin");
+
+      if (error) {
+        toast({
+          title: "Feil",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Logget inn",
+          description: "Velkommen til admin!",
+        });
+        navigate("/admin");
+      }
     }
 
     setLoading(false);
@@ -44,10 +68,12 @@ export default function AdminLogin() {
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground">GIGGEN Admin</h1>
-          <p className="text-muted-foreground mt-2">Logg inn for å fortsette</p>
+          <p className="text-muted-foreground mt-2">
+            {isSignUp ? "Opprett konto" : "Logg inn for å fortsette"}
+          </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">E-post</Label>
             <Input
@@ -68,14 +94,25 @@ export default function AdminLogin() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
+              minLength={6}
               required
             />
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Logger inn..." : "Logg inn"}
+            {loading ? "Vennligst vent..." : isSignUp ? "Opprett konto" : "Logg inn"}
           </Button>
         </form>
+
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {isSignUp ? "Har du allerede konto? Logg inn" : "Ingen konto? Opprett en"}
+          </button>
+        </div>
       </div>
     </div>
   );
