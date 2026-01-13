@@ -101,7 +101,6 @@ export function SectionRenderer({
         <section className="fullscreen-section relative" id="program">
           <SectionBackground section={section} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-          <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
           <MobileFadeOverlay />
 
           <div className="relative z-10 max-w-4xl mx-auto w-full">
@@ -134,7 +133,6 @@ export function SectionRenderer({
         <section className="fullscreen-section relative">
           <SectionBackground section={section} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-          <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
           <MobileFadeOverlay />
 
           <div className="relative z-10 max-w-xl">
@@ -166,7 +164,6 @@ export function SectionRenderer({
         <section className="fullscreen-section relative">
           <SectionBackground section={section} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-          <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
           <MobileFadeOverlay />
 
           <div className="relative z-10 max-w-4xl mx-auto w-full">
@@ -218,7 +215,6 @@ export function SectionRenderer({
         <section className="fullscreen-section-end relative">
           <SectionBackground section={section} venueImage={venue?.hero_image_url} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-          <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
           <MobileFadeOverlay />
 
           <div className="relative z-10 max-w-xl">
@@ -267,7 +263,6 @@ export function SectionRenderer({
         <section className="fullscreen-section relative">
           <SectionBackground section={section} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-          <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
           <MobileFadeOverlay />
 
           <div className="relative z-10 max-w-md">
@@ -303,7 +298,6 @@ export function SectionRenderer({
         <footer className="fullscreen-section relative">
           <SectionBackground section={section} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-          <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
           <div className="relative z-10 max-w-xl">
             {festivalName && (
