@@ -97,8 +97,8 @@ export function ParallaxBackground({
         <img 
           src={activeImage} 
           alt=""
-          className="w-full h-auto max-h-none object-contain"
-          style={{ minHeight: '100%' }}
+          className="w-full h-full object-cover"
+          style={{ objectPosition: 'center center' }}
         />
       </div>
     </div>

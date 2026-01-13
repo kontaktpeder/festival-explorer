@@ -77,7 +77,7 @@ function SectionBackground({
 
   return (
     <div
-      className="absolute inset-0 bg-contain bg-center bg-no-repeat"
+      className="absolute inset-0 bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${activeImage})` }}
     />
   );
