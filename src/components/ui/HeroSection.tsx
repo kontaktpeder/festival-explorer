@@ -1,7 +1,11 @@
 import { ReactNode } from "react";
+import { useResponsiveImage } from "@/hooks/useResponsiveImage";
+import { ParallaxBackground } from "./ParallaxBackground";
+import { MobileFadeOverlay } from "./MobileFadeOverlay";
 
 interface HeroSectionProps {
   imageUrl?: string;
+  imageUrlMobile?: string;
   children: ReactNode;
   compact?: boolean;
   fullScreen?: boolean;
@@ -10,6 +14,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ 
   imageUrl, 
+  imageUrlMobile,
   children, 
   compact, 
   fullScreen,
@@ -21,13 +26,27 @@ export function HeroSection({
       ? "min-h-[40vh]" 
       : "min-h-[60vh]";
 
+  const activeImage = useResponsiveImage({
+    desktopUrl: imageUrl,
+    mobileUrl: imageUrlMobile,
+    fallbackUrl: imageUrl,
+  });
+
   return (
     <div className={`cosmic-hero relative ${heightClass}`}>
-      {imageUrl && (
-        <div
-          className={`absolute inset-0 bg-cover bg-center ${backgroundFixed ? 'bg-fixed' : ''}`}
-          style={{ backgroundImage: `url(${imageUrl})` }}
-        />
+      {activeImage && (
+        backgroundFixed ? (
+          <ParallaxBackground
+            imageUrl={imageUrl}
+            imageUrlMobile={imageUrlMobile}
+            intensity={0.3}
+          />
+        ) : (
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${activeImage})` }}
+          />
+        )
       )}
       {/* Vignette overlay */}
       <div 
@@ -36,6 +55,8 @@ export function HeroSection({
       />
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent z-[3]" />
+      {/* Mobile fade overlay */}
+      <MobileFadeOverlay />
       <div className="relative z-10 flex flex-col justify-end h-full p-4 pt-16">
         {children}
       </div>

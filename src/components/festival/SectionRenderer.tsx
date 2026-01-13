@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 import { FestivalEventAccordion } from "@/components/ui/FestivalEventAccordion";
 import { EmptyState } from "@/components/ui/LoadingState";
+import { ParallaxBackground } from "@/components/ui/ParallaxBackground";
+import { MobileFadeOverlay } from "@/components/ui/MobileFadeOverlay";
+import { useResponsiveImage } from "@/hooks/useResponsiveImage";
 import giggenLogo from "@/assets/giggen-logo.png";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -9,6 +12,8 @@ interface FestivalSection {
   type: string;
   title: string;
   bg_image_url?: string | null;
+  bg_image_url_desktop?: string | null;
+  bg_image_url_mobile?: string | null;
   bg_mode: string;
   overlay_strength?: number | null;
   content_json?: Json | null;
@@ -44,6 +49,40 @@ interface SectionRendererProps {
   festivalName?: string | null;
 }
 
+function SectionBackground({ 
+  section, 
+  venueImage 
+}: { 
+  section: FestivalSection; 
+  venueImage?: string | null;
+}) {
+  const activeImage = useResponsiveImage({
+    desktopUrl: section.bg_image_url_desktop,
+    mobileUrl: section.bg_image_url_mobile,
+    fallbackUrl: venueImage || section.bg_image_url,
+  });
+
+  if (!activeImage) return null;
+
+  // Use parallax for fixed backgrounds (except footer)
+  if (section.bg_mode === "fixed" && section.type !== "footer") {
+    return (
+      <ParallaxBackground
+        imageUrl={section.bg_image_url_desktop || section.bg_image_url}
+        imageUrlMobile={section.bg_image_url_mobile || section.bg_image_url}
+        intensity={0.3}
+      />
+    );
+  }
+
+  return (
+    <div
+      className="absolute inset-0 bg-cover bg-center"
+      style={{ backgroundImage: `url(${activeImage})` }}
+    />
+  );
+}
+
 export function SectionRenderer({
   section,
   validEvents,
@@ -53,28 +92,17 @@ export function SectionRenderer({
   festivalDescription,
   festivalName,
 }: SectionRendererProps) {
-  const bgStyle = section.bg_image_url
-    ? {
-        backgroundImage: `url(${section.bg_image_url})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: section.bg_mode === "fixed" ? "fixed" : "scroll",
-      }
-    : {};
-
   const contentJson = section.content_json as Record<string, unknown> | null;
 
   // Render basert på type
   switch (section.type) {
     case "program":
       return (
-        <section
-          className="fullscreen-section relative"
-          id="program"
-          style={bgStyle}
-        >
+        <section className="fullscreen-section relative" id="program">
+          <SectionBackground section={section} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
+          <MobileFadeOverlay />
 
           <div className="relative z-10 max-w-4xl mx-auto w-full">
             {festivalName && (
@@ -103,9 +131,11 @@ export function SectionRenderer({
 
     case "om":
       return (
-        <section className="fullscreen-section relative" style={bgStyle}>
+        <section className="fullscreen-section relative">
+          <SectionBackground section={section} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
+          <MobileFadeOverlay />
 
           <div className="relative z-10 max-w-xl">
             {festivalName && (
@@ -125,15 +155,7 @@ export function SectionRenderer({
                 String(contentJson.text)
                   .split("\n")
                   .map((line: string, i: number) => <p key={i}>{line}</p>)
-              ) : (
-                <>
-                  <p>Giggen er et rom for levende musikk.</p>
-                  <p>Vi bygger der det vanligvis ikke bygges.</p>
-                  <p className="text-muted-foreground">
-                    Dette er første kapittel.
-                  </p>
-                </>
-              )}
+              ) : null}
             </div>
           </div>
         </section>
@@ -141,9 +163,11 @@ export function SectionRenderer({
 
     case "artister":
       return (
-        <section className="fullscreen-section relative" style={bgStyle}>
+        <section className="fullscreen-section relative">
+          <SectionBackground section={section} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
+          <MobileFadeOverlay />
 
           <div className="relative z-10 max-w-4xl mx-auto w-full">
             {festivalName && (
@@ -191,17 +215,11 @@ export function SectionRenderer({
 
     case "venue-plakat":
       return (
-        <section
-          className="fullscreen-section-end relative"
-          style={{
-            ...bgStyle,
-            backgroundImage: venue?.hero_image_url
-              ? `url(${venue.hero_image_url})`
-              : bgStyle.backgroundImage,
-          }}
-        >
+        <section className="fullscreen-section-end relative">
+          <SectionBackground section={section} venueImage={venue?.hero_image_url} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
+          <MobileFadeOverlay />
 
           <div className="relative z-10 max-w-xl">
             {festivalName && (
@@ -246,9 +264,11 @@ export function SectionRenderer({
 
     case "praktisk":
       return (
-        <section className="fullscreen-section relative" style={bgStyle}>
+        <section className="fullscreen-section relative">
+          <SectionBackground section={section} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
+          <MobileFadeOverlay />
 
           <div className="relative z-10 max-w-md">
             {festivalName && (
@@ -268,13 +288,7 @@ export function SectionRenderer({
                 (contentJson.info as string[]).map((item: string, i: number) => (
                   <p key={i}>{item}</p>
                 ))
-              ) : (
-                <>
-                  <p>Dører åpner: 20:00</p>
-                  <p>Aldersgrense: 18 år</p>
-                  <p>Billetter: Kjøp på døren eller forhåndsbestill</p>
-                </>
-              )}
+              ) : null}
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
               <button className="btn-accent text-center">Kjøp billett</button>
@@ -286,7 +300,8 @@ export function SectionRenderer({
 
     case "footer":
       return (
-        <footer className="fullscreen-section relative" style={bgStyle}>
+        <footer className="fullscreen-section relative">
+          <SectionBackground section={section} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 

@@ -7,7 +7,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
 import { BackToFestival } from "@/components/ui/BackToFestival";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
-import { ScrollAnimatedLogo } from "@/components/ui/ScrollAnimatedLogo";
+import { StaticLogo } from "@/components/ui/StaticLogo";
 
 // Hook to find festival connection via event_projects -> events -> festival_events
 function useProjectFestival(projectId: string | undefined) {
@@ -65,8 +65,8 @@ export default function ProjectPage() {
 
   return (
     <PageLayout>
-      {/* Scroll-animert logo */}
-      <ScrollAnimatedLogo />
+      {/* Static logo */}
+      <StaticLogo />
 
       {/* Back to festival button */}
       {festival && (

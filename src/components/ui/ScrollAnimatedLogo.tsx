@@ -46,9 +46,8 @@ export function ScrollAnimatedLogo() {
   const rawProgress = Math.min(scrollY / 400, 1);
   const progress = easeOutCubic(rawProgress);
 
-  // Responsive end size: 80px on desktop, 72px on mobile
-  const isMobile = windowWidth <= 768;
-  const endSize = isMobile ? 72 : 80;
+  // Responsive end size: 200px on both desktop and mobile (large centered logo)
+  const endSize = 200;
 
   // Interpolated values
   const startX = 16; // left: 16px
