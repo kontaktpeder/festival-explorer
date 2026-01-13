@@ -64,8 +64,8 @@ function SectionBackground({
 
   if (!activeImage) return null;
 
-  // Use parallax for fixed backgrounds (except footer)
-  if (section.bg_mode === "fixed" && section.type !== "footer") {
+  // Use parallax for fixed backgrounds (including footer)
+  if (section.bg_mode === "fixed") {
     return (
       <ParallaxBackground
         imageUrl={section.bg_image_url_desktop || section.bg_image_url}
@@ -77,7 +77,7 @@ function SectionBackground({
 
   return (
     <div
-      className="absolute inset-0 bg-cover bg-center"
+      className="absolute inset-0 bg-contain bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${activeImage})` }}
     />
   );
@@ -322,22 +322,22 @@ export function SectionRenderer({
             </p>
             <div className="flex flex-wrap gap-6 text-sm">
               <Link
-                to="/explore"
+                to="/search?type=event"
                 className="text-foreground/60 hover:text-accent transition-colors"
               >
-                Utforsk
+                Events
               </Link>
               <Link
-                to="/explore"
+                to="/search?type=project"
                 className="text-foreground/60 hover:text-accent transition-colors"
               >
                 Artister
               </Link>
               <Link
-                to="/explore"
+                to="/search?type=venue"
                 className="text-foreground/60 hover:text-accent transition-colors"
               >
-                Kommende events
+                Venues
               </Link>
             </div>
           </div>
