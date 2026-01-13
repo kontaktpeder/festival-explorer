@@ -137,7 +137,8 @@ export default function FestivalPage() {
             return (
               <HeroSection
                 key={section.id}
-                imageUrl={section.bg_image_url || heroImage}
+                imageUrl={section.bg_image_url_desktop || section.bg_image_url || heroImage}
+                imageUrlMobile={section.bg_image_url_mobile || section.bg_image_url || heroImage}
                 fullScreen
                 backgroundFixed={section.bg_mode === "fixed"}
               >
@@ -260,7 +261,6 @@ export default function FestivalPage() {
         }}
       >
         <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-        <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
         <div className="relative z-10 max-w-4xl mx-auto w-full">
           <h2 className="section-title">Program</h2>
@@ -286,7 +286,6 @@ export default function FestivalPage() {
         }}
       >
         <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-        <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
         <div className="relative z-10 max-w-xl">
           <h2 className="section-title">Om Giggen</h2>
@@ -308,7 +307,6 @@ export default function FestivalPage() {
         }}
       >
         <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-        <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
         <div className="relative z-10 max-w-4xl mx-auto w-full">
           <h2 className="section-title">Artister</h2>
@@ -347,7 +345,6 @@ export default function FestivalPage() {
         }}
       >
         <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-        <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
         <div className="relative z-10 max-w-xl">
           <h2 className="section-title">Venue</h2>
@@ -388,7 +385,6 @@ export default function FestivalPage() {
         }}
       >
         <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-        <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
         <div className="relative z-10 max-w-md">
           <h2 className="section-title">Praktisk</h2>
@@ -415,7 +411,6 @@ export default function FestivalPage() {
         }}
       >
         <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-        <div className="absolute inset-0 section-gradient pointer-events-none z-[3]" />
 
         <div className="relative z-10 max-w-xl">
           <img

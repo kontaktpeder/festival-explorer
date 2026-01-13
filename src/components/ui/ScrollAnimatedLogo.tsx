@@ -1,67 +1,35 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import giggenLogo from "@/assets/giggen-logo.png";
 
-// Easing function for smoother animation
-function easeOutCubic(t: number): number {
-  return 1 - Math.pow(1 - t, 3);
-}
-
 export function ScrollAnimatedLogo() {
-  const [scrollY, setScrollY] = useState(0);
-  const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1024);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" ? window.innerWidth < 768 : false);
   const location = useLocation();
   const navigate = useNavigate();
-  const rafRef = useRef<number | null>(null);
-  const lastScrollY = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (rafRef.current !== null) return;
-      
-      rafRef.current = requestAnimationFrame(() => {
-        lastScrollY.current = window.scrollY;
-        setScrollY(window.scrollY);
-        rafRef.current = null;
-      });
+      // Two discrete positions: corner when < 200px, center when >= 200px
+      setIsScrolled(window.scrollY >= 200);
     };
 
     const handleResize = () => {
-      setWindowWidth(window.innerWidth);
+      setIsMobile(window.innerWidth < 768);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleResize, { passive: true });
     
+    // Initial check
+    handleScroll();
+    handleResize();
+    
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-      }
     };
   }, []);
-
-  // Progress: 0 at top, 1 at 400px scroll with easing
-  const rawProgress = Math.min(scrollY / 400, 1);
-  const progress = easeOutCubic(rawProgress);
-
-  // Responsive end size: 200px on both desktop and mobile (large centered logo)
-  const endSize = 200;
-
-  // Interpolated values
-  const startX = 16; // left: 16px
-  const endX = windowWidth / 2;
-  const startY = 16; // top: 16px
-  const endY = 20; // top: 20px (centered header)
-  const startSize = 40;
-
-  const currentX = startX + (endX - startX) * progress;
-  const currentY = startY + (endY - startY) * progress;
-  const currentSize = startSize + (endSize - startSize) * progress;
-
-  // When in center, translate by half width to actually center
-  const translateX = progress > 0 ? -currentSize / 2 * progress : 0;
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -76,26 +44,31 @@ export function ScrollAnimatedLogo() {
     }
   }, [location.pathname, navigate]);
 
+  // Center size: 200px on desktop, 160px on mobile
+  const centerSize = isMobile ? 160 : 200;
+
   return (
     <Link
       to="/"
       onClick={handleClick}
-      className="fixed z-50 transition-all duration-300 ease-out"
-      style={{
-        left: `${currentX}px`,
-        top: `${currentY}px`,
-        transform: `translateX(${translateX}px)`,
-        willChange: "transform, left, top",
+      className="fixed z-50"
+      style={isScrolled ? {
+        left: "50%",
+        top: "20px",
+        transform: "translateX(-50%)",
+      } : {
+        left: "16px",
+        top: "16px",
+        transform: "none",
       }}
     >
       <img
         src={giggenLogo}
         alt="Giggen"
-        className="opacity-90 hover:opacity-100 transition-opacity duration-200"
+        className="opacity-90 hover:opacity-100"
         style={{
-          height: `${currentSize}px`,
+          height: isScrolled ? `${centerSize}px` : "40px",
           width: "auto",
-          willChange: "height",
         }}
       />
     </Link>

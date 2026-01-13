@@ -53,8 +53,6 @@ export function HeroSection({
         className="absolute inset-0 pointer-events-none z-[2]"
         style={{ background: 'radial-gradient(ellipse at center, transparent 0%, hsl(240 10% 6% / 0.4) 100%)' }}
       />
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent z-[3]" />
       {/* Mobile fade overlay */}
       <MobileFadeOverlay />
       <div className="relative z-10 flex flex-col justify-end h-full p-4 pt-16">

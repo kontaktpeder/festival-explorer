@@ -12,6 +12,7 @@ import { ArrowLeft, Save, ImageIcon } from "lucide-react";
 import { MediaPicker } from "@/components/admin/MediaPicker";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
+import { generateSlug } from "@/lib/utils";
 
 export default function AdminVenueEdit() {
   const { id } = useParams<{ id: string }>();
@@ -108,12 +109,12 @@ export default function AdminVenueEdit() {
     },
   });
 
-  // Auto-generate slug from name
+  // Auto-generate slug from name (always)
   const handleNameChange = (name: string) => {
     setFormData((prev) => ({
       ...prev,
       name,
-      slug: isNew ? name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") : prev.slug,
+      slug: generateSlug(name),
     }));
   };
 
@@ -156,13 +157,13 @@ export default function AdminVenueEdit() {
 
           <div className="space-y-2">
             <Label htmlFor="slug">URL-slug</Label>
-            <Input
-              id="slug"
-              value={formData.slug}
-              onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
-              placeholder="venue-slug"
-              required
-            />
+            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-md">
+              <span>/venue/</span>
+              <span className="text-foreground font-mono">{formData.slug || "..."}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Genereres automatisk fra navn
+            </p>
           </div>
 
           <div className="space-y-2">
