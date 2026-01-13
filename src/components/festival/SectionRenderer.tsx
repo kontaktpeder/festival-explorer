@@ -81,7 +81,7 @@ function SectionBackground({
 
   return (
     <div
-      className={`absolute inset-0 bg-center bg-no-repeat ${imageFitMode === 'contain' ? 'bg-contain' : 'bg-cover'}`}
+      className={`absolute inset-0 bg-no-repeat ${imageFitMode === 'contain' ? 'bg-contain bg-top' : 'bg-cover bg-center'}`}
       style={{ backgroundImage: `url(${activeImage})` }}
     />
   );
