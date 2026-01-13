@@ -44,8 +44,8 @@ export function ScrollAnimatedLogo() {
     }
   }, [location.pathname, navigate]);
 
-  // Center size: 200px on desktop, 160px on mobile
-  const centerSize = isMobile ? 160 : 200;
+  // Center size: 150px on both desktop and mobile
+  const centerSize = 150;
 
   return (
     <Link

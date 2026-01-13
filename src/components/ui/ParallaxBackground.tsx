@@ -88,13 +88,19 @@ export function ParallaxBackground({
       className={`absolute inset-0 overflow-hidden ${className}`}
     >
       <div
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 flex items-center justify-center"
         style={{
-          backgroundImage: `url(${activeImage})`,
-          transform: `translateY(${parallaxY}px) scale(1.2)`,
+          transform: `translateY(${parallaxY}px)`,
           willChange: "transform",
         }}
-      />
+      >
+        <img 
+          src={activeImage} 
+          alt=""
+          className="w-full h-auto max-h-none object-contain"
+          style={{ minHeight: '100%' }}
+        />
+      </div>
     </div>
   );
 }
