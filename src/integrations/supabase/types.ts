@@ -166,6 +166,7 @@ export type Database = {
           created_at: string | null
           festival_id: string
           id: string
+          image_fit_mode: string | null
           is_enabled: boolean | null
           overlay_strength: number | null
           sort_order: number
@@ -183,6 +184,7 @@ export type Database = {
           created_at?: string | null
           festival_id: string
           id?: string
+          image_fit_mode?: string | null
           is_enabled?: boolean | null
           overlay_strength?: number | null
           sort_order?: number
@@ -200,6 +202,7 @@ export type Database = {
           created_at?: string | null
           festival_id?: string
           id?: string
+          image_fit_mode?: string | null
           is_enabled?: boolean | null
           overlay_strength?: number | null
           sort_order?: number

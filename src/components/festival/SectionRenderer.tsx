@@ -17,6 +17,7 @@ interface FestivalSection {
   bg_mode: string;
   overlay_strength?: number | null;
   content_json?: Json | null;
+  image_fit_mode?: string | null;
 }
 
 interface SectionRendererProps {
@@ -64,6 +65,8 @@ function SectionBackground({
 
   if (!activeImage) return null;
 
+  const imageFitMode = (section.image_fit_mode === 'contain' ? 'contain' : 'cover') as 'cover' | 'contain';
+
   // Use parallax for fixed backgrounds (including footer)
   if (section.bg_mode === "fixed") {
     return (
@@ -71,13 +74,14 @@ function SectionBackground({
         imageUrl={section.bg_image_url_desktop || section.bg_image_url}
         imageUrlMobile={section.bg_image_url_mobile || section.bg_image_url}
         intensity={0.3}
+        imageFitMode={imageFitMode}
       />
     );
   }
 
   return (
     <div
-      className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+      className={`absolute inset-0 bg-center bg-no-repeat ${imageFitMode === 'contain' ? 'bg-contain' : 'bg-cover'}`}
       style={{ backgroundImage: `url(${activeImage})` }}
     />
   );
