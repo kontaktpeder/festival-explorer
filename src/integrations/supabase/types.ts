@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      designs: {
+        Row: {
+          background: Json
+          created_at: string | null
+          created_by: string | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          sections: Json
+          template: string
+          theme: Json
+          updated_at: string | null
+        }
+        Insert: {
+          background?: Json
+          created_at?: string | null
+          created_by?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          sections?: Json
+          template?: string
+          theme?: Json
+          updated_at?: string | null
+        }
+        Update: {
+          background?: Json
+          created_at?: string | null
+          created_by?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          sections?: Json
+          template?: string
+          theme?: Json
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "designs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_projects: {
         Row: {
           billing_order: number
