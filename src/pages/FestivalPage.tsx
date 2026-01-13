@@ -134,6 +134,7 @@ export default function FestivalPage() {
 
           // Spesialhåndtering for hero (må ha logo og festival-info)
           if (section.type === "hero") {
+            const heroFitMode = (section.image_fit_mode === 'contain' ? 'contain' : 'cover') as 'cover' | 'contain';
             return (
               <HeroSection
                 key={section.id}
@@ -141,6 +142,7 @@ export default function FestivalPage() {
                 imageUrlMobile={section.bg_image_url_mobile || section.bg_image_url || heroImage}
                 fullScreen
                 backgroundFixed={section.bg_mode === "fixed"}
+                imageFitMode={heroFitMode}
               >
                 <div className="animate-slide-up pb-8">
                   {showDateRange && (
