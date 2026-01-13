@@ -17,7 +17,7 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminFestivals from "./pages/admin/AdminFestivals";
-import AdminFestivalEdit from "./pages/admin/AdminFestivalEdit";
+// AdminFestivalEdit merged into AdminSections
 import AdminSections from "./pages/admin/AdminSections";
 import AdminFestivalProgram from "./pages/admin/AdminFestivalProgram";
 import AdminEvents from "./pages/admin/AdminEvents";
@@ -52,8 +52,7 @@ const App = () => (
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="festivals" element={<AdminFestivals />} />
-            <Route path="festivals/:id" element={<AdminFestivalEdit />} />
-            <Route path="festivals/:id/sections" element={<AdminSections />} />
+            <Route path="festivals/:id" element={<AdminSections />} />
             <Route path="festivals/:id/program" element={<AdminFestivalProgram />} />
             <Route path="events" element={<AdminEvents />} />
             <Route path="events/:id" element={<AdminEventEdit />} />

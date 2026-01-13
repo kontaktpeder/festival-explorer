@@ -1,15 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff, GripVertical, ImageIcon, X, Monitor, Smartphone } from "lucide-react";
+import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff, GripVertical, ImageIcon, X, Monitor, Smartphone, Settings, Save, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { MediaPicker } from "@/components/admin/MediaPicker";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import { getAuthenticatedUser } from "@/lib/admin-helpers";
+import { generateSlug } from "@/lib/utils";
+
 const SECTION_TYPES = [
   { value: "hero", label: "Hero" },
   { value: "program", label: "Program" },
@@ -31,22 +36,58 @@ export default function AdminSections() {
   const { toast } = useToast();
   const [mediaPickerOpen, setMediaPickerOpen] = useState<MediaPickerState>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [festivalFormExpanded, setFestivalFormExpanded] = useState(false);
+  
+  // Festival form state
+  const [festivalFormData, setFestivalFormData] = useState({
+    name: "",
+    slug: "",
+    description: "",
+    start_at: "",
+    end_at: "",
+    venue_id: "",
+    theme_id: "",
+    status: "draft" as "draft" | "submitted" | "published",
+    date_range_section_id: "",
+    description_section_id: "",
+    name_section_id: "",
+  });
 
-  // Fetch festival info
-  const { data: festival } = useQuery({
+  // Fetch festival info with all fields
+  const { data: festival, isLoading: isLoadingFestival } = useQuery({
     queryKey: ["admin-festival", id],
     queryFn: async () => {
       const { data } = await supabase
         .from("festivals")
-        .select("id, name, slug")
+        .select("id, name, slug, description, start_at, end_at, venue_id, theme_id, status, date_range_section_id, description_section_id, name_section_id")
         .eq("id", id)
         .single();
       return data;
     },
+    enabled: !!id,
   });
 
+  // Populate festival form when data loads
+  useEffect(() => {
+    if (festival) {
+      setFestivalFormData({
+        name: festival.name || "",
+        slug: festival.slug || "",
+        description: festival.description || "",
+        start_at: festival.start_at ? festival.start_at.split("T")[0] : "",
+        end_at: festival.end_at ? festival.end_at.split("T")[0] : "",
+        venue_id: festival.venue_id || "",
+        theme_id: festival.theme_id || "",
+        status: (festival.status as "draft" | "submitted" | "published") || "draft",
+        date_range_section_id: festival.date_range_section_id || "",
+        description_section_id: festival.description_section_id || "",
+        name_section_id: festival.name_section_id || "",
+      });
+    }
+  }, [festival]);
+
   // Fetch sections
-  const { data: sections, isLoading } = useQuery({
+  const { data: sections, isLoading: isLoadingSections } = useQuery({
     queryKey: ["admin-festival-sections", id],
     queryFn: async () => {
       const { data } = await supabase
@@ -56,7 +97,79 @@ export default function AdminSections() {
         .order("sort_order", { ascending: true });
       return data || [];
     },
+    enabled: !!id,
   });
+
+  // Fetch venues for dropdown
+  const { data: venues } = useQuery({
+    queryKey: ["admin-venues-list"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("venues")
+        .select("id, name")
+        .order("name");
+      return data || [];
+    },
+  });
+
+  // Fetch themes for dropdown
+  const { data: themes } = useQuery({
+    queryKey: ["admin-themes-list"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("themes")
+        .select("id, name")
+        .order("name");
+      return data || [];
+    },
+  });
+
+  // Save festival mutation
+  const saveFestivalMutation = useMutation({
+    mutationFn: async () => {
+      await getAuthenticatedUser();
+
+      const payload: Record<string, unknown> = {
+        name: festivalFormData.name,
+        slug: festivalFormData.slug,
+        description: festivalFormData.description,
+        status: festivalFormData.status,
+        start_at: festivalFormData.start_at ? new Date(festivalFormData.start_at).toISOString() : null,
+        end_at: festivalFormData.end_at ? new Date(festivalFormData.end_at).toISOString() : null,
+        venue_id: festivalFormData.venue_id || null,
+        theme_id: festivalFormData.theme_id || null,
+        date_range_section_id: festivalFormData.date_range_section_id || null,
+        description_section_id: festivalFormData.description_section_id || null,
+        name_section_id: festivalFormData.name_section_id || null,
+      };
+
+      const { data, error } = await supabase
+        .from("festivals")
+        .update(payload)
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-festival", id] });
+      queryClient.invalidateQueries({ queryKey: ["admin-festivals"] });
+      toast({ title: "Festival oppdatert" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Feil", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Auto-generate slug from name
+  const handleFestivalNameChange = (name: string) => {
+    setFestivalFormData((prev) => ({
+      ...prev,
+      name,
+      slug: generateSlug(name),
+    }));
+  };
 
   // Add section mutation
   const addSection = useMutation({
@@ -179,8 +292,8 @@ export default function AdminSections() {
     });
   };
 
-  if (isLoading) {
-    return <LoadingState message="Laster seksjoner..." />;
+  if (isLoadingFestival || isLoadingSections) {
+    return <LoadingState message="Laster festival..." />;
   }
 
   return (
@@ -188,15 +301,237 @@ export default function AdminSections() {
       {/* Header */}
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
         <Button asChild variant="ghost" size="sm" className="w-fit">
-          <Link to={`/admin/festivals/${id}`}>
+          <Link to="/admin/festivals">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Tilbake
+            Festivaler
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Experience Builder</h1>
-          <p className="text-sm text-muted-foreground">{festival?.name}</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{festival?.name || "Festival"}</h1>
+          <p className="text-sm text-muted-foreground">Experience Builder</p>
         </div>
+      </div>
+
+      {/* Festival Settings Card */}
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
+        <button
+          onClick={() => setFestivalFormExpanded(!festivalFormExpanded)}
+          className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <Settings className="h-5 w-5 text-muted-foreground" />
+            <div className="text-left">
+              <h2 className="text-lg font-semibold text-foreground">Festival-innstillinger</h2>
+              <p className="text-sm text-muted-foreground">Navn, datoer, venue og visningsvalg</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {festivalFormExpanded ? (
+              <ChevronUp className="h-5 w-5 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-5 w-5 text-muted-foreground" />
+            )}
+          </div>
+        </button>
+
+        {festivalFormExpanded && (
+          <div className="border-t border-border p-4 space-y-6 bg-muted/20">
+            {/* Basic Info */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="festival-name">Navn</Label>
+                <Input
+                  id="festival-name"
+                  value={festivalFormData.name}
+                  onChange={(e) => handleFestivalNameChange(e.target.value)}
+                  placeholder="Festival navn"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="festival-slug">URL-slug</Label>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 px-3 py-2 rounded-md">
+                  <span>/festival/</span>
+                  <span className="text-foreground font-mono">{festivalFormData.slug || "..."}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Genereres automatisk fra navn</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="festival-description">Beskrivelse</Label>
+                <Textarea
+                  id="festival-description"
+                  value={festivalFormData.description}
+                  onChange={(e) => setFestivalFormData((prev) => ({ ...prev, description: e.target.value }))}
+                  placeholder="Kort beskrivelse av festivalen..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="festival-start_at">Startdato</Label>
+                  <Input
+                    id="festival-start_at"
+                    type="date"
+                    value={festivalFormData.start_at}
+                    onChange={(e) => setFestivalFormData((prev) => ({ ...prev, start_at: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="festival-end_at">Sluttdato</Label>
+                  <Input
+                    id="festival-end_at"
+                    type="date"
+                    value={festivalFormData.end_at}
+                    onChange={(e) => setFestivalFormData((prev) => ({ ...prev, end_at: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="festival-venue_id">Venue</Label>
+                  <Select
+                    value={festivalFormData.venue_id || undefined}
+                    onValueChange={(value) => setFestivalFormData((prev) => ({ ...prev, venue_id: value === "__none__" ? "" : value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Velg venue (valgfritt)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">Ingen venue</SelectItem>
+                      {venues?.map((venue) => (
+                        <SelectItem key={venue.id} value={venue.id}>
+                          {venue.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="festival-theme_id">Theme</Label>
+                  <Select
+                    value={festivalFormData.theme_id || undefined}
+                    onValueChange={(value) => setFestivalFormData((prev) => ({ ...prev, theme_id: value === "__none__" ? "" : value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Velg theme (valgfritt)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">Ingen theme</SelectItem>
+                      {themes?.map((theme) => (
+                        <SelectItem key={theme.id} value={theme.id}>
+                          {theme.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="festival-status">Status</Label>
+                <Select
+                  value={festivalFormData.status}
+                  onValueChange={(value: "draft" | "submitted" | "published") => setFestivalFormData((prev) => ({ ...prev, status: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Utkast</SelectItem>
+                    <SelectItem value="submitted">Innsendt</SelectItem>
+                    <SelectItem value="published">Publisert</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Section selection for festival details */}
+            {sections && sections.length > 0 && (
+              <div className="border-t border-border pt-4 space-y-4">
+                <h3 className="text-base font-semibold text-foreground">Vis festivaldetaljer i seksjoner</h3>
+                <p className="text-sm text-muted-foreground">Velg hvilke seksjoner som skal vise festivalnavn, dato og beskrivelse.</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name_section_id">Festivalnavn</Label>
+                    <Select
+                      value={festivalFormData.name_section_id || undefined}
+                      onValueChange={(value) => setFestivalFormData((prev) => ({ ...prev, name_section_id: value === "__none__" ? "" : value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Velg seksjon" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">Ikke vis</SelectItem>
+                        {sections?.map((section) => (
+                          <SelectItem key={section.id} value={section.id}>
+                            {section.title} ({section.type})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="date_range_section_id">Datoer</Label>
+                    <Select
+                      value={festivalFormData.date_range_section_id || undefined}
+                      onValueChange={(value) => setFestivalFormData((prev) => ({ ...prev, date_range_section_id: value === "__none__" ? "" : value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Velg seksjon" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">Ikke vis</SelectItem>
+                        {sections?.map((section) => (
+                          <SelectItem key={section.id} value={section.id}>
+                            {section.title} ({section.type})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="description_section_id">Beskrivelse</Label>
+                    <Select
+                      value={festivalFormData.description_section_id || undefined}
+                      onValueChange={(value) => setFestivalFormData((prev) => ({ ...prev, description_section_id: value === "__none__" ? "" : value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Velg seksjon" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">Ikke vis</SelectItem>
+                        {sections?.map((section) => (
+                          <SelectItem key={section.id} value={section.id}>
+                            {section.title} ({section.type})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Save button */}
+            <div className="pt-2">
+              <Button 
+                onClick={() => saveFestivalMutation.mutate()}
+                disabled={saveFestivalMutation.isPending}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {saveFestivalMutation.isPending ? "Lagrer..." : "Lagre innstillinger"}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Actions */}
@@ -206,13 +541,19 @@ export default function AdminSections() {
         </p>
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline" size="sm">
+            <Link to={`/admin/festivals/${id}/program`}>
+              <Calendar className="h-4 w-4 mr-2" />
+              Program
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
             <Link to={`/festival/${festival?.slug}`} target="_blank">
               Se live →
             </Link>
           </Button>
           <Button onClick={() => addSection.mutate()} disabled={addSection.isPending} size="sm">
             <Plus className="h-4 w-4 mr-2" />
-            {addSection.isPending ? "Legger til..." : "Legg til"}
+            {addSection.isPending ? "Legger til..." : "Legg til seksjon"}
           </Button>
         </div>
       </div>
