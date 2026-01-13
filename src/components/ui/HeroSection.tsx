@@ -10,6 +10,7 @@ interface HeroSectionProps {
   compact?: boolean;
   fullScreen?: boolean;
   backgroundFixed?: boolean;
+  imageFitMode?: 'cover' | 'contain';
 }
 
 export function HeroSection({ 
@@ -18,7 +19,8 @@ export function HeroSection({
   children, 
   compact, 
   fullScreen,
-  backgroundFixed = false 
+  backgroundFixed = false,
+  imageFitMode = 'cover'
 }: HeroSectionProps) {
   const heightClass = fullScreen 
     ? "min-h-screen" 
@@ -40,10 +42,11 @@ export function HeroSection({
             imageUrl={imageUrl}
             imageUrlMobile={imageUrlMobile}
             intensity={0.3}
+            imageFitMode={imageFitMode}
           />
         ) : (
           <div
-            className="absolute inset-0 bg-cover bg-center"
+            className={`absolute inset-0 bg-center bg-no-repeat ${imageFitMode === 'contain' ? 'bg-contain' : 'bg-cover'}`}
             style={{ backgroundImage: `url(${activeImage})` }}
           />
         )
