@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect, forwardRef } from "react";
 import { Bold, Italic, AlignLeft, AlignCenter, AlignJustify, List, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -22,42 +22,68 @@ const COLOR_OPTIONS = [
   { name: "Rosa", value: "#ec4899" },
 ];
 
-export function RichTextEditor({
-  value,
-  onChange,
-  placeholder = "Skriv tekst her...",
-  className,
-}: RichTextEditorProps) {
-  const editorRef = useRef<HTMLDivElement>(null);
-  const [isFocused, setIsFocused] = useState(false);
-  const [colorPickerOpen, setColorPickerOpen] = useState(false);
+export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
+  function RichTextEditor({
+    value,
+    onChange,
+    placeholder = "Skriv tekst her...",
+    className,
+  }, ref) {
+    const editorRef = useRef<HTMLDivElement>(null);
+    const [isFocused, setIsFocused] = useState(false);
+    const [colorPickerOpen, setColorPickerOpen] = useState(false);
+    const isInitializedRef = useRef(false);
+    const lastValueRef = useRef(value);
 
-  const execCommand = useCallback((command: string, commandValue?: string) => {
-    document.execCommand(command, false, commandValue);
-    if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
-    }
-  }, [onChange]);
+    // Only set innerHTML on initial mount or when value changes externally
+    useEffect(() => {
+      if (editorRef.current) {
+        // Only update if not focused and value changed externally
+        if (!isFocused && value !== lastValueRef.current) {
+          editorRef.current.innerHTML = value || "";
+          lastValueRef.current = value;
+        } else if (!isInitializedRef.current) {
+          editorRef.current.innerHTML = value || "";
+          isInitializedRef.current = true;
+          lastValueRef.current = value;
+        }
+      }
+    }, [value, isFocused]);
 
-  const applyColor = useCallback((color: string) => {
-    execCommand("foreColor", color);
-    setColorPickerOpen(false);
-  }, [execCommand]);
+    const execCommand = useCallback((command: string, commandValue?: string) => {
+      // Ensure focus is on editor before executing command
+      editorRef.current?.focus();
+      document.execCommand(command, false, commandValue);
+      if (editorRef.current) {
+        const newValue = editorRef.current.innerHTML;
+        lastValueRef.current = newValue;
+        onChange(newValue);
+      }
+    }, [onChange]);
 
-  const handleInput = useCallback(() => {
-    if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
-    }
-  }, [onChange]);
+    const applyColor = useCallback((color: string) => {
+      execCommand("foreColor", color);
+      setColorPickerOpen(false);
+    }, [execCommand]);
 
-  const handlePaste = useCallback((e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const text = e.clipboardData.getData("text/plain");
-    document.execCommand("insertText", false, text);
-    if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
-    }
-  }, [onChange]);
+    const handleInput = useCallback(() => {
+      if (editorRef.current) {
+        const newValue = editorRef.current.innerHTML;
+        lastValueRef.current = newValue;
+        onChange(newValue);
+      }
+    }, [onChange]);
+
+    const handlePaste = useCallback((e: React.ClipboardEvent) => {
+      e.preventDefault();
+      const text = e.clipboardData.getData("text/plain");
+      document.execCommand("insertText", false, text);
+      if (editorRef.current) {
+        const newValue = editorRef.current.innerHTML;
+        lastValueRef.current = newValue;
+        onChange(newValue);
+      }
+    }, [onChange]);
 
   return (
     <div className={cn("border border-border rounded-md overflow-hidden", className)}>
@@ -177,16 +203,15 @@ export function RichTextEditor({
         className={cn(
           "min-h-[120px] p-3 text-sm focus:outline-none",
           "prose prose-sm prose-invert max-w-none",
-          "[&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5",
-          !value && !isFocused && "text-muted-foreground"
+          "[&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
         )}
         onInput={handleInput}
         onPaste={handlePaste}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        dangerouslySetInnerHTML={{ __html: value || (!isFocused ? placeholder : "") }}
+        data-placeholder={placeholder}
         suppressContentEditableWarning
       />
     </div>
   );
-}
+});
