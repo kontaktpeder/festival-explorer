@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff, GripVertical, ImageIcon, X, Monitor, Smartphone, Settings, Save, Calendar, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff, GripVertical, ImageIcon, X, Monitor, Smartphone, Settings, Save, Calendar, ChevronDown, ChevronUp, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -544,6 +544,12 @@ export default function AdminSections() {
             <Link to={`/admin/festivals/${id}/program`}>
               <Calendar className="h-4 w-4 mr-2" />
               Program
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to={`/admin/festivals/${id}/design`}>
+              <Palette className="h-4 w-4 mr-2" />
+              Design Editor
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm">
