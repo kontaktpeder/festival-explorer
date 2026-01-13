@@ -90,7 +90,7 @@ export function ParallaxBackground({
       className={`absolute inset-0 overflow-hidden ${className}`}
     >
       <div
-        className="absolute inset-0 flex items-center justify-center"
+        className={`absolute inset-0 flex ${imageFitMode === 'contain' ? 'items-start' : 'items-center'} justify-center`}
         style={{
           transform: `translateY(${parallaxY}px)`,
           willChange: "transform",
@@ -100,7 +100,7 @@ export function ParallaxBackground({
           src={activeImage} 
           alt=""
           className={`w-full h-full ${imageFitMode === 'contain' ? 'object-contain' : 'object-cover'}`}
-          style={{ objectPosition: 'center center' }}
+          style={{ objectPosition: imageFitMode === 'contain' ? 'center top' : 'center center' }}
         />
       </div>
     </div>
