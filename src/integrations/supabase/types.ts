@@ -159,6 +159,8 @@ export type Database = {
         Row: {
           accent_override: string | null
           bg_image_url: string | null
+          bg_image_url_desktop: string | null
+          bg_image_url_mobile: string | null
           bg_mode: string
           content_json: Json | null
           created_at: string | null
@@ -174,6 +176,8 @@ export type Database = {
         Insert: {
           accent_override?: string | null
           bg_image_url?: string | null
+          bg_image_url_desktop?: string | null
+          bg_image_url_mobile?: string | null
           bg_mode?: string
           content_json?: Json | null
           created_at?: string | null
@@ -189,6 +193,8 @@ export type Database = {
         Update: {
           accent_override?: string | null
           bg_image_url?: string | null
+          bg_image_url_desktop?: string | null
+          bg_image_url_mobile?: string | null
           bg_mode?: string
           content_json?: Json | null
           created_at?: string | null
