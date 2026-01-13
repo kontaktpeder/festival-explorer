@@ -6,11 +6,10 @@ import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff, GripVertical,
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { MediaPicker } from "@/components/admin/MediaPicker";
-
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
 const SECTION_TYPES = [
   { value: "hero", label: "Hero" },
   { value: "program", label: "Program" },
@@ -567,54 +566,158 @@ export default function AdminSections() {
                   </div>
 
                   {/* Content editor based on section type */}
-                  {(section.type === "om" || section.type === "footer") && (
+                  {section.type === "hero" && (
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">
-                        {section.type === "om" ? "Tekst" : "Beskrivelse"}
-                      </label>
-                      <Textarea
-                        value={(contentJson?.text as string) || (contentJson?.description as string) || ""}
-                        onChange={(e) => {
-                          const key = section.type === "om" ? "text" : "description";
+                      <label className="text-sm font-medium">Hero tekst</label>
+                      <RichTextEditor
+                        value={(contentJson?.text as string) || ""}
+                        onChange={(html) => {
                           updateSection.mutate({
                             sectionId: section.id,
                             updates: {
                               content_json: {
                                 ...contentJson,
-                                [key]: e.target.value,
+                                text: html,
                               },
                             },
                           });
                         }}
-                        placeholder={section.type === "om" ? "Skriv om festivalen..." : "Skriv beskrivelse..."}
-                        className="min-h-[120px]"
+                        placeholder="Skriv hero-tekst..."
                       />
+                    </div>
+                  )}
+
+                  {section.type === "program" && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Program-intro tekst</label>
+                      <RichTextEditor
+                        value={(contentJson?.intro as string) || ""}
+                        onChange={(html) => {
+                          updateSection.mutate({
+                            sectionId: section.id,
+                            updates: {
+                              content_json: {
+                                ...contentJson,
+                                intro: html,
+                              },
+                            },
+                          });
+                        }}
+                        placeholder="Skriv introduksjon til programmet..."
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Dette vises over event-listen. Events hentes automatisk fra festival-programmet.
+                      </p>
+                    </div>
+                  )}
+
+                  {section.type === "om" && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Tekst</label>
+                      <RichTextEditor
+                        value={(contentJson?.text as string) || ""}
+                        onChange={(html) => {
+                          updateSection.mutate({
+                            sectionId: section.id,
+                            updates: {
+                              content_json: {
+                                ...contentJson,
+                                text: html,
+                              },
+                            },
+                          });
+                        }}
+                        placeholder="Skriv om festivalen..."
+                      />
+                    </div>
+                  )}
+
+                  {section.type === "artister" && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Artister-intro tekst</label>
+                      <RichTextEditor
+                        value={(contentJson?.intro as string) || ""}
+                        onChange={(html) => {
+                          updateSection.mutate({
+                            sectionId: section.id,
+                            updates: {
+                              content_json: {
+                                ...contentJson,
+                                intro: html,
+                              },
+                            },
+                          });
+                        }}
+                        placeholder="Skriv introduksjon til artistene..."
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Dette vises over artist-listen. Artister hentes automatisk fra festival-programmet.
+                      </p>
+                    </div>
+                  )}
+
+                  {section.type === "venue-plakat" && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Venue-intro tekst</label>
+                      <RichTextEditor
+                        value={(contentJson?.intro as string) || ""}
+                        onChange={(html) => {
+                          updateSection.mutate({
+                            sectionId: section.id,
+                            updates: {
+                              content_json: {
+                                ...contentJson,
+                                intro: html,
+                              },
+                            },
+                          });
+                        }}
+                        placeholder="Skriv introduksjon til venue..."
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Dette vises over venue-informasjonen. Venue hentes automatisk fra festival-innstillinger.
+                      </p>
                     </div>
                   )}
 
                   {section.type === "praktisk" && (
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Praktisk info (én linje per punkt)</label>
-                      <Textarea
-                        value={
-                          contentJson?.info && Array.isArray(contentJson.info)
-                            ? (contentJson.info as string[]).join("\n")
-                            : ""
-                        }
-                        onChange={(e) => {
-                          const lines = e.target.value.split("\n").filter(Boolean);
+                      <label className="text-sm font-medium">Praktisk info</label>
+                      <RichTextEditor
+                        value={(contentJson?.info as string) || ""}
+                        onChange={(html) => {
                           updateSection.mutate({
                             sectionId: section.id,
                             updates: {
                               content_json: {
                                 ...contentJson,
-                                info: lines,
+                                info: html,
                               },
                             },
                           });
                         }}
-                        placeholder="Dører åpner: 20:00&#10;Aldersgrense: 18 år&#10;Billetter: Kjøp på døren"
-                        className="min-h-[120px]"
+                        placeholder="Skriv praktisk informasjon (bruk punktliste for flere punkter)..."
+                      />
+                    </div>
+                  )}
+
+                  {section.type === "footer" && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Beskrivelse</label>
+                      <RichTextEditor
+                        value={(contentJson?.description as string) || ""}
+                        onChange={(html) => {
+                          updateSection.mutate({
+                            sectionId: section.id,
+                            updates: {
+                              content_json: {
+                                ...contentJson,
+                                description: html,
+                              },
+                            },
+                          });
+                        }}
+                        placeholder="Skriv beskrivelse..."
                       />
                     </div>
                   )}

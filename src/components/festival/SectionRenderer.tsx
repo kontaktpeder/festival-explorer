@@ -120,6 +120,12 @@ export function SectionRenderer({
               </p>
             )}
             <h2 className="section-title">{section.title || "Program"}</h2>
+            {contentJson?.intro && (
+              <div 
+                className="prose-rich-text text-foreground/80 text-lg mb-8"
+                dangerouslySetInnerHTML={{ __html: String(contentJson.intro) }}
+              />
+            )}
             {validEvents.length > 0 ? (
               <FestivalEventAccordion events={validEvents as any} />
             ) : (
@@ -152,13 +158,12 @@ export function SectionRenderer({
               </p>
             )}
             <h2 className="section-title">{section.title || "Om Giggen"}</h2>
-            <div className="space-y-4 text-foreground/90 text-xl md:text-2xl leading-relaxed">
-              {contentJson?.text ? (
-                String(contentJson.text)
-                  .split("\n")
-                  .map((line: string, i: number) => <p key={i}>{line}</p>)
-              ) : null}
-            </div>
+            {contentJson?.text && (
+              <div 
+                className="prose-rich-text text-foreground/90 text-xl md:text-2xl leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: String(contentJson.text) }}
+              />
+            )}
           </div>
         </section>
       );
@@ -183,6 +188,12 @@ export function SectionRenderer({
               </p>
             )}
             <h2 className="section-title">{section.title || "Artister"}</h2>
+            {contentJson?.intro && (
+              <div 
+                className="prose-rich-text text-foreground/80 text-lg mb-8"
+                dangerouslySetInnerHTML={{ __html: String(contentJson.intro) }}
+              />
+            )}
             <div className="space-y-8">
               {featuredArtists.length > 0 ? (
                 featuredArtists.map((artist) => (
@@ -234,6 +245,12 @@ export function SectionRenderer({
               </p>
             )}
             <h2 className="section-title">{section.title || "Venue"}</h2>
+            {contentJson?.intro && (
+              <div 
+                className="prose-rich-text text-foreground/80 text-lg mb-8"
+                dangerouslySetInnerHTML={{ __html: String(contentJson.intro) }}
+              />
+            )}
             {venue ? (
               <>
                 <h3 className="text-display text-4xl md:text-5xl mb-4">
@@ -282,13 +299,18 @@ export function SectionRenderer({
               </p>
             )}
             <h2 className="section-title">{section.title || "Praktisk"}</h2>
-            <div className="space-y-4 text-foreground/80 text-lg mb-10">
-              {contentJson?.info && Array.isArray(contentJson.info) ? (
-                (contentJson.info as string[]).map((item: string, i: number) => (
+            {contentJson?.info && typeof contentJson.info === 'string' ? (
+              <div 
+                className="prose-rich-text text-foreground/80 text-lg mb-10"
+                dangerouslySetInnerHTML={{ __html: contentJson.info }}
+              />
+            ) : contentJson?.info && Array.isArray(contentJson.info) ? (
+              <div className="space-y-4 text-foreground/80 text-lg mb-10">
+                {(contentJson.info as string[]).map((item: string, i: number) => (
                   <p key={i}>{item}</p>
-                ))
-              ) : null}
-            </div>
+                ))}
+              </div>
+            ) : null}
             <div className="flex flex-col sm:flex-row gap-4">
               <button className="btn-accent text-center">Kjøp billett</button>
               <button className="btn-ghost text-center">Følg festivalen</button>
@@ -320,10 +342,16 @@ export function SectionRenderer({
               alt="Giggen"
               className="h-16 md:h-20 w-auto mb-6"
             />
-            <p className="text-muted-foreground text-lg mb-8">
-              {(contentJson?.description as string) ||
-                "En plattform for levende musikk og opplevelser."}
-            </p>
+            {contentJson?.description ? (
+              <div 
+                className="prose-rich-text text-muted-foreground text-lg mb-8"
+                dangerouslySetInnerHTML={{ __html: String(contentJson.description) }}
+              />
+            ) : (
+              <p className="text-muted-foreground text-lg mb-8">
+                En plattform for levende musikk og opplevelser.
+              </p>
+            )}
             <div className="flex flex-wrap gap-6 text-sm">
               <Link
                 to="/search?type=event"
