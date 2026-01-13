@@ -6,6 +6,7 @@ interface ParallaxBackgroundProps {
   intensity?: number;
   className?: string;
   containerRef?: RefObject<HTMLElement>;
+  imageFitMode?: 'cover' | 'contain';
 }
 
 export function ParallaxBackground({
@@ -14,6 +15,7 @@ export function ParallaxBackground({
   intensity = 0.3,
   className = "",
   containerRef,
+  imageFitMode = 'cover',
 }: ParallaxBackgroundProps) {
   const [parallaxY, setParallaxY] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
@@ -97,7 +99,7 @@ export function ParallaxBackground({
         <img 
           src={activeImage} 
           alt=""
-          className="w-full h-full object-cover"
+          className={`w-full h-full ${imageFitMode === 'contain' ? 'object-contain' : 'object-cover'}`}
           style={{ objectPosition: 'center center' }}
         />
       </div>

@@ -535,6 +535,37 @@ export default function AdminSections() {
                     </div>
                   </div>
 
+                  {/* Image fit mode selector */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Bilde-størrelse</label>
+                    <Select
+                      value={(section as any).image_fit_mode || 'cover'}
+                      onValueChange={(value) =>
+                        updateSection.mutate({
+                          sectionId: section.id,
+                          updates: { image_fit_mode: value },
+                        })
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cover">
+                          Dekk hele området (kan klippe bildet)
+                        </SelectItem>
+                        <SelectItem value="contain">
+                          Vis hele bildet (kan ha gaps)
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      {(section as any).image_fit_mode === 'contain' 
+                        ? "Bildet vises i full størrelse uten klipping"
+                        : "Bildet dekker hele området, kan bli klippet"}
+                    </p>
+                  </div>
+
                   {/* Content editor based on section type */}
                   {(section.type === "om" || section.type === "footer") && (
                     <div className="space-y-2">
