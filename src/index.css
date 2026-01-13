@@ -318,3 +318,37 @@
     transform: translateY(0);
   }
 }
+
+/* Rich text content styling */
+.prose-rich-text {
+  @apply max-w-none;
+}
+
+.prose-rich-text p {
+  @apply mb-4 last:mb-0;
+}
+
+.prose-rich-text ul,
+.prose-rich-text ol {
+  @apply my-4 pl-6;
+}
+
+.prose-rich-text ul {
+  @apply list-disc;
+}
+
+.prose-rich-text ol {
+  @apply list-decimal;
+}
+
+.prose-rich-text li {
+  @apply mb-2;
+}
+
+.prose-rich-text strong {
+  @apply font-bold;
+}
+
+.prose-rich-text em {
+  @apply italic;
+}
