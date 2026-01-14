@@ -7,12 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Users, ImageIcon } from "lucide-react";
+import { ArrowLeft, Save, Users, ImageIcon, Check, ChevronsUpDown, Plus } from "lucide-react";
 import { MediaPicker } from "@/components/admin/MediaPicker";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
-import { generateSlug } from "@/lib/utils";
+import { generateSlug, cn } from "@/lib/utils";
 
 export default function AdminEventEdit() {
   const { id } = useParams<{ id: string }>();
@@ -33,6 +35,7 @@ export default function AdminEventEdit() {
     status: "draft" as "draft" | "submitted" | "published",
   });
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const [venuePickerOpen, setVenuePickerOpen] = useState(false);
 
   // Fetch event data
   const { data: event, isLoading } = useQuery({
@@ -57,7 +60,7 @@ export default function AdminEventEdit() {
     queryFn: async () => {
       const { data } = await supabase
         .from("venues")
-        .select("id, name")
+        .select("id, name, city")
         .order("name");
       return data || [];
     },
@@ -217,23 +220,81 @@ export default function AdminEventEdit() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="venue_id">Venue</Label>
-            <Select
-              value={formData.venue_id || undefined}
-              onValueChange={(value) => setFormData((prev) => ({ ...prev, venue_id: value === "__none__" ? "" : value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Velg venue (valgfritt)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">Ingen venue</SelectItem>
-                {venues?.map((venue) => (
-                  <SelectItem key={venue.id} value={venue.id}>
-                    {venue.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Venue</Label>
+            <Popover open={venuePickerOpen} onOpenChange={setVenuePickerOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={venuePickerOpen}
+                  className="w-full justify-between font-normal"
+                >
+                  {formData.venue_id
+                    ? venues?.find((venue) => venue.id === formData.venue_id)?.name
+                    : "Velg venue (valgfritt)"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Søk etter venue..." />
+                  <CommandList>
+                    <CommandEmpty>
+                      <div className="py-2 text-center">
+                        <p className="text-sm text-muted-foreground mb-2">Ingen venue funnet.</p>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          asChild
+                          onClick={() => setVenuePickerOpen(false)}
+                        >
+                          <Link to="/admin/venues/new">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Opprett nytt venue
+                          </Link>
+                        </Button>
+                      </div>
+                    </CommandEmpty>
+                    <CommandGroup>
+                      <CommandItem
+                        value="__none__"
+                        onSelect={() => {
+                          setFormData((prev) => ({ ...prev, venue_id: "" }));
+                          setVenuePickerOpen(false);
+                        }}
+                      >
+                        <Check className={cn("mr-2 h-4 w-4", !formData.venue_id ? "opacity-100" : "opacity-0")} />
+                        Ingen venue
+                      </CommandItem>
+                      {venues?.map((venue) => (
+                        <CommandItem
+                          key={venue.id}
+                          value={venue.name}
+                          onSelect={() => {
+                            setFormData((prev) => ({ ...prev, venue_id: venue.id }));
+                            setVenuePickerOpen(false);
+                          }}
+                        >
+                          <Check className={cn("mr-2 h-4 w-4", formData.venue_id === venue.id ? "opacity-100" : "opacity-0")} />
+                          {venue.name}
+                          {venue.city && (
+                            <span className="ml-2 text-muted-foreground text-xs">
+                              ({venue.city})
+                            </span>
+                          )}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <p className="text-xs text-muted-foreground">
+              Søk etter venue eller{" "}
+              <Link to="/admin/venues/new" className="text-primary hover:underline">
+                opprett nytt venue
+              </Link>
+            </p>
           </div>
 
           <div className="space-y-2">
