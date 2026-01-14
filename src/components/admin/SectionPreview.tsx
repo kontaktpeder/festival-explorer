@@ -42,6 +42,13 @@ export function SectionPreview({
   const getContentText = () => {
     if (!contentJson) return null;
     
+    // New structure: {content: {...}, presentation: {...}}
+    const content = contentJson.content as Record<string, unknown> | undefined;
+    if (content) {
+      return content.text as string | undefined;
+    }
+    
+    // Legacy: fallback to old structure
     switch (section.type) {
       case "hero":
         return contentJson.text as string | undefined;
