@@ -33,9 +33,9 @@ export default function FestivalPage() {
     enabled: !!festival?.venue_id,
   });
 
-  // Hent featured artists fra event_projects.is_featured
-  const { data: featuredArtists = [] } = useQuery({
-    queryKey: ["featured-artists", festival?.id],
+  // Hent ALLE artister fra festivalen (ikke bare featured)
+  const { data: allArtists = [] } = useQuery({
+    queryKey: ["all-artists", festival?.id],
     queryFn: async () => {
       if (!festival?.id) return [];
 
@@ -51,13 +51,12 @@ export default function FestivalPage() {
         .map((fe) => fe.event_id)
         .filter(Boolean) as string[];
 
-      // Hent featured projects fra event_projects
+      // Hent ALLE projects fra event_projects (ikke bare featured)
       const { data: eventProjects } = await supabase
         .from("event_projects")
         .select("*, project:projects(*)")
         .in("event_id", eventIds)
-        .eq("is_featured", true)
-        .order("feature_order", { ascending: true });
+        .order("billing_order", { ascending: true });
 
       if (!eventProjects) return [];
 
@@ -165,14 +164,6 @@ export default function FestivalPage() {
             );
           }
 
-          // Combine sectionArtists (from content_json) with featuredArtists (from event_projects)
-          const allArtists = [
-            ...(festival.sectionArtists || []),
-            ...featuredArtists.filter(
-              (fa) => !festival.sectionArtists?.some((sa) => sa.id === fa.id)
-            ),
-          ];
-
           return (
             <SectionRenderer
               key={section.id}
@@ -215,10 +206,10 @@ export default function FestivalPage() {
       "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1920",
   };
 
-  // Fallback featured artists (hvis ingen i database)
+  // Fallback artists (hvis ingen i database)
   const fallbackArtists =
-    featuredArtists.length > 0
-      ? featuredArtists
+    allArtists.length > 0
+      ? allArtists
       : [
           {
             id: "1",
