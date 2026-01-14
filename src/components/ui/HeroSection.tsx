@@ -54,12 +54,15 @@ export function HeroSection({
       {/* Vignette overlay */}
       <div 
         className="absolute inset-0 pointer-events-none z-[2]"
-        style={{ background: 'radial-gradient(ellipse at center, transparent 0%, hsl(240 10% 6% / 0.4) 100%)' }}
+        style={{ background: 'radial-gradient(ellipse at center, transparent 0%, hsl(240 10% 6% / 0.5) 100%)' }}
       />
       {/* Mobile fade overlay */}
       <MobileFadeOverlay />
-      <div className="relative z-10 flex flex-col justify-end h-full p-4 pt-16">
-        {children}
+      {/* Content - centered on mobile, bottom-aligned on desktop */}
+      <div className="relative z-10 flex flex-col justify-end h-full px-5 pb-12 pt-20">
+        <div className="max-w-lg">
+          {children}
+        </div>
       </div>
     </div>
   );

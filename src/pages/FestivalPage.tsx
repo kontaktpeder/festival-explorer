@@ -144,17 +144,19 @@ export default function FestivalPage() {
                 backgroundFixed={section.bg_mode === "fixed"}
                 imageFitMode={heroFitMode}
               >
-                <div className="animate-slide-up pb-8">
+                <div>
                   {showDateRange && (
-                    <div className="text-mono text-accent mb-3">{showDateRange}</div>
+                    <div className="animate-slide-up text-mono text-[10px] md:text-xs uppercase tracking-[0.2em] text-accent/70 mb-4">
+                      {showDateRange}
+                    </div>
                   )}
                   {showName && (
-                    <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">
+                    <h1 className="animate-slide-up delay-100 text-display text-hero text-balance">
                       {showName}
                     </h1>
                   )}
                   {showDescription && (
-                    <p className="text-foreground/70 text-lg md:text-xl max-w-lg leading-relaxed">
+                    <p className="animate-slide-up delay-200 text-foreground/50 text-base md:text-lg max-w-sm leading-relaxed mt-4">
                       {showDescription}
                     </p>
                   )}
