@@ -75,7 +75,6 @@ function SectionBackground({
   section: FestivalSection; 
   venueImage?: string | null;
 }) {
-  // Get default background for this section type (not for hero)
   const defaultBackground = DEFAULT_SECTION_BACKGROUNDS[section.type] || null;
   
   const activeImage = useResponsiveImage({
@@ -88,7 +87,6 @@ function SectionBackground({
 
   const imageFitMode = (section.image_fit_mode === 'contain' ? 'contain' : 'cover') as 'cover' | 'contain';
 
-  // Use parallax for fixed backgrounds (including footer)
   if (section.bg_mode === "fixed") {
     return (
       <ParallaxBackground
@@ -118,23 +116,16 @@ export function SectionRenderer({
   festivalName,
 }: SectionRendererProps) {
   const rawContentJson = section.content_json as Record<string, unknown> | null;
-  
-  // Support both new structure {content: {...}, presentation: {...}} and legacy
   const contentJson = (rawContentJson?.content as Record<string, unknown>) || rawContentJson;
-  const presentation = rawContentJson?.presentation as Record<string, unknown> | null;
 
-  // Helper to get text content (supports legacy fields)
   const getText = () => (contentJson?.text || contentJson?.intro || contentJson?.info || contentJson?.description || "") as string;
   
-  // Get selected events/artists/venue from content
   const selectedEventIds = (contentJson?.events as string[]) || [];
   const selectedArtistIds = (contentJson?.artists as string[]) || [];
   const selectedVenueId = contentJson?.venue as string | null;
 
-  // Render basert på type
   switch (section.type) {
     case "program": {
-      // Filter events based on selection, or show all if none selected
       const programEvents = selectedEventIds.length > 0
         ? validEvents.filter((fe) => fe.event && selectedEventIds.includes(fe.event.id))
         : validEvents;
@@ -145,33 +136,30 @@ export function SectionRenderer({
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <MobileFadeOverlay />
 
-          <div className="relative z-10 max-w-4xl mx-auto w-full">
-            {festivalName && (
-              <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">{festivalName}</h1>
-            )}
-            {dateRange && (
-              <div className="text-mono text-accent mb-6">{dateRange}</div>
-            )}
-            {festivalDescription && (
-              <p className="text-foreground/70 text-lg md:text-xl max-w-lg leading-relaxed mb-8">
-                {festivalDescription}
-              </p>
-            )}
-            <h2 className="section-title">{section.title || "Program"}</h2>
-            {getText() && (
-              <div 
-                className="prose-rich-text text-foreground/80 text-lg mb-8"
-                dangerouslySetInnerHTML={{ __html: getText() }}
-              />
-            )}
-            {programEvents.length > 0 ? (
-              <FestivalEventAccordion events={programEvents as any} />
-            ) : (
-              <EmptyState
-                title="Ingen events ennå"
-                description="Programmet for denne festivalen er ikke klart ennå."
-              />
-            )}
+          <div className="relative z-10 w-full max-w-2xl mx-auto px-5">
+            {/* Minimal header */}
+            <div className="mb-10">
+              <h2 className="animate-slide-up text-display text-section-title text-foreground/90">
+                {section.title || "Program"}
+              </h2>
+              {getText() && (
+                <p className="animate-slide-up delay-100 text-foreground/50 text-base mt-3 max-w-sm">
+                  {getText().replace(/<[^>]*>/g, '')}
+                </p>
+              )}
+            </div>
+            
+            {/* Events */}
+            <div className="animate-slide-up delay-200">
+              {programEvents.length > 0 ? (
+                <FestivalEventAccordion events={programEvents as any} />
+              ) : (
+                <EmptyState
+                  title="Ingen events ennå"
+                  description="Programmet for denne festivalen er ikke klart ennå."
+                />
+              )}
+            </div>
           </div>
         </section>
       );
@@ -184,45 +172,27 @@ export function SectionRenderer({
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <MobileFadeOverlay />
 
-          <div className="relative z-10 max-w-3xl mx-auto px-6">
-            {/* Animated header */}
-            <div className="text-center mb-12 animate-fade-in">
-              {festivalName && (
-                <h1 className="text-display text-4xl md:text-6xl mb-4 leading-none opacity-60">{festivalName}</h1>
-              )}
-              {dateRange && (
-                <div className="text-mono text-accent/80 text-sm">{dateRange}</div>
-              )}
-            </div>
-
-            {/* Main title with accent line */}
-            <div className="text-center mb-10">
-              <div className="inline-block">
-                <h2 className="text-display text-4xl md:text-5xl lg:text-6xl mb-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-                  {section.title || "Om Giggen"}
-                </h2>
-                <div className="h-1 bg-gradient-to-r from-transparent via-accent to-transparent animate-fade-in" style={{ animationDelay: '0.2s' }} />
-              </div>
-            </div>
-
-            {/* Content with staggered animations */}
+          <div className="relative z-10 w-full max-w-lg mx-auto px-5 text-center">
+            {/* Simple elegant title */}
+            <h2 className="animate-blur-in text-display text-section-title mb-8">
+              {section.title || "Om Giggen"}
+            </h2>
+            
+            {/* Accent line */}
+            <div className="animate-line-grow delay-200 h-px w-16 mx-auto bg-accent/60 mb-8 origin-center" />
+            
+            {/* Content */}
             {getText() && (
               <div 
-                className="prose-rich-text animate-fade-in"
-                style={{ animationDelay: '0.3s' }}
+                className="animate-slide-up delay-300 prose-rich-text text-foreground/70 text-lg leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: getText() }}
               />
             )}
-
-            {/* Decorative elements */}
-            <div className="absolute top-20 left-10 w-32 h-32 bg-accent/5 rounded-full blur-3xl animate-pulse" />
-            <div className="absolute bottom-20 right-10 w-48 h-48 bg-accent/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
           </div>
         </section>
       );
 
     case "artister": {
-      // Filter artists based on selection, or show all if none selected
       const displayedArtists = selectedArtistIds.length > 0
         ? featuredArtists.filter((a) => selectedArtistIds.includes(a.id))
         : featuredArtists;
@@ -233,48 +203,34 @@ export function SectionRenderer({
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <MobileFadeOverlay />
 
-          <div className="relative z-10 max-w-4xl mx-auto w-full">
-            {festivalName && (
-              <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">{festivalName}</h1>
-            )}
-            {dateRange && (
-              <div className="text-mono text-accent mb-6">{dateRange}</div>
-            )}
-            {festivalDescription && (
-              <p className="text-foreground/70 text-lg md:text-xl max-w-lg leading-relaxed mb-8">
-                {festivalDescription}
-              </p>
-            )}
-            <h2 className="section-title">{section.title || "Artister"}</h2>
-            {getText() && (
-              <div 
-                className="prose-rich-text text-foreground/80 text-lg mb-8"
-                dangerouslySetInnerHTML={{ __html: getText() }}
-              />
-            )}
-            <div className="space-y-8">
+          <div className="relative z-10 w-full max-w-lg mx-auto px-5">
+            {/* Header */}
+            <h2 className="animate-slide-up text-display text-section-title mb-10">
+              {section.title || "Artister"}
+            </h2>
+            
+            {/* Artist list - clean stacked layout */}
+            <div className="space-y-6">
               {displayedArtists.length > 0 ? (
-                displayedArtists.map((artist) => (
+                displayedArtists.map((artist, i) => (
                   <Link
                     key={artist.id}
                     to={`/project/${artist.slug}`}
-                    className="block group"
+                    className={`animate-slide-up block group py-4 border-b border-foreground/10 last:border-0`}
+                    style={{ animationDelay: `${0.1 + i * 0.08}s` }}
                   >
-                    <h3 className="text-display text-3xl md:text-4xl group-hover:text-accent transition-colors">
+                    <h3 className="text-display text-2xl md:text-3xl text-foreground/90 group-hover:text-accent transition-colors duration-300">
                       {artist.name}
                     </h3>
                     {artist.tagline && (
-                      <p className="text-muted-foreground text-lg mt-1">
+                      <p className="text-foreground/40 text-sm mt-1 group-hover:text-foreground/60 transition-colors">
                         {artist.tagline}
                       </p>
                     )}
-                    <span className="text-sm text-muted-foreground/60 mt-2 inline-block group-hover:text-accent transition-colors">
-                      Les mer →
-                    </span>
                   </Link>
                 ))
               ) : (
-                <p className="text-foreground/60 text-lg">
+                <p className="text-foreground/40 text-base">
                   Artister kommer snart.
                 </p>
               )}
@@ -285,57 +241,42 @@ export function SectionRenderer({
     }
 
     case "venue-plakat": {
-      // Use selected venue or fallback to festival venue
       const displayedVenue = selectedVenueId 
-        ? { ...venue, id: selectedVenueId } // This would need a proper lookup in real implementation
+        ? { ...venue, id: selectedVenueId }
         : venue;
 
       return (
-        <section className="fullscreen-section-end relative">
+        <section className="fullscreen-section relative flex items-end">
           <SectionBackground section={section} venueImage={displayedVenue?.hero_image_url} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <MobileFadeOverlay />
 
-          <div className="relative z-10 max-w-xl">
-            {festivalName && (
-              <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">{festivalName}</h1>
-            )}
-            {dateRange && (
-              <div className="text-mono text-accent mb-6">{dateRange}</div>
-            )}
-            {festivalDescription && (
-              <p className="text-foreground/70 text-lg md:text-xl max-w-lg leading-relaxed mb-8">
-                {festivalDescription}
-              </p>
-            )}
-            <h2 className="section-title">{section.title || "Venue"}</h2>
-            {getText() && (
-              <div 
-                className="prose-rich-text text-foreground/80 text-lg mb-8"
-                dangerouslySetInnerHTML={{ __html: getText() }}
-              />
-            )}
+          <div className="relative z-10 w-full max-w-md px-5 pb-12">
             {displayedVenue ? (
               <>
-                <h3 className="text-display text-4xl md:text-5xl mb-4">
+                <p className="animate-slide-up text-mono text-xs text-accent/70 mb-3 uppercase tracking-widest">
+                  Venue
+                </p>
+                <h3 className="animate-slide-up delay-100 text-display text-section-title mb-4">
                   {displayedVenue.name}
                 </h3>
                 {displayedVenue.description && (
-                  <p className="text-foreground/70 text-lg leading-relaxed mb-6">
+                  <p className="animate-slide-up delay-200 text-foreground/50 text-base leading-relaxed mb-6 max-w-xs">
                     {displayedVenue.description}
                   </p>
                 )}
                 {displayedVenue.slug && (
                   <Link
                     to={`/venue/${displayedVenue.slug}`}
-                    className="text-sm text-muted-foreground hover:text-accent transition-colors"
+                    className="animate-slide-up delay-300 inline-flex items-center gap-2 text-sm text-foreground/40 hover:text-accent transition-colors group"
                   >
-                    Utforsk venue →
+                    <span>Utforsk venue</span>
+                    <span className="group-hover:translate-x-1 transition-transform">→</span>
                   </Link>
                 )}
               </>
             ) : (
-              <p className="text-foreground/60">
+              <p className="text-foreground/40">
                 Venue-informasjon kommer snart.
               </p>
             )}
@@ -351,28 +292,25 @@ export function SectionRenderer({
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <MobileFadeOverlay />
 
-          <div className="relative z-10 max-w-md">
-            {festivalName && (
-              <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">{festivalName}</h1>
-            )}
-            {dateRange && (
-              <div className="text-mono text-accent mb-6">{dateRange}</div>
-            )}
-            {festivalDescription && (
-              <p className="text-foreground/70 text-lg md:text-xl max-w-lg leading-relaxed mb-8">
-                {festivalDescription}
-              </p>
-            )}
-            <h2 className="section-title">{section.title || "Praktisk"}</h2>
+          <div className="relative z-10 w-full max-w-sm px-5">
+            <h2 className="animate-slide-up text-display text-section-title mb-6">
+              {section.title || "Praktisk"}
+            </h2>
+            
             {getText() && (
               <div 
-                className="prose-rich-text text-foreground/80 text-lg mb-10"
+                className="animate-slide-up delay-100 prose-rich-text text-foreground/60 text-base leading-relaxed mb-10"
                 dangerouslySetInnerHTML={{ __html: getText() }}
               />
             )}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button className="btn-accent text-center">Kjøp billett</button>
-              <button className="btn-ghost text-center">Følg festivalen</button>
+            
+            <div className="animate-slide-up delay-200 flex flex-col gap-3">
+              <button className="btn-accent w-full text-center py-4">
+                Kjøp billett
+              </button>
+              <button className="btn-ghost w-full text-center py-3 text-foreground/60">
+                Følg festivalen
+              </button>
             </div>
           </div>
         </section>
@@ -384,44 +322,35 @@ export function SectionRenderer({
           <SectionBackground section={section} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
 
-          <div className="relative z-10 max-w-xl w-full pb-8">
+          <div className="relative z-10 w-full max-w-md px-5 pb-8">
             {/* Logo */}
             <img
               src={giggenLogo}
               alt="Giggen"
-              className="h-12 md:h-16 w-auto mb-6"
+              className="animate-slide-up h-10 w-auto mb-5 opacity-80"
             />
             
-            {/* Description text - easier to read */}
+            {/* Tagline */}
             {getText() ? (
               <div 
-                className="prose-rich-text text-foreground/70 text-base leading-relaxed mb-6 max-w-md"
+                className="animate-slide-up delay-100 prose-rich-text text-foreground/50 text-sm leading-relaxed mb-6 max-w-xs"
                 dangerouslySetInnerHTML={{ __html: getText() }}
               />
             ) : (
-              <p className="text-foreground/70 text-base leading-relaxed mb-6 max-w-md">
+              <p className="animate-slide-up delay-100 text-foreground/50 text-sm leading-relaxed mb-6 max-w-xs">
                 Et engasjement for å løfte frem dem som jobber med eksisterende musikkarenaer, og dem som ønsker å skape nye.
               </p>
             )}
             
-            {/* Links */}
-            <div className="flex flex-wrap gap-6 text-sm">
-              <Link
-                to="/search?type=event"
-                className="text-foreground/50 hover:text-accent transition-colors"
-              >
+            {/* Minimal links */}
+            <div className="animate-slide-up delay-200 flex gap-6 text-xs text-foreground/30">
+              <Link to="/search?type=event" className="hover:text-foreground/60 transition-colors">
                 Events
               </Link>
-              <Link
-                to="/search?type=project"
-                className="text-foreground/50 hover:text-accent transition-colors"
-              >
+              <Link to="/search?type=project" className="hover:text-foreground/60 transition-colors">
                 Artister
               </Link>
-              <Link
-                to="/search?type=venue"
-                className="text-foreground/50 hover:text-accent transition-colors"
-              >
+              <Link to="/search?type=venue" className="hover:text-foreground/60 transition-colors">
                 Venues
               </Link>
             </div>
