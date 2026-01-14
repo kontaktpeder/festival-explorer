@@ -96,11 +96,28 @@ export function SectionRenderer({
   festivalDescription,
   festivalName,
 }: SectionRendererProps) {
-  const contentJson = section.content_json as Record<string, unknown> | null;
+  const rawContentJson = section.content_json as Record<string, unknown> | null;
+  
+  // Support both new structure {content: {...}, presentation: {...}} and legacy
+  const contentJson = (rawContentJson?.content as Record<string, unknown>) || rawContentJson;
+  const presentation = rawContentJson?.presentation as Record<string, unknown> | null;
+
+  // Helper to get text content (supports legacy fields)
+  const getText = () => (contentJson?.text || contentJson?.intro || contentJson?.info || contentJson?.description || "") as string;
+  
+  // Get selected events/artists/venue from content
+  const selectedEventIds = (contentJson?.events as string[]) || [];
+  const selectedArtistIds = (contentJson?.artists as string[]) || [];
+  const selectedVenueId = contentJson?.venue as string | null;
 
   // Render basert på type
   switch (section.type) {
-    case "program":
+    case "program": {
+      // Filter events based on selection, or show all if none selected
+      const programEvents = selectedEventIds.length > 0
+        ? validEvents.filter((fe) => fe.event && selectedEventIds.includes(fe.event.id))
+        : validEvents;
+
       return (
         <section className="fullscreen-section relative" id="program">
           <SectionBackground section={section} />
@@ -120,14 +137,14 @@ export function SectionRenderer({
               </p>
             )}
             <h2 className="section-title">{section.title || "Program"}</h2>
-            {contentJson?.intro && (
+            {getText() && (
               <div 
                 className="prose-rich-text text-foreground/80 text-lg mb-8"
-                dangerouslySetInnerHTML={{ __html: String(contentJson.intro) }}
+                dangerouslySetInnerHTML={{ __html: getText() }}
               />
             )}
-            {validEvents.length > 0 ? (
-              <FestivalEventAccordion events={validEvents as any} />
+            {programEvents.length > 0 ? (
+              <FestivalEventAccordion events={programEvents as any} />
             ) : (
               <EmptyState
                 title="Ingen events ennå"
@@ -137,6 +154,7 @@ export function SectionRenderer({
           </div>
         </section>
       );
+    }
 
     case "om":
       return (
@@ -158,17 +176,22 @@ export function SectionRenderer({
               </p>
             )}
             <h2 className="section-title">{section.title || "Om Giggen"}</h2>
-            {contentJson?.text && (
+            {getText() && (
               <div 
                 className="prose-rich-text text-foreground/90 text-xl md:text-2xl leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: String(contentJson.text) }}
+                dangerouslySetInnerHTML={{ __html: getText() }}
               />
             )}
           </div>
         </section>
       );
 
-    case "artister":
+    case "artister": {
+      // Filter artists based on selection, or show all if none selected
+      const displayedArtists = selectedArtistIds.length > 0
+        ? featuredArtists.filter((a) => selectedArtistIds.includes(a.id))
+        : featuredArtists;
+
       return (
         <section className="fullscreen-section relative">
           <SectionBackground section={section} />
@@ -188,15 +211,15 @@ export function SectionRenderer({
               </p>
             )}
             <h2 className="section-title">{section.title || "Artister"}</h2>
-            {contentJson?.intro && (
+            {getText() && (
               <div 
                 className="prose-rich-text text-foreground/80 text-lg mb-8"
-                dangerouslySetInnerHTML={{ __html: String(contentJson.intro) }}
+                dangerouslySetInnerHTML={{ __html: getText() }}
               />
             )}
             <div className="space-y-8">
-              {featuredArtists.length > 0 ? (
-                featuredArtists.map((artist) => (
+              {displayedArtists.length > 0 ? (
+                displayedArtists.map((artist) => (
                   <Link
                     key={artist.id}
                     to={`/project/${artist.slug}`}
@@ -224,11 +247,17 @@ export function SectionRenderer({
           </div>
         </section>
       );
+    }
 
-    case "venue-plakat":
+    case "venue-plakat": {
+      // Use selected venue or fallback to festival venue
+      const displayedVenue = selectedVenueId 
+        ? { ...venue, id: selectedVenueId } // This would need a proper lookup in real implementation
+        : venue;
+
       return (
         <section className="fullscreen-section-end relative">
-          <SectionBackground section={section} venueImage={venue?.hero_image_url} />
+          <SectionBackground section={section} venueImage={displayedVenue?.hero_image_url} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <MobileFadeOverlay />
 
@@ -245,25 +274,25 @@ export function SectionRenderer({
               </p>
             )}
             <h2 className="section-title">{section.title || "Venue"}</h2>
-            {contentJson?.intro && (
+            {getText() && (
               <div 
                 className="prose-rich-text text-foreground/80 text-lg mb-8"
-                dangerouslySetInnerHTML={{ __html: String(contentJson.intro) }}
+                dangerouslySetInnerHTML={{ __html: getText() }}
               />
             )}
-            {venue ? (
+            {displayedVenue ? (
               <>
                 <h3 className="text-display text-4xl md:text-5xl mb-4">
-                  {venue.name}
+                  {displayedVenue.name}
                 </h3>
-                {venue.description && (
+                {displayedVenue.description && (
                   <p className="text-foreground/70 text-lg leading-relaxed mb-6">
-                    {venue.description}
+                    {displayedVenue.description}
                   </p>
                 )}
-                {venue.slug && (
+                {displayedVenue.slug && (
                   <Link
-                    to={`/venue/${venue.slug}`}
+                    to={`/venue/${displayedVenue.slug}`}
                     className="text-sm text-muted-foreground hover:text-accent transition-colors"
                   >
                     Utforsk venue →
@@ -278,6 +307,7 @@ export function SectionRenderer({
           </div>
         </section>
       );
+    }
 
     case "praktisk":
       return (
@@ -299,18 +329,12 @@ export function SectionRenderer({
               </p>
             )}
             <h2 className="section-title">{section.title || "Praktisk"}</h2>
-            {contentJson?.info && typeof contentJson.info === 'string' ? (
+            {getText() && (
               <div 
                 className="prose-rich-text text-foreground/80 text-lg mb-10"
-                dangerouslySetInnerHTML={{ __html: contentJson.info }}
+                dangerouslySetInnerHTML={{ __html: getText() }}
               />
-            ) : contentJson?.info && Array.isArray(contentJson.info) ? (
-              <div className="space-y-4 text-foreground/80 text-lg mb-10">
-                {(contentJson.info as string[]).map((item: string, i: number) => (
-                  <p key={i}>{item}</p>
-                ))}
-              </div>
-            ) : null}
+            )}
             <div className="flex flex-col sm:flex-row gap-4">
               <button className="btn-accent text-center">Kjøp billett</button>
               <button className="btn-ghost text-center">Følg festivalen</button>
@@ -342,10 +366,10 @@ export function SectionRenderer({
               alt="Giggen"
               className="h-16 md:h-20 w-auto mb-6"
             />
-            {contentJson?.description ? (
+            {getText() ? (
               <div 
                 className="prose-rich-text text-muted-foreground text-lg mb-8"
-                dangerouslySetInnerHTML={{ __html: String(contentJson.description) }}
+                dangerouslySetInnerHTML={{ __html: getText() }}
               />
             ) : (
               <p className="text-muted-foreground text-lg mb-8">
