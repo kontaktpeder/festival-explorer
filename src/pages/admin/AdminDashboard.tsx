@@ -53,9 +53,6 @@ export default function AdminDashboard() {
             <Button asChild variant="default" size="sm">
               <Link to={`/admin/festivals/${activeFestival.id}`}>Rediger</Link>
             </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link to={`/admin/festivals/${activeFestival.id}/sections`}>Seksjoner</Link>
-            </Button>
             <Button asChild variant="ghost" size="sm">
               <Link to={`/festival/${activeFestival.slug}`} target="_blank">Se live →</Link>
             </Button>

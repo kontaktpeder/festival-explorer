@@ -28,7 +28,6 @@ import AdminProjectEdit from "./pages/admin/AdminProjectEdit";
 import AdminVenues from "./pages/admin/AdminVenues";
 import AdminVenueEdit from "./pages/admin/AdminVenueEdit";
 import AdminMedia from "./pages/admin/AdminMedia";
-import FestivalEditor from "./pages/admin/FestivalEditor";
 
 const queryClient = new QueryClient();
 
@@ -54,7 +53,6 @@ const App = () => (
             <Route index element={<AdminDashboard />} />
             <Route path="festivals" element={<AdminFestivals />} />
             <Route path="festivals/:id" element={<AdminSections />} />
-            <Route path="festivals/:id/design" element={<FestivalEditor />} />
             <Route path="festivals/:id/program" element={<AdminFestivalProgram />} />
             <Route path="events" element={<AdminEvents />} />
             <Route path="events/:id" element={<AdminEventEdit />} />

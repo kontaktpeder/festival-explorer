@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff, GripVertical, ImageIcon, X, Monitor, Smartphone, Settings, Save, Calendar, ChevronDown, ChevronUp, Palette } from "lucide-react";
+import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff, GripVertical, ImageIcon, X, Monitor, Smartphone, Settings, Save, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,14 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { MediaPicker } from "@/components/admin/MediaPicker";
-import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
 import { generateSlug } from "@/lib/utils";
 const SECTION_TYPES = [
   { 
     value: "hero", 
     label: "Hero",
-    content_fields: ["title", "text"],
     supports_events: false,
     supports_artists: false,
     supports_venue: false
@@ -26,7 +24,6 @@ const SECTION_TYPES = [
   { 
     value: "program", 
     label: "Program",
-    content_fields: ["title", "text"],
     supports_events: true,
     supports_artists: false,
     supports_venue: false
@@ -34,7 +31,6 @@ const SECTION_TYPES = [
   { 
     value: "om", 
     label: "Om Giggen",
-    content_fields: ["title", "text"],
     supports_events: false,
     supports_artists: false,
     supports_venue: false
@@ -42,7 +38,6 @@ const SECTION_TYPES = [
   { 
     value: "artister", 
     label: "Artister",
-    content_fields: ["title", "text"],
     supports_events: false,
     supports_artists: true,
     supports_venue: false
@@ -50,7 +45,6 @@ const SECTION_TYPES = [
   { 
     value: "venue-plakat", 
     label: "Venue-plakat",
-    content_fields: ["title", "text"],
     supports_events: false,
     supports_artists: false,
     supports_venue: true
@@ -58,7 +52,6 @@ const SECTION_TYPES = [
   { 
     value: "praktisk", 
     label: "Praktisk",
-    content_fields: ["title", "text"],
     supports_events: false,
     supports_artists: false,
     supports_venue: false
@@ -66,7 +59,6 @@ const SECTION_TYPES = [
   { 
     value: "footer", 
     label: "Footer",
-    content_fields: ["title", "text"],
     supports_events: false,
     supports_artists: false,
     supports_venue: false
@@ -74,42 +66,38 @@ const SECTION_TYPES = [
 ] as const;
 
 // Helper functions for content_json structure
-function getSectionContent(section: { title?: string; content_json?: unknown }) {
+function getSectionContent(section: { content_json?: unknown }) {
   const contentJson = section.content_json as Record<string, unknown> | null;
   if (!contentJson) {
     return { 
-      content: { title: section.title || "", text: "" }, 
-      presentation: null as Record<string, unknown> | null
+      events: [] as string[],
+      artists: [] as string[],
+      venue: null as string | null,
     };
   }
   
-  // New structure: {content: {...}, presentation: {...}}
+  // New structure: {content: {...}}
   if (contentJson.content) {
+    const content = contentJson.content as Record<string, unknown>;
     return {
-      content: contentJson.content as Record<string, unknown>,
-      presentation: (contentJson.presentation as Record<string, unknown>) || null
+      events: (content.events as string[]) || [],
+      artists: (content.artists as string[]) || [],
+      venue: (content.venue as string) || null,
     };
   }
   
-  // Legacy: convert old structure (text, intro, info, description)
-  const legacyText = contentJson.text || contentJson.intro || contentJson.info || contentJson.description || "";
+  // Legacy structure
   return {
-    content: {
-      title: section.title || "",
-      text: legacyText,
-      events: (contentJson.events as string[]) || [],
-      artists: (contentJson.artists as string[]) || [],
-      venue: contentJson.venue || null,
-    },
-    presentation: null as Record<string, unknown> | null
+    events: (contentJson.events as string[]) || [],
+    artists: (contentJson.artists as string[]) || [],
+    venue: (contentJson.venue as string) || null,
   };
 }
 
-function buildContentJson(content: Record<string, unknown>, presentation: Record<string, unknown> | null) {
+function buildContentJson(content: { events: string[]; artists: string[]; venue: string | null }) {
   return {
     content_json: {
-      content,
-      presentation
+      content
     }
   };
 }
@@ -686,12 +674,6 @@ export default function AdminSections() {
             </Link>
           </Button>
           <Button asChild variant="outline" size="sm">
-            <Link to={`/admin/festivals/${id}/design`}>
-              <Palette className="h-4 w-4 mr-2" />
-              Design Editor
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
             <Link to={`/festival/${festival?.slug}`} target="_blank">
               Se live →
             </Link>
@@ -939,68 +921,29 @@ export default function AdminSections() {
               {/* Expanded content */}
               {isExpanded && (() => {
                 const sectionType = SECTION_TYPES.find(t => t.value === section.type);
-                const { content, presentation } = getSectionContent(section);
+                const content = getSectionContent(section);
 
                 return (
                   <div className="border-t border-border p-4 space-y-4 bg-muted/20">
-                    {/* Tittel */}
-                    <div className="space-y-2">
-                      <Label>Tittel</Label>
-                      <Input
-                        value={(content.title as string) || section.title}
-                        onChange={(e) => {
-                          const newContent = { ...content, title: e.target.value };
-                          updateSection.mutate({
-                            sectionId: section.id,
-                            updates: {
-                              title: e.target.value,
-                              ...buildContentJson(newContent, presentation)
-                            }
-                          });
-                        }}
-                        placeholder="Seksjonstittel"
-                      />
-                    </div>
-
-                    {/* Tekst (hvis støttet) */}
-                    {sectionType?.content_fields.includes("text") && (
-                      <div className="space-y-2">
-                        <Label>Tekst</Label>
-                        <RichTextEditor
-                          value={(content.text as string) || ""}
-                          onChange={(html) => {
-                            const newContent = { ...content, text: html };
-                            updateSection.mutate({
-                              sectionId: section.id,
-                              updates: buildContentJson(newContent, presentation)
-                            });
-                          }}
-                          placeholder="Skriv tekst..."
-                        />
-                      </div>
-                    )}
-
                     {/* Events (hvis støttet) */}
                     {sectionType?.supports_events && festivalEvents && festivalEvents.length > 0 && (
                       <div className="space-y-2">
                         <Label>Velg events</Label>
                         <div className="space-y-1 max-h-48 overflow-y-auto border border-border rounded p-2">
                           {festivalEvents.map((event: { id: string; title: string; start_at?: string }) => {
-                            const isSelected = ((content.events as string[]) || []).includes(event.id);
+                            const isSelected = content.events.includes(event.id);
                             return (
                               <label key={event.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted p-2 rounded">
                                 <input
                                   type="checkbox"
                                   checked={isSelected}
                                   onChange={(e) => {
-                                    const currentEvents = ((content.events as string[]) || []);
                                     const newEvents = e.target.checked
-                                      ? [...currentEvents, event.id]
-                                      : currentEvents.filter((id: string) => id !== event.id);
-                                    const newContent = { ...content, events: newEvents };
+                                      ? [...content.events, event.id]
+                                      : content.events.filter((id: string) => id !== event.id);
                                     updateSection.mutate({
                                       sectionId: section.id,
-                                      updates: buildContentJson(newContent, presentation)
+                                      updates: buildContentJson({ ...content, events: newEvents })
                                     });
                                   }}
                                   className="rounded border-border"
@@ -1024,21 +967,19 @@ export default function AdminSections() {
                         <Label>Velg artister</Label>
                         <div className="space-y-1 max-h-48 overflow-y-auto border border-border rounded p-2">
                           {featuredArtists.map((artist: { id: string; name: string }) => {
-                            const isSelected = ((content.artists as string[]) || []).includes(artist.id);
+                            const isSelected = content.artists.includes(artist.id);
                             return (
                               <label key={artist.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted p-2 rounded">
                                 <input
                                   type="checkbox"
                                   checked={isSelected}
                                   onChange={(e) => {
-                                    const currentArtists = ((content.artists as string[]) || []);
                                     const newArtists = e.target.checked
-                                      ? [...currentArtists, artist.id]
-                                      : currentArtists.filter((id: string) => id !== artist.id);
-                                    const newContent = { ...content, artists: newArtists };
+                                      ? [...content.artists, artist.id]
+                                      : content.artists.filter((id: string) => id !== artist.id);
                                     updateSection.mutate({
                                       sectionId: section.id,
-                                      updates: buildContentJson(newContent, presentation)
+                                      updates: buildContentJson({ ...content, artists: newArtists })
                                     });
                                   }}
                                   className="rounded border-border"
@@ -1056,12 +997,11 @@ export default function AdminSections() {
                       <div className="space-y-2">
                         <Label>Velg venue</Label>
                         <Select
-                          value={(content.venue as string) || ""}
+                          value={content.venue || ""}
                           onValueChange={(value) => {
-                            const newContent = { ...content, venue: value === "__none__" ? null : value };
                             updateSection.mutate({
                               sectionId: section.id,
-                              updates: buildContentJson(newContent, presentation)
+                              updates: buildContentJson({ ...content, venue: value === "__none__" ? null : value })
                             });
                           }}
                         >
