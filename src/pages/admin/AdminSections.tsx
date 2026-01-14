@@ -8,10 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { MediaPicker } from "@/components/admin/MediaPicker";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import { SectionPreview } from "@/components/admin/SectionPreview";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
 import { generateSlug } from "@/lib/utils";
 
@@ -36,6 +38,7 @@ export default function AdminSections() {
   const { toast } = useToast();
   const [mediaPickerOpen, setMediaPickerOpen] = useState<MediaPickerState>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [previewModes, setPreviewModes] = useState<Record<string, "desktop" | "mobile">>({});
   const [festivalFormExpanded, setFestivalFormExpanded] = useState(false);
   
   // Festival form state
@@ -799,275 +802,305 @@ export default function AdminSections() {
 
               {/* Expanded content */}
               {isExpanded && (
-                <div className="border-t border-border p-4 space-y-4 bg-muted/20">
-                  {/* Desktop/Mobile background images */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Desktop image */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
-                        <Monitor className="h-4 w-4" />
-                        Bakgrunn desktop (landscape)
-                      </label>
-                      {(section.bg_image_url_desktop || section.bg_image_url) && (
-                        <div className="relative w-full h-24 rounded border border-border overflow-hidden bg-muted">
-                          <img
-                            src={section.bg_image_url_desktop || section.bg_image_url || ""}
-                            alt="Desktop bakgrunn"
-                            className="w-full h-full object-cover"
-                          />
+                <div className="border-t border-border">
+                  <Tabs defaultValue="edit" className="w-full">
+                    <div className="flex items-center justify-between px-4 pt-3 pb-2 bg-muted/20">
+                      <TabsList className="grid w-fit grid-cols-2">
+                        <TabsTrigger value="edit" className="text-xs">Rediger</TabsTrigger>
+                        <TabsTrigger value="preview" className="text-xs">Forhåndsvis</TabsTrigger>
+                      </TabsList>
+                    </div>
+
+                    <TabsContent value="edit" className="p-4 space-y-4 mt-0">
+                      {/* Desktop/Mobile background images */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Desktop image */}
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium flex items-center gap-2">
+                            <Monitor className="h-4 w-4" />
+                            Desktop
+                          </label>
+                          {(section.bg_image_url_desktop || section.bg_image_url) && (
+                            <div className="relative w-full h-20 rounded border border-border overflow-hidden bg-muted">
+                              <img
+                                src={section.bg_image_url_desktop || section.bg_image_url || ""}
+                                alt="Desktop bakgrunn"
+                                className="w-full h-full object-cover"
+                              />
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute top-1 right-1 h-6 w-6 bg-background/90 hover:bg-background border border-border"
+                                onClick={() =>
+                                  updateSection.mutate({
+                                    sectionId: section.id,
+                                    updates: { bg_image_url_desktop: null },
+                                  })
+                                }
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
                           <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-1 right-1 h-6 w-6 bg-background/90 hover:bg-background border border-border"
-                            onClick={() =>
-                              updateSection.mutate({
-                                sectionId: section.id,
-                                updates: { bg_image_url_desktop: null },
-                              })
-                            }
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setMediaPickerOpen({ sectionId: section.id, type: "desktop" })}
+                            className="w-full"
                           >
-                            <X className="h-3 w-3" />
+                            <ImageIcon className="h-4 w-4 mr-2" />
+                            {section.bg_image_url_desktop ? "Endre" : "Velg"}
                           </Button>
                         </div>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setMediaPickerOpen({ sectionId: section.id, type: "desktop" })}
-                        className="w-full"
-                      >
-                        <ImageIcon className="h-4 w-4 mr-2" />
-                        {section.bg_image_url_desktop ? "Endre" : "Velg bilde"}
-                      </Button>
-                    </div>
 
-                    {/* Mobile image */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
-                        <Smartphone className="h-4 w-4" />
-                        Bakgrunn mobil (portrait)
-                      </label>
-                      {section.bg_image_url_mobile && (
-                        <div className="relative w-full h-24 rounded border border-border overflow-hidden bg-muted">
-                          <img
-                            src={section.bg_image_url_mobile}
-                            alt="Mobil bakgrunn"
-                            className="w-full h-full object-cover"
-                          />
+                        {/* Mobile image */}
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium flex items-center gap-2">
+                            <Smartphone className="h-4 w-4" />
+                            Mobil
+                          </label>
+                          {section.bg_image_url_mobile && (
+                            <div className="relative w-full h-20 rounded border border-border overflow-hidden bg-muted">
+                              <img
+                                src={section.bg_image_url_mobile}
+                                alt="Mobil bakgrunn"
+                                className="w-full h-full object-cover"
+                              />
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute top-1 right-1 h-6 w-6 bg-background/90 hover:bg-background border border-border"
+                                onClick={() =>
+                                  updateSection.mutate({
+                                    sectionId: section.id,
+                                    updates: { bg_image_url_mobile: null },
+                                  })
+                                }
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
                           <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-1 right-1 h-6 w-6 bg-background/90 hover:bg-background border border-border"
-                            onClick={() =>
-                              updateSection.mutate({
-                                sectionId: section.id,
-                                updates: { bg_image_url_mobile: null },
-                              })
-                            }
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setMediaPickerOpen({ sectionId: section.id, type: "mobile" })}
+                            className="w-full"
                           >
-                            <X className="h-3 w-3" />
+                            <ImageIcon className="h-4 w-4 mr-2" />
+                            {section.bg_image_url_mobile ? "Endre" : "Velg"}
                           </Button>
                         </div>
+                      </div>
+
+                      {/* Image fit mode selector */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Bildevisning</label>
+                        <Select
+                          value={(section as any).image_fit_mode || 'cover'}
+                          onValueChange={(value) =>
+                            updateSection.mutate({
+                              sectionId: section.id,
+                              updates: { image_fit_mode: value },
+                            })
+                          }
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="cover">Dekk hele området</SelectItem>
+                            <SelectItem value="contain">Vis hele bildet</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Content editor based on section type */}
+                      {section.type === "hero" && (
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Hero tekst</label>
+                          <RichTextEditor
+                            value={(contentJson?.text as string) || ""}
+                            onChange={(html) => {
+                              updateSection.mutate({
+                                sectionId: section.id,
+                                updates: {
+                                  content_json: {
+                                    ...contentJson,
+                                    text: html,
+                                  },
+                                },
+                              });
+                            }}
+                            placeholder="Skriv hero-tekst..."
+                          />
+                        </div>
                       )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setMediaPickerOpen({ sectionId: section.id, type: "mobile" })}
-                        className="w-full"
-                      >
-                        <ImageIcon className="h-4 w-4 mr-2" />
-                        {section.bg_image_url_mobile ? "Endre" : "Velg bilde"}
-                      </Button>
-                    </div>
-                  </div>
 
-                  {/* Image fit mode selector */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Bilde-størrelse</label>
-                    <Select
-                      value={(section as any).image_fit_mode || 'cover'}
-                      onValueChange={(value) =>
-                        updateSection.mutate({
-                          sectionId: section.id,
-                          updates: { image_fit_mode: value },
-                        })
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cover">
-                          Dekk hele området (kan klippe bildet)
-                        </SelectItem>
-                        <SelectItem value="contain">
-                          Vis hele bildet (kan ha gaps)
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">
-                      {(section as any).image_fit_mode === 'contain' 
-                        ? "Bildet vises i full størrelse uten klipping"
-                        : "Bildet dekker hele området, kan bli klippet"}
-                    </p>
-                  </div>
+                      {section.type === "program" && (
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Intro</label>
+                          <RichTextEditor
+                            value={(contentJson?.intro as string) || ""}
+                            onChange={(html) => {
+                              updateSection.mutate({
+                                sectionId: section.id,
+                                updates: {
+                                  content_json: {
+                                    ...contentJson,
+                                    intro: html,
+                                  },
+                                },
+                              });
+                            }}
+                            placeholder="Skriv introduksjon..."
+                          />
+                        </div>
+                      )}
 
-                  {/* Content editor based on section type */}
-                  {section.type === "hero" && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Hero tekst</label>
-                      <RichTextEditor
-                        value={(contentJson?.text as string) || ""}
-                        onChange={(html) => {
-                          updateSection.mutate({
-                            sectionId: section.id,
-                            updates: {
-                              content_json: {
-                                ...contentJson,
-                                text: html,
-                              },
-                            },
-                          });
-                        }}
-                        placeholder="Skriv hero-tekst..."
-                      />
-                    </div>
-                  )}
+                      {section.type === "om" && (
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Tekst</label>
+                          <RichTextEditor
+                            value={(contentJson?.text as string) || ""}
+                            onChange={(html) => {
+                              updateSection.mutate({
+                                sectionId: section.id,
+                                updates: {
+                                  content_json: {
+                                    ...contentJson,
+                                    text: html,
+                                  },
+                                },
+                              });
+                            }}
+                            placeholder="Skriv om festivalen..."
+                          />
+                        </div>
+                      )}
 
-                  {section.type === "program" && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Program-intro tekst</label>
-                      <RichTextEditor
-                        value={(contentJson?.intro as string) || ""}
-                        onChange={(html) => {
-                          updateSection.mutate({
-                            sectionId: section.id,
-                            updates: {
-                              content_json: {
-                                ...contentJson,
-                                intro: html,
-                              },
-                            },
-                          });
-                        }}
-                        placeholder="Skriv introduksjon til programmet..."
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Dette vises over event-listen. Events hentes automatisk fra festival-programmet.
-                      </p>
-                    </div>
-                  )}
+                      {section.type === "artister" && (
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Intro</label>
+                          <RichTextEditor
+                            value={(contentJson?.intro as string) || ""}
+                            onChange={(html) => {
+                              updateSection.mutate({
+                                sectionId: section.id,
+                                updates: {
+                                  content_json: {
+                                    ...contentJson,
+                                    intro: html,
+                                  },
+                                },
+                              });
+                            }}
+                            placeholder="Skriv introduksjon..."
+                          />
+                        </div>
+                      )}
 
-                  {section.type === "om" && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Tekst</label>
-                      <RichTextEditor
-                        value={(contentJson?.text as string) || ""}
-                        onChange={(html) => {
-                          updateSection.mutate({
-                            sectionId: section.id,
-                            updates: {
-                              content_json: {
-                                ...contentJson,
-                                text: html,
-                              },
-                            },
-                          });
-                        }}
-                        placeholder="Skriv om festivalen..."
-                      />
-                    </div>
-                  )}
+                      {section.type === "venue-plakat" && (
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Intro</label>
+                          <RichTextEditor
+                            value={(contentJson?.intro as string) || ""}
+                            onChange={(html) => {
+                              updateSection.mutate({
+                                sectionId: section.id,
+                                updates: {
+                                  content_json: {
+                                    ...contentJson,
+                                    intro: html,
+                                  },
+                                },
+                              });
+                            }}
+                            placeholder="Skriv introduksjon..."
+                          />
+                        </div>
+                      )}
 
-                  {section.type === "artister" && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Artister-intro tekst</label>
-                      <RichTextEditor
-                        value={(contentJson?.intro as string) || ""}
-                        onChange={(html) => {
-                          updateSection.mutate({
-                            sectionId: section.id,
-                            updates: {
-                              content_json: {
-                                ...contentJson,
-                                intro: html,
-                              },
-                            },
-                          });
-                        }}
-                        placeholder="Skriv introduksjon til artistene..."
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Dette vises over artist-listen. Artister hentes automatisk fra festival-programmet.
-                      </p>
-                    </div>
-                  )}
+                      {section.type === "praktisk" && (
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Praktisk info</label>
+                          <RichTextEditor
+                            value={(contentJson?.info as string) || ""}
+                            onChange={(html) => {
+                              updateSection.mutate({
+                                sectionId: section.id,
+                                updates: {
+                                  content_json: {
+                                    ...contentJson,
+                                    info: html,
+                                  },
+                                },
+                              });
+                            }}
+                            placeholder="Skriv praktisk informasjon..."
+                          />
+                        </div>
+                      )}
 
-                  {section.type === "venue-plakat" && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Venue-intro tekst</label>
-                      <RichTextEditor
-                        value={(contentJson?.intro as string) || ""}
-                        onChange={(html) => {
-                          updateSection.mutate({
-                            sectionId: section.id,
-                            updates: {
-                              content_json: {
-                                ...contentJson,
-                                intro: html,
-                              },
-                            },
-                          });
-                        }}
-                        placeholder="Skriv introduksjon til venue..."
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Dette vises over venue-informasjonen. Venue hentes automatisk fra festival-innstillinger.
-                      </p>
-                    </div>
-                  )}
+                      {section.type === "footer" && (
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Beskrivelse</label>
+                          <RichTextEditor
+                            value={(contentJson?.description as string) || ""}
+                            onChange={(html) => {
+                              updateSection.mutate({
+                                sectionId: section.id,
+                                updates: {
+                                  content_json: {
+                                    ...contentJson,
+                                    description: html,
+                                  },
+                                },
+                              });
+                            }}
+                            placeholder="Skriv beskrivelse..."
+                          />
+                        </div>
+                      )}
+                    </TabsContent>
 
-                  {section.type === "praktisk" && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Praktisk info</label>
-                      <RichTextEditor
-                        value={(contentJson?.info as string) || ""}
-                        onChange={(html) => {
-                          updateSection.mutate({
-                            sectionId: section.id,
-                            updates: {
-                              content_json: {
-                                ...contentJson,
-                                info: html,
-                              },
-                            },
-                          });
-                        }}
-                        placeholder="Skriv praktisk informasjon (bruk punktliste for flere punkter)..."
-                      />
-                    </div>
-                  )}
+                    <TabsContent value="preview" className="p-4 mt-0">
+                      <div className="space-y-4">
+                        {/* Preview mode toggle */}
+                        <div className="flex items-center justify-center gap-2">
+                          <Button
+                            variant={previewModes[section.id] !== "mobile" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setPreviewModes(prev => ({ ...prev, [section.id]: "desktop" }))}
+                          >
+                            <Monitor className="h-4 w-4 mr-1" />
+                            Desktop
+                          </Button>
+                          <Button
+                            variant={previewModes[section.id] === "mobile" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setPreviewModes(prev => ({ ...prev, [section.id]: "mobile" }))}
+                          >
+                            <Smartphone className="h-4 w-4 mr-1" />
+                            Mobil
+                          </Button>
+                        </div>
 
-                  {section.type === "footer" && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Beskrivelse</label>
-                      <RichTextEditor
-                        value={(contentJson?.description as string) || ""}
-                        onChange={(html) => {
-                          updateSection.mutate({
-                            sectionId: section.id,
-                            updates: {
-                              content_json: {
-                                ...contentJson,
-                                description: html,
-                              },
-                            },
-                          });
-                        }}
-                        placeholder="Skriv beskrivelse..."
-                      />
-                    </div>
-                  )}
+                        {/* Preview */}
+                        <div className="flex justify-center">
+                          <SectionPreview
+                            section={section}
+                            mode={previewModes[section.id] || "desktop"}
+                            festivalName={festival?.name}
+                            dateRange={festival?.start_at && festival?.end_at 
+                              ? `${new Date(festival.start_at).toLocaleDateString('nb-NO')} - ${new Date(festival.end_at).toLocaleDateString('nb-NO')}`
+                              : undefined
+                            }
+                          />
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </div>
               )}
 

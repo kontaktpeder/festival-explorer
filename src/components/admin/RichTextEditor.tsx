@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback, useEffect, forwardRef } from "react";
-import { Bold, Italic, AlignLeft, AlignCenter, AlignJustify, List, Palette } from "lucide-react";
+import { Bold, Italic, AlignLeft, AlignCenter, AlignJustify, List, Palette, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 interface RichTextEditorProps {
@@ -20,6 +21,28 @@ const COLOR_OPTIONS = [
   { name: "Gul", value: "#eab308" },
   { name: "Lilla", value: "#a855f7" },
   { name: "Rosa", value: "#ec4899" },
+];
+
+const FONT_OPTIONS = [
+  { name: "Standard", value: "" },
+  // Sans-serif
+  { name: "Space Grotesk", value: "Space Grotesk", group: "Sans-serif" },
+  { name: "Inter Tight", value: "Inter Tight", group: "Sans-serif" },
+  { name: "Archivo", value: "Archivo", group: "Sans-serif" },
+  { name: "IBM Plex Sans", value: "IBM Plex Sans", group: "Sans-serif" },
+  { name: "Work Sans", value: "Work Sans", group: "Sans-serif" },
+  { name: "DM Sans", value: "DM Sans", group: "Sans-serif" },
+  // Serif
+  { name: "Fraunces", value: "Fraunces", group: "Serif" },
+  { name: "DM Serif Display", value: "DM Serif Display", group: "Serif" },
+  { name: "Playfair Display", value: "Playfair Display", group: "Serif" },
+  { name: "Source Serif 4", value: "Source Serif 4", group: "Serif" },
+  { name: "Crimson Pro", value: "Crimson Pro", group: "Serif" },
+  { name: "Libre Baskerville", value: "Libre Baskerville", group: "Serif" },
+  // Mono
+  { name: "IBM Plex Mono", value: "IBM Plex Mono", group: "Mono" },
+  { name: "JetBrains Mono", value: "JetBrains Mono", group: "Mono" },
+  { name: "Space Mono", value: "Space Mono", group: "Mono" },
 ];
 
 export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
@@ -64,6 +87,12 @@ export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
     const applyColor = useCallback((color: string) => {
       execCommand("foreColor", color);
       setColorPickerOpen(false);
+    }, [execCommand]);
+
+    const applyFont = useCallback((fontName: string) => {
+      if (fontName) {
+        execCommand("fontName", fontName);
+      }
     }, [execCommand]);
 
     const handleInput = useCallback(() => {
@@ -155,6 +184,37 @@ export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
         >
           <List className="h-4 w-4" />
         </Button>
+
+        <div className="w-px h-6 bg-border mx-1" />
+
+        {/* Font selector */}
+        <Select onValueChange={applyFont}>
+          <SelectTrigger className="h-8 w-[120px] text-xs">
+            <Type className="h-3 w-3 mr-1" />
+            <SelectValue placeholder="Font" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="inherit">Standard</SelectItem>
+            <div className="px-2 py-1.5 text-xs text-muted-foreground font-semibold">Sans-serif</div>
+            {FONT_OPTIONS.filter(f => f.group === "Sans-serif").map((font) => (
+              <SelectItem key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+                {font.name}
+              </SelectItem>
+            ))}
+            <div className="px-2 py-1.5 text-xs text-muted-foreground font-semibold">Serif</div>
+            {FONT_OPTIONS.filter(f => f.group === "Serif").map((font) => (
+              <SelectItem key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+                {font.name}
+              </SelectItem>
+            ))}
+            <div className="px-2 py-1.5 text-xs text-muted-foreground font-semibold">Mono</div>
+            {FONT_OPTIONS.filter(f => f.group === "Mono").map((font) => (
+              <SelectItem key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+                {font.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         <div className="w-px h-6 bg-border mx-1" />
 
