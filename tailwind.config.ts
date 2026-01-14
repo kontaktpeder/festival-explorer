@@ -64,6 +64,23 @@ export default {
       fontFamily: {
         display: ['Space Grotesk', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
+        // Sans-serif options
+        'inter-tight': ['Inter Tight', 'system-ui', 'sans-serif'],
+        'archivo': ['Archivo', 'system-ui', 'sans-serif'],
+        'ibm-plex-sans': ['IBM Plex Sans', 'system-ui', 'sans-serif'],
+        'work-sans': ['Work Sans', 'system-ui', 'sans-serif'],
+        'dm-sans': ['DM Sans', 'system-ui', 'sans-serif'],
+        // Serif options
+        'fraunces': ['Fraunces', 'serif'],
+        'dm-serif': ['DM Serif Display', 'serif'],
+        'playfair': ['Playfair Display', 'serif'],
+        'source-serif': ['Source Serif 4', 'serif'],
+        'crimson': ['Crimson Pro', 'serif'],
+        'libre-baskerville': ['Libre Baskerville', 'serif'],
+        // Mono options
+        'ibm-plex-mono': ['IBM Plex Mono', 'monospace'],
+        'jetbrains-mono': ['JetBrains Mono', 'monospace'],
+        'space-mono': ['Space Mono', 'monospace'],
       },
       borderRadius: {
         lg: "var(--radius)",
