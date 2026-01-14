@@ -8,15 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { MediaPicker } from "@/components/admin/MediaPicker";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
-import { SectionPreview } from "@/components/admin/SectionPreview";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
 import { generateSlug } from "@/lib/utils";
-
 const SECTION_TYPES = [
   { 
     value: "hero", 
@@ -128,7 +125,7 @@ export default function AdminSections() {
   const { toast } = useToast();
   const [mediaPickerOpen, setMediaPickerOpen] = useState<MediaPickerState>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
-  const [previewModes, setPreviewModes] = useState<Record<string, "desktop" | "mobile">>({});
+  
   const [festivalFormExpanded, setFestivalFormExpanded] = useState(false);
   
   // Festival form state
@@ -945,378 +942,244 @@ export default function AdminSections() {
                 const { content, presentation } = getSectionContent(section);
 
                 return (
-                  <div className="border-t border-border">
-                    <Tabs defaultValue="content" className="w-full">
-                      <TabsList className="w-full rounded-none border-b border-border bg-muted/20">
-                        <TabsTrigger value="content" className="flex-1">Innhold</TabsTrigger>
-                        <TabsTrigger value="presentation" className="flex-1">Visning</TabsTrigger>
-                        <TabsTrigger value="preview" className="flex-1">Forhåndsvis</TabsTrigger>
-                      </TabsList>
-
-                      {/* TAB 1: INNHOLD */}
-                      <TabsContent value="content" className="p-4 space-y-4 bg-muted/20 m-0">
-                        {/* Tittel */}
-                        <div className="space-y-2">
-                          <Label>Tittel</Label>
-                          <Input
-                            value={(content.title as string) || section.title}
-                            onChange={(e) => {
-                              const newContent = { ...content, title: e.target.value };
-                              updateSection.mutate({
-                                sectionId: section.id,
-                                updates: {
-                                  title: e.target.value,
-                                  ...buildContentJson(newContent, presentation)
-                                }
-                              });
-                            }}
-                            placeholder="Seksjonstittel"
-                          />
-                        </div>
-
-                        {/* Tekst (hvis støttet) */}
-                        {sectionType?.content_fields.includes("text") && (
-                          <div className="space-y-2">
-                            <Label>Tekst</Label>
-                            <RichTextEditor
-                              value={(content.text as string) || ""}
-                              onChange={(html) => {
-                                const newContent = { ...content, text: html };
-                                updateSection.mutate({
-                                  sectionId: section.id,
-                                  updates: buildContentJson(newContent, presentation)
-                                });
-                              }}
-                              placeholder="Skriv tekst..."
-                            />
-                          </div>
-                        )}
-
-                        {/* Events (hvis støttet) */}
-                        {sectionType?.supports_events && festivalEvents && festivalEvents.length > 0 && (
-                          <div className="space-y-2">
-                            <Label>Velg events</Label>
-                            <div className="space-y-1 max-h-48 overflow-y-auto border border-border rounded p-2">
-                              {festivalEvents.map((event: { id: string; title: string; start_at?: string }) => {
-                                const isSelected = ((content.events as string[]) || []).includes(event.id);
-                                return (
-                                  <label key={event.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted p-2 rounded">
-                                    <input
-                                      type="checkbox"
-                                      checked={isSelected}
-                                      onChange={(e) => {
-                                        const currentEvents = ((content.events as string[]) || []);
-                                        const newEvents = e.target.checked
-                                          ? [...currentEvents, event.id]
-                                          : currentEvents.filter((id: string) => id !== event.id);
-                                        const newContent = { ...content, events: newEvents };
-                                        updateSection.mutate({
-                                          sectionId: section.id,
-                                          updates: buildContentJson(newContent, presentation)
-                                        });
-                                      }}
-                                      className="rounded border-border"
-                                    />
-                                    <span className="text-sm">{event.title}</span>
-                                    {event.start_at && (
-                                      <span className="text-xs text-muted-foreground ml-auto">
-                                        {new Date(event.start_at).toLocaleDateString('nb-NO')}
-                                      </span>
-                                    )}
-                                  </label>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Artister (hvis støttet) */}
-                        {sectionType?.supports_artists && featuredArtists && featuredArtists.length > 0 && (
-                          <div className="space-y-2">
-                            <Label>Velg artister</Label>
-                            <div className="space-y-1 max-h-48 overflow-y-auto border border-border rounded p-2">
-                              {featuredArtists.map((artist: { id: string; name: string }) => {
-                                const isSelected = ((content.artists as string[]) || []).includes(artist.id);
-                                return (
-                                  <label key={artist.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted p-2 rounded">
-                                    <input
-                                      type="checkbox"
-                                      checked={isSelected}
-                                      onChange={(e) => {
-                                        const currentArtists = ((content.artists as string[]) || []);
-                                        const newArtists = e.target.checked
-                                          ? [...currentArtists, artist.id]
-                                          : currentArtists.filter((id: string) => id !== artist.id);
-                                        const newContent = { ...content, artists: newArtists };
-                                        updateSection.mutate({
-                                          sectionId: section.id,
-                                          updates: buildContentJson(newContent, presentation)
-                                        });
-                                      }}
-                                      className="rounded border-border"
-                                    />
-                                    <span className="text-sm">{artist.name}</span>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Venue (hvis støttet) */}
-                        {sectionType?.supports_venue && venues && venues.length > 0 && (
-                          <div className="space-y-2">
-                            <Label>Velg venue</Label>
-                            <Select
-                              value={(content.venue as string) || ""}
-                              onValueChange={(value) => {
-                                const newContent = { ...content, venue: value === "__none__" ? null : value };
-                                updateSection.mutate({
-                                  sectionId: section.id,
-                                  updates: buildContentJson(newContent, presentation)
-                                });
-                              }}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Velg venue" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="__none__">Ingen venue</SelectItem>
-                                {venues.map((venue) => (
-                                  <SelectItem key={venue.id} value={venue.id}>
-                                    {venue.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        )}
-
-                        {/* Bakgrunnsbilder */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium flex items-center gap-2">
-                              <Monitor className="h-4 w-4" />
-                              Bakgrunn desktop
-                            </label>
-                            {(section.bg_image_url_desktop || section.bg_image_url) && (
-                              <div className="relative w-full h-20 rounded border border-border overflow-hidden bg-muted">
-                                <img
-                                  src={section.bg_image_url_desktop || section.bg_image_url || ""}
-                                  alt="Desktop bakgrunn"
-                                  className="w-full h-full object-cover"
-                                />
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="absolute top-1 right-1 h-6 w-6 bg-background/90 hover:bg-background border border-border"
-                                  onClick={() =>
-                                    updateSection.mutate({
-                                      sectionId: section.id,
-                                      updates: { bg_image_url_desktop: null },
-                                    })
-                                  }
-                                >
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            )}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setMediaPickerOpen({ sectionId: section.id, type: "desktop" })}
-                              className="w-full"
-                            >
-                              <ImageIcon className="h-4 w-4 mr-2" />
-                              {section.bg_image_url_desktop ? "Endre" : "Velg"}
-                            </Button>
-                          </div>
-
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium flex items-center gap-2">
-                              <Smartphone className="h-4 w-4" />
-                              Bakgrunn mobil
-                            </label>
-                            {section.bg_image_url_mobile && (
-                              <div className="relative w-full h-20 rounded border border-border overflow-hidden bg-muted">
-                                <img
-                                  src={section.bg_image_url_mobile}
-                                  alt="Mobil bakgrunn"
-                                  className="w-full h-full object-cover"
-                                />
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="absolute top-1 right-1 h-6 w-6 bg-background/90 hover:bg-background border border-border"
-                                  onClick={() =>
-                                    updateSection.mutate({
-                                      sectionId: section.id,
-                                      updates: { bg_image_url_mobile: null },
-                                    })
-                                  }
-                                >
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            )}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setMediaPickerOpen({ sectionId: section.id, type: "mobile" })}
-                              className="w-full"
-                            >
-                              <ImageIcon className="h-4 w-4 mr-2" />
-                              {section.bg_image_url_mobile ? "Endre" : "Velg"}
-                            </Button>
-                          </div>
-                        </div>
-
-                        {/* Image fit mode */}
-                        <div className="space-y-2">
-                          <Label>Bildevisning</Label>
-                          <Select
-                            value={(section as { image_fit_mode?: string }).image_fit_mode || 'cover'}
-                            onValueChange={(value) =>
-                              updateSection.mutate({
-                                sectionId: section.id,
-                                updates: { image_fit_mode: value },
-                              })
+                  <div className="border-t border-border p-4 space-y-4 bg-muted/20">
+                    {/* Tittel */}
+                    <div className="space-y-2">
+                      <Label>Tittel</Label>
+                      <Input
+                        value={(content.title as string) || section.title}
+                        onChange={(e) => {
+                          const newContent = { ...content, title: e.target.value };
+                          updateSection.mutate({
+                            sectionId: section.id,
+                            updates: {
+                              title: e.target.value,
+                              ...buildContentJson(newContent, presentation)
                             }
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="cover">Dekk hele området</SelectItem>
-                              <SelectItem value="contain">Vis hele bildet</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </TabsContent>
+                          });
+                        }}
+                        placeholder="Seksjonstittel"
+                      />
+                    </div>
 
-                      {/* TAB 2: VISNING */}
-                      <TabsContent value="presentation" className="p-4 space-y-4 m-0">
-                        {/* Layout-variant */}
-                        <div className="space-y-2">
-                          <Label>Layout</Label>
-                          <Select
-                            value={(presentation?.layout_variant as string) || "classic"}
-                            onValueChange={(value) => {
-                              const newPresentation = {
-                                ...(presentation || {}),
-                                layout_variant: value
-                              };
-                              updateSection.mutate({
-                                sectionId: section.id,
-                                updates: buildContentJson(content, newPresentation)
-                              });
-                            }}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="classic">Klassisk</SelectItem>
-                              <SelectItem value="editorial">Editorial</SelectItem>
-                              <SelectItem value="poster">Plakat</SelectItem>
-                              <SelectItem value="minimal">Minimal</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                    {/* Tekst (hvis støttet) */}
+                    {sectionType?.content_fields.includes("text") && (
+                      <div className="space-y-2">
+                        <Label>Tekst</Label>
+                        <RichTextEditor
+                          value={(content.text as string) || ""}
+                          onChange={(html) => {
+                            const newContent = { ...content, text: html };
+                            updateSection.mutate({
+                              sectionId: section.id,
+                              updates: buildContentJson(newContent, presentation)
+                            });
+                          }}
+                          placeholder="Skriv tekst..."
+                        />
+                      </div>
+                    )}
 
-                        {/* Fremheving */}
-                        <div className="space-y-2">
-                          <Label>Fremheving</Label>
-                          <Select
-                            value={(presentation?.emphasis as string) || "none"}
-                            onValueChange={(value) => {
-                              const newPresentation = {
-                                ...(presentation || {}),
-                                emphasis: value === "none" ? null : value
-                              };
-                              updateSection.mutate({
-                                sectionId: section.id,
-                                updates: buildContentJson(content, newPresentation)
-                              });
-                            }}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">Ingen fremheving</SelectItem>
-                              <SelectItem value="title">Tittel</SelectItem>
-                              <SelectItem value="date">Dato</SelectItem>
-                              <SelectItem value="image">Bilde</SelectItem>
-                              <SelectItem value="text">Tekst</SelectItem>
-                            </SelectContent>
-                          </Select>
+                    {/* Events (hvis støttet) */}
+                    {sectionType?.supports_events && festivalEvents && festivalEvents.length > 0 && (
+                      <div className="space-y-2">
+                        <Label>Velg events</Label>
+                        <div className="space-y-1 max-h-48 overflow-y-auto border border-border rounded p-2">
+                          {festivalEvents.map((event: { id: string; title: string; start_at?: string }) => {
+                            const isSelected = ((content.events as string[]) || []).includes(event.id);
+                            return (
+                              <label key={event.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted p-2 rounded">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={(e) => {
+                                    const currentEvents = ((content.events as string[]) || []);
+                                    const newEvents = e.target.checked
+                                      ? [...currentEvents, event.id]
+                                      : currentEvents.filter((id: string) => id !== event.id);
+                                    const newContent = { ...content, events: newEvents };
+                                    updateSection.mutate({
+                                      sectionId: section.id,
+                                      updates: buildContentJson(newContent, presentation)
+                                    });
+                                  }}
+                                  className="rounded border-border"
+                                />
+                                <span className="text-sm">{event.title}</span>
+                                {event.start_at && (
+                                  <span className="text-xs text-muted-foreground ml-auto">
+                                    {new Date(event.start_at).toLocaleDateString('nb-NO')}
+                                  </span>
+                                )}
+                              </label>
+                            );
+                          })}
                         </div>
+                      </div>
+                    )}
 
-                        {/* Animasjon */}
-                        <div className="space-y-2">
-                          <Label>Animasjon</Label>
-                          <Select
-                            value={(presentation?.animation as string) || "none"}
-                            onValueChange={(value) => {
-                              const newPresentation = {
-                                ...(presentation || {}),
-                                animation: value
-                              };
-                              updateSection.mutate({
-                                sectionId: section.id,
-                                updates: buildContentJson(newPresentation, presentation)
-                              });
-                            }}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">Av</SelectItem>
-                              <SelectItem value="subtle">Subtil</SelectItem>
-                              <SelectItem value="poster">Plakat</SelectItem>
-                            </SelectContent>
-                          </Select>
+                    {/* Artister (hvis støttet) */}
+                    {sectionType?.supports_artists && featuredArtists && featuredArtists.length > 0 && (
+                      <div className="space-y-2">
+                        <Label>Velg artister</Label>
+                        <div className="space-y-1 max-h-48 overflow-y-auto border border-border rounded p-2">
+                          {featuredArtists.map((artist: { id: string; name: string }) => {
+                            const isSelected = ((content.artists as string[]) || []).includes(artist.id);
+                            return (
+                              <label key={artist.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted p-2 rounded">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={(e) => {
+                                    const currentArtists = ((content.artists as string[]) || []);
+                                    const newArtists = e.target.checked
+                                      ? [...currentArtists, artist.id]
+                                      : currentArtists.filter((id: string) => id !== artist.id);
+                                    const newContent = { ...content, artists: newArtists };
+                                    updateSection.mutate({
+                                      sectionId: section.id,
+                                      updates: buildContentJson(newContent, presentation)
+                                    });
+                                  }}
+                                  className="rounded border-border"
+                                />
+                                <span className="text-sm">{artist.name}</span>
+                              </label>
+                            );
+                          })}
                         </div>
-                      </TabsContent>
+                      </div>
+                    )}
 
-                      {/* TAB 3: FORHÅNDSVIS */}
-                      <TabsContent value="preview" className="p-4 m-0">
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-center gap-2">
-                            <Button
-                              variant={previewModes[section.id] !== "mobile" ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => setPreviewModes(prev => ({ ...prev, [section.id]: "desktop" }))}
-                            >
-                              <Monitor className="h-4 w-4 mr-1" />
-                              Desktop
-                            </Button>
-                            <Button
-                              variant={previewModes[section.id] === "mobile" ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => setPreviewModes(prev => ({ ...prev, [section.id]: "mobile" }))}
-                            >
-                              <Smartphone className="h-4 w-4 mr-1" />
-                              Mobil
-                            </Button>
-                          </div>
-                          <div className="flex justify-center">
-                            <SectionPreview
-                              section={section}
-                              mode={previewModes[section.id] || "desktop"}
-                              festivalName={festival?.name}
-                              dateRange={festivalFormData.start_at && festivalFormData.end_at 
-                                ? `${festivalFormData.start_at} - ${festivalFormData.end_at}`
-                                : undefined
-                              }
-                              festivalDescription={festivalFormData.description || undefined}
+                    {/* Venue (hvis støttet) */}
+                    {sectionType?.supports_venue && venues && venues.length > 0 && (
+                      <div className="space-y-2">
+                        <Label>Velg venue</Label>
+                        <Select
+                          value={(content.venue as string) || ""}
+                          onValueChange={(value) => {
+                            const newContent = { ...content, venue: value === "__none__" ? null : value };
+                            updateSection.mutate({
+                              sectionId: section.id,
+                              updates: buildContentJson(newContent, presentation)
+                            });
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Velg venue" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__">Ingen venue</SelectItem>
+                            {venues.map((venue) => (
+                              <SelectItem key={venue.id} value={venue.id}>
+                                {venue.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {/* Bakgrunnsbilder */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium flex items-center gap-2">
+                          <Monitor className="h-4 w-4" />
+                          Bakgrunn desktop
+                        </label>
+                        {(section.bg_image_url_desktop || section.bg_image_url) && (
+                          <div className="relative w-full h-20 rounded border border-border overflow-hidden bg-muted">
+                            <img
+                              src={section.bg_image_url_desktop || section.bg_image_url || ""}
+                              alt="Desktop bakgrunn"
+                              className="w-full h-full object-cover"
                             />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-1 right-1 h-6 w-6 bg-background/90 hover:bg-background border border-border"
+                              onClick={() =>
+                                updateSection.mutate({
+                                  sectionId: section.id,
+                                  updates: { bg_image_url_desktop: null },
+                                })
+                              }
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
                           </div>
-                        </div>
-                      </TabsContent>
-                    </Tabs>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setMediaPickerOpen({ sectionId: section.id, type: "desktop" })}
+                          className="w-full"
+                        >
+                          <ImageIcon className="h-4 w-4 mr-2" />
+                          {section.bg_image_url_desktop ? "Endre" : "Velg"}
+                        </Button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium flex items-center gap-2">
+                          <Smartphone className="h-4 w-4" />
+                          Bakgrunn mobil
+                        </label>
+                        {section.bg_image_url_mobile && (
+                          <div className="relative w-full h-20 rounded border border-border overflow-hidden bg-muted">
+                            <img
+                              src={section.bg_image_url_mobile}
+                              alt="Mobil bakgrunn"
+                              className="w-full h-full object-cover"
+                            />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="absolute top-1 right-1 h-6 w-6 bg-background/90 hover:bg-background border border-border"
+                              onClick={() =>
+                                updateSection.mutate({
+                                  sectionId: section.id,
+                                  updates: { bg_image_url_mobile: null },
+                                })
+                              }
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setMediaPickerOpen({ sectionId: section.id, type: "mobile" })}
+                          className="w-full"
+                        >
+                          <ImageIcon className="h-4 w-4 mr-2" />
+                          {section.bg_image_url_mobile ? "Endre" : "Velg"}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Image fit mode */}
+                    <div className="space-y-2">
+                      <Label>Bildevisning</Label>
+                      <Select
+                        value={(section as { image_fit_mode?: string }).image_fit_mode || 'cover'}
+                        onValueChange={(value) =>
+                          updateSection.mutate({
+                            sectionId: section.id,
+                            updates: { image_fit_mode: value },
+                          })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cover">Dekk hele området</SelectItem>
+                          <SelectItem value="contain">Vis hele bildet</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 );
               })()}
