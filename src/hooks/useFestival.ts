@@ -68,10 +68,36 @@ export function useFestival(slug: string) {
 
       if (sectionsError) throw sectionsError;
 
+      // Extract all artist IDs from sections' content_json
+      const allArtistIds = new Set<string>();
+      (sections || []).forEach((section) => {
+        const rawContent = section.content_json as Record<string, unknown> | null;
+        const content = (rawContent?.content as Record<string, unknown>) || rawContent;
+        const artistIds = (content?.artists as string[]) || [];
+        artistIds.forEach((id) => allArtistIds.add(id));
+      });
+
+      // Fetch all referenced artists (projects)
+      let sectionArtists: Array<{ id: string; name: string; slug: string; tagline?: string | null }> = [];
+      if (allArtistIds.size > 0) {
+        const { data: projects } = await supabase
+          .from("projects")
+          .select("id, name, slug, tagline")
+          .in("id", Array.from(allArtistIds));
+        
+        sectionArtists = (projects || []).map((p) => ({
+          id: p.id,
+          name: p.name,
+          slug: p.slug,
+          tagline: p.tagline,
+        }));
+      }
+
       return {
         ...festival,
         festivalEvents: eventsWithLineup,
         sections: sections || [],
+        sectionArtists,
         // Cast to include new fields that may not be in generated types yet
         date_range_section_id: (festival as any).date_range_section_id as string | null,
         description_section_id: (festival as any).description_section_id as string | null,

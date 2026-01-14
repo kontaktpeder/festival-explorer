@@ -163,12 +163,20 @@ export default function FestivalPage() {
             );
           }
 
+          // Combine sectionArtists (from content_json) with featuredArtists (from event_projects)
+          const allArtists = [
+            ...(festival.sectionArtists || []),
+            ...featuredArtists.filter(
+              (fa) => !festival.sectionArtists?.some((sa) => sa.id === fa.id)
+            ),
+          ];
+
           return (
             <SectionRenderer
               key={section.id}
               section={section}
               validEvents={validEvents}
-              featuredArtists={featuredArtists}
+              featuredArtists={allArtists}
               venue={venue}
               dateRange={showDateRange}
               festivalDescription={showDescription}
