@@ -7,6 +7,24 @@ import { useResponsiveImage } from "@/hooks/useResponsiveImage";
 import giggenLogo from "@/assets/giggen-logo.png";
 import type { Json } from "@/integrations/supabase/types";
 
+// Default section background images
+import sectionBgProgram from "@/assets/section-bg-program.png";
+import sectionBgOm from "@/assets/section-bg-om.png";
+import sectionBgArtister from "@/assets/section-bg-artister.png";
+import sectionBgVenue from "@/assets/section-bg-venue.png";
+import sectionBgPraktisk from "@/assets/section-bg-praktisk.png";
+import sectionBgFooter from "@/assets/section-bg-footer.png";
+
+// Map section types to default backgrounds
+const DEFAULT_SECTION_BACKGROUNDS: Record<string, string> = {
+  program: sectionBgProgram,
+  om: sectionBgOm,
+  artister: sectionBgArtister,
+  "venue-plakat": sectionBgVenue,
+  praktisk: sectionBgPraktisk,
+  footer: sectionBgFooter,
+};
+
 interface FestivalSection {
   id: string;
   type: string;
@@ -57,10 +75,13 @@ function SectionBackground({
   section: FestivalSection; 
   venueImage?: string | null;
 }) {
+  // Get default background for this section type (not for hero)
+  const defaultBackground = DEFAULT_SECTION_BACKGROUNDS[section.type] || null;
+  
   const activeImage = useResponsiveImage({
     desktopUrl: section.bg_image_url_desktop,
     mobileUrl: section.bg_image_url_mobile,
-    fallbackUrl: venueImage || section.bg_image_url,
+    fallbackUrl: venueImage || section.bg_image_url || defaultBackground,
   });
 
   if (!activeImage) return null;
@@ -71,8 +92,8 @@ function SectionBackground({
   if (section.bg_mode === "fixed") {
     return (
       <ParallaxBackground
-        imageUrl={section.bg_image_url_desktop || section.bg_image_url}
-        imageUrlMobile={section.bg_image_url_mobile || section.bg_image_url}
+        imageUrl={section.bg_image_url_desktop || section.bg_image_url || defaultBackground}
+        imageUrlMobile={section.bg_image_url_mobile || section.bg_image_url || defaultBackground}
         intensity={0.3}
         imageFitMode={imageFitMode}
       />
