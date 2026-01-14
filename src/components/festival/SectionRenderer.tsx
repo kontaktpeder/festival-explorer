@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
-import { FestivalEventAccordion } from "@/components/ui/FestivalEventAccordion";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
 import { EmptyState } from "@/components/ui/LoadingState";
 import { ParallaxBackground } from "@/components/ui/ParallaxBackground";
 import { MobileFadeOverlay } from "@/components/ui/MobileFadeOverlay";
 import { useResponsiveImage } from "@/hooks/useResponsiveImage";
 import giggenLogo from "@/assets/giggen-logo.png";
 import type { Json } from "@/integrations/supabase/types";
-
 // Default section background images
 import sectionBgProgram from "@/assets/section-bg-program.png";
 import sectionBgOm from "@/assets/section-bg-om.png";
@@ -120,15 +120,13 @@ export function SectionRenderer({
 
   const getText = () => (contentJson?.text || contentJson?.intro || contentJson?.info || contentJson?.description || "") as string;
   
-  const selectedEventIds = (contentJson?.events as string[]) || [];
-  const selectedArtistIds = (contentJson?.artists as string[]) || [];
+  // Kun venue bruker content_json filtrering - events og artister viser alltid alle
   const selectedVenueId = contentJson?.venue as string | null;
 
   switch (section.type) {
     case "program": {
-      const programEvents = selectedEventIds.length > 0
-        ? validEvents.filter((fe) => fe.event && selectedEventIds.includes(fe.event.id))
-        : validEvents;
+      // Vis ALLE events fra festivalen
+      const programEvents = validEvents.filter((fe) => fe.event);
 
       return (
         <section className="fullscreen-section relative" id="program">
@@ -136,28 +134,52 @@ export function SectionRenderer({
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <MobileFadeOverlay />
 
-          <div className="relative z-10 w-full max-w-2xl mx-auto px-5">
-            {/* Minimal header */}
-            <div className="mb-10">
-              <h2 className="animate-slide-up text-display text-section-title text-foreground/90">
-                {section.title || "Program"}
-              </h2>
-              {getText() && (
-                <p className="animate-slide-up delay-100 text-foreground/50 text-base mt-3 max-w-sm">
-                  {getText().replace(/<[^>]*>/g, '')}
-                </p>
-              )}
-            </div>
+          <div className="relative z-10 w-full max-w-lg mx-auto px-5">
+            {/* Header */}
+            <h2 className="animate-slide-up text-display text-section-title mb-10">
+              {section.title || "Program"}
+            </h2>
             
-            {/* Events */}
-            <div className="animate-slide-up delay-200">
+            {/* Event list - samme stil som artister */}
+            <div className="space-y-6">
               {programEvents.length > 0 ? (
-                <FestivalEventAccordion events={programEvents as any} />
+                programEvents.map((fe, i) => {
+                  if (!fe.event) return null;
+                  
+                  const startTime = new Date(fe.event.start_at);
+                  const eventDate = format(startTime, "d. MMM", { locale: nb });
+                  const eventTime = format(startTime, "HH:mm", { locale: nb });
+                  
+                  return (
+                    <Link
+                      key={fe.event.id}
+                      to={`/event/${fe.event.slug}`}
+                      className={`animate-slide-up block group py-4 border-b border-foreground/10 last:border-0`}
+                      style={{ animationDelay: `${0.1 + i * 0.08}s` }}
+                    >
+                      <h3 className="text-display text-2xl md:text-3xl text-foreground/90 group-hover:text-accent transition-colors duration-300">
+                        {fe.event.title}
+                      </h3>
+                      
+                      {/* Dato, klokkeslett og venue */}
+                      <p className="text-foreground/40 text-sm mt-1 group-hover:text-foreground/60 transition-colors flex items-center gap-2">
+                        <span>{eventDate}</span>
+                        <span className="text-foreground/20">•</span>
+                        <span>{eventTime}</span>
+                        {fe.event.venue && (
+                          <>
+                            <span className="text-foreground/20">•</span>
+                            <span>{fe.event.venue.name}</span>
+                          </>
+                        )}
+                      </p>
+                    </Link>
+                  );
+                })
               ) : (
-                <EmptyState
-                  title="Ingen events ennå"
-                  description="Programmet for denne festivalen er ikke klart ennå."
-                />
+                <p className="text-foreground/40 text-base">
+                  Programmet kommer snart.
+                </p>
               )}
             </div>
           </div>
@@ -193,10 +215,7 @@ export function SectionRenderer({
       );
 
     case "artister": {
-      const displayedArtists = selectedArtistIds.length > 0
-        ? featuredArtists.filter((a) => selectedArtistIds.includes(a.id))
-        : featuredArtists;
-
+      // Vis ALLE artister fra festivalen
       return (
         <section className="fullscreen-section relative">
           <SectionBackground section={section} />
@@ -211,8 +230,8 @@ export function SectionRenderer({
             
             {/* Artist list - clean stacked layout */}
             <div className="space-y-6">
-              {displayedArtists.length > 0 ? (
-                displayedArtists.map((artist, i) => (
+              {featuredArtists.length > 0 ? (
+                featuredArtists.map((artist, i) => (
                   <Link
                     key={artist.id}
                     to={`/project/${artist.slug}`}
