@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { getAuthenticatedUser } from "@/lib/admin-helpers";
 import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -40,13 +41,15 @@ export default function AdminFestivalProgram() {
     },
   });
 
-  // Fetch all events for adding
+  // Fetch all events for adding - ONLY events created by current user
   const { data: allEvents } = useQuery({
     queryKey: ["admin-all-events"],
     queryFn: async () => {
+      const user = await getAuthenticatedUser();
       const { data } = await supabase
         .from("events")
         .select("id, title")
+        .eq("created_by", user.id)
         .order("start_at", { ascending: false });
       return data || [];
     },
