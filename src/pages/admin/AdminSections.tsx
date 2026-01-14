@@ -1227,35 +1227,30 @@ export default function AdminSections() {
                         {/* Fremheving */}
                         <div className="space-y-2">
                           <Label>Fremheving</Label>
-                          <div className="space-y-2">
-                            {[
-                              { value: "title", label: "Tittel" },
-                              { value: "date", label: "Dato" },
-                              { value: "image", label: "Bilde" },
-                              { value: "text", label: "Tekst" }
-                            ].map((option) => (
-                              <label key={option.value} className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                  type="radio"
-                                  name={`emphasis-${section.id}`}
-                                  value={option.value}
-                                  checked={(presentation?.emphasis as string) === option.value}
-                                  onChange={() => {
-                                    const newPresentation = {
-                                      ...(presentation || {}),
-                                      emphasis: option.value
-                                    };
-                                    updateSection.mutate({
-                                      sectionId: section.id,
-                                      updates: buildContentJson(content, newPresentation)
-                                    });
-                                  }}
-                                  className="rounded-full border-border"
-                                />
-                                <span className="text-sm">{option.label}</span>
-                              </label>
-                            ))}
-                          </div>
+                          <Select
+                            value={(presentation?.emphasis as string) || "none"}
+                            onValueChange={(value) => {
+                              const newPresentation = {
+                                ...(presentation || {}),
+                                emphasis: value === "none" ? null : value
+                              };
+                              updateSection.mutate({
+                                sectionId: section.id,
+                                updates: buildContentJson(content, newPresentation)
+                              });
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Ingen fremheving</SelectItem>
+                              <SelectItem value="title">Tittel</SelectItem>
+                              <SelectItem value="date">Dato</SelectItem>
+                              <SelectItem value="image">Bilde</SelectItem>
+                              <SelectItem value="text">Tekst</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
 
                         {/* Animasjon */}
