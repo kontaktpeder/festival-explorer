@@ -380,63 +380,50 @@ export function SectionRenderer({
 
     case "footer":
       return (
-        <footer className="fullscreen-section relative">
+        <footer className="fullscreen-section relative flex items-end">
           <SectionBackground section={section} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
 
-          <div className="relative z-10 max-w-xl flex flex-col h-full justify-between">
-            {/* Top content */}
-            <div>
-              {festivalName && (
-                <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">{festivalName}</h1>
-              )}
-              {dateRange && (
-                <div className="text-mono text-accent mb-6">{dateRange}</div>
-              )}
-              {festivalDescription && (
-                <p className="text-foreground/70 text-lg md:text-xl max-w-lg leading-relaxed mb-8">
-                  {festivalDescription}
-                </p>
-              )}
-              {getText() ? (
-                <div 
-                  className="prose-rich-text text-foreground/40 text-lg"
-                  dangerouslySetInnerHTML={{ __html: getText() }}
-                />
-              ) : (
-                <p className="text-foreground/40 text-lg max-w-md">
-                  Et engasjement for å løfte frem dem som jobber med eksisterende musikkarenaer, og dem som ønsker å skape nye.
-                </p>
-              )}
-            </div>
-
-            {/* Bottom: Logo and links */}
-            <div className="mt-auto pt-12">
-              <img
-                src={giggenLogo}
-                alt="Giggen"
-                className="h-16 md:h-20 w-auto mb-6"
+          <div className="relative z-10 max-w-xl w-full pb-8">
+            {/* Logo */}
+            <img
+              src={giggenLogo}
+              alt="Giggen"
+              className="h-12 md:h-16 w-auto mb-6"
+            />
+            
+            {/* Description text - easier to read */}
+            {getText() ? (
+              <div 
+                className="prose-rich-text text-foreground/70 text-base leading-relaxed mb-6 max-w-md"
+                dangerouslySetInnerHTML={{ __html: getText() }}
               />
-              <div className="flex flex-wrap gap-6 text-sm">
-                <Link
-                  to="/search?type=event"
-                  className="text-foreground/60 hover:text-accent transition-colors"
-                >
-                  Events
-                </Link>
-                <Link
-                  to="/search?type=project"
-                  className="text-foreground/60 hover:text-accent transition-colors"
-                >
-                  Artister
-                </Link>
-                <Link
-                  to="/search?type=venue"
-                  className="text-foreground/60 hover:text-accent transition-colors"
-                >
-                  Venues
-                </Link>
-              </div>
+            ) : (
+              <p className="text-foreground/70 text-base leading-relaxed mb-6 max-w-md">
+                Et engasjement for å løfte frem dem som jobber med eksisterende musikkarenaer, og dem som ønsker å skape nye.
+              </p>
+            )}
+            
+            {/* Links */}
+            <div className="flex flex-wrap gap-6 text-sm">
+              <Link
+                to="/search?type=event"
+                className="text-foreground/50 hover:text-accent transition-colors"
+              >
+                Events
+              </Link>
+              <Link
+                to="/search?type=project"
+                className="text-foreground/50 hover:text-accent transition-colors"
+              >
+                Artister
+              </Link>
+              <Link
+                to="/search?type=venue"
+                className="text-foreground/50 hover:text-accent transition-colors"
+              >
+                Venues
+              </Link>
             </div>
           </div>
         </footer>
