@@ -158,30 +158,44 @@ export function SectionRenderer({
 
     case "om":
       return (
-        <section className="fullscreen-section relative">
+        <section className="fullscreen-section relative overflow-hidden">
           <SectionBackground section={section} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <MobileFadeOverlay />
 
-          <div className="relative z-10 max-w-xl">
-            {festivalName && (
-              <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">{festivalName}</h1>
-            )}
-            {dateRange && (
-              <div className="text-mono text-accent mb-6">{dateRange}</div>
-            )}
-            {festivalDescription && (
-              <p className="text-foreground/70 text-lg md:text-xl max-w-lg leading-relaxed mb-8">
-                {festivalDescription}
-              </p>
-            )}
-            <h2 className="section-title">{section.title || "Om Giggen"}</h2>
+          <div className="relative z-10 max-w-3xl mx-auto px-6">
+            {/* Animated header */}
+            <div className="text-center mb-12 animate-fade-in">
+              {festivalName && (
+                <h1 className="text-display text-4xl md:text-6xl mb-4 leading-none opacity-60">{festivalName}</h1>
+              )}
+              {dateRange && (
+                <div className="text-mono text-accent/80 text-sm">{dateRange}</div>
+              )}
+            </div>
+
+            {/* Main title with accent line */}
+            <div className="text-center mb-10">
+              <div className="inline-block">
+                <h2 className="text-display text-4xl md:text-5xl lg:text-6xl mb-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                  {section.title || "Om Giggen"}
+                </h2>
+                <div className="h-1 bg-gradient-to-r from-transparent via-accent to-transparent animate-fade-in" style={{ animationDelay: '0.2s' }} />
+              </div>
+            </div>
+
+            {/* Content with staggered animations */}
             {getText() && (
               <div 
-                className="prose-rich-text text-foreground/90 text-xl md:text-2xl leading-relaxed"
+                className="prose-rich-text animate-fade-in"
+                style={{ animationDelay: '0.3s' }}
                 dangerouslySetInnerHTML={{ __html: getText() }}
               />
             )}
+
+            {/* Decorative elements */}
+            <div className="absolute top-20 left-10 w-32 h-32 bg-accent/5 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute bottom-20 right-10 w-48 h-48 bg-accent/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
           </div>
         </section>
       );
