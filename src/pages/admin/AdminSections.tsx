@@ -18,14 +18,104 @@ import { getAuthenticatedUser } from "@/lib/admin-helpers";
 import { generateSlug } from "@/lib/utils";
 
 const SECTION_TYPES = [
-  { value: "hero", label: "Hero" },
-  { value: "program", label: "Program" },
-  { value: "om", label: "Om Giggen" },
-  { value: "artister", label: "Artister" },
-  { value: "venue-plakat", label: "Venue-plakat" },
-  { value: "praktisk", label: "Praktisk" },
-  { value: "footer", label: "Footer" },
+  { 
+    value: "hero", 
+    label: "Hero",
+    content_fields: ["title", "text"],
+    supports_events: false,
+    supports_artists: false,
+    supports_venue: false
+  },
+  { 
+    value: "program", 
+    label: "Program",
+    content_fields: ["title", "text"],
+    supports_events: true,
+    supports_artists: false,
+    supports_venue: false
+  },
+  { 
+    value: "om", 
+    label: "Om Giggen",
+    content_fields: ["title", "text"],
+    supports_events: false,
+    supports_artists: false,
+    supports_venue: false
+  },
+  { 
+    value: "artister", 
+    label: "Artister",
+    content_fields: ["title", "text"],
+    supports_events: false,
+    supports_artists: true,
+    supports_venue: false
+  },
+  { 
+    value: "venue-plakat", 
+    label: "Venue-plakat",
+    content_fields: ["title", "text"],
+    supports_events: false,
+    supports_artists: false,
+    supports_venue: true
+  },
+  { 
+    value: "praktisk", 
+    label: "Praktisk",
+    content_fields: ["title", "text"],
+    supports_events: false,
+    supports_artists: false,
+    supports_venue: false
+  },
+  { 
+    value: "footer", 
+    label: "Footer",
+    content_fields: ["title", "text"],
+    supports_events: false,
+    supports_artists: false,
+    supports_venue: false
+  }
 ] as const;
+
+// Helper functions for content_json structure
+function getSectionContent(section: { title?: string; content_json?: unknown }) {
+  const contentJson = section.content_json as Record<string, unknown> | null;
+  if (!contentJson) {
+    return { 
+      content: { title: section.title || "", text: "" }, 
+      presentation: null as Record<string, unknown> | null
+    };
+  }
+  
+  // New structure: {content: {...}, presentation: {...}}
+  if (contentJson.content) {
+    return {
+      content: contentJson.content as Record<string, unknown>,
+      presentation: (contentJson.presentation as Record<string, unknown>) || null
+    };
+  }
+  
+  // Legacy: convert old structure (text, intro, info, description)
+  const legacyText = contentJson.text || contentJson.intro || contentJson.info || contentJson.description || "";
+  return {
+    content: {
+      title: section.title || "",
+      text: legacyText,
+      events: (contentJson.events as string[]) || [],
+      artists: (contentJson.artists as string[]) || [],
+      venue: contentJson.venue || null,
+    },
+    presentation: null as Record<string, unknown> | null
+  };
+}
+
+function buildContentJson(content: Record<string, unknown>, presentation: Record<string, unknown> | null) {
+  return {
+    content_json: {
+      content,
+      presentation
+    }
+  };
+}
 
 type MediaPickerState = {
   sectionId: string;
@@ -125,6 +215,55 @@ export default function AdminSections() {
         .order("name");
       return data || [];
     },
+  });
+
+  // Fetch festival events for selection
+  const { data: festivalEvents } = useQuery({
+    queryKey: ["admin-festival-events", id],
+    queryFn: async () => {
+      if (!id) return [];
+      const { data } = await supabase
+        .from("festival_events")
+        .select(`
+          event_id,
+          event:events(id, title, slug, start_at)
+        `)
+        .eq("festival_id", id)
+        .order("sort_order");
+      return data?.map((fe: { event: unknown }) => fe.event).filter(Boolean) || [];
+    },
+    enabled: !!id,
+  });
+
+  // Fetch featured artists for selection (from festival events)
+  const { data: featuredArtists } = useQuery({
+    queryKey: ["admin-festival-artists", id],
+    queryFn: async () => {
+      if (!id) return [];
+      const { data: events } = await supabase
+        .from("festival_events")
+        .select(`
+          event:events(
+            id,
+            event_projects(
+              project:projects(id, name, slug)
+            )
+          )
+        `)
+        .eq("festival_id", id);
+      
+      const artistMap = new Map<string, { id: string; name: string; slug: string }>();
+      events?.forEach((fe: { event?: { event_projects?: Array<{ project?: { id: string; name: string; slug: string } | null }> } | null }) => {
+        fe.event?.event_projects?.forEach((ep) => {
+          if (ep.project) {
+            artistMap.set(ep.project.id, ep.project);
+          }
+        });
+      });
+      
+      return Array.from(artistMap.values());
+    },
+    enabled: !!id,
   });
 
   // Save festival mutation
@@ -801,308 +940,391 @@ export default function AdminSections() {
               </div>
 
               {/* Expanded content */}
-              {isExpanded && (
-                <div className="border-t border-border">
-                  <Tabs defaultValue="edit" className="w-full">
-                    <div className="flex items-center justify-between px-4 pt-3 pb-2 bg-muted/20">
-                      <TabsList className="grid w-fit grid-cols-2">
-                        <TabsTrigger value="edit" className="text-xs">Rediger</TabsTrigger>
-                        <TabsTrigger value="preview" className="text-xs">Forhåndsvis</TabsTrigger>
+              {isExpanded && (() => {
+                const sectionType = SECTION_TYPES.find(t => t.value === section.type);
+                const { content, presentation } = getSectionContent(section);
+
+                return (
+                  <div className="border-t border-border">
+                    <Tabs defaultValue="content" className="w-full">
+                      <TabsList className="w-full rounded-none border-b border-border bg-muted/20">
+                        <TabsTrigger value="content" className="flex-1">Innhold</TabsTrigger>
+                        <TabsTrigger value="presentation" className="flex-1">Visning</TabsTrigger>
+                        <TabsTrigger value="preview" className="flex-1">Forhåndsvis</TabsTrigger>
                       </TabsList>
-                    </div>
 
-                    <TabsContent value="edit" className="p-4 space-y-4 mt-0">
-                      {/* Desktop/Mobile background images */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Desktop image */}
+                      {/* TAB 1: INNHOLD */}
+                      <TabsContent value="content" className="p-4 space-y-4 bg-muted/20 m-0">
+                        {/* Tittel */}
                         <div className="space-y-2">
-                          <label className="text-sm font-medium flex items-center gap-2">
-                            <Monitor className="h-4 w-4" />
-                            Desktop
-                          </label>
-                          {(section.bg_image_url_desktop || section.bg_image_url) && (
-                            <div className="relative w-full h-20 rounded border border-border overflow-hidden bg-muted">
-                              <img
-                                src={section.bg_image_url_desktop || section.bg_image_url || ""}
-                                alt="Desktop bakgrunn"
-                                className="w-full h-full object-cover"
-                              />
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="absolute top-1 right-1 h-6 w-6 bg-background/90 hover:bg-background border border-border"
-                                onClick={() =>
-                                  updateSection.mutate({
-                                    sectionId: section.id,
-                                    updates: { bg_image_url_desktop: null },
-                                  })
+                          <Label>Tittel</Label>
+                          <Input
+                            value={(content.title as string) || section.title}
+                            onChange={(e) => {
+                              const newContent = { ...content, title: e.target.value };
+                              updateSection.mutate({
+                                sectionId: section.id,
+                                updates: {
+                                  title: e.target.value,
+                                  ...buildContentJson(newContent, presentation)
                                 }
-                              >
-                                <X className="h-3 w-3" />
-                              </Button>
+                              });
+                            }}
+                            placeholder="Seksjonstittel"
+                          />
+                        </div>
+
+                        {/* Tekst (hvis støttet) */}
+                        {sectionType?.content_fields.includes("text") && (
+                          <div className="space-y-2">
+                            <Label>Tekst</Label>
+                            <RichTextEditor
+                              value={(content.text as string) || ""}
+                              onChange={(html) => {
+                                const newContent = { ...content, text: html };
+                                updateSection.mutate({
+                                  sectionId: section.id,
+                                  updates: buildContentJson(newContent, presentation)
+                                });
+                              }}
+                              placeholder="Skriv tekst..."
+                            />
+                          </div>
+                        )}
+
+                        {/* Events (hvis støttet) */}
+                        {sectionType?.supports_events && festivalEvents && festivalEvents.length > 0 && (
+                          <div className="space-y-2">
+                            <Label>Velg events</Label>
+                            <div className="space-y-1 max-h-48 overflow-y-auto border border-border rounded p-2">
+                              {festivalEvents.map((event: { id: string; title: string; start_at?: string }) => {
+                                const isSelected = ((content.events as string[]) || []).includes(event.id);
+                                return (
+                                  <label key={event.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted p-2 rounded">
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={(e) => {
+                                        const currentEvents = ((content.events as string[]) || []);
+                                        const newEvents = e.target.checked
+                                          ? [...currentEvents, event.id]
+                                          : currentEvents.filter((id: string) => id !== event.id);
+                                        const newContent = { ...content, events: newEvents };
+                                        updateSection.mutate({
+                                          sectionId: section.id,
+                                          updates: buildContentJson(newContent, presentation)
+                                        });
+                                      }}
+                                      className="rounded border-border"
+                                    />
+                                    <span className="text-sm">{event.title}</span>
+                                    {event.start_at && (
+                                      <span className="text-xs text-muted-foreground ml-auto">
+                                        {new Date(event.start_at).toLocaleDateString('nb-NO')}
+                                      </span>
+                                    )}
+                                  </label>
+                                );
+                              })}
                             </div>
-                          )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setMediaPickerOpen({ sectionId: section.id, type: "desktop" })}
-                            className="w-full"
-                          >
-                            <ImageIcon className="h-4 w-4 mr-2" />
-                            {section.bg_image_url_desktop ? "Endre" : "Velg"}
-                          </Button>
-                        </div>
+                          </div>
+                        )}
 
-                        {/* Mobile image */}
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium flex items-center gap-2">
-                            <Smartphone className="h-4 w-4" />
-                            Mobil
-                          </label>
-                          {section.bg_image_url_mobile && (
-                            <div className="relative w-full h-20 rounded border border-border overflow-hidden bg-muted">
-                              <img
-                                src={section.bg_image_url_mobile}
-                                alt="Mobil bakgrunn"
-                                className="w-full h-full object-cover"
-                              />
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="absolute top-1 right-1 h-6 w-6 bg-background/90 hover:bg-background border border-border"
-                                onClick={() =>
-                                  updateSection.mutate({
-                                    sectionId: section.id,
-                                    updates: { bg_image_url_mobile: null },
-                                  })
-                                }
-                              >
-                                <X className="h-3 w-3" />
-                              </Button>
+                        {/* Artister (hvis støttet) */}
+                        {sectionType?.supports_artists && featuredArtists && featuredArtists.length > 0 && (
+                          <div className="space-y-2">
+                            <Label>Velg artister</Label>
+                            <div className="space-y-1 max-h-48 overflow-y-auto border border-border rounded p-2">
+                              {featuredArtists.map((artist: { id: string; name: string }) => {
+                                const isSelected = ((content.artists as string[]) || []).includes(artist.id);
+                                return (
+                                  <label key={artist.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted p-2 rounded">
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={(e) => {
+                                        const currentArtists = ((content.artists as string[]) || []);
+                                        const newArtists = e.target.checked
+                                          ? [...currentArtists, artist.id]
+                                          : currentArtists.filter((id: string) => id !== artist.id);
+                                        const newContent = { ...content, artists: newArtists };
+                                        updateSection.mutate({
+                                          sectionId: section.id,
+                                          updates: buildContentJson(newContent, presentation)
+                                        });
+                                      }}
+                                      className="rounded border-border"
+                                    />
+                                    <span className="text-sm">{artist.name}</span>
+                                  </label>
+                                );
+                              })}
                             </div>
-                          )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setMediaPickerOpen({ sectionId: section.id, type: "mobile" })}
-                            className="w-full"
-                          >
-                            <ImageIcon className="h-4 w-4 mr-2" />
-                            {section.bg_image_url_mobile ? "Endre" : "Velg"}
-                          </Button>
+                          </div>
+                        )}
+
+                        {/* Venue (hvis støttet) */}
+                        {sectionType?.supports_venue && venues && venues.length > 0 && (
+                          <div className="space-y-2">
+                            <Label>Velg venue</Label>
+                            <Select
+                              value={(content.venue as string) || ""}
+                              onValueChange={(value) => {
+                                const newContent = { ...content, venue: value === "__none__" ? null : value };
+                                updateSection.mutate({
+                                  sectionId: section.id,
+                                  updates: buildContentJson(newContent, presentation)
+                                });
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Velg venue" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="__none__">Ingen venue</SelectItem>
+                                {venues.map((venue) => (
+                                  <SelectItem key={venue.id} value={venue.id}>
+                                    {venue.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+
+                        {/* Bakgrunnsbilder */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium flex items-center gap-2">
+                              <Monitor className="h-4 w-4" />
+                              Bakgrunn desktop
+                            </label>
+                            {(section.bg_image_url_desktop || section.bg_image_url) && (
+                              <div className="relative w-full h-20 rounded border border-border overflow-hidden bg-muted">
+                                <img
+                                  src={section.bg_image_url_desktop || section.bg_image_url || ""}
+                                  alt="Desktop bakgrunn"
+                                  className="w-full h-full object-cover"
+                                />
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="absolute top-1 right-1 h-6 w-6 bg-background/90 hover:bg-background border border-border"
+                                  onClick={() =>
+                                    updateSection.mutate({
+                                      sectionId: section.id,
+                                      updates: { bg_image_url_desktop: null },
+                                    })
+                                  }
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setMediaPickerOpen({ sectionId: section.id, type: "desktop" })}
+                              className="w-full"
+                            >
+                              <ImageIcon className="h-4 w-4 mr-2" />
+                              {section.bg_image_url_desktop ? "Endre" : "Velg"}
+                            </Button>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium flex items-center gap-2">
+                              <Smartphone className="h-4 w-4" />
+                              Bakgrunn mobil
+                            </label>
+                            {section.bg_image_url_mobile && (
+                              <div className="relative w-full h-20 rounded border border-border overflow-hidden bg-muted">
+                                <img
+                                  src={section.bg_image_url_mobile}
+                                  alt="Mobil bakgrunn"
+                                  className="w-full h-full object-cover"
+                                />
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="absolute top-1 right-1 h-6 w-6 bg-background/90 hover:bg-background border border-border"
+                                  onClick={() =>
+                                    updateSection.mutate({
+                                      sectionId: section.id,
+                                      updates: { bg_image_url_mobile: null },
+                                    })
+                                  }
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setMediaPickerOpen({ sectionId: section.id, type: "mobile" })}
+                              className="w-full"
+                            >
+                              <ImageIcon className="h-4 w-4 mr-2" />
+                              {section.bg_image_url_mobile ? "Endre" : "Velg"}
+                            </Button>
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Image fit mode selector */}
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Bildevisning</label>
-                        <Select
-                          value={(section as any).image_fit_mode || 'cover'}
-                          onValueChange={(value) =>
-                            updateSection.mutate({
-                              sectionId: section.id,
-                              updates: { image_fit_mode: value },
-                            })
-                          }
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="cover">Dekk hele området</SelectItem>
-                            <SelectItem value="contain">Vis hele bildet</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Content editor based on section type */}
-                      {section.type === "hero" && (
+                        {/* Image fit mode */}
                         <div className="space-y-2">
-                          <label className="text-sm font-medium">Hero tekst</label>
-                          <RichTextEditor
-                            value={(contentJson?.text as string) || ""}
-                            onChange={(html) => {
+                          <Label>Bildevisning</Label>
+                          <Select
+                            value={(section as { image_fit_mode?: string }).image_fit_mode || 'cover'}
+                            onValueChange={(value) =>
                               updateSection.mutate({
                                 sectionId: section.id,
-                                updates: {
-                                  content_json: {
-                                    ...contentJson,
-                                    text: html,
-                                  },
-                                },
-                              });
-                            }}
-                            placeholder="Skriv hero-tekst..."
-                          />
-                        </div>
-                      )}
-
-                      {section.type === "program" && (
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Intro</label>
-                          <RichTextEditor
-                            value={(contentJson?.intro as string) || ""}
-                            onChange={(html) => {
-                              updateSection.mutate({
-                                sectionId: section.id,
-                                updates: {
-                                  content_json: {
-                                    ...contentJson,
-                                    intro: html,
-                                  },
-                                },
-                              });
-                            }}
-                            placeholder="Skriv introduksjon..."
-                          />
-                        </div>
-                      )}
-
-                      {section.type === "om" && (
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Tekst</label>
-                          <RichTextEditor
-                            value={(contentJson?.text as string) || ""}
-                            onChange={(html) => {
-                              updateSection.mutate({
-                                sectionId: section.id,
-                                updates: {
-                                  content_json: {
-                                    ...contentJson,
-                                    text: html,
-                                  },
-                                },
-                              });
-                            }}
-                            placeholder="Skriv om festivalen..."
-                          />
-                        </div>
-                      )}
-
-                      {section.type === "artister" && (
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Intro</label>
-                          <RichTextEditor
-                            value={(contentJson?.intro as string) || ""}
-                            onChange={(html) => {
-                              updateSection.mutate({
-                                sectionId: section.id,
-                                updates: {
-                                  content_json: {
-                                    ...contentJson,
-                                    intro: html,
-                                  },
-                                },
-                              });
-                            }}
-                            placeholder="Skriv introduksjon..."
-                          />
-                        </div>
-                      )}
-
-                      {section.type === "venue-plakat" && (
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Intro</label>
-                          <RichTextEditor
-                            value={(contentJson?.intro as string) || ""}
-                            onChange={(html) => {
-                              updateSection.mutate({
-                                sectionId: section.id,
-                                updates: {
-                                  content_json: {
-                                    ...contentJson,
-                                    intro: html,
-                                  },
-                                },
-                              });
-                            }}
-                            placeholder="Skriv introduksjon..."
-                          />
-                        </div>
-                      )}
-
-                      {section.type === "praktisk" && (
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Praktisk info</label>
-                          <RichTextEditor
-                            value={(contentJson?.info as string) || ""}
-                            onChange={(html) => {
-                              updateSection.mutate({
-                                sectionId: section.id,
-                                updates: {
-                                  content_json: {
-                                    ...contentJson,
-                                    info: html,
-                                  },
-                                },
-                              });
-                            }}
-                            placeholder="Skriv praktisk informasjon..."
-                          />
-                        </div>
-                      )}
-
-                      {section.type === "footer" && (
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Beskrivelse</label>
-                          <RichTextEditor
-                            value={(contentJson?.description as string) || ""}
-                            onChange={(html) => {
-                              updateSection.mutate({
-                                sectionId: section.id,
-                                updates: {
-                                  content_json: {
-                                    ...contentJson,
-                                    description: html,
-                                  },
-                                },
-                              });
-                            }}
-                            placeholder="Skriv beskrivelse..."
-                          />
-                        </div>
-                      )}
-                    </TabsContent>
-
-                    <TabsContent value="preview" className="p-4 mt-0">
-                      <div className="space-y-4">
-                        {/* Preview mode toggle */}
-                        <div className="flex items-center justify-center gap-2">
-                          <Button
-                            variant={previewModes[section.id] !== "mobile" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setPreviewModes(prev => ({ ...prev, [section.id]: "desktop" }))}
-                          >
-                            <Monitor className="h-4 w-4 mr-1" />
-                            Desktop
-                          </Button>
-                          <Button
-                            variant={previewModes[section.id] === "mobile" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setPreviewModes(prev => ({ ...prev, [section.id]: "mobile" }))}
-                          >
-                            <Smartphone className="h-4 w-4 mr-1" />
-                            Mobil
-                          </Button>
-                        </div>
-
-                        {/* Preview */}
-                        <div className="flex justify-center">
-                          <SectionPreview
-                            section={section}
-                            mode={previewModes[section.id] || "desktop"}
-                            festivalName={festival?.name}
-                            dateRange={festival?.start_at && festival?.end_at 
-                              ? `${new Date(festival.start_at).toLocaleDateString('nb-NO')} - ${new Date(festival.end_at).toLocaleDateString('nb-NO')}`
-                              : undefined
+                                updates: { image_fit_mode: value },
+                              })
                             }
-                          />
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="cover">Dekk hele området</SelectItem>
+                              <SelectItem value="contain">Vis hele bildet</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </div>
-              )}
+                      </TabsContent>
+
+                      {/* TAB 2: VISNING */}
+                      <TabsContent value="presentation" className="p-4 space-y-4 m-0">
+                        {/* Layout-variant */}
+                        <div className="space-y-2">
+                          <Label>Layout</Label>
+                          <Select
+                            value={(presentation?.layout_variant as string) || "classic"}
+                            onValueChange={(value) => {
+                              const newPresentation = {
+                                ...(presentation || {}),
+                                layout_variant: value
+                              };
+                              updateSection.mutate({
+                                sectionId: section.id,
+                                updates: buildContentJson(content, newPresentation)
+                              });
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="classic">Klassisk</SelectItem>
+                              <SelectItem value="editorial">Editorial</SelectItem>
+                              <SelectItem value="poster">Plakat</SelectItem>
+                              <SelectItem value="minimal">Minimal</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Fremheving */}
+                        <div className="space-y-2">
+                          <Label>Fremheving</Label>
+                          <div className="space-y-2">
+                            {[
+                              { value: "title", label: "Tittel" },
+                              { value: "date", label: "Dato" },
+                              { value: "image", label: "Bilde" },
+                              { value: "text", label: "Tekst" }
+                            ].map((option) => (
+                              <label key={option.value} className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name={`emphasis-${section.id}`}
+                                  value={option.value}
+                                  checked={(presentation?.emphasis as string) === option.value}
+                                  onChange={() => {
+                                    const newPresentation = {
+                                      ...(presentation || {}),
+                                      emphasis: option.value
+                                    };
+                                    updateSection.mutate({
+                                      sectionId: section.id,
+                                      updates: buildContentJson(content, newPresentation)
+                                    });
+                                  }}
+                                  className="rounded-full border-border"
+                                />
+                                <span className="text-sm">{option.label}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Animasjon */}
+                        <div className="space-y-2">
+                          <Label>Animasjon</Label>
+                          <Select
+                            value={(presentation?.animation as string) || "none"}
+                            onValueChange={(value) => {
+                              const newPresentation = {
+                                ...(presentation || {}),
+                                animation: value
+                              };
+                              updateSection.mutate({
+                                sectionId: section.id,
+                                updates: buildContentJson(newPresentation, presentation)
+                              });
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Av</SelectItem>
+                              <SelectItem value="subtle">Subtil</SelectItem>
+                              <SelectItem value="poster">Plakat</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </TabsContent>
+
+                      {/* TAB 3: FORHÅNDSVIS */}
+                      <TabsContent value="preview" className="p-4 m-0">
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-center gap-2">
+                            <Button
+                              variant={previewModes[section.id] !== "mobile" ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setPreviewModes(prev => ({ ...prev, [section.id]: "desktop" }))}
+                            >
+                              <Monitor className="h-4 w-4 mr-1" />
+                              Desktop
+                            </Button>
+                            <Button
+                              variant={previewModes[section.id] === "mobile" ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setPreviewModes(prev => ({ ...prev, [section.id]: "mobile" }))}
+                            >
+                              <Smartphone className="h-4 w-4 mr-1" />
+                              Mobil
+                            </Button>
+                          </div>
+                          <div className="flex justify-center">
+                            <SectionPreview
+                              section={section}
+                              mode={previewModes[section.id] || "desktop"}
+                              festivalName={festival?.name}
+                              dateRange={festivalFormData.start_at && festivalFormData.end_at 
+                                ? `${festivalFormData.start_at} - ${festivalFormData.end_at}`
+                                : undefined
+                              }
+                              festivalDescription={festivalFormData.description || undefined}
+                            />
+                          </div>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                );
+              })()}
 
               {/* Media picker */}
               {mediaPickerOpen?.sectionId === section.id && (
