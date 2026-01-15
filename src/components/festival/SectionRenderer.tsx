@@ -146,18 +146,15 @@ export function SectionRenderer({
                         {fe.event.title}
                       </h3>
                       
-                      {/* Dato, klokkeslett og venue */}
-                      <p className="text-foreground/40 text-sm mt-1 group-hover:text-foreground/60 transition-colors flex items-center gap-2">
-                        <span>{eventDate}</span>
-                        <span className="text-foreground/20">•</span>
-                        <span>{eventTime}</span>
-                        {fe.event.venue && (
-                          <>
-                            <span className="text-foreground/20">•</span>
-                            <span>{fe.event.venue.name}</span>
-                          </>
-                        )}
-                      </p>
+                      {/* Lineup */}
+                      {fe.event.lineup && fe.event.lineup.length > 0 && (
+                        <p className="text-foreground/40 text-sm mt-1 group-hover:text-foreground/60 transition-colors">
+                          {fe.event.lineup
+                            .filter(item => item.project?.name)
+                            .map(item => item.project!.name)
+                            .join(' • ')}
+                        </p>
+                      )}
                     </Link>
                   );
                 })
