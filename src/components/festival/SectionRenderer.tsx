@@ -72,6 +72,9 @@ function SectionBackground({
 
   const imageFitMode = (section.image_fit_mode === 'contain' ? 'contain' : 'cover') as 'cover' | 'contain';
 
+  // Check if the image is a GIF (animated images need special handling)
+  const isGif = activeImage.toLowerCase().includes('.gif');
+
   if (section.bg_mode === "fixed") {
     return (
       <ParallaxBackground
@@ -80,6 +83,22 @@ function SectionBackground({
         intensity={0.3}
         imageFitMode={imageFitMode}
       />
+    );
+  }
+
+  // Use <img> tag for GIFs to ensure animation works, otherwise use background-image
+  if (isGif) {
+    return (
+      <div className="absolute inset-0 overflow-hidden">
+        <img 
+          src={activeImage}
+          alt=""
+          className={`w-full h-full ${imageFitMode === 'contain' ? 'object-contain' : 'object-cover'}`}
+          style={{ 
+            objectPosition: imageFitMode === 'contain' ? 'center top' : 'center center',
+          }}
+        />
+      </div>
     );
   }
 
