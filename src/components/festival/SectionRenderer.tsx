@@ -176,22 +176,58 @@ export function SectionRenderer({
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <MobileFadeOverlay />
 
-          <div className="relative z-10 w-full max-w-lg mx-auto px-5 text-center">
-            {/* Simple elegant title */}
-            <h2 className="animate-blur-in text-display text-section-title mb-8">
-              {section.title || "Om Giggen"}
-            </h2>
-            
-            {/* Accent line */}
-            <div className="animate-line-grow delay-200 h-px w-16 mx-auto bg-accent/60 mb-8 origin-center" />
-            
-            {/* Content */}
-            {getText() && (
-              <div 
-                className="animate-slide-up delay-300 prose-rich-text text-foreground/70 text-lg leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: getText() }}
-              />
-            )}
+          <div className="relative z-10 w-full max-w-2xl mx-auto px-6 py-16">
+            {/* Editorial style content with Merriweather */}
+            <div className="space-y-12" style={{ fontFamily: "'Merriweather', Georgia, serif" }}>
+              
+              {/* Opening paragraph */}
+              <p className="animate-blur-in text-foreground/80 text-lg md:text-xl leading-relaxed text-center italic">
+                GIGGEN startet med et sterkt ønske om å spille mer musikk live. Etter hvert vokste det til et større engasjement – for alle som vil skape flere scener, eller løfte fram de som allerede finnes.
+              </p>
+
+              {/* Accent line */}
+              <div className="animate-line-grow delay-200 h-px w-24 mx-auto bg-accent/50 origin-center" />
+
+              {/* Section 1: Tankesett */}
+              <div className="animate-slide-up delay-300 text-center space-y-4">
+                <h3 className="text-foreground text-2xl md:text-3xl font-bold tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                  GIGGEN er et tankesett.
+                </h3>
+                <p className="text-foreground/70 text-base md:text-lg leading-relaxed max-w-xl mx-auto">
+                  Vi hyller de som tar beslutningene i egne hender. De som ikke venter på at jobber og muligheter skal bli servert, men skaper dem selv.
+                </p>
+              </div>
+
+              {/* Section 2: Produkt */}
+              <div className="animate-slide-up delay-400 text-center space-y-4">
+                <h3 className="text-foreground text-2xl md:text-3xl font-bold tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                  Samtidig er GIGGEN et produkt.
+                </h3>
+                <p className="text-foreground/70 text-base md:text-lg leading-relaxed max-w-xl mx-auto">
+                  I dag er det en plattform der du blant annet kan bli kjent med mini-festivalen vår.
+                </p>
+              </div>
+
+              {/* Section 3: Festivalen */}
+              <div className="animate-slide-up delay-500 text-center space-y-4">
+                <p className="text-foreground/70 text-base md:text-lg leading-relaxed max-w-xl mx-auto">
+                  Festivalen markerer starten på en ny måte å følge band, artister og musikere på. Du skal ikke trenge stipend, priser eller bransjestempel for å fortelle historien din. Og du skal ikke måtte forstå algoritmer eller kjempe om oppmerksomhet i et evig scroll.
+                </p>
+              </div>
+
+              {/* Accent line */}
+              <div className="animate-line-grow delay-600 h-px w-24 mx-auto bg-accent/50 origin-center" />
+
+              {/* Closing statement */}
+              <div className="animate-slide-up delay-700 text-center space-y-3">
+                <p className="text-foreground text-xl md:text-2xl font-semibold">
+                  Først og fremst er vi GIGGEN.
+                </p>
+                <p className="text-accent text-lg md:text-xl italic">
+                  Og vi er klare for å gi musikkbransjen et friskt pust.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
       );
