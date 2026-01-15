@@ -331,7 +331,7 @@ export function SectionRenderer({
             <img
               src={giggenLogo}
               alt="Giggen"
-              className="animate-slide-up h-10 w-auto mb-5 opacity-80"
+              className="animate-slide-up h-20 w-auto mb-5 opacity-80"
             />
             
             {/* Tagline */}
