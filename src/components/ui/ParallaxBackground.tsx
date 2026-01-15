@@ -26,6 +26,14 @@ export function ParallaxBackground({
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
     checkMobile();
 
+    // Disable parallax on mobile for smooth scrolling
+    if (window.innerWidth <= 768) {
+      window.addEventListener("resize", checkMobile, { passive: true });
+      return () => {
+        window.removeEventListener("resize", checkMobile);
+      };
+    }
+
     const handleScroll = () => {
       if (rafRef.current !== null) return;
       
@@ -39,16 +47,11 @@ export function ParallaxBackground({
         const rect = container.getBoundingClientRect();
         const viewportHeight = window.innerHeight;
         
-        // Calculate how far the section is from center of viewport
-        // When section enters viewport from bottom, offset is positive
-        // When section leaves viewport from top, offset is negative
         const sectionCenter = rect.top + rect.height / 2;
         const viewportCenter = viewportHeight / 2;
         const distanceFromCenter = viewportCenter - sectionCenter;
         
-        // Only apply parallax when section is visible
         if (rect.bottom > 0 && rect.top < viewportHeight) {
-          // Limit the parallax effect to prevent image moving too much
           const maxOffset = rect.height * intensity;
           const offset = Math.max(-maxOffset, Math.min(maxOffset, distanceFromCenter * intensity));
           setParallaxY(offset);
@@ -65,7 +68,6 @@ export function ParallaxBackground({
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleResize, { passive: true });
     
-    // Initial calculation
     handleScroll();
     
     return () => {
