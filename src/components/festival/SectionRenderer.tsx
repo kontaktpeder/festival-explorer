@@ -7,23 +7,8 @@ import { MobileFadeOverlay } from "@/components/ui/MobileFadeOverlay";
 import { useResponsiveImage } from "@/hooks/useResponsiveImage";
 import giggenLogo from "@/assets/giggen-logo.png";
 import type { Json } from "@/integrations/supabase/types";
-// Default section background images
-import sectionBgProgram from "@/assets/section-bg-program.png";
-import sectionBgOm from "@/assets/section-bg-om.png";
-import sectionBgArtister from "@/assets/section-bg-artister.png";
-import sectionBgVenue from "@/assets/section-bg-venue.png";
-import sectionBgPraktisk from "@/assets/section-bg-praktisk.png";
-import sectionBgFooter from "@/assets/section-bg-footer.png";
-
-// Map section types to default backgrounds
-const DEFAULT_SECTION_BACKGROUNDS: Record<string, string> = {
-  program: sectionBgProgram,
-  om: sectionBgOm,
-  artister: sectionBgArtister,
-  "venue-plakat": sectionBgVenue,
-  praktisk: sectionBgPraktisk,
-  footer: sectionBgFooter,
-};
+// NOTE: Default section background images removed to allow black backgrounds
+// If no image is set, the section will have a black background
 
 interface FestivalSection {
   id: string;
@@ -75,14 +60,14 @@ function SectionBackground({
   section: FestivalSection; 
   venueImage?: string | null;
 }) {
-  const defaultBackground = DEFAULT_SECTION_BACKGROUNDS[section.type] || null;
-  
+  // No default fallback - allows black backgrounds when no image is set
   const activeImage = useResponsiveImage({
     desktopUrl: section.bg_image_url_desktop,
     mobileUrl: section.bg_image_url_mobile,
-    fallbackUrl: venueImage || section.bg_image_url || defaultBackground,
+    fallbackUrl: venueImage || section.bg_image_url || null,
   });
 
+  // If no image, return null (black background)
   if (!activeImage) return null;
 
   const imageFitMode = (section.image_fit_mode === 'contain' ? 'contain' : 'cover') as 'cover' | 'contain';
@@ -90,8 +75,8 @@ function SectionBackground({
   if (section.bg_mode === "fixed") {
     return (
       <ParallaxBackground
-        imageUrl={section.bg_image_url_desktop || section.bg_image_url || defaultBackground}
-        imageUrlMobile={section.bg_image_url_mobile || section.bg_image_url || defaultBackground}
+        imageUrl={section.bg_image_url_desktop || section.bg_image_url || ""}
+        imageUrlMobile={section.bg_image_url_mobile || section.bg_image_url || ""}
         intensity={0.3}
         imageFitMode={imageFitMode}
       />
