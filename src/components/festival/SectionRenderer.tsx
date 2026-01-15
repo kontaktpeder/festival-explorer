@@ -72,26 +72,19 @@ function SectionBackground({
 
   const imageFitMode = (section.image_fit_mode === 'contain' ? 'contain' : 'cover') as 'cover' | 'contain';
 
-  // Check if the image is a GIF (animated images need special handling)
-  const desktopImage = section.bg_image_url_desktop || section.bg_image_url || "";
-  const mobileImage = section.bg_image_url_mobile || section.bg_image_url || "";
-  const isGif = activeImage.toLowerCase().includes('.gif') || 
-                desktopImage.toLowerCase().includes('.gif') || 
-                mobileImage.toLowerCase().includes('.gif');
-
   if (section.bg_mode === "fixed") {
     return (
       <ParallaxBackground
-        imageUrl={desktopImage}
-        imageUrlMobile={mobileImage}
+        imageUrl={section.bg_image_url_desktop || section.bg_image_url || ""}
+        imageUrlMobile={section.bg_image_url_mobile || section.bg_image_url || ""}
         intensity={0.3}
         imageFitMode={imageFitMode}
-        isAnimated={isGif}
+        isAnimated={true}
       />
     );
   }
 
-  // Use <img> tag for all images to ensure GIF animations work
+  // Always use <img> tag to ensure GIF animations work (GIFs may have .jpg extension from storage)
   return (
     <div className="absolute inset-0 overflow-hidden">
       <img 
