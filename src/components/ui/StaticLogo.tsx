@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback } from "react";
-import giggenLogo from "@/assets/giggen-logo.png";
+import giggenLogo from "@/assets/giggen-logo-new.png";
 
 export function StaticLogo() {
   const location = useLocation();
@@ -21,7 +21,7 @@ export function StaticLogo() {
     <Link
       to="/"
       onClick={handleClick}
-      className="fixed z-50 left-4 top-4"
+      className="fixed z-50 left-4 top-2"
     >
       <img
         src={giggenLogo}
