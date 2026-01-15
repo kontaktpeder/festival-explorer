@@ -385,9 +385,45 @@ export default function AdminSections() {
     },
   });
 
-  // Delete section mutation
+  // Delete section mutation - also deletes images from storage
   const deleteSection = useMutation({
     mutationFn: async (sectionId: string) => {
+      // First, fetch the section to get image URLs
+      const { data: section } = await supabase
+        .from("festival_sections")
+        .select("bg_image_url, bg_image_url_desktop, bg_image_url_mobile")
+        .eq("id", sectionId)
+        .single();
+
+      // Delete images from storage if they exist
+      if (section) {
+        const imageUrls = [
+          section.bg_image_url,
+          section.bg_image_url_desktop,
+          section.bg_image_url_mobile,
+        ].filter(Boolean) as string[];
+
+        for (const url of imageUrls) {
+          try {
+            // Extract file path from full URL
+            const urlObj = new URL(url);
+            const pathParts = urlObj.pathname.split('/');
+            const bucketIndex = pathParts.findIndex(part => part === 'media');
+            if (bucketIndex !== -1) {
+              // Path after /media/ is the file path
+              const filePath = pathParts.slice(bucketIndex + 1).join('/');
+              if (filePath) {
+                await supabase.storage.from('media').remove([filePath]);
+              }
+            }
+          } catch (error) {
+            console.warn('Could not delete image from storage:', error);
+            // Continue anyway - don't block deletion
+          }
+        }
+      }
+
+      // Delete the section from database
       const { error } = await supabase
         .from("festival_sections")
         .delete()
