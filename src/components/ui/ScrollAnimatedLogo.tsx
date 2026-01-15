@@ -55,7 +55,7 @@ export function ScrollAnimatedLogo() {
       className="fixed z-50"
       style={isScrolled ? {
         left: "50%",
-        top: "-20px",
+        top: isMobile ? "-60px" : "-100px",
         transform: "translateX(-50%)",
       } : {
         left: "16px",
