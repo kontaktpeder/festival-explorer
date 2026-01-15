@@ -55,11 +55,11 @@ export function ScrollAnimatedLogo() {
       className="fixed z-50"
       style={isScrolled ? {
         left: "50%",
-        top: "4px",
+        top: "-20px",
         transform: "translateX(-50%)",
       } : {
         left: "16px",
-        top: "8px",
+        top: "16px",
         transform: "none",
       }}
     >
