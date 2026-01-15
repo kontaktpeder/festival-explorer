@@ -7,6 +7,7 @@ interface ParallaxBackgroundProps {
   className?: string;
   containerRef?: RefObject<HTMLElement>;
   imageFitMode?: 'cover' | 'contain';
+  isAnimated?: boolean; // For GIFs and animated images
 }
 
 export function ParallaxBackground({
@@ -16,6 +17,7 @@ export function ParallaxBackground({
   className = "",
   containerRef,
   imageFitMode = 'cover',
+  isAnimated = false,
 }: ParallaxBackgroundProps) {
   const [parallaxY, setParallaxY] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
@@ -45,7 +47,10 @@ export function ParallaxBackground({
         
         if (rect.bottom > 0 && rect.top < viewportHeight) {
           // Reduce intensity on mobile for smoother performance
-          const effectiveIntensity = window.innerWidth <= 768 ? intensity * 0.5 : intensity;
+          // Also reduce for animated images to prevent jitter
+          const mobileReduction = window.innerWidth <= 768 ? 0.5 : 1;
+          const animatedReduction = isAnimated ? 0.7 : 1;
+          const effectiveIntensity = intensity * mobileReduction * animatedReduction;
           const maxOffset = rect.height * effectiveIntensity;
           const offset = Math.max(-maxOffset, Math.min(maxOffset, distanceFromCenter * effectiveIntensity));
           setParallaxY(offset);
@@ -71,7 +76,7 @@ export function ParallaxBackground({
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [containerRef, intensity]);
+  }, [containerRef, intensity, isAnimated]);
 
   // Choose image based on device
   const activeImage = isMobile 
@@ -101,6 +106,8 @@ export function ParallaxBackground({
           style={{ 
             objectPosition: imageFitMode === 'contain' ? 'center top' : 'center center',
             transform: 'translateZ(0)',
+            // Ensure GIF animations are not paused
+            imageRendering: isAnimated ? 'auto' : undefined,
           }}
         />
       </div>

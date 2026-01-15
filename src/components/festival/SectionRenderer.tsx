@@ -73,40 +73,36 @@ function SectionBackground({
   const imageFitMode = (section.image_fit_mode === 'contain' ? 'contain' : 'cover') as 'cover' | 'contain';
 
   // Check if the image is a GIF (animated images need special handling)
-  const isGif = activeImage.toLowerCase().includes('.gif');
+  const desktopImage = section.bg_image_url_desktop || section.bg_image_url || "";
+  const mobileImage = section.bg_image_url_mobile || section.bg_image_url || "";
+  const isGif = activeImage.toLowerCase().includes('.gif') || 
+                desktopImage.toLowerCase().includes('.gif') || 
+                mobileImage.toLowerCase().includes('.gif');
 
   if (section.bg_mode === "fixed") {
     return (
       <ParallaxBackground
-        imageUrl={section.bg_image_url_desktop || section.bg_image_url || ""}
-        imageUrlMobile={section.bg_image_url_mobile || section.bg_image_url || ""}
+        imageUrl={desktopImage}
+        imageUrlMobile={mobileImage}
         intensity={0.3}
         imageFitMode={imageFitMode}
+        isAnimated={isGif}
       />
     );
   }
 
-  // Use <img> tag for GIFs to ensure animation works, otherwise use background-image
-  if (isGif) {
-    return (
-      <div className="absolute inset-0 overflow-hidden">
-        <img 
-          src={activeImage}
-          alt=""
-          className={`w-full h-full ${imageFitMode === 'contain' ? 'object-contain' : 'object-cover'}`}
-          style={{ 
-            objectPosition: imageFitMode === 'contain' ? 'center top' : 'center center',
-          }}
-        />
-      </div>
-    );
-  }
-
+  // Use <img> tag for all images to ensure GIF animations work
   return (
-    <div
-      className={`absolute inset-0 bg-no-repeat ${imageFitMode === 'contain' ? 'bg-contain bg-top' : 'bg-cover bg-center'}`}
-      style={{ backgroundImage: `url(${activeImage})` }}
-    />
+    <div className="absolute inset-0 overflow-hidden">
+      <img 
+        src={activeImage}
+        alt=""
+        className={`w-full h-full ${imageFitMode === 'contain' ? 'object-contain' : 'object-cover'}`}
+        style={{ 
+          objectPosition: imageFitMode === 'contain' ? 'center top' : 'center center',
+        }}
+      />
+    </div>
   );
 }
 
