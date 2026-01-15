@@ -26,7 +26,7 @@ export function StaticLogo() {
       <img
         src={giggenLogo}
         alt="Giggen"
-        className="h-10 w-auto opacity-90 hover:opacity-100 transition-opacity duration-200"
+        className="h-20 w-auto opacity-90 hover:opacity-100 transition-opacity duration-200"
       />
     </Link>
   );

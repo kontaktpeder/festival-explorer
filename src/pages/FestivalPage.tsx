@@ -419,7 +419,7 @@ export default function FestivalPage() {
           <img
             src={giggenLogo}
             alt="Giggen"
-            className="h-16 md:h-20 w-auto mb-6"
+            className="h-32 md:h-40 w-auto mb-6"
           />
           <p className="text-muted-foreground text-lg mb-8">
             En plattform for levende musikk og opplevelser.

@@ -44,8 +44,8 @@ export function ScrollAnimatedLogo() {
     }
   }, [location.pathname, navigate]);
 
-  // Center size: 150px on both desktop and mobile
-  const centerSize = 150;
+  // Center size: 300px on both desktop and mobile (doubled)
+  const centerSize = 300;
 
   return (
     <Link
@@ -67,7 +67,7 @@ export function ScrollAnimatedLogo() {
         alt="Giggen"
         className="opacity-90 hover:opacity-100"
         style={{
-          height: isScrolled ? `${centerSize}px` : "40px",
+          height: isScrolled ? `${centerSize}px` : "80px",
           width: "auto",
         }}
       />
