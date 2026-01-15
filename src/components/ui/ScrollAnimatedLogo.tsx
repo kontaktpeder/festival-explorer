@@ -44,8 +44,9 @@ export function ScrollAnimatedLogo() {
     }
   }, [location.pathname, navigate]);
 
-  // Center size: 300px on both desktop and mobile (doubled)
-  const centerSize = 300;
+  // Sizes: smaller on mobile when centered
+  const centerSize = isMobile ? 180 : 300;
+  const cornerSize = isMobile ? 60 : 80;
 
   return (
     <Link
@@ -54,7 +55,7 @@ export function ScrollAnimatedLogo() {
       className="fixed z-50"
       style={isScrolled ? {
         left: "50%",
-        top: "8px",
+        top: "52px",
         transform: "translateX(-50%)",
       } : {
         left: "16px",
@@ -67,7 +68,7 @@ export function ScrollAnimatedLogo() {
         alt="Giggen"
         className="opacity-90 hover:opacity-100"
         style={{
-          height: isScrolled ? `${centerSize}px` : "80px",
+          height: isScrolled ? `${centerSize}px` : `${cornerSize}px`,
           width: "auto",
         }}
       />
