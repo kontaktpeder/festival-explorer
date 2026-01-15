@@ -26,14 +26,6 @@ export function ParallaxBackground({
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
     checkMobile();
 
-    // Disable parallax on mobile for smooth scrolling
-    if (window.innerWidth <= 768) {
-      window.addEventListener("resize", checkMobile, { passive: true });
-      return () => {
-        window.removeEventListener("resize", checkMobile);
-      };
-    }
-
     const handleScroll = () => {
       if (rafRef.current !== null) return;
       
@@ -52,8 +44,10 @@ export function ParallaxBackground({
         const distanceFromCenter = viewportCenter - sectionCenter;
         
         if (rect.bottom > 0 && rect.top < viewportHeight) {
-          const maxOffset = rect.height * intensity;
-          const offset = Math.max(-maxOffset, Math.min(maxOffset, distanceFromCenter * intensity));
+          // Reduce intensity on mobile for smoother performance
+          const effectiveIntensity = window.innerWidth <= 768 ? intensity * 0.5 : intensity;
+          const maxOffset = rect.height * effectiveIntensity;
+          const offset = Math.max(-maxOffset, Math.min(maxOffset, distanceFromCenter * effectiveIntensity));
           setParallaxY(offset);
         }
         
@@ -90,19 +84,24 @@ export function ParallaxBackground({
     <div 
       ref={internalContainerRef}
       className={`absolute inset-0 overflow-hidden ${className}`}
+      style={{ contain: 'layout style paint' }}
     >
       <div
         className={`absolute inset-0 flex ${imageFitMode === 'contain' ? 'items-start' : 'items-center'} justify-center`}
         style={{
-          transform: `translateY(${parallaxY}px)`,
+          transform: `translate3d(0, ${parallaxY}px, 0)`,
           willChange: "transform",
+          backfaceVisibility: "hidden",
         }}
       >
         <img 
           src={activeImage} 
           alt=""
           className={`w-full h-full ${imageFitMode === 'contain' ? 'object-contain' : 'object-cover'}`}
-          style={{ objectPosition: imageFitMode === 'contain' ? 'center top' : 'center center' }}
+          style={{ 
+            objectPosition: imageFitMode === 'contain' ? 'center top' : 'center center',
+            transform: 'translateZ(0)',
+          }}
         />
       </div>
     </div>
