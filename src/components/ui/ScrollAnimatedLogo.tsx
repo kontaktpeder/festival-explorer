@@ -59,7 +59,7 @@ export function ScrollAnimatedLogo() {
         transform: "translateX(-50%)",
       } : {
         left: "16px",
-        top: "16px",
+        top: isMobile ? "-16px" : "-24px",
         transform: "none",
       }}
     >
