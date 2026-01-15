@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import giggenLogo from "@/assets/giggen-logo.png";
+import giggenLogo from "@/assets/giggen-logo-new.png";
 
 export function ScrollAnimatedLogo() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -54,11 +54,11 @@ export function ScrollAnimatedLogo() {
       className="fixed z-50"
       style={isScrolled ? {
         left: "50%",
-        top: "20px",
+        top: "8px",
         transform: "translateX(-50%)",
       } : {
         left: "16px",
-        top: "16px",
+        top: "8px",
         transform: "none",
       }}
     >
