@@ -80,15 +80,23 @@ export function MediaUpload({
       let processedFile: File = file;
       let dimensions: { width?: number; height?: number } = {};
 
-      // Compress images
+      // Compress images (NOTE: GIF must not be compressed, otherwise animation is lost)
       if (ft === "image") {
-        const compressed = await compressImage(file, {
-          maxWidth: 1920,
-          maxHeight: 1920,
-          quality: 0.85,
-        });
-        processedFile = compressed.file;
-        dimensions = { width: compressed.width, height: compressed.height };
+        const isGif = file.type.toLowerCase() === "image/gif" || file.name.toLowerCase().endsWith(".gif");
+
+        if (isGif) {
+          processedFile = file;
+          const dims = await getImageDimensions(file);
+          dimensions = { width: dims.width, height: dims.height };
+        } else {
+          const compressed = await compressImage(file, {
+            maxWidth: 1920,
+            maxHeight: 1920,
+            quality: 0.85,
+          });
+          processedFile = compressed.file;
+          dimensions = { width: compressed.width, height: compressed.height };
+        }
       }
 
       // Upload to storage
@@ -265,7 +273,10 @@ export function MediaUpload({
           <p className="text-sm text-muted-foreground flex items-center gap-2">
             {getIconForType(detectedType)}
             {file.name} ({(file.size / (1024 * 1024)).toFixed(2)}MB)
-            {detectedType === "image" && " - Vil bli komprimert automatisk"}
+            {detectedType === "image" &&
+              (file.type.toLowerCase() === "image/gif" || file.name.toLowerCase().endsWith(".gif")
+                ? " - GIF blir ikke komprimert"
+                : " - Vil bli komprimert automatisk")}
           </p>
         )}
       </div>
@@ -402,6 +413,26 @@ async function compressImage(
     };
     img.onerror = () => reject(new Error("Kunne ikke laste bilde"));
     img.src = URL.createObjectURL(file);
+  });
+}
+
+// Helper: Get image dimensions (without converting/compressing)
+function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Kunne ikke lese bildedimensjoner"));
+    };
+
+    img.src = url;
   });
 }
 
