@@ -37,12 +37,10 @@ export default function ProjectPage() {
       <StaticLogo />
 
       <HeroSection imageUrl={project.hero_image_url || undefined} compact scrollExpand>
-        <div className="animate-slide-up">
-          {project.tagline && (
-            <div className="text-mono text-accent mb-2 text-sm uppercase tracking-widest">{project.tagline}</div>
-          )}
-          <h1 className="font-black text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight leading-none">{project.name}</h1>
-        </div>
+        {project.tagline && (
+          <div className="text-mono text-accent mb-1 text-xs uppercase tracking-widest opacity-80">{project.tagline}</div>
+        )}
+        <h1 className="font-black text-2xl md:text-3xl uppercase tracking-tight leading-none">{project.name}</h1>
       </HeroSection>
 
       <div className="section">
