@@ -81,12 +81,17 @@
     font-family: var(--font-display);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-color: hsl(240 10% 6%);
   }
   
   body {
     @apply bg-background text-foreground;
     min-height: 100vh;
+    min-height: 100dvh;
     position: relative;
+    background-color: hsl(240 10% 6%);
+    /* Prevent iOS overscroll showing white */
+    overscroll-behavior: none;
   }
   
   /* Grain overlay on body */
