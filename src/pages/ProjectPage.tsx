@@ -8,7 +8,7 @@ import { HeroSection } from "@/components/ui/HeroSection";
 import { BackToFestival } from "@/components/ui/BackToFestival";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
-
+import { ProjectTimeline } from "@/components/ui/ProjectTimeline";
 // Hook to find festival connection via event_projects -> events -> festival_events
 function useProjectFestival(projectId: string | undefined) {
   return useQuery({
@@ -144,14 +144,12 @@ export default function ProjectPage() {
         </>
       )}
 
-      {/* Placeholder for future travel modules */}
-      <div className="section opacity-50">
-        <div className="cosmic-card p-6 text-center">
-          <p className="text-sm text-muted-foreground">
-            Relaterte opplevelser kommer snart...
-          </p>
-        </div>
-      </div>
+      {/* Timeline section */}
+      <div className="accent-line" />
+      <section className="section">
+        <h2 className="section-title">Historien</h2>
+        <ProjectTimeline projectId={project.id} viewerRole="fan" />
+      </section>
     </PageLayout>
   );
 }
