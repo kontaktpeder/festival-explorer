@@ -40,14 +40,14 @@ export function StaticLogo() {
 
   return (
     <>
-      {/* Solid black bar at very top to cover iPhone notch - always visible on mobile when scrolled */}
+      {/* Solid black bar at very top to cover iPhone notch */}
       <div 
         className={`fixed inset-x-0 z-40 pointer-events-none transition-opacity duration-500 ease-out md:hidden ${
           showCentered ? 'opacity-100' : 'opacity-0'
         }`}
         style={{
-          top: '-60px',
-          height: 'calc(env(safe-area-inset-top, 47px) + 60px)',
+          top: 0,
+          height: 'var(--safe-top, 47px)',
           background: 'hsl(240 10% 6% / 1)'
         }}
       />
@@ -58,9 +58,9 @@ export function StaticLogo() {
           showCentered ? 'opacity-100' : 'opacity-0'
         }`}
         style={{
-          top: 'env(safe-area-inset-top, 47px)',
-          height: '120px',
-          background: 'linear-gradient(to bottom, hsl(240 10% 6% / 1) 0%, hsl(240 10% 6% / 0.85) 30%, hsl(240 10% 6% / 0.5) 60%, transparent 100%)'
+          top: 'var(--safe-top, 47px)',
+          height: '100px',
+          background: 'linear-gradient(to bottom, hsl(240 10% 6% / 1) 0%, hsl(240 10% 6% / 0.7) 40%, transparent 100%)'
         }}
       />
       
@@ -74,16 +74,14 @@ export function StaticLogo() {
         }`}
         style={{
           top: showCentered 
-            ? 'calc(env(safe-area-inset-top, 0px) + 4px)' 
-            : 'calc(env(safe-area-inset-top, 0px) + 4px)'
+            ? 'calc(var(--safe-top, 0px) + 8px)' 
+            : 'calc(var(--safe-top, 0px) + 8px)'
         }}
       >
         <img
           src={giggenLogo}
           alt="Giggen"
-          className={`w-auto opacity-90 hover:opacity-100 transition-all duration-500 ${
-            showCentered ? 'h-24' : 'h-24'
-          }`}
+          className="h-24 w-auto opacity-90 hover:opacity-100 transition-all duration-500"
         />
       </Link>
     </>
