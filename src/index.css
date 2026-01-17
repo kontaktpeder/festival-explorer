@@ -7,6 +7,10 @@
 
 @layer base {
   :root {
+    /* iOS safe-area fix */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    
     /* Cosmic Dark Base */
     --background: 240 10% 6%;
     --foreground: 45 20% 92%;
@@ -86,12 +90,16 @@
   
   body {
     @apply bg-background text-foreground;
-    min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     position: relative;
     background-color: hsl(240 10% 6%);
     /* Prevent iOS overscroll showing white */
     overscroll-behavior: none;
+  }
+  
+  /* iOS safe-area aware elements */
+  .min-h-screen {
+    min-height: 100svh;
   }
   
   /* Grain overlay on body */
@@ -488,5 +496,28 @@
     font-size: clamp(2rem, 4vw, 3.5rem);
     line-height: 1.05;
     letter-spacing: -0.02em;
+  }
+}
+
+/* iOS safe-area utilities */
+@layer utilities {
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  .top-safe {
+    top: env(safe-area-inset-top, 0px);
+  }
+  
+  .h-screen-safe {
+    height: calc(100svh - env(safe-area-inset-top, 0px));
+  }
+  
+  .min-h-screen-safe {
+    min-height: calc(100svh - env(safe-area-inset-top, 0px));
   }
 }
