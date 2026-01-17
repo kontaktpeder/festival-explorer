@@ -10,7 +10,7 @@ import { HeroSection } from "@/components/ui/HeroSection";
 import { FestivalEventAccordion } from "@/components/ui/FestivalEventAccordion";
 import { SectionRenderer } from "@/components/festival/SectionRenderer";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
-import { ScrollAnimatedLogo } from "@/components/ui/ScrollAnimatedLogo";
+import { StaticLogo } from "@/components/ui/StaticLogo";
 import giggenLogo from "@/assets/giggen-logo.png";
 
 export default function FestivalPage() {
@@ -121,8 +121,8 @@ export default function FestivalPage() {
   if (festival.sections && festival.sections.length > 0) {
     return (
       <PageLayout>
-        {/* Scroll-animert logo */}
-        <ScrollAnimatedLogo />
+        {/* Universal logo */}
+        <StaticLogo />
 
         {/* Render sections dynamisk */}
         {festival.sections.map((section) => {
@@ -233,8 +233,8 @@ export default function FestivalPage() {
 
   return (
     <PageLayout>
-      {/* Scroll-animert logo */}
-      <ScrollAnimatedLogo />
+      {/* Universal logo */}
+      <StaticLogo />
 
       {/* SEKSJON 1: HERO - Fullskjerm, bg-fixed */}
       <HeroSection imageUrl={heroImage} fullScreen backgroundFixed>
