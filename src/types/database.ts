@@ -108,3 +108,24 @@ export interface FestivalEvent {
   sort_order: number;
   event?: Event | null;
 }
+
+export type TimelineEventType = 'live_show' | 'release' | 'milestone' | 'collaboration' | 'media' | 'award' | 'personal_memory';
+export type TimelineVisibility = 'public' | 'pro' | 'private';
+
+export interface ProjectTimelineEvent {
+  id: string;
+  project_id: string;
+  event_type: TimelineEventType;
+  visibility: TimelineVisibility;
+  title: string;
+  description: string | null;
+  date: string | null; // YYYY-MM-DD
+  year: number | null;
+  location_name: string | null;
+  city: string | null;
+  country: string | null;
+  media: Array<{ type: 'image' | 'video'; url: string }> | null;
+  created_at: string;
+  updated_at: string;
+  project?: Project | null;
+}

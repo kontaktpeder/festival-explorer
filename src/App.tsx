@@ -28,6 +28,8 @@ import AdminProjectEdit from "./pages/admin/AdminProjectEdit";
 import AdminVenues from "./pages/admin/AdminVenues";
 import AdminVenueEdit from "./pages/admin/AdminVenueEdit";
 import AdminMedia from "./pages/admin/AdminMedia";
+import AdminTimelineEvents from "./pages/admin/AdminTimelineEvents";
+import AdminTimelineEventEdit from "./pages/admin/AdminTimelineEventEdit";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +64,8 @@ const App = () => (
             <Route path="venues" element={<AdminVenues />} />
             <Route path="venues/:id" element={<AdminVenueEdit />} />
             <Route path="media" element={<AdminMedia />} />
+            <Route path="timeline" element={<AdminTimelineEvents />} />
+            <Route path="timeline/:id" element={<AdminTimelineEventEdit />} />
           </Route>
           
           <Route path="*" element={<NotFound />} />

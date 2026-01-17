@@ -525,6 +525,65 @@ export type Database = {
           },
         ]
       }
+      project_timeline_events: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          date: string | null
+          description: string | null
+          event_type: string
+          id: string
+          location_name: string | null
+          media: Json | null
+          project_id: string
+          title: string
+          updated_at: string
+          visibility: string
+          year: number | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          event_type: string
+          id?: string
+          location_name?: string | null
+          media?: Json | null
+          project_id: string
+          title: string
+          updated_at?: string
+          visibility?: string
+          year?: number | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          event_type?: string
+          id?: string
+          location_name?: string | null
+          media?: Json | null
+          project_id?: string
+          title?: string
+          updated_at?: string
+          visibility?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_timeline_events_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           created_at: string
