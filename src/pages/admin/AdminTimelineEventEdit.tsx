@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, ChevronsUpDown, Globe, Tag, Lock, ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
+import { 
+  ArrowLeft, Check, ChevronsUpDown, Globe, Tag, Lock, ChevronDown, ChevronUp, HelpCircle,
+  Sparkles, Footprints, Search, Disc3, Mic2, Trophy, Sprout, TreeDeciduous, LucideIcon
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,63 +55,63 @@ import type { TimelineEventType, TimelineVisibility } from "@/types/database";
 const PHASES: { 
   value: string; 
   label: string; 
-  icon: string; 
+  icon: LucideIcon; 
   defaultVisibility: TimelineVisibility;
   placeholders: string[];
 }[] = [
   { 
     value: "origin", 
     label: "Opprinnelse & gnist", 
-    icon: "✨", 
+    icon: Sparkles, 
     defaultVisibility: "private",
     placeholders: ["Bandet fikk navnet sitt", "Første låt skrevet i kjelleren"]
   },
   { 
     value: "first_steps", 
     label: "De første stegene ut", 
-    icon: "👣", 
+    icon: Footprints, 
     defaultVisibility: "public",
     placeholders: ["Første konsert på vennefest", "Første betalte spillejobb"]
   },
   { 
     value: "identity", 
     label: "Utforsking & identitet", 
-    icon: "🔍", 
+    icon: Search, 
     defaultVisibility: "public",
     placeholders: ["Endring i besetning", "Første studioinnspilling"]
   },
   { 
     value: "releases", 
     label: "Utgivelser & synlighet", 
-    icon: "💿", 
+    icon: Disc3, 
     defaultVisibility: "public",
     placeholders: ["Første singel sluppet", "Første radiospilling"]
   },
   { 
     value: "live_momentum", 
     label: "Live-liv & momentum", 
-    icon: "🎤", 
+    icon: Mic2, 
     defaultVisibility: "public",
     placeholders: ["Første utsolgte konsert", "Første festivalopptreden"]
   },
   { 
     value: "recognition", 
     label: "Anerkjennelse & profesjonalisering", 
-    icon: "🏆", 
+    icon: Trophy, 
     defaultVisibility: "public",
     placeholders: ["Første pris / nominasjon", "Signert av booking-agent"]
   },
   { 
     value: "maturity", 
     label: "Modning & valg", 
-    icon: "🌱", 
+    icon: Sprout, 
     defaultVisibility: "public",
     placeholders: ["Ny kunstnerisk retning", "Album som markerer et skifte"]
   },
   { 
     value: "legacy", 
     label: "Forankring & arv", 
-    icon: "🌳", 
+    icon: TreeDeciduous, 
     defaultVisibility: "public",
     placeholders: ["10-års jubileum", "Samarbeid med yngre artister"]
   },
@@ -375,11 +378,17 @@ export default function AdminTimelineEventEdit() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {PHASES.map((p) => (
-                  <SelectItem key={p.value} value={p.value}>
-                    {p.icon} {p.label}
-                  </SelectItem>
-                ))}
+                {PHASES.map((p) => {
+                  const PhaseIcon = p.icon;
+                  return (
+                    <SelectItem key={p.value} value={p.value}>
+                      <span className="flex items-center gap-2">
+                        <PhaseIcon className="w-4 h-4" />
+                        {p.label}
+                      </span>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>
