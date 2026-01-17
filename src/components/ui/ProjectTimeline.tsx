@@ -3,20 +3,19 @@ import {
   Calendar, MapPin, Sparkles, Footprints, Search, Disc3, 
   Mic2, Trophy, Sprout, TreeDeciduous, LucideIcon 
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { usePublicTimelineEvents } from "@/hooks/useTimeline";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import type { TimelineEventType } from "@/types/database";
 
-const EVENT_TYPE_CONFIG: Record<TimelineEventType, { label: string; icon: LucideIcon }> = {
-  live_show: { label: "Konsert", icon: Mic2 },
-  release: { label: "Utgivelse", icon: Disc3 },
-  milestone: { label: "Milepæl", icon: Sparkles },
-  collaboration: { label: "Samarbeid", icon: Search },
-  media: { label: "Media", icon: Disc3 },
-  award: { label: "Pris", icon: Trophy },
-  personal_memory: { label: "Personlig minne", icon: Sprout },
+const EVENT_TYPE_CONFIG: Record<TimelineEventType, { icon: LucideIcon }> = {
+  live_show: { icon: Mic2 },
+  release: { icon: Disc3 },
+  milestone: { icon: Sparkles },
+  collaboration: { icon: Search },
+  media: { icon: Disc3 },
+  award: { icon: Trophy },
+  personal_memory: { icon: Sprout },
 };
 
 interface ProjectTimelineProps {
@@ -37,7 +36,7 @@ export function ProjectTimeline({ projectId, viewerRole = "fan" }: ProjectTimeli
 
   if (!events || events.length === 0) {
     return (
-      <div className="cosmic-card p-6 text-center">
+      <div className="py-6 text-center">
         <p className="text-sm text-muted-foreground">
           Ingen hendelser lagt til ennå.
         </p>
@@ -46,11 +45,11 @@ export function ProjectTimeline({ projectId, viewerRole = "fan" }: ProjectTimeli
   }
 
   return (
-    <div className="relative">
-      {/* Vertical timeline line */}
-      <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-border" />
+    <div className="relative pl-6">
+      {/* Vertical timeline line - themed */}
+      <div className="absolute left-2 top-2 bottom-2 w-px bg-gradient-to-b from-primary/60 via-primary/30 to-transparent" />
 
-      <div className="space-y-6">
+      <div className="space-y-8">
         {events.map((event, index) => (
           <TimelineItem key={event.id} event={event} index={index} />
         ))}
@@ -98,17 +97,16 @@ function TimelineItem({ event, index }: TimelineItemProps) {
   }, []);
 
   const typeConfig = EVENT_TYPE_CONFIG[event.event_type as TimelineEventType] || {
-    label: event.event_type,
     icon: Sparkles,
   };
   const EventIcon = typeConfig.icon;
 
   const formatEventDate = () => {
-    if (event.date) {
-      return format(new Date(event.date), "d. MMMM yyyy", { locale: nb });
-    }
     if (event.year) {
       return event.year.toString();
+    }
+    if (event.date) {
+      return format(new Date(event.date), "yyyy", { locale: nb });
     }
     return null;
   };
@@ -125,78 +123,71 @@ function TimelineItem({ event, index }: TimelineItemProps) {
     <div
       ref={ref}
       className={`
-        relative pl-10 transition-all duration-500 ease-out
+        relative transition-all duration-500 ease-out
         ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
       `}
-      style={{ transitionDelay: `${index * 100}ms` }}
+      style={{ transitionDelay: `${index * 80}ms` }}
     >
       {/* Timeline dot */}
-      <div className="absolute left-2.5 top-1 w-3 h-3 rounded-full bg-primary border-2 border-background" />
+      <div className="absolute -left-4 top-1 w-2 h-2 rounded-full bg-primary" />
 
-      {/* Event card */}
-      <div className="cosmic-card p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
-        <div className="flex items-start gap-3">
-          {/* Icon */}
-          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <EventIcon className="w-4 h-4 text-primary" />
-          </div>
+      {/* Content - no card, clean layout */}
+      <div className="flex items-start gap-4">
+        {/* Icon */}
+        <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center text-primary/70">
+          <EventIcon className="w-4 h-4" />
+        </div>
 
-          <div className="flex-1 min-w-0">
-            {/* Badge and title */}
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              <Badge variant="secondary" className="text-xs">
-                {typeConfig.label}
-              </Badge>
+        <div className="flex-1 min-w-0">
+          {/* Year prominent */}
+          {dateStr && (
+            <span className="text-xs font-medium text-primary/80 tracking-wider uppercase">
+              {dateStr}
+            </span>
+          )}
+
+          {/* Title */}
+          <h3 className="font-medium text-foreground leading-snug mt-0.5">
+            {event.title}
+          </h3>
+
+          {/* Location inline */}
+          {locationStr && (
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              {locationStr}
+            </p>
+          )}
+
+          {/* Description */}
+          {event.description && (
+            <p className="mt-2 text-sm text-foreground/70 whitespace-pre-line leading-relaxed">
+              {event.description}
+            </p>
+          )}
+
+          {/* Media */}
+          {event.media && event.media.length > 0 && (
+            <div className="mt-3 flex gap-2 flex-wrap">
+              {event.media.map((m, i) => (
+                <div key={i} className="w-20 h-20 rounded overflow-hidden">
+                  {m.type === "image" ? (
+                    <img
+                      src={m.url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <video
+                      src={m.url}
+                      className="w-full h-full object-cover"
+                      muted
+                    />
+                  )}
+                </div>
+              ))}
             </div>
-
-            <h3 className="font-semibold text-foreground">{event.title}</h3>
-
-            {/* Date and location */}
-            <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-              {dateStr && (
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
-                  {dateStr}
-                </span>
-              )}
-              {locationStr && (
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
-                  {locationStr}
-                </span>
-              )}
-            </div>
-
-            {/* Description */}
-            {event.description && (
-              <p className="mt-3 text-sm text-foreground/80 whitespace-pre-line">
-                {event.description}
-              </p>
-            )}
-
-            {/* Media */}
-            {event.media && event.media.length > 0 && (
-              <div className="mt-3 flex gap-2 flex-wrap">
-                {event.media.map((m, i) => (
-                  <div key={i} className="w-24 h-24 rounded overflow-hidden">
-                    {m.type === "image" ? (
-                      <img
-                        src={m.url}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <video
-                        src={m.url}
-                        className="w-full h-full object-cover"
-                        muted
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
     </div>
