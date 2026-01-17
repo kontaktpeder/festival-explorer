@@ -40,15 +40,27 @@ export function StaticLogo() {
 
   return (
     <>
-      {/* Background fade for centered logo on mobile - covers iPhone notch/safe area */}
+      {/* Solid black bar at very top to cover iPhone notch - always visible on mobile when scrolled */}
       <div 
         className={`fixed inset-x-0 z-40 pointer-events-none transition-opacity duration-500 ease-out md:hidden ${
           showCentered ? 'opacity-100' : 'opacity-0'
         }`}
         style={{
-          top: '-50px', // Start above the viewport to cover any safe area
-          height: 'calc(env(safe-area-inset-top, 44px) + 130px)',
-          background: 'linear-gradient(to bottom, hsl(240 10% 6% / 1) 0%, hsl(240 10% 6% / 0.95) 40%, hsl(240 10% 6% / 0.6) 70%, transparent 100%)'
+          top: '-60px',
+          height: 'calc(env(safe-area-inset-top, 47px) + 60px)',
+          background: 'hsl(240 10% 6% / 1)'
+        }}
+      />
+      
+      {/* Gradient fade below the solid bar */}
+      <div 
+        className={`fixed inset-x-0 z-40 pointer-events-none transition-opacity duration-500 ease-out md:hidden ${
+          showCentered ? 'opacity-100' : 'opacity-0'
+        }`}
+        style={{
+          top: 'env(safe-area-inset-top, 47px)',
+          height: '120px',
+          background: 'linear-gradient(to bottom, hsl(240 10% 6% / 1) 0%, hsl(240 10% 6% / 0.85) 30%, hsl(240 10% 6% / 0.5) 60%, transparent 100%)'
         }}
       />
       
@@ -62,15 +74,15 @@ export function StaticLogo() {
         }`}
         style={{
           top: showCentered 
-            ? 'calc(env(safe-area-inset-top, 0px) + 6px)' 
-            : 'calc(env(safe-area-inset-top, 0px) + 6px)'
+            ? 'calc(env(safe-area-inset-top, 0px) + 4px)' 
+            : 'calc(env(safe-area-inset-top, 0px) + 4px)'
         }}
       >
         <img
           src={giggenLogo}
           alt="Giggen"
           className={`w-auto opacity-90 hover:opacity-100 transition-all duration-500 ${
-            showCentered ? 'h-20' : 'h-20'
+            showCentered ? 'h-24' : 'h-24'
           }`}
         />
       </Link>
