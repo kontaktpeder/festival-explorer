@@ -38,12 +38,10 @@ export default function VenuePage() {
       <StaticLogo />
 
       <HeroSection imageUrl={venue.hero_image_url || undefined} compact scrollExpand>
-        <div className="animate-slide-up">
-          {venue.city && (
-            <div className="text-mono text-accent mb-2 text-sm uppercase tracking-widest">{venue.city}</div>
-          )}
-          <h1 className="font-black text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight leading-none">{venue.name}</h1>
-        </div>
+        {venue.city && (
+          <div className="text-mono text-accent mb-1 text-xs uppercase tracking-widest opacity-80">{venue.city}</div>
+        )}
+        <h1 className="font-black text-2xl md:text-3xl uppercase tracking-tight leading-none">{venue.name}</h1>
       </HeroSection>
 
       <div className="section space-y-4">

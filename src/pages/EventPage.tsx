@@ -42,14 +42,12 @@ export default function EventPage() {
       <StaticLogo />
 
       <HeroSection imageUrl={event.hero_image_url || undefined} compact scrollExpand>
-        <div className="animate-slide-up">
-          <div className="text-mono text-accent mb-2 text-sm uppercase tracking-widest">
-            {format(startDate, "EEEE d. MMMM", { locale: nb })}
-          </div>
-          <h1 className="font-black text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight leading-none">
-            {event.title}
-          </h1>
+        <div className="text-mono text-accent mb-1 text-xs uppercase tracking-widest opacity-80">
+          {format(startDate, "EEEE d. MMMM", { locale: nb })}
         </div>
+        <h1 className="font-black text-2xl md:text-3xl uppercase tracking-tight leading-none">
+          {event.title}
+        </h1>
       </HeroSection>
 
       <div className="section space-y-6">
