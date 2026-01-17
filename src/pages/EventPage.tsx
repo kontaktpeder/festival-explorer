@@ -6,7 +6,6 @@ import { useEvent } from "@/hooks/useFestival";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
 import { LineupItem } from "@/components/ui/LineupItem";
-import { BackToFestival } from "@/components/ui/BackToFestival";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 
@@ -39,18 +38,8 @@ export default function EventPage() {
 
   return (
     <PageLayout>
-      {/* Static logo */}
+      {/* Static logo in header */}
       <StaticLogo />
-
-      {/* Back to festival button */}
-      {event.festival && (
-        <div className="section pt-16 pb-0">
-          <BackToFestival
-            festivalSlug={event.festival.slug}
-            festivalName={event.festival.name}
-          />
-        </div>
-      )}
 
       <HeroSection imageUrl={event.hero_image_url || undefined} compact>
         <div className="animate-slide-up">

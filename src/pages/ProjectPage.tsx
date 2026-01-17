@@ -1,47 +1,15 @@
 import { useParams } from "react-router-dom";
 import { Music } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useProject } from "@/hooks/useFestival";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
-import { BackToFestival } from "@/components/ui/BackToFestival";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { ProjectTimeline } from "@/components/ui/ProjectTimeline";
-// Hook to find festival connection via event_projects -> events -> festival_events
-function useProjectFestival(projectId: string | undefined) {
-  return useQuery({
-    queryKey: ["project-festival", projectId],
-    queryFn: async () => {
-      if (!projectId) return null;
-
-      // Find events this project is part of
-      const { data: eventProjects } = await supabase
-        .from("event_projects")
-        .select("event_id")
-        .eq("project_id", projectId)
-        .limit(1);
-
-      if (!eventProjects || eventProjects.length === 0) return null;
-
-      // Check if any of those events belong to a festival
-      const { data: festivalEvent } = await supabase
-        .from("festival_events")
-        .select("festival:festivals(slug, name)")
-        .eq("event_id", eventProjects[0].event_id)
-        .maybeSingle();
-
-      return festivalEvent?.festival || null;
-    },
-    enabled: !!projectId,
-  });
-}
 
 export default function ProjectPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: project, isLoading, error } = useProject(slug || "");
-  const { data: festival } = useProjectFestival(project?.id);
 
   if (isLoading) {
     return (
@@ -65,18 +33,8 @@ export default function ProjectPage() {
 
   return (
     <PageLayout>
-      {/* Static logo */}
+      {/* Static logo in header */}
       <StaticLogo />
-
-      {/* Back to festival button */}
-      {festival && (
-        <div className="section pt-16 pb-0">
-          <BackToFestival
-            festivalSlug={festival.slug}
-            festivalName={festival.name}
-          />
-        </div>
-      )}
 
       <HeroSection imageUrl={project.hero_image_url || undefined} compact>
         <div className="animate-slide-up">
