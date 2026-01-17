@@ -40,16 +40,15 @@ export function StaticLogo() {
 
   return (
     <>
-      {/* Background fade for centered logo on mobile - extends past safe area */}
+      {/* Background fade for centered logo on mobile - covers iPhone notch/safe area */}
       <div 
         className={`fixed inset-x-0 z-40 pointer-events-none transition-opacity duration-500 ease-out md:hidden ${
           showCentered ? 'opacity-100' : 'opacity-0'
         }`}
         style={{
-          top: 0,
-          paddingTop: 'env(safe-area-inset-top, 0px)',
-          height: 'calc(env(safe-area-inset-top, 0px) + 100px)',
-          background: 'linear-gradient(to bottom, hsl(240 10% 6% / 0.95) 0%, hsl(240 10% 6% / 0.7) 50%, hsl(240 10% 6% / 0.3) 80%, transparent 100%)'
+          top: '-50px', // Start above the viewport to cover any safe area
+          height: 'calc(env(safe-area-inset-top, 44px) + 130px)',
+          background: 'linear-gradient(to bottom, hsl(240 10% 6% / 1) 0%, hsl(240 10% 6% / 0.95) 40%, hsl(240 10% 6% / 0.6) 70%, transparent 100%)'
         }}
       />
       
@@ -63,14 +62,16 @@ export function StaticLogo() {
         }`}
         style={{
           top: showCentered 
-            ? 'calc(env(safe-area-inset-top, 0px) + 8px)' 
-            : 'calc(env(safe-area-inset-top, 0px) + 8px)'
+            ? 'calc(env(safe-area-inset-top, 0px) + 6px)' 
+            : 'calc(env(safe-area-inset-top, 0px) + 6px)'
         }}
       >
         <img
           src={giggenLogo}
           alt="Giggen"
-          className="h-16 w-auto opacity-90 hover:opacity-100 transition-opacity duration-300"
+          className={`w-auto opacity-90 hover:opacity-100 transition-all duration-500 ${
+            showCentered ? 'h-20' : 'h-20'
+          }`}
         />
       </Link>
     </>
