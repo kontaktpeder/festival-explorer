@@ -1,19 +1,22 @@
 import { useEffect, useRef, useState } from "react";
-import { Calendar, MapPin } from "lucide-react";
+import { 
+  Calendar, MapPin, Sparkles, Footprints, Search, Disc3, 
+  Mic2, Trophy, Sprout, TreeDeciduous, LucideIcon 
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { usePublicTimelineEvents } from "@/hooks/useTimeline";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import type { TimelineEventType } from "@/types/database";
 
-const EVENT_TYPE_CONFIG: Record<TimelineEventType, { label: string; icon: string }> = {
-  live_show: { label: "Konsert", icon: "🎤" },
-  release: { label: "Utgivelse", icon: "💿" },
-  milestone: { label: "Milepæl", icon: "⭐" },
-  collaboration: { label: "Samarbeid", icon: "🤝" },
-  media: { label: "Media", icon: "📸" },
-  award: { label: "Pris", icon: "🏆" },
-  personal_memory: { label: "Personlig minne", icon: "💭" },
+const EVENT_TYPE_CONFIG: Record<TimelineEventType, { label: string; icon: LucideIcon }> = {
+  live_show: { label: "Konsert", icon: Mic2 },
+  release: { label: "Utgivelse", icon: Disc3 },
+  milestone: { label: "Milepæl", icon: Sparkles },
+  collaboration: { label: "Samarbeid", icon: Search },
+  media: { label: "Media", icon: Disc3 },
+  award: { label: "Pris", icon: Trophy },
+  personal_memory: { label: "Personlig minne", icon: Sprout },
 };
 
 interface ProjectTimelineProps {
@@ -96,8 +99,9 @@ function TimelineItem({ event, index }: TimelineItemProps) {
 
   const typeConfig = EVENT_TYPE_CONFIG[event.event_type as TimelineEventType] || {
     label: event.event_type,
-    icon: "📌",
+    icon: Sparkles,
   };
+  const EventIcon = typeConfig.icon;
 
   const formatEventDate = () => {
     if (event.date) {
@@ -133,7 +137,9 @@ function TimelineItem({ event, index }: TimelineItemProps) {
       <div className="cosmic-card p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
         <div className="flex items-start gap-3">
           {/* Icon */}
-          <div className="text-2xl flex-shrink-0">{typeConfig.icon}</div>
+          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <EventIcon className="w-4 h-4 text-primary" />
+          </div>
 
           <div className="flex-1 min-w-0">
             {/* Badge and title */}
