@@ -81,7 +81,7 @@ export default function EventPage() {
         )}
 
         {/* CTA */}
-        <button className="btn-accent w-full flex items-center justify-center gap-2">
+        <button className="w-full flex items-center justify-center gap-2 py-3 px-6 border border-accent text-accent bg-transparent hover:bg-accent hover:text-background transition-colors font-medium">
           <Ticket className="w-5 h-5" />
           <span>Kjøp billett</span>
         </button>
