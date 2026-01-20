@@ -275,64 +275,25 @@ export function useAcceptInvitation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ token, userId }: { token: string; userId: string }) => {
-      // Get invitation
-      const { data: invitation, error: fetchError } = await supabase
-        .from("access_invitations")
-        .select("*")
-        .eq("token", token)
-        .eq("status", "pending")
-        .single();
+      // Use the secure RPC function that handles RLS bypass
+      const { data, error } = await supabase.rpc("accept_invitation_by_token", {
+        p_token: token,
+      });
+
+      if (error) throw error;
       
-      if (fetchError) throw fetchError;
-      if (!invitation) throw new Error("Invitation not found or expired");
+      // RPC returns jsonb result with success/error info
+      const result = data as unknown as { success: boolean; message: string; entity_id?: string };
       
-      // Check if invitation is expired
-      if (new Date(invitation.expires_at) < new Date()) {
-        throw new Error("Invitation has expired");
+      if (!result.success) {
+        throw new Error(result.message || "Could not accept invitation");
       }
       
-      // Check if user is already a team member
-      const { data: existingMember } = await supabase
-        .from("entity_team")
-        .select("id, access")
-        .eq("entity_id", invitation.entity_id)
-        .eq("user_id", userId)
-        .is("left_at", null)
-        .maybeSingle();
-      
-      if (existingMember) {
-        // User already has access - just mark invitation as accepted
-        console.log("User already has access to entity, skipping team insert");
-      } else {
-        // Add user to team
-        const { error: teamError } = await supabase
-          .from("entity_team")
-          .insert({
-            entity_id: invitation.entity_id,
-            user_id: userId,
-            access: invitation.access,
-            role_labels: invitation.role_labels,
-            is_public: false,
-          });
-        
-        if (teamError) throw teamError;
-      }
-      
-      // Mark invitation as accepted
-      const { error: updateError } = await supabase
-        .from("access_invitations")
-        .update({ 
-          status: 'accepted',
-          accepted_at: new Date().toISOString(),
-        })
-        .eq("id", invitation.id);
-      
-      if (updateError) throw updateError;
-      
-      return invitation;
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-entities"] });
+      queryClient.invalidateQueries({ queryKey: ["invitation"] });
     },
   });
 }
