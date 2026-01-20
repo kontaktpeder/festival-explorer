@@ -15,6 +15,7 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import MyPersonas from "./pages/dashboard/MyPersonas";
 import PersonaEdit from "./pages/dashboard/PersonaEdit";
 import EntityEdit from "./pages/dashboard/EntityEdit";
+import EntityInvite from "./pages/dashboard/EntityInvite";
 import PersonaPage from "./pages/PersonaPage";
 import NotFound from "./pages/NotFound";
 
@@ -60,6 +61,7 @@ const App = () => (
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/entities/:id/edit" element={<EntityEdit />} />
+          <Route path="/dashboard/entities/:id/invite" element={<EntityInvite />} />
           <Route path="/dashboard/personas" element={<MyPersonas />} />
           <Route path="/dashboard/personas/new" element={<PersonaEdit />} />
           <Route path="/dashboard/personas/:id" element={<PersonaEdit />} />
