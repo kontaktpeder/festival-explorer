@@ -1,28 +1,41 @@
 import { Link } from "react-router-dom";
-import type { EventProject } from "@/types/database";
+import type { EventProject, EventEntity } from "@/types/database";
+
+// Support both legacy EventProject and new EventEntity
+type LineupItemData = EventProject | EventEntity;
 
 interface LineupItemProps {
-  item: EventProject;
+  item: LineupItemData;
   showBilling?: boolean;
 }
 
+// Type guard to check if it's the new EventEntity format
+function isEventEntity(item: LineupItemData): item is EventEntity {
+  return 'entity_id' in item && 'entity' in item;
+}
+
 export function LineupItem({ item, showBilling }: LineupItemProps) {
-  const project = item.project;
-  if (!project) return null;
+  // Handle both new entity format and legacy project format
+  const entityData = isEventEntity(item) ? item.entity : item.project;
+  if (!entityData) return null;
+
+  // Determine the route based on entity type (if available) or default to project
+  const entityType = isEventEntity(item) && item.entity?.type;
+  const routePrefix = entityType === 'venue' ? '/venue' : '/project';
 
   return (
-    <Link to={`/project/${project.slug}`} className="lineup-item group">
+    <Link to={`${routePrefix}/${entityData.slug}`} className="lineup-item group">
       <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-secondary">
-        {project.hero_image_url ? (
+        {entityData.hero_image_url ? (
           <img
-            src={project.hero_image_url}
-            alt={project.name}
+            src={entityData.hero_image_url}
+            alt={entityData.name}
             className="w-full h-full object-cover"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <span className="text-lg font-bold text-muted-foreground/40">
-              {project.name.charAt(0)}
+              {entityData.name.charAt(0)}
             </span>
           </div>
         )}
@@ -30,10 +43,10 @@ export function LineupItem({ item, showBilling }: LineupItemProps) {
 
       <div className="flex-1 min-w-0">
         <h4 className="font-semibold truncate group-hover:text-accent transition-colors">
-          {project.name}
+          {entityData.name}
         </h4>
-        {project.tagline && (
-          <p className="text-sm text-muted-foreground truncate">{project.tagline}</p>
+        {entityData.tagline && (
+          <p className="text-sm text-muted-foreground truncate">{entityData.tagline}</p>
         )}
       </div>
 
