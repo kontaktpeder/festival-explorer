@@ -180,6 +180,48 @@ export type Database = {
           },
         ]
       }
+      entity_persona_bindings: {
+        Row: {
+          created_at: string
+          entity_id: string
+          id: string
+          is_public: boolean
+          persona_id: string
+          role_label: string | null
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          id?: string
+          is_public?: boolean
+          persona_id: string
+          role_label?: string | null
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          id?: string
+          is_public?: boolean
+          persona_id?: string
+          role_label?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entity_persona_bindings_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entity_persona_bindings_persona_id_fkey"
+            columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       entity_team: {
         Row: {
           access: Database["public"]["Enums"]["access_level"]

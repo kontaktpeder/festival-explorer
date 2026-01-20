@@ -3,7 +3,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, User, Users } from "lucide-react";
-import { usePersona, usePersonaEntities } from "@/hooks/usePersona";
+import { usePersona } from "@/hooks/usePersona";
+import { usePersonaEntityBindings } from "@/hooks/usePersonaBindings";
 import { LoadingState } from "@/components/ui/LoadingState";
 import type { EntityType } from "@/types/database";
 
@@ -22,7 +23,12 @@ const TYPE_LABELS: Record<EntityType, string> = {
 export default function PersonaPage() {
   const { slug } = useParams();
   const { data: persona, isLoading: isLoadingPersona, error } = usePersona(slug);
-  const { data: entities, isLoading: isLoadingEntities } = usePersonaEntities(persona?.user_id);
+  const { data: bindings, isLoading: isLoadingBindings } = usePersonaEntityBindings(persona?.id);
+
+  // Filter to only show public bindings for published entities
+  const publicBindings = (bindings || []).filter(
+    (binding) => binding.is_public && binding.entity?.is_published
+  );
 
   if (isLoadingPersona) return <LoadingState />;
   
@@ -50,7 +56,7 @@ export default function PersonaPage() {
         
         <div>
           <h1 className="text-3xl font-bold">{persona.name}</h1>
-          {persona.category_tags.length > 0 && (
+          {persona.category_tags && persona.category_tags.length > 0 && (
             <div className="flex flex-wrap justify-center gap-2 mt-3">
               {persona.category_tags.map((tag) => (
                 <Badge key={tag} variant="secondary" className="capitalize">
@@ -68,19 +74,22 @@ export default function PersonaPage() {
         )}
       </div>
 
-      {/* Associated Entities */}
-      {!isLoadingEntities && entities && entities.length > 0 && (
+      {/* Associated Entities via bindings */}
+      {!isLoadingBindings && publicBindings.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Tilknyttet</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {entities.map((entity: any) => {
+              {publicBindings.map((binding) => {
+                const entity = binding.entity;
+                if (!entity) return null;
+                
                 const Icon = TYPE_ICONS[entity.type as EntityType];
                 return (
                   <Link
-                    key={entity.id}
+                    key={binding.id}
                     to={entity.type === 'venue' 
                       ? `/venue/${entity.slug}`
                       : `/project/${entity.slug}`
@@ -104,9 +113,9 @@ export default function PersonaPage() {
                         <Badge variant="outline" className="text-xs">
                           {TYPE_LABELS[entity.type as EntityType]}
                         </Badge>
-                        {entity.role_labels?.length > 0 && (
+                        {binding.role_label && (
                           <span className="text-xs text-muted-foreground">
-                            {entity.role_labels.join(", ")}
+                            {binding.role_label}
                           </span>
                         )}
                       </div>

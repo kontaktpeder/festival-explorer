@@ -14,6 +14,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
 import { generateSlug } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { EntityPersonaBindingsEditor } from "@/components/admin/EntityPersonaBindingsEditor";
 import type { EntityType, AccessLevel } from "@/types/database";
 
 const TYPE_OPTIONS: { value: EntityType; label: string }[] = [
@@ -337,6 +338,13 @@ export default function AdminEntityEdit() {
           </Button>
         </div>
       </form>
+
+      {/* Persona Bindings section (only for existing entities) */}
+      {!isNew && entity && (
+        <div className="mt-8 pt-6 border-t border-border">
+          <EntityPersonaBindingsEditor entityId={entity.id} entityName={entity.name} />
+        </div>
+      )}
 
       {/* Team section (only for existing entities) */}
       {!isNew && team && team.length > 0 && (

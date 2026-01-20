@@ -101,6 +101,17 @@ export interface AccessInvitation {
   entity?: Entity | null;
 }
 
+export interface EntityPersonaBinding {
+  id: string;
+  entity_id: string;
+  persona_id: string;
+  is_public: boolean;
+  role_label?: string | null;
+  created_at: string;
+  persona?: Persona | null;
+  entity?: Entity | null;
+}
+
 // ============================================
 // Legacy Types (kept for backwards compatibility)
 // These will be deprecated once migration is complete

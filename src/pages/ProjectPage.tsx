@@ -1,6 +1,7 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Music } from "lucide-react";
 import { useEntity } from "@/hooks/useEntity";
+import { useEntityPersonaBindings } from "@/hooks/usePersonaBindings";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
@@ -10,6 +11,12 @@ import { EntityTimeline } from "@/components/ui/EntityTimeline";
 export default function ProjectPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: entity, isLoading, error } = useEntity(slug || "");
+  const { data: personaBindings } = useEntityPersonaBindings(entity?.id);
+
+  // Filter to only show public bindings with public personas
+  const publicBindings = (personaBindings || []).filter(
+    (binding) => binding.is_public && binding.persona?.is_public
+  );
 
   if (isLoading) {
     return (
@@ -51,48 +58,50 @@ export default function ProjectPage() {
         )}
       </div>
 
-      {/* Public team members section */}
-      {entity.team && entity.team.length > 0 && (
+      {/* Personas section - "Bak prosjektet" */}
+      {publicBindings.length > 0 && (
         <>
           <div className="accent-line" />
           <section className="section">
             <h2 className="section-title">Bak prosjektet</h2>
 
             <div className="space-y-4">
-              {entity.team.map((member) => {
-                const profile = member.profile;
-                if (!profile) return null;
-
-                const displayName = profile.display_name || profile.handle || "Ukjent";
+              {publicBindings.map((binding) => {
+                const persona = binding.persona;
+                if (!persona) return null;
 
                 return (
-                  <div key={member.user_id} className="flex items-center gap-4">
+                  <Link 
+                    key={binding.id} 
+                    to={`/p/${persona.slug}`}
+                    className="flex items-center gap-4 hover:bg-muted/50 rounded-lg p-2 -mx-2 transition-colors"
+                  >
                     <div className="w-14 h-14 rounded-full overflow-hidden bg-secondary flex-shrink-0">
-                      {profile.avatar_url ? (
+                      {persona.avatar_url ? (
                         <img
-                          src={profile.avatar_url}
-                          alt={displayName}
+                          src={persona.avatar_url}
+                          alt={persona.name}
                           className="w-full h-full object-cover"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <span className="text-lg font-bold text-muted-foreground/40">
-                            {displayName.charAt(0)}
+                            {persona.name.charAt(0)}
                           </span>
                         </div>
                       )}
                     </div>
                     <div>
                       <div className="font-semibold">
-                        {displayName}
+                        {persona.name}
                       </div>
-                      {member.role_labels && member.role_labels.length > 0 && (
+                      {binding.role_label && (
                         <div className="text-sm text-muted-foreground">
-                          {member.role_labels.join(", ")}
+                          {binding.role_label}
                         </div>
                       )}
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
