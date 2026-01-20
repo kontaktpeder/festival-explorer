@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, Check, ChevronsUpDown, Globe, Tag, Lock, ChevronDown, ChevronUp, HelpCircle,
-  Sparkles, Footprints, Search, Disc3, Mic2, Trophy, Sprout, TreeDeciduous, LucideIcon
+  Sparkles, Footprints, Search, Disc3, Mic2, Trophy, Sprout, TreeDeciduous, LucideIcon,
+  Building2, User, Users
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -43,13 +44,13 @@ import {
 import { MediaPicker } from "@/components/admin/MediaPicker";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  useTimelineEvent,
-  useCreateTimelineEvent,
-  useUpdateTimelineEvent,
-} from "@/hooks/useTimeline";
+  useEntityTimelineEvent,
+  useCreateEntityTimelineEvent,
+  useUpdateEntityTimelineEvent,
+} from "@/hooks/useEntityTimeline";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import type { TimelineEventType, TimelineVisibility } from "@/types/database";
+import type { TimelineEventType, TimelineVisibility, EntityType } from "@/types/database";
 
 // Phases based on the artist journey
 const PHASES: { 
@@ -151,22 +152,28 @@ const VISIBILITY_OPTIONS: {
     value: "private", 
     label: "Privat", 
     icon: <Lock className="w-4 h-4" />,
-    tooltip: "Kun synlig for deg og prosjekt-medlemmer"
+    tooltip: "Kun synlig for deg og entity-medlemmer"
   },
 ];
+
+const TYPE_ICONS: Record<EntityType, React.ReactNode> = {
+  venue: <Building2 className="w-4 h-4" />,
+  solo: <User className="w-4 h-4" />,
+  band: <Users className="w-4 h-4" />,
+};
 
 export default function AdminTimelineEventEdit() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isNew = id === "new";
 
-  const { data: existingEvent, isLoading: loadingEvent } = useTimelineEvent(id);
-  const createMutation = useCreateTimelineEvent();
-  const updateMutation = useUpdateTimelineEvent();
+  const { data: existingEvent, isLoading: loadingEvent } = useEntityTimelineEvent(id);
+  const createMutation = useCreateEntityTimelineEvent();
+  const updateMutation = useUpdateEntityTimelineEvent();
 
   // Form state
-  const [projectId, setProjectId] = useState("");
-  const [projectOpen, setProjectOpen] = useState(false);
+  const [entityId, setEntityId] = useState("");
+  const [entityOpen, setEntityOpen] = useState(false);
   const [phase, setPhase] = useState("first_steps");
   const [eventText, setEventText] = useState("");
   const [visibility, setVisibility] = useState<TimelineVisibility>("public");
@@ -180,13 +187,13 @@ export default function AdminTimelineEventEdit() {
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
-  // Fetch projects for dropdown
-  const { data: projects } = useQuery({
-    queryKey: ["admin-projects"],
+  // Fetch entities for dropdown (all types)
+  const { data: entities } = useQuery({
+    queryKey: ["admin-entities-timeline"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("projects")
-        .select("id, name, slug")
+        .from("entities")
+        .select("id, name, slug, type")
         .order("name");
       if (error) throw error;
       return data || [];
@@ -196,9 +203,9 @@ export default function AdminTimelineEventEdit() {
   // Populate form when editing
   useEffect(() => {
     if (existingEvent) {
-      setProjectId(existingEvent.project_id);
+      setEntityId(existingEvent.entity_id);
       setEventText(existingEvent.title);
-      setVisibility(existingEvent.visibility);
+      setVisibility(existingEvent.visibility as TimelineVisibility);
       setDate(existingEvent.date || "");
       setYear(existingEvent.year || "");
       setLocationName(existingEvent.location_name || "");
@@ -232,8 +239,8 @@ export default function AdminTimelineEventEdit() {
   };
 
   const handleSave = async () => {
-    if (!projectId) {
-      toast.error("Velg et prosjekt");
+    if (!entityId) {
+      toast.error("Velg en entity");
       return;
     }
     if (!eventText.trim()) {
@@ -246,7 +253,7 @@ export default function AdminTimelineEventEdit() {
     }
 
     const eventData = {
-      project_id: projectId,
+      entity_id: entityId,
       title: eventText.trim(),
       event_type: PHASE_TO_EVENT_TYPE[phase] || "milestone",
       visibility,
@@ -273,7 +280,7 @@ export default function AdminTimelineEventEdit() {
     }
   };
 
-  const selectedProject = projects?.find((p) => p.id === projectId);
+  const selectedEntity = entities?.find((e) => e.id === entityId);
   const selectedPhase = PHASES.find((p) => p.value === phase);
 
   if (!isNew && loadingEvent) {
@@ -324,43 +331,53 @@ export default function AdminTimelineEventEdit() {
         </div>
 
         <div className="space-y-4">
-          {/* Project picker */}
+          {/* Entity picker */}
           <div className="space-y-2">
-            <Label>Prosjekt *</Label>
-            <Popover open={projectOpen} onOpenChange={setProjectOpen}>
+            <Label>Entity *</Label>
+            <Popover open={entityOpen} onOpenChange={setEntityOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   role="combobox"
-                  aria-expanded={projectOpen}
+                  aria-expanded={entityOpen}
                   className="w-full justify-between"
                 >
-                  {selectedProject ? selectedProject.name : "Velg prosjekt..."}
+                  {selectedEntity ? (
+                    <span className="flex items-center gap-2">
+                      {TYPE_ICONS[selectedEntity.type as EntityType]}
+                      {selectedEntity.name}
+                    </span>
+                  ) : (
+                    "Velg entity..."
+                  )}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-full p-0" align="start">
                 <Command>
-                  <CommandInput placeholder="Søk prosjekt..." />
+                  <CommandInput placeholder="Søk entity..." />
                   <CommandList>
-                    <CommandEmpty>Ingen prosjekter funnet.</CommandEmpty>
+                    <CommandEmpty>Ingen entities funnet.</CommandEmpty>
                     <CommandGroup>
-                      {projects?.map((project) => (
+                      {entities?.map((entity) => (
                         <CommandItem
-                          key={project.id}
-                          value={project.name}
+                          key={entity.id}
+                          value={entity.name}
                           onSelect={() => {
-                            setProjectId(project.id);
-                            setProjectOpen(false);
+                            setEntityId(entity.id);
+                            setEntityOpen(false);
                           }}
                         >
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4",
-                              projectId === project.id ? "opacity-100" : "opacity-0"
+                              entityId === entity.id ? "opacity-100" : "opacity-0"
                             )}
                           />
-                          {project.name}
+                          <span className="flex items-center gap-2">
+                            {TYPE_ICONS[entity.type as EntityType]}
+                            {entity.name}
+                          </span>
                         </CommandItem>
                       ))}
                     </CommandGroup>

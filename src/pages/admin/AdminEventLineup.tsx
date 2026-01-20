@@ -1,18 +1,26 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Star } from "lucide-react";
+import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Star, Building2, User, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useState } from "react";
+import type { EntityType } from "@/types/database";
+
+const TYPE_ICONS: Record<EntityType, React.ReactNode> = {
+  venue: <Building2 className="h-4 w-4" />,
+  solo: <User className="h-4 w-4" />,
+  band: <Users className="h-4 w-4" />,
+};
 
 export default function AdminEventLineup() {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [selectedProject, setSelectedProject] = useState("");
+  const [selectedEntity, setSelectedEntity] = useState("");
 
   // Fetch event info
   const { data: event } = useQuery({
@@ -27,26 +35,27 @@ export default function AdminEventLineup() {
     },
   });
 
-  // Fetch lineup
+  // Fetch lineup from event_entities (NEW)
   const { data: lineup, isLoading } = useQuery({
     queryKey: ["admin-event-lineup", id],
     queryFn: async () => {
       const { data } = await supabase
-        .from("event_projects")
-        .select("*, project:projects(*)")
+        .from("event_entities")
+        .select("*, entity:entities(*)")
         .eq("event_id", id)
         .order("billing_order", { ascending: true });
       return data || [];
     },
   });
 
-  // Fetch all projects for adding
-  const { data: allProjects } = useQuery({
-    queryKey: ["admin-all-projects"],
+  // Fetch all entities (solo + band) for adding - exclude venues from lineup
+  const { data: allEntities } = useQuery({
+    queryKey: ["admin-all-entities-lineup"],
     queryFn: async () => {
       const { data } = await supabase
-        .from("projects")
-        .select("id, name")
+        .from("entities")
+        .select("id, name, type")
+        .in("type", ["solo", "band"])
         .order("name");
       return data || [];
     },
@@ -54,11 +63,11 @@ export default function AdminEventLineup() {
 
   // Add to lineup mutation
   const addToLineup = useMutation({
-    mutationFn: async (projectId: string) => {
+    mutationFn: async (entityId: string) => {
       const maxOrder = lineup?.length || 0;
-      const { error } = await supabase.from("event_projects").insert({
+      const { error } = await supabase.from("event_entities").insert({
         event_id: id,
-        project_id: projectId,
+        entity_id: entityId,
         billing_order: maxOrder,
         is_featured: false,
         feature_order: 0,
@@ -67,7 +76,7 @@ export default function AdminEventLineup() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-event-lineup", id] });
-      setSelectedProject("");
+      setSelectedEntity("");
       toast({ title: "Artist lagt til" });
     },
     onError: (error: Error) => {
@@ -77,12 +86,12 @@ export default function AdminEventLineup() {
 
   // Remove from lineup mutation
   const removeFromLineup = useMutation({
-    mutationFn: async (projectId: string) => {
+    mutationFn: async (entityId: string) => {
       const { error } = await supabase
-        .from("event_projects")
+        .from("event_entities")
         .delete()
         .eq("event_id", id)
-        .eq("project_id", projectId);
+        .eq("entity_id", entityId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -93,16 +102,16 @@ export default function AdminEventLineup() {
 
   // Toggle featured mutation
   const toggleFeatured = useMutation({
-    mutationFn: async ({ projectId, isFeatured }: { projectId: string; isFeatured: boolean }) => {
+    mutationFn: async ({ entityId, isFeatured }: { entityId: string; isFeatured: boolean }) => {
       const featuredCount = lineup?.filter((l) => l.is_featured).length || 0;
       const { error } = await supabase
-        .from("event_projects")
+        .from("event_entities")
         .update({
           is_featured: isFeatured,
           feature_order: isFeatured ? featuredCount : 0,
         })
         .eq("event_id", id)
-        .eq("project_id", projectId);
+        .eq("entity_id", entityId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -112,8 +121,8 @@ export default function AdminEventLineup() {
 
   // Move in lineup mutation
   const moveInLineup = useMutation({
-    mutationFn: async ({ projectId, direction }: { projectId: string; direction: "up" | "down" }) => {
-      const currentItem = lineup?.find((l) => l.project_id === projectId);
+    mutationFn: async ({ entityId, direction }: { entityId: string; direction: "up" | "down" }) => {
+      const currentItem = lineup?.find((l) => l.entity_id === entityId);
       if (!currentItem || !lineup) return;
 
       const currentOrder = currentItem.billing_order;
@@ -123,25 +132,25 @@ export default function AdminEventLineup() {
       if (!swapItem) return;
 
       await supabase
-        .from("event_projects")
+        .from("event_entities")
         .update({ billing_order: newOrder })
         .eq("event_id", id)
-        .eq("project_id", projectId);
+        .eq("entity_id", entityId);
 
       await supabase
-        .from("event_projects")
+        .from("event_entities")
         .update({ billing_order: currentOrder })
         .eq("event_id", id)
-        .eq("project_id", swapItem.project_id);
+        .eq("entity_id", swapItem.entity_id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-event-lineup", id] });
     },
   });
 
-  // Available projects (not in lineup)
-  const availableProjects = allProjects?.filter(
-    (p) => !lineup?.some((l) => l.project_id === p.id)
+  // Available entities (not in lineup)
+  const availableEntities = allEntities?.filter(
+    (e) => !lineup?.some((l) => l.entity_id === e.id)
   ) || [];
 
   if (isLoading) {
@@ -165,21 +174,24 @@ export default function AdminEventLineup() {
 
       {/* Add to lineup */}
       <div className="flex gap-3">
-        <Select value={selectedProject} onValueChange={setSelectedProject}>
+        <Select value={selectedEntity} onValueChange={setSelectedEntity}>
           <SelectTrigger className="w-64">
             <SelectValue placeholder="Velg artist..." />
           </SelectTrigger>
           <SelectContent>
-            {availableProjects.map((project) => (
-              <SelectItem key={project.id} value={project.id}>
-                {project.name}
+            {availableEntities.map((entity) => (
+              <SelectItem key={entity.id} value={entity.id}>
+                <span className="flex items-center gap-2">
+                  {TYPE_ICONS[entity.type as EntityType]}
+                  {entity.name}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Button
-          onClick={() => selectedProject && addToLineup.mutate(selectedProject)}
-          disabled={!selectedProject}
+          onClick={() => selectedEntity && addToLineup.mutate(selectedEntity)}
+          disabled={!selectedEntity}
         >
           <Plus className="h-4 w-4 mr-2" />
           Legg til
@@ -190,24 +202,32 @@ export default function AdminEventLineup() {
       <div className="space-y-2">
         {lineup?.map((item, index) => (
           <div
-            key={item.project_id}
+            key={item.entity_id}
             className="bg-card border border-border rounded-lg p-4 flex items-center gap-4"
           >
             <span className="text-muted-foreground w-8 text-center">{index + 1}</span>
             
+            <div className="flex items-center gap-2">
+              {item.entity && TYPE_ICONS[item.entity.type as EntityType]}
+            </div>
+            
             <div className="flex-1">
-              <p className="font-medium text-foreground">{item.project?.name}</p>
-              {item.project?.tagline && (
-                <p className="text-sm text-muted-foreground">{item.project.tagline}</p>
+              <p className="font-medium text-foreground">{item.entity?.name}</p>
+              {item.entity?.tagline && (
+                <p className="text-sm text-muted-foreground">{item.entity.tagline}</p>
               )}
             </div>
+
+            <Badge variant="secondary" className="text-xs">
+              {item.entity?.type}
+            </Badge>
 
             {/* Featured toggle */}
             <Button
               variant={item.is_featured ? "default" : "ghost"}
               size="sm"
               onClick={() => toggleFeatured.mutate({
-                projectId: item.project_id,
+                entityId: item.entity_id,
                 isFeatured: !item.is_featured,
               })}
             >
@@ -219,7 +239,7 @@ export default function AdminEventLineup() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => moveInLineup.mutate({ projectId: item.project_id, direction: "up" })}
+                onClick={() => moveInLineup.mutate({ entityId: item.entity_id, direction: "up" })}
                 disabled={index === 0}
               >
                 <ArrowUp className="h-4 w-4" />
@@ -227,7 +247,7 @@ export default function AdminEventLineup() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => moveInLineup.mutate({ projectId: item.project_id, direction: "down" })}
+                onClick={() => moveInLineup.mutate({ entityId: item.entity_id, direction: "down" })}
                 disabled={index === lineup.length - 1}
               >
                 <ArrowDown className="h-4 w-4" />
@@ -240,7 +260,7 @@ export default function AdminEventLineup() {
               size="sm"
               onClick={() => {
                 if (confirm("Fjern fra lineup?")) {
-                  removeFromLineup.mutate(item.project_id);
+                  removeFromLineup.mutate(item.entity_id);
                 }
               }}
             >

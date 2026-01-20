@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Edit, Trash2, Calendar, MapPin, Music } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, MapPin, Building2, User, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,11 +15,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useAdminTimelineEvents, useDeleteTimelineEvent } from "@/hooks/useTimeline";
+import { useAdminEntityTimelineEvents, useDeleteEntityTimelineEvent } from "@/hooks/useEntityTimeline";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import type { TimelineVisibility, TimelineEventType } from "@/types/database";
+import type { TimelineVisibility, TimelineEventType, EntityType } from "@/types/database";
 
 const EVENT_TYPE_LABELS: Record<TimelineEventType, { label: string; icon: string }> = {
   live_show: { label: "Konsert", icon: "🎤" },
@@ -37,10 +37,16 @@ const VISIBILITY_LABELS: Record<TimelineVisibility, { label: string; variant: "d
   private: { label: "Privat", variant: "outline" },
 };
 
+const TYPE_ICONS: Record<EntityType, React.ReactNode> = {
+  venue: <Building2 className="w-3 h-3" />,
+  solo: <User className="w-3 h-3" />,
+  band: <Users className="w-3 h-3" />,
+};
+
 export default function AdminTimelineEvents() {
   const [visibilityFilter, setVisibilityFilter] = useState<TimelineVisibility | null>(null);
-  const { data: events, isLoading } = useAdminTimelineEvents(visibilityFilter);
-  const deleteMutation = useDeleteTimelineEvent();
+  const { data: events, isLoading } = useAdminEntityTimelineEvents(visibilityFilter);
+  const deleteMutation = useDeleteEntityTimelineEvent();
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id, {
@@ -105,6 +111,7 @@ export default function AdminTimelineEvents() {
             const typeInfo = EVENT_TYPE_LABELS[event.event_type as TimelineEventType];
             const visInfo = VISIBILITY_LABELS[event.visibility as TimelineVisibility];
             const location = formatLocation(event.location_name, event.city, event.country);
+            const entity = event.entity as { id: string; name: string; slug: string; type: EntityType } | null;
 
             return (
               <div
@@ -121,13 +128,13 @@ export default function AdminTimelineEvents() {
 
                   <h3 className="font-semibold truncate">{event.title}</h3>
 
-                  {event.project && (
+                  {entity && (
                     <Link
-                      to={`/project/${event.project.slug}`}
+                      to={`/${entity.type === 'venue' ? 'venue' : 'project'}/${entity.slug}`}
                       className="text-sm text-primary hover:underline flex items-center gap-1 mt-1"
                     >
-                      <Music className="w-3 h-3" />
-                      {event.project.name}
+                      {TYPE_ICONS[entity.type]}
+                      {entity.name}
                     </Link>
                   )}
 
