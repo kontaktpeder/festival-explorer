@@ -1217,7 +1217,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_invitation_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          accepted_at: string | null
+          access: Database["public"]["Enums"]["access_level"]
+          email: string
+          entity_id: string
+          expires_at: string
+          id: string
+          invited_at: string
+          invited_by: string
+          role_labels: string[] | null
+          status: string
+          token: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "access_invitations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       can_edit_entity: { Args: { p_entity_id: string }; Returns: boolean }
+      get_invitation_by_token: { Args: { p_token: string }; Returns: Json }
       get_user_entities: {
         Args: never
         Returns: {

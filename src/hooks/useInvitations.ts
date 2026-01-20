@@ -10,6 +10,16 @@ export function useInvitation(params: { email?: string; entityId?: string; token
   return useQuery({
     queryKey: ["invitation", params],
     queryFn: async () => {
+      // Preferred: fetch by unguessable token (works before login)
+      if (params.token) {
+        const { data, error } = await supabase.rpc("get_invitation_by_token", {
+          p_token: params.token,
+        });
+        if (error) throw error;
+        return (data || null) as (AccessInvitation & { entity: Entity | null }) | null;
+      }
+
+      // Fallback: fetch by email+entityId (requires auth via RLS in most cases)
       let query = supabase
         .from("access_invitations")
         .select(`
@@ -18,9 +28,7 @@ export function useInvitation(params: { email?: string; entityId?: string; token
         `)
         .eq("status", "pending");
 
-      if (params.token) {
-        query = query.eq("token", params.token);
-      } else if (params.email && params.entityId) {
+      if (params.email && params.entityId) {
         query = query.eq("email", params.email).eq("entity_id", params.entityId);
       } else {
         return null;

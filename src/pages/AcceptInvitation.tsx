@@ -36,8 +36,12 @@ export default function AcceptInvitation() {
   const { toast } = useToast();
   const acceptInvitation = useAcceptInvitation();
 
-  const email = searchParams.get("email") || "";
-  const entityId = searchParams.get("entity_id") || "";
+  const tokenParam = searchParams.get("token") || "";
+  const emailParam = searchParams.get("email") || "";
+  const entityIdParam = searchParams.get("entity_id") || "";
+
+  const [email, setEmail] = useState(emailParam);
+  const [entityId, setEntityId] = useState(entityIdParam);
 
   const [password, setPassword] = useState("");
   const [isSignup, setIsSignup] = useState(true);
@@ -45,8 +49,19 @@ export default function AcceptInvitation() {
   const [currentUser, setCurrentUser] = useState<{ id: string; email: string } | null>(null);
   const [acceptedSuccessfully, setAcceptedSuccessfully] = useState(false);
 
-  // Fetch invitation details
-  const { data: invitation, isLoading, error } = useInvitation({ email, entityId });
+  // Fetch invitation details (prefer token)
+  const { data: invitation, isLoading, error } = useInvitation({
+    token: tokenParam || undefined,
+    email: email || undefined,
+    entityId: entityId || undefined,
+  });
+
+  // Hydrate email/entityId from invitation when opened by token
+  useEffect(() => {
+    if (!invitation) return;
+    if (!email && invitation.email) setEmail(invitation.email);
+    if (!entityId && invitation.entity_id) setEntityId(invitation.entity_id);
+  }, [invitation, email, entityId]);
 
   // Check if user is already logged in
   useEffect(() => {
@@ -138,7 +153,10 @@ export default function AcceptInvitation() {
 
     setIsProcessing(true);
     try {
-      const redirectUrl = `${window.location.origin}/accept-invitation?email=${encodeURIComponent(email)}&entity_id=${entityId}`;
+      const token = invitation?.token || tokenParam;
+      const redirectUrl = token
+        ? `${window.location.origin}/accept-invitation?token=${encodeURIComponent(token)}`
+        : `${window.location.origin}/accept-invitation?email=${encodeURIComponent(email)}&entity_id=${entityId}`;
       
       const { data, error } = await supabase.auth.signUp({
         email,
