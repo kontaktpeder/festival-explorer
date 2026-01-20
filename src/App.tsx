@@ -10,6 +10,7 @@ import ProjectPage from "./pages/ProjectPage";
 import VenuePage from "./pages/VenuePage";
 import ExplorePage from "./pages/ExplorePage";
 import SearchPage from "./pages/SearchPage";
+import AcceptInvitation from "./pages/AcceptInvitation";
 import NotFound from "./pages/NotFound";
 
 // Admin pages
@@ -24,6 +25,7 @@ import AdminEventEdit from "./pages/admin/AdminEventEdit";
 import AdminEventLineup from "./pages/admin/AdminEventLineup";
 import AdminEntities from "./pages/admin/AdminEntities";
 import AdminEntityEdit from "./pages/admin/AdminEntityEdit";
+import AdminAccessGenerator from "./pages/admin/AdminAccessGenerator";
 // Legacy - kept for backwards compatibility
 import AdminProjects from "./pages/admin/AdminProjects";
 import AdminProjectEdit from "./pages/admin/AdminProjectEdit";
@@ -50,6 +52,7 @@ const App = () => (
           {/* TODO: Reaktiver etter MVP - explore blir global navigasjon */}
           {/* <Route path="/explore" element={<ExplorePage />} /> */}
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/accept-invitation" element={<AcceptInvitation />} />
           
           {/* Admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -64,6 +67,7 @@ const App = () => (
             {/* New entities routes */}
             <Route path="entities" element={<AdminEntities />} />
             <Route path="entities/:id" element={<AdminEntityEdit />} />
+            <Route path="access-generator" element={<AdminAccessGenerator />} />
             {/* Legacy routes - redirect to entities in future */}
             <Route path="projects" element={<AdminProjects />} />
             <Route path="projects/:id" element={<AdminProjectEdit />} />
