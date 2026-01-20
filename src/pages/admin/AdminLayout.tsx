@@ -52,7 +52,7 @@ export default function AdminLayout() {
     <>
       <div className="p-4 md:p-6 border-b border-border">
         <Link to="/admin" className="text-lg md:text-xl font-bold text-foreground" onClick={() => setSidebarOpen(false)}>
-          GIGGEN <span className="text-muted-foreground font-normal text-sm">Admin</span>
+          GIGGEN <span className="text-muted-foreground font-normal text-sm">Backstage</span>
         </Link>
       </div>
       
@@ -106,7 +106,7 @@ export default function AdminLayout() {
       {isMobile && (
         <header className="sticky top-0 z-50 bg-card border-b border-border p-3 flex items-center justify-between">
           <Link to="/admin" className="text-lg font-bold text-foreground">
-            GIGGEN <span className="text-muted-foreground font-normal text-sm">Admin</span>
+            GIGGEN <span className="text-muted-foreground font-normal text-sm">Backstage</span>
           </Link>
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger asChild>
