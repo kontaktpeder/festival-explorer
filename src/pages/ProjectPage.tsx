@@ -1,5 +1,21 @@
 import { useParams, Link } from "react-router-dom";
 import { Music } from "lucide-react";
+import type { Database } from "@/integrations/supabase/types";
+
+type EntityType = Database["public"]["Enums"]["entity_type"];
+
+function getPersonasSectionTitle(entityType: EntityType): string {
+  switch (entityType) {
+    case 'solo':
+      return 'Med på scenen';
+    case 'band':
+      return 'Bak prosjektet';
+    case 'venue':
+      return 'Team';
+    default:
+      return 'Bak prosjektet';
+  }
+}
 import { useEntity } from "@/hooks/useEntity";
 import { useEntityPersonaBindings } from "@/hooks/usePersonaBindings";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -63,7 +79,7 @@ export default function ProjectPage() {
         <>
           <div className="accent-line" />
           <section className="section">
-            <h2 className="section-title">Bak prosjektet</h2>
+            <h2 className="section-title">{getPersonasSectionTitle(entity.type)}</h2>
 
             <div className="space-y-4">
               {publicBindings.map((binding) => {
