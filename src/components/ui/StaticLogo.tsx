@@ -1,5 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import giggenLogo from "@/assets/giggen-logo-new.png";
 
 export function StaticLogo() {
@@ -7,6 +9,15 @@ export function StaticLogo() {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Check if user is logged in
+  const { data: session } = useQuery({
+    queryKey: ["session"],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      return session;
+    },
+  });
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -64,6 +75,7 @@ export function StaticLogo() {
         }}
       />
       
+      {/* Logo */}
       <Link
         to="/"
         onClick={handleClick}
@@ -83,6 +95,19 @@ export function StaticLogo() {
           alt="Giggen"
           className="h-24 w-auto opacity-90 hover:opacity-100 transition-all duration-500"
         />
+      </Link>
+
+      {/* BACKSTAGE link - top right */}
+      <Link
+        to={session ? "/dashboard" : "/admin/login"}
+        className="fixed z-50 right-4 transition-all duration-500 ease-out"
+        style={{
+          top: 'calc(var(--safe-top, 0px) + 20px)'
+        }}
+      >
+        <span className="text-sm font-medium text-foreground/80 hover:text-accent transition-colors uppercase tracking-wider">
+          BACKSTAGE
+        </span>
       </Link>
     </>
   );
