@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Plus, Trash2, Eye, EyeOff, User, Check, ChevronsUpDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Trash2, Eye, EyeOff, User, Check, ChevronsUpDown, UserPlus, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,6 +47,7 @@ export function EntityPersonaBindingsEditor({
   entityId,
   entityName,
 }: EntityPersonaBindingsEditorProps) {
+  const navigate = useNavigate();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedPersonaId, setSelectedPersonaId] = useState<string>("");
   const [roleLabel, setRoleLabel] = useState("");
@@ -137,9 +139,35 @@ export function EntityPersonaBindingsEditor({
               <div className="space-y-2">
                 <Label>Velg profil</Label>
                 {availablePersonas.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    Du har ingen ledige profiler. Opprett en ny profil først.
-                  </p>
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Du har ingen ledige profiler knyttet til denne kontoen ennå.
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setIsAddDialogOpen(false);
+                          navigate("/dashboard/personas/new");
+                        }}
+                      >
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Opprett ny profil
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => {
+                          setIsAddDialogOpen(false);
+                          navigate(`/admin/access-generator?mode=entity&entityId=${entityId}`);
+                        }}
+                      >
+                        <Link2 className="h-4 w-4 mr-2" />
+                        Inviter ny person (tilgangslenke)
+                      </Button>
+                    </div>
+                  </div>
                 ) : (
                   <Popover open={personaPopoverOpen} onOpenChange={setPersonaPopoverOpen}>
                     <PopoverTrigger asChild>
@@ -225,6 +253,23 @@ export function EntityPersonaBindingsEditor({
                       </Command>
                     </PopoverContent>
                   </Popover>
+                )}
+                
+                {/* Always show invite link option */}
+                {availablePersonas.length > 0 && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Mangler noen?{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAddDialogOpen(false);
+                        navigate(`/admin/access-generator?mode=entity&entityId=${entityId}`);
+                      }}
+                      className="text-primary hover:underline"
+                    >
+                      Inviter ny person med tilgangslenke
+                    </button>
+                  </p>
                 )}
               </div>
 
