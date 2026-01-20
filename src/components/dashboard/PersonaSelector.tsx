@@ -10,37 +10,33 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, User, Building2, Users, Settings, LogOut } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ChevronDown, User, Plus, Settings, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import type { EntityWithAccess, EntityType } from "@/types/database";
+import { useMyPersonas } from "@/hooks/usePersona";
 
-const TYPE_ICONS: Record<EntityType, typeof User> = {
-  venue: Building2,
-  solo: User,
-  band: Users,
-};
-
-interface PersonaSelectorProps {
-  entities: EntityWithAccess[];
-}
-
-export function PersonaSelector({ entities }: PersonaSelectorProps) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+export function PersonaSelector() {
+  const { data: personas, isLoading } = useMyPersonas();
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(null);
   
   // Load from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem("selectedPersona");
-    if (saved && entities.some(e => e.id === saved)) {
-      setSelectedId(saved);
+    const saved = localStorage.getItem("selectedPersonaId");
+    if (saved && personas?.some(p => p.id === saved)) {
+      setSelectedPersonaId(saved);
+    } else if (saved && personas && !personas.some(p => p.id === saved)) {
+      // Clear invalid selection
+      localStorage.removeItem("selectedPersonaId");
+      setSelectedPersonaId(null);
     }
-  }, [entities]);
+  }, [personas]);
 
   const handleSelect = (id: string | null) => {
-    setSelectedId(id);
+    setSelectedPersonaId(id);
     if (id) {
-      localStorage.setItem("selectedPersona", id);
+      localStorage.setItem("selectedPersonaId", id);
     } else {
-      localStorage.removeItem("selectedPersona");
+      localStorage.removeItem("selectedPersonaId");
     }
   };
 
@@ -49,19 +45,21 @@ export function PersonaSelector({ entities }: PersonaSelectorProps) {
     window.location.href = "/";
   };
 
-  const selectedEntity = entities.find(e => e.id === selectedId);
+  const selectedPersona = personas?.find(p => p.id === selectedPersonaId);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="gap-2">
-          {selectedEntity ? (
+          {selectedPersona ? (
             <>
-              {(() => {
-                const Icon = TYPE_ICONS[selectedEntity.type];
-                return <Icon className="h-4 w-4" />;
-              })()}
-              <span className="max-w-[120px] truncate">{selectedEntity.name}</span>
+              <Avatar className="h-5 w-5">
+                <AvatarImage src={selectedPersona.avatar_url || undefined} />
+                <AvatarFallback className="text-[10px]">
+                  {selectedPersona.name.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="max-w-[120px] truncate">{selectedPersona.name}</span>
             </>
           ) : (
             <>
@@ -79,35 +77,49 @@ export function PersonaSelector({ entities }: PersonaSelectorProps) {
         
         <DropdownMenuItem onClick={() => handleSelect(null)}>
           <User className="h-4 w-4 mr-2" />
-          Min profil
-          {!selectedId && <Badge variant="secondary" className="ml-auto text-xs">Aktiv</Badge>}
+          Min profil (privat)
+          {!selectedPersonaId && (
+            <Badge variant="secondary" className="ml-auto text-xs">Aktiv</Badge>
+          )}
         </DropdownMenuItem>
 
-        {entities.length > 0 && (
+        {!isLoading && personas && personas.length > 0 && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Mine entities
+              Offentlige profiler
             </DropdownMenuLabel>
-            {entities.map((entity) => {
-              const Icon = TYPE_ICONS[entity.type];
-              return (
-                <DropdownMenuItem 
-                  key={entity.id}
-                  onClick={() => handleSelect(entity.id)}
-                >
-                  <Icon className="h-4 w-4 mr-2" />
-                  <span className="truncate flex-1">{entity.name}</span>
-                  {selectedId === entity.id && (
-                    <Badge variant="secondary" className="ml-auto text-xs">Aktiv</Badge>
-                  )}
-                </DropdownMenuItem>
-              );
-            })}
+            {personas.map((persona) => (
+              <DropdownMenuItem 
+                key={persona.id}
+                onClick={() => handleSelect(persona.id)}
+              >
+                <Avatar className="h-4 w-4 mr-2">
+                  <AvatarImage src={persona.avatar_url || undefined} />
+                  <AvatarFallback className="text-[8px]">
+                    {persona.name.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="truncate flex-1">{persona.name}</span>
+                {!persona.is_public && (
+                  <Badge variant="outline" className="ml-1 text-[10px]">Privat</Badge>
+                )}
+                {selectedPersonaId === persona.id && (
+                  <Badge variant="secondary" className="ml-auto text-xs">Aktiv</Badge>
+                )}
+              </DropdownMenuItem>
+            ))}
           </>
         )}
 
         <DropdownMenuSeparator />
+        
+        <DropdownMenuItem asChild>
+          <Link to="/dashboard/personas/new">
+            <Plus className="h-4 w-4 mr-2" />
+            Opprett profil
+          </Link>
+        </DropdownMenuItem>
         
         <DropdownMenuItem asChild>
           <Link to="/admin">
