@@ -94,7 +94,7 @@ export default function EventPage() {
         {event.lineup && event.lineup.length > 0 ? (
           <div className="divide-y divide-border/30">
             {event.lineup.map((item) => (
-              <LineupItem key={item.project_id} item={item} showBilling />
+              <LineupItem key={item.entity_id || (item as any).project_id} item={item} showBilling />
             ))}
           </div>
         ) : (

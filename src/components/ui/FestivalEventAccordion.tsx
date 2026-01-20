@@ -2,7 +2,10 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import type { Event, EventProject } from "@/types/database";
+import type { Event, EventProject, EventEntity } from "@/types/database";
+
+// Support both legacy EventProject and new EventEntity lineup formats
+type LineupItem = EventProject | EventEntity;
 
 interface FestivalEventAccordionProps {
   events: Array<{
@@ -10,9 +13,42 @@ interface FestivalEventAccordionProps {
     sort_order: number;
     event: Event & {
       venue?: { name: string; slug: string } | null;
-      lineup?: EventProject[];
+      lineup?: LineupItem[];
     };
   }>;
+}
+
+// Helper to extract entity/project name from lineup item
+function getLineupItemName(item: LineupItem): string | undefined {
+  if ('entity' in item && item.entity) {
+    return item.entity.name;
+  }
+  if ('project' in item && item.project) {
+    return item.project.name;
+  }
+  return undefined;
+}
+
+// Helper to extract entity/project slug from lineup item
+function getLineupItemSlug(item: LineupItem): string | undefined {
+  if ('entity' in item && item.entity) {
+    return item.entity.slug;
+  }
+  if ('project' in item && item.project) {
+    return item.project.slug;
+  }
+  return undefined;
+}
+
+// Helper to get the key for lineup item
+function getLineupItemKey(item: LineupItem): string {
+  if ('entity_id' in item) {
+    return item.entity_id;
+  }
+  if ('project_id' in item) {
+    return item.project_id;
+  }
+  return '';
 }
 
 export function FestivalEventAccordion({ events }: FestivalEventAccordionProps) {
@@ -78,7 +114,7 @@ export function FestivalEventAccordion({ events }: FestivalEventAccordionProps) 
                         <p className="mt-1.5 text-sm text-foreground/50">
                           {event.lineup
                             .slice(0, 2)
-                            .map((ep) => ep.project?.name)
+                            .map((item) => getLineupItemName(item))
                             .filter(Boolean)
                             .join(" · ")}
                           {event.lineup.length > 2 && (
@@ -116,17 +152,22 @@ export function FestivalEventAccordion({ events }: FestivalEventAccordionProps) 
 
                           {event.lineup && event.lineup.length > 0 && (
                             <div className="mt-4 flex flex-wrap gap-3">
-                              {event.lineup.map((ep) =>
-                                ep.project ? (
+                              {event.lineup.map((item) => {
+                                const name = getLineupItemName(item);
+                                const slug = getLineupItemSlug(item);
+                                const key = getLineupItemKey(item);
+                                if (!name || !slug) return null;
+                                
+                                return (
                                   <Link
-                                    key={ep.project_id}
-                                    to={`/project/${ep.project.slug}`}
+                                    key={key}
+                                    to={`/project/${slug}`}
                                     className="text-xs text-foreground/40 hover:text-accent transition-colors"
                                   >
-                                    {ep.project.name}
+                                    {name}
                                   </Link>
-                                ) : null
-                              )}
+                                );
+                              })}
                             </div>
                           )}
                         </div>

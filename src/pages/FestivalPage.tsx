@@ -33,7 +33,7 @@ export default function FestivalPage() {
     enabled: !!festival?.venue_id,
   });
 
-  // Hent ALLE artister fra festivalen (ikke bare featured)
+  // Hent ALLE artister fra festivalen (ikke bare featured) - using entities
   const { data: allArtists = [] } = useQuery({
     queryKey: ["all-artists", festival?.id],
     queryFn: async () => {
@@ -51,30 +51,31 @@ export default function FestivalPage() {
         .map((fe) => fe.event_id)
         .filter(Boolean) as string[];
 
-      // Hent ALLE projects fra event_projects (ikke bare featured)
-      const { data: eventProjects } = await supabase
-        .from("event_projects")
-        .select("*, project:projects(*)")
+      // Hent ALLE entities fra event_entities (NEW)
+      const { data: eventEntities } = await supabase
+        .from("event_entities")
+        .select("*, entity:entities(*)")
         .in("event_id", eventIds)
         .order("billing_order", { ascending: true });
 
-      if (!eventProjects) return [];
+      if (!eventEntities) return [];
 
-      // Unike projects (kan være i flere events)
-      const uniqueProjects = eventProjects
-        .map((ep) => ep.project)
+      // Unike entities (kan være i flere events)
+      const uniqueEntities = eventEntities
+        .map((ee) => ee.entity)
         .filter(
-          (project, index, self) =>
-            project && self.findIndex((p) => p?.id === project.id) === index
+          (entity, index, self) =>
+            entity && self.findIndex((e) => e?.id === entity.id) === index
         )
-        .map((project) => ({
-          id: project!.id,
-          name: project!.name,
-          slug: project!.slug,
-          tagline: project!.tagline,
+        .map((entity) => ({
+          id: entity!.id,
+          name: entity!.name,
+          slug: entity!.slug,
+          tagline: entity!.tagline,
+          type: entity!.type,
         }));
 
-      return uniqueProjects;
+      return uniqueEntities;
     },
     enabled: !!festival?.id,
   });
@@ -168,7 +169,7 @@ export default function FestivalPage() {
             <SectionRenderer
               key={section.id}
               section={section}
-              validEvents={validEvents}
+              validEvents={validEvents as any}
               featuredArtists={allArtists}
               venue={venue}
               dateRange={showDateRange}

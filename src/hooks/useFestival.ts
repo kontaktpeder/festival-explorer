@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { Festival, FestivalEvent, Event, EventProject, Project, Venue } from "@/types/database";
+import type { Festival, FestivalEvent, Event, EventEntity, Entity, Venue } from "@/types/database";
+
+// Re-export entity hooks for convenience
+export { useEntity, useMyEntities, useAdminEntities, usePublishedEntitiesByType } from "./useEntity";
 
 export function useFestival(slug: string) {
   return useQuery({
@@ -34,16 +37,16 @@ export function useFestival(slug: string) {
 
       if (eventsError) throw eventsError;
 
-      // For each event, get the FULL lineup (not limited)
+      // For each event, get the FULL lineup from event_entities (NEW)
       const eventsWithLineup = await Promise.all(
         (festivalEvents || []).map(async (fe) => {
           if (!fe.event) return fe;
 
           const { data: lineup } = await supabase
-            .from("event_projects")
+            .from("event_entities")
             .select(`
               *,
-              project:projects(*)
+              entity:entities(*)
             `)
             .eq("event_id", fe.event.id)
             .order("billing_order", { ascending: true });
@@ -77,19 +80,20 @@ export function useFestival(slug: string) {
         artistIds.forEach((id) => allArtistIds.add(id));
       });
 
-      // Fetch all referenced artists (projects)
-      let sectionArtists: Array<{ id: string; name: string; slug: string; tagline?: string | null }> = [];
+      // Fetch all referenced artists from entities (NEW - uses entities instead of projects)
+      let sectionArtists: Array<{ id: string; name: string; slug: string; tagline?: string | null; type?: string }> = [];
       if (allArtistIds.size > 0) {
-        const { data: projects } = await supabase
-          .from("projects")
-          .select("id, name, slug, tagline")
+        const { data: entities } = await supabase
+          .from("entities")
+          .select("id, name, slug, tagline, type")
           .in("id", Array.from(allArtistIds));
         
-        sectionArtists = (projects || []).map((p) => ({
-          id: p.id,
-          name: p.name,
-          slug: p.slug,
-          tagline: p.tagline,
+        sectionArtists = (entities || []).map((e) => ({
+          id: e.id,
+          name: e.name,
+          slug: e.slug,
+          tagline: e.tagline,
+          type: e.type,
         }));
       }
 
@@ -125,12 +129,12 @@ export function useEvent(slug: string) {
       if (error) throw error;
       if (!event) return null;
 
-      // Get full lineup
+      // Get full lineup from event_entities (NEW)
       const { data: lineup, error: lineupError } = await supabase
-        .from("event_projects")
+        .from("event_entities")
         .select(`
           *,
-          project:projects(*)
+          entity:entities(*)
         `)
         .eq("event_id", event.id)
         .order("billing_order", { ascending: true });
@@ -156,10 +160,53 @@ export function useEvent(slug: string) {
   });
 }
 
+/**
+ * @deprecated Use useEntity from useEntity.ts instead
+ * Kept for backwards compatibility during migration
+ */
 export function useProject(slug: string) {
   return useQuery({
     queryKey: ["project", slug],
     queryFn: async () => {
+      // Try entities first (NEW)
+      const { data: entity, error: entityError } = await supabase
+        .from("entities")
+        .select("*")
+        .eq("slug", slug)
+        .eq("is_published", true)
+        .in("type", ["solo", "band"])
+        .maybeSingle();
+
+      if (!entityError && entity) {
+        // Get public team members from entity_team
+        const { data: team } = await supabase
+          .from("entity_team")
+          .select(`
+            *,
+            profile:profiles(*)
+          `)
+          .eq("entity_id", entity.id)
+          .eq("is_public", true)
+          .is("left_at", null);
+
+        // Map to old format for compatibility
+        return {
+          ...entity,
+          type: entity.type as 'solo' | 'band',
+          members: (team || []).map(t => ({
+            project_id: entity.id,
+            profile_id: t.user_id,
+            role_label: t.role_labels?.[0] || null,
+            is_admin: t.access === 'admin' || t.access === 'owner',
+            is_public: t.is_public,
+            joined_at: t.joined_at,
+            left_at: t.left_at,
+            profile: t.profile,
+          })),
+        };
+      }
+
+      // Fallback to old projects table for backwards compatibility
       const { data: project, error } = await supabase
         .from("projects")
         .select("*")
@@ -195,6 +242,32 @@ export function useVenue(slug: string) {
   return useQuery({
     queryKey: ["venue", slug],
     queryFn: async () => {
+      // Try entities first (NEW)
+      const { data: entity, error: entityError } = await supabase
+        .from("entities")
+        .select("*")
+        .eq("slug", slug)
+        .eq("is_published", true)
+        .eq("type", "venue")
+        .maybeSingle();
+
+      if (!entityError && entity) {
+        // Get upcoming events at this venue
+        const { data: events } = await supabase
+          .from("events")
+          .select("*")
+          .eq("venue_id", entity.id)
+          .eq("status", "published")
+          .gte("start_at", new Date().toISOString())
+          .order("start_at", { ascending: true });
+
+        return {
+          ...entity,
+          upcomingEvents: events || [],
+        };
+      }
+
+      // Fallback to old venues table
       const { data: venue, error } = await supabase
         .from("venues")
         .select("*")
