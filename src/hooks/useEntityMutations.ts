@@ -274,26 +274,20 @@ export function useRevokeInvitation() {
 export function useAcceptInvitation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ token, userId }: { token: string; userId: string }) => {
-      // Use the secure RPC function that handles RLS bypass
+    mutationFn: async ({ token }: { token: string; userId: string }) => {
+      // Secure server-side acceptance (handles RLS + membership upsert)
       const { data, error } = await supabase.rpc("accept_invitation_by_token", {
         p_token: token,
       });
 
       if (error) throw error;
-      
-      // RPC returns jsonb result with success/error info
-      const result = data as unknown as { success: boolean; message: string; entity_id?: string };
-      
-      if (!result.success) {
-        throw new Error(result.message || "Could not accept invitation");
-      }
-      
-      return result;
+      if (!data) throw new Error("Invitation not found or expired");
+
+      // RPC returns the updated access_invitations row
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-entities"] });
-      queryClient.invalidateQueries({ queryKey: ["invitation"] });
     },
   });
 }
