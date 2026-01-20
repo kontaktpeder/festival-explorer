@@ -16,6 +16,7 @@ import {
   PERSONA_CATEGORIES 
 } from "@/hooks/usePersona";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { toast } from "sonner";
 
 export default function PersonaEdit() {
@@ -33,6 +34,7 @@ export default function PersonaEdit() {
   const [categoryTags, setCategoryTags] = useState<string[]>([]);
   const [isPublic, setIsPublic] = useState(true);
   const [customTag, setCustomTag] = useState("");
+  const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
 
   // Load existing persona data
   useEffect(() => {
@@ -124,7 +126,7 @@ export default function PersonaEdit() {
             <CardTitle>Grunnleggende info</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Avatar Preview */}
+            {/* Avatar Preview + MediaPicker */}
             <div className="flex items-center gap-4">
               <Avatar className="h-20 w-20">
                 <AvatarImage src={avatarUrl || undefined} />
@@ -132,16 +134,37 @@ export default function PersonaEdit() {
                   {name ? name.substring(0, 2).toUpperCase() : "?"}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1">
-                <Label htmlFor="avatar">Profilbilde URL</Label>
-                <Input
-                  id="avatar"
-                  value={avatarUrl}
-                  onChange={(e) => setAvatarUrl(e.target.value)}
-                  placeholder="https://..."
-                />
+              <div className="flex-1 space-y-2">
+                <Label>Profilbilde</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={avatarUrl}
+                    onChange={(e) => setAvatarUrl(e.target.value)}
+                    placeholder="URL eller velg fra filbank"
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsMediaPickerOpen(true)}
+                  >
+                    <ImagePlus className="h-4 w-4 mr-2" />
+                    Velg bilde
+                  </Button>
+                </div>
               </div>
             </div>
+
+            <MediaPicker
+              open={isMediaPickerOpen}
+              onOpenChange={setIsMediaPickerOpen}
+              onSelect={(_, publicUrl) => {
+                setAvatarUrl(publicUrl);
+                setIsMediaPickerOpen(false);
+              }}
+              fileType="image"
+              userOnly={true}
+            />
 
             <div>
               <Label htmlFor="name">Navn *</Label>

@@ -1,17 +1,24 @@
 import { useState } from "react";
-import { Plus, Trash2, Eye, EyeOff, User } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, User, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +26,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useMyPersonas } from "@/hooks/usePersona";
 import {
@@ -42,6 +50,7 @@ export function EntityPersonaBindingsEditor({
   const [selectedPersonaId, setSelectedPersonaId] = useState<string>("");
   const [roleLabel, setRoleLabel] = useState("");
   const [isPublic, setIsPublic] = useState(true);
+  const [personaPopoverOpen, setPersonaPopoverOpen] = useState(false);
 
   const { data: myPersonas } = useMyPersonas();
   const { data: bindings, isLoading } = useEntityPersonaBindings(entityId);
@@ -132,18 +141,90 @@ export function EntityPersonaBindingsEditor({
                     Du har ingen ledige profiler. Opprett en ny profil først.
                   </p>
                 ) : (
-                  <Select value={selectedPersonaId} onValueChange={setSelectedPersonaId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Velg profil..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availablePersonas.map((persona) => (
-                        <SelectItem key={persona.id} value={persona.id}>
-                          {persona.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={personaPopoverOpen} onOpenChange={setPersonaPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={personaPopoverOpen}
+                        className="w-full justify-between"
+                      >
+                        {selectedPersonaId ? (
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage src={availablePersonas.find(p => p.id === selectedPersonaId)?.avatar_url || undefined} />
+                              <AvatarFallback className="text-xs">
+                                {availablePersonas.find(p => p.id === selectedPersonaId)?.name?.charAt(0) || "?"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span>{availablePersonas.find(p => p.id === selectedPersonaId)?.name}</span>
+                          </div>
+                        ) : (
+                          "Velg profil..."
+                        )}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Søk etter profil..." />
+                        <CommandList>
+                          <CommandEmpty>Ingen profiler funnet</CommandEmpty>
+                          <CommandGroup>
+                            {availablePersonas.map((persona) => (
+                              <CommandItem
+                                key={persona.id}
+                                value={persona.name}
+                                onSelect={() => {
+                                  setSelectedPersonaId(persona.id);
+                                  setPersonaPopoverOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    selectedPersonaId === persona.id ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                  <Avatar className="h-8 w-8 flex-shrink-0">
+                                    <AvatarImage src={persona.avatar_url || undefined} />
+                                    <AvatarFallback className="text-xs">
+                                      {persona.name.charAt(0)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="font-medium truncate">{persona.name}</span>
+                                    {persona.category_tags && persona.category_tags.length > 0 && (
+                                      <div className="flex flex-wrap gap-1 mt-0.5">
+                                        {persona.category_tags.slice(0, 3).map((tag) => (
+                                          <Badge 
+                                            key={tag} 
+                                            variant="secondary" 
+                                            className="text-[10px] px-1.5 py-0 capitalize"
+                                          >
+                                            {tag}
+                                          </Badge>
+                                        ))}
+                                        {persona.category_tags.length > 3 && (
+                                          <Badge 
+                                            variant="outline" 
+                                            className="text-[10px] px-1.5 py-0"
+                                          >
+                                            +{persona.category_tags.length - 3}
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 )}
               </div>
 
