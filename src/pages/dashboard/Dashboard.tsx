@@ -137,7 +137,7 @@ export default function Dashboard() {
           </h1>
           <p className="text-muted-foreground">
             {showOnboarding 
-              ? "Velkommen til ditt rom på GIGGEN." 
+              ? "Velkommen til backstage på GIGGEN." 
               : "Her finner du alt som er ditt."
             }
           </p>

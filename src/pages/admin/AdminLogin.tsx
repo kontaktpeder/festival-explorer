@@ -6,6 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
+const checkIsAdmin = async (): Promise<boolean> => {
+  const { data } = await supabase.rpc("is_admin");
+  return data || false;
+};
+
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,7 +28,7 @@ export default function AdminLogin() {
         email,
         password,
         options: {
-          emailRedirectTo: window.location.origin + "/admin",
+          emailRedirectTo: window.location.origin + "/dashboard",
         },
       });
 
@@ -40,7 +45,7 @@ export default function AdminLogin() {
         });
       }
     } else {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -51,12 +56,23 @@ export default function AdminLogin() {
           description: error.message,
           variant: "destructive",
         });
-      } else {
-        toast({
-          title: "Logget inn",
-          description: "Velkommen til admin!",
-        });
-        navigate("/admin");
+      } else if (data.user) {
+        // Check if user is admin
+        const isAdmin = await checkIsAdmin();
+        
+        if (isAdmin) {
+          toast({
+            title: "Logget inn",
+            description: "Velkommen til admin!",
+          });
+          navigate("/admin");
+        } else {
+          toast({
+            title: "Logget inn",
+            description: "Velkommen til backstage!",
+          });
+          navigate("/dashboard");
+        }
       }
     }
 
@@ -67,7 +83,7 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground">GIGGEN Admin</h1>
+          <h1 className="text-2xl font-bold text-foreground">GIGGEN Backstage</h1>
           <p className="text-muted-foreground mt-2">
             {isSignUp ? "Opprett konto" : "Logg inn for å fortsette"}
           </p>

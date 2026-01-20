@@ -281,7 +281,7 @@ export default function MyPersonas() {
 
         <div className="pt-4">
           <Button variant="outline" asChild>
-            <Link to="/dashboard">← Tilbake til kontrollpanelet</Link>
+            <Link to="/dashboard">← Tilbake til backstage</Link>
           </Button>
         </div>
       </div>
