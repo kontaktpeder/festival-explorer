@@ -203,9 +203,9 @@ export default function EntityEdit() {
           )}
           {canInvite && (
             <Button asChild variant="outline" size="sm">
-              <Link to={`/admin/access-generator?mode=entity&entityId=${entityWithAccess.id}`}>
+              <Link to={`/dashboard/entities/${entityWithAccess.id}/invite`}>
                 <UserPlus className="h-4 w-4 mr-2" />
-                Gi noen tilgang
+                Inviter
               </Link>
             </Button>
           )}
