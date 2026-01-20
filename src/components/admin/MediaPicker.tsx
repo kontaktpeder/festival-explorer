@@ -34,6 +34,7 @@ interface MediaPickerProps {
   onOpenChange: (open: boolean) => void;
   onSelect: (mediaId: string, publicUrl: string) => void;
   fileType?: "image" | "video" | "audio" | "document";
+  userOnly?: boolean; // Vis kun brukerens egne filer
 }
 
 export function MediaPicker({
@@ -41,6 +42,7 @@ export function MediaPicker({
   onOpenChange,
   onSelect,
   fileType,
+  userOnly = false,
 }: MediaPickerProps) {
   const [search, setSearch] = useState("");
   const [selectedType, setSelectedType] = useState<string>(fileType || "all");
@@ -48,13 +50,21 @@ export function MediaPicker({
   const [activeTab, setActiveTab] = useState<"library" | "upload">("library");
 
   const { data: media, isLoading } = useQuery({
-    queryKey: ["admin-media", selectedType, search],
+    queryKey: ["admin-media", selectedType, search, userOnly],
     queryFn: async () => {
       let query = supabase
         .from("media")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(50);
+
+      // Filtrer på brukerens egne filer hvis userOnly er aktivert
+      if (userOnly) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          query = query.eq("created_by", user.id);
+        }
+      }
 
       if (selectedType !== "all") {
         query = query.eq("file_type", selectedType);
