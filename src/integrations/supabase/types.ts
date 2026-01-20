@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_invitations: {
+        Row: {
+          accepted_at: string | null
+          access: Database["public"]["Enums"]["access_level"]
+          email: string
+          entity_id: string
+          expires_at: string
+          id: string
+          invited_at: string
+          invited_by: string
+          role_labels: string[] | null
+          status: string
+          token: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          access: Database["public"]["Enums"]["access_level"]
+          email: string
+          entity_id: string
+          expires_at?: string
+          id?: string
+          invited_at?: string
+          invited_by: string
+          role_labels?: string[] | null
+          status?: string
+          token?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          access?: Database["public"]["Enums"]["access_level"]
+          email?: string
+          entity_id?: string
+          expires_at?: string
+          id?: string
+          invited_at?: string
+          invited_by?: string
+          role_labels?: string[] | null
+          status?: string
+          token?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_invitations_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       designs: {
         Row: {
           background: Json
@@ -57,6 +114,208 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      entities: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          hero_image_url: string | null
+          id: string
+          is_published: boolean
+          name: string
+          slug: string
+          tagline: string | null
+          type: Database["public"]["Enums"]["entity_type"]
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          hero_image_url?: string | null
+          id?: string
+          is_published?: boolean
+          name: string
+          slug: string
+          tagline?: string | null
+          type: Database["public"]["Enums"]["entity_type"]
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          hero_image_url?: string | null
+          id?: string
+          is_published?: boolean
+          name?: string
+          slug?: string
+          tagline?: string | null
+          type?: Database["public"]["Enums"]["entity_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entities_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      entity_team: {
+        Row: {
+          access: Database["public"]["Enums"]["access_level"]
+          entity_id: string
+          id: string
+          is_public: boolean
+          joined_at: string
+          left_at: string | null
+          role_labels: string[] | null
+          user_id: string
+        }
+        Insert: {
+          access?: Database["public"]["Enums"]["access_level"]
+          entity_id: string
+          id?: string
+          is_public?: boolean
+          joined_at?: string
+          left_at?: string | null
+          role_labels?: string[] | null
+          user_id: string
+        }
+        Update: {
+          access?: Database["public"]["Enums"]["access_level"]
+          entity_id?: string
+          id?: string
+          is_public?: boolean
+          joined_at?: string
+          left_at?: string | null
+          role_labels?: string[] | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entity_team_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entity_team_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      entity_timeline_events: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          date: string | null
+          description: string | null
+          entity_id: string
+          event_type: string
+          id: string
+          location_name: string | null
+          media: Json | null
+          title: string
+          updated_at: string
+          visibility: string
+          year: number | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          entity_id: string
+          event_type: string
+          id?: string
+          location_name?: string | null
+          media?: Json | null
+          title: string
+          updated_at?: string
+          visibility?: string
+          year?: number | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          entity_id?: string
+          event_type?: string
+          id?: string
+          location_name?: string | null
+          media?: Json | null
+          title?: string
+          updated_at?: string
+          visibility?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entity_timeline_events_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_entities: {
+        Row: {
+          billing_order: number
+          entity_id: string
+          event_id: string
+          feature_order: number | null
+          is_featured: boolean | null
+        }
+        Insert: {
+          billing_order?: number
+          entity_id: string
+          event_id: string
+          feature_order?: number | null
+          is_featured?: boolean | null
+        }
+        Update: {
+          billing_order?: number
+          entity_id?: string
+          event_id?: string
+          feature_order?: number | null
+          is_featured?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_entities_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_entities_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
         ]
@@ -827,6 +1086,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_edit_entity: { Args: { p_entity_id: string }; Returns: boolean }
+      get_user_entities: {
+        Args: never
+        Returns: {
+          access: Database["public"]["Enums"]["access_level"]
+          entity_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -835,12 +1102,16 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      is_entity_admin: { Args: { p_entity_id: string }; Returns: boolean }
+      is_entity_owner: { Args: { p_entity_id: string }; Returns: boolean }
       is_project_admin: { Args: { p_project_id: string }; Returns: boolean }
       is_project_member: { Args: { p_project_id: string }; Returns: boolean }
       is_venue_admin: { Args: { p_venue_id: string }; Returns: boolean }
     }
     Enums: {
+      access_level: "owner" | "admin" | "editor" | "viewer"
       app_role: "admin" | "moderator" | "user"
+      entity_type: "venue" | "solo" | "band"
       project_type: "solo" | "band"
       publish_status: "draft" | "submitted" | "published"
       social_entity_type: "project" | "event" | "festival" | "venue"
@@ -974,7 +1245,9 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      access_level: ["owner", "admin", "editor", "viewer"],
       app_role: ["admin", "moderator", "user"],
+      entity_type: ["venue", "solo", "band"],
       project_type: ["solo", "band"],
       publish_status: ["draft", "submitted", "published"],
       social_entity_type: ["project", "event", "festival", "venue"],
