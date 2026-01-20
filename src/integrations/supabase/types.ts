@@ -1104,6 +1104,7 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       is_entity_admin: { Args: { p_entity_id: string }; Returns: boolean }
       is_entity_owner: { Args: { p_entity_id: string }; Returns: boolean }
+      is_entity_team_member: { Args: { p_entity_id: string }; Returns: boolean }
       is_project_admin: { Args: { p_project_id: string }; Returns: boolean }
       is_project_member: { Args: { p_project_id: string }; Returns: boolean }
       is_venue_admin: { Args: { p_venue_id: string }; Returns: boolean }
