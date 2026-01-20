@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,15 +29,23 @@ const ACCESS_OPTIONS: { value: Exclude<AccessLevel, 'owner'>; label: string; des
 export default function AdminAccessGenerator() {
   const { toast } = useToast();
   const createInvitation = useCreateInvitation();
+  const [searchParams] = useSearchParams();
 
-  const [inviteMode, setInviteMode] = useState<InviteMode>("platform");
+  // Read URL params for preselection
+  const initialMode = searchParams.get("mode");
+  const initialEntityId = searchParams.get("entityId");
+
+  const [inviteMode, setInviteMode] = useState<InviteMode>(
+    initialMode === "entity" ? "entity" : "platform"
+  );
   const [entityType, setEntityType] = useState<string>("solo");
-  const [selectedEntityId, setSelectedEntityId] = useState<string>("");
+  const [selectedEntityId, setSelectedEntityId] = useState<string>(initialEntityId || "");
   const [accessLevel, setAccessLevel] = useState<Exclude<AccessLevel, 'owner'>>("admin");
   const [email, setEmail] = useState("");
   const [roleLabels, setRoleLabels] = useState("");
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [initialEntityLoaded, setInitialEntityLoaded] = useState(!initialEntityId);
 
   // Load entity types from database
   const { data: entityTypes } = useEntityTypes();
@@ -55,6 +64,28 @@ export default function AdminAccessGenerator() {
     return getDefaultEntityTypeConfig(safeType);
   };
 
+  // Load initial entity from URL param to get its type
+  useEffect(() => {
+    const loadInitialEntity = async () => {
+      if (!initialEntityId) return;
+      
+      const { data, error } = await supabase
+        .from("entities")
+        .select("id, type")
+        .eq("id", initialEntityId)
+        .maybeSingle();
+      
+      if (!error && data) {
+        setEntityType(data.type);
+        setSelectedEntityId(data.id);
+        setInviteMode("entity");
+      }
+      setInitialEntityLoaded(true);
+    };
+    
+    loadInitialEntity();
+  }, [initialEntityId]);
+
   // Fetch entities filtered by type (exclude system entities)
   const { data: entities, isLoading: entitiesLoading } = useQuery({
     queryKey: ["admin-entities-for-invite", entityType],
@@ -68,7 +99,7 @@ export default function AdminAccessGenerator() {
       if (error) throw error;
       return data as Entity[];
     },
-    enabled: inviteMode === "entity",
+    enabled: inviteMode === "entity" && initialEntityLoaded,
   });
 
   const selectedEntity = entities?.find((e) => e.id === selectedEntityId);
