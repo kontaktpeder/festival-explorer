@@ -27,7 +27,7 @@ export function useExploreProjects() {
   return useExploreEntities();
 }
 
-// New entities-based hook
+// New entities-based hook - filters out system entities
 export function useExploreEntities(type?: 'solo' | 'band') {
   return useQuery({
     queryKey: ["explore", "entities", type],
@@ -36,6 +36,7 @@ export function useExploreEntities(type?: 'solo' | 'band') {
         .from("entities")
         .select("*")
         .eq("is_published", true)
+        .eq("is_system", false)
         .in("type", type ? [type] : ["solo", "band"])
         .order("name", { ascending: true })
         .limit(20);
@@ -97,6 +98,7 @@ export function useSearch(query: string) {
           .from("entities")
           .select("id, name, slug, tagline, type, hero_image_url")
           .eq("is_published", true)
+          .eq("is_system", false)
           .in("type", ["solo", "band"])
           .ilike("name", searchPattern)
           .limit(10),
