@@ -12,7 +12,7 @@ export default function SearchPage() {
   const { data: results, isLoading } = useSearch(query);
 
   const hasResults =
-    results && (results.events.length > 0 || results.projects.length > 0);
+    results && (results.events.length > 0 || results.entities.length > 0);
 
   return (
     <PageLayout>
@@ -99,42 +99,42 @@ export default function SearchPage() {
               </section>
             )}
 
-            {/* Projects */}
-            {results.projects.length > 0 && (
+            {/* Entities (Artists) */}
+            {results.entities.length > 0 && (
               <section>
                 <h2 className="section-title flex items-center gap-2">
                   <Music className="w-4 h-4" />
                   Artister
                 </h2>
                 <div className="space-y-2">
-                  {results.projects.map((project) => (
+                  {results.entities.map((entity) => (
                     <Link
-                      key={project.id}
-                      to={`/project/${project.slug}`}
+                      key={entity.id}
+                      to={`/project/${entity.slug}`}
                       className="cosmic-card p-3 flex items-center gap-3 group"
                     >
                       <div className="w-12 h-12 rounded-lg overflow-hidden bg-secondary flex-shrink-0">
-                        {project.hero_image_url ? (
+                        {entity.hero_image_url ? (
                           <img
-                            src={project.hero_image_url}
-                            alt={project.name}
+                            src={entity.hero_image_url}
+                            alt={entity.name}
                             className="w-full h-full object-cover"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             <span className="text-lg font-bold text-muted-foreground/40">
-                              {project.name.charAt(0)}
+                              {entity.name.charAt(0)}
                             </span>
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold truncate group-hover:text-accent transition-colors">
-                          {project.name}
+                          {entity.name}
                         </h3>
-                        {project.tagline && (
+                        {entity.tagline && (
                           <p className="text-sm text-muted-foreground truncate">
-                            {project.tagline}
+                            {entity.tagline}
                           </p>
                         )}
                       </div>
