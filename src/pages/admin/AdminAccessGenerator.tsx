@@ -1,28 +1,23 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Link2, UserPlus, Check, Building2, User, Users, Globe } from "lucide-react";
+import { Copy, Link2, UserPlus, Check, Globe } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
 import { useCreateInvitation } from "@/hooks/useInvitations";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEntityTypes, usePlatformEntity } from "@/hooks/useEntityTypes";
+import { getEntityTypeConfig, getDefaultEntityTypeConfig } from "@/lib/entity-types";
+import { EntityTypeIcon } from "@/components/ui/EntityTypeIcon";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import type { EntityType, AccessLevel, Entity } from "@/types/database";
 
-const PLATFORM_ENTITY_SLUG = "giggen-platform";
-
 type InviteMode = "platform" | "entity";
-
-const TYPE_OPTIONS: { value: EntityType; label: string; icon: typeof Building2 }[] = [
-  { value: "venue", label: "Venue", icon: Building2 },
-  { value: "solo", label: "Solo", icon: User },
-  { value: "band", label: "Band", icon: Users },
-];
 
 const ACCESS_OPTIONS: { value: Exclude<AccessLevel, 'owner'>; label: string; description: string }[] = [
   { value: "admin", label: "Admin", description: "Full tilgang til å redigere og administrere" },
@@ -30,46 +25,12 @@ const ACCESS_OPTIONS: { value: Exclude<AccessLevel, 'owner'>; label: string; des
   { value: "viewer", label: "Leser", description: "Kun lesetilgang" },
 ];
 
-// Helper function to get or create platform entity
-async function getOrCreatePlatformEntity(userId: string): Promise<string> {
-  // First, try to find existing platform entity
-  const { data: existing } = await supabase
-    .from("entities")
-    .select("id")
-    .eq("slug", PLATFORM_ENTITY_SLUG)
-    .maybeSingle();
-
-  if (existing) {
-    return existing.id;
-  }
-
-  // Create platform entity if it doesn't exist
-  const { data: created, error } = await supabase
-    .from("entities")
-    .insert({
-      type: "venue" as EntityType,
-      name: "GIGGEN Platform",
-      slug: PLATFORM_ENTITY_SLUG,
-      tagline: "Generell plattformtilgang",
-      is_published: false,
-      created_by: userId,
-    })
-    .select("id")
-    .single();
-
-  if (error) {
-    throw new Error(`Kunne ikke opprette platform-entity: ${error.message}`);
-  }
-
-  return created.id;
-}
-
 export default function AdminAccessGenerator() {
   const { toast } = useToast();
   const createInvitation = useCreateInvitation();
 
   const [inviteMode, setInviteMode] = useState<InviteMode>("platform");
-  const [entityType, setEntityType] = useState<EntityType>("solo");
+  const [entityType, setEntityType] = useState<string>("solo");
   const [selectedEntityId, setSelectedEntityId] = useState<string>("");
   const [accessLevel, setAccessLevel] = useState<Exclude<AccessLevel, 'owner'>>("admin");
   const [email, setEmail] = useState("");
@@ -77,15 +38,32 @@ export default function AdminAccessGenerator() {
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  // Fetch entities filtered by type (exclude platform entity)
+  // Load entity types from database
+  const { data: entityTypes } = useEntityTypes();
+  
+  // Load platform entity for general invitations
+  const { data: platformEntity } = usePlatformEntity();
+
+  // Get config for a type
+  const getConfig = (type: string): ReturnType<typeof getDefaultEntityTypeConfig> => {
+    if (entityTypes?.length) {
+      const config = getEntityTypeConfig(type, entityTypes);
+      if (config) return config;
+    }
+    // Safe fallback - treat unknown types as solo
+    const safeType = (type === 'venue' || type === 'solo' || type === 'band') ? type : 'solo';
+    return getDefaultEntityTypeConfig(safeType);
+  };
+
+  // Fetch entities filtered by type (exclude system entities)
   const { data: entities, isLoading: entitiesLoading } = useQuery({
     queryKey: ["admin-entities-for-invite", entityType],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("entities")
         .select("id, name, slug, type, tagline")
-        .eq("type", entityType)
-        .neq("slug", PLATFORM_ENTITY_SLUG)
+        .eq("type", entityType as "venue" | "solo" | "band")
+        .eq("is_system", false)
         .order("name", { ascending: true });
       if (error) throw error;
       return data as Entity[];
@@ -117,6 +95,16 @@ export default function AdminAccessGenerator() {
       return;
     }
 
+    // For platform mode, require platform entity
+    if (inviteMode === "platform" && !platformEntity) {
+      toast({ 
+        title: "Feil", 
+        description: "Platform-entity ikke funnet. Kontakt administrator.", 
+        variant: "destructive" 
+      });
+      return;
+    }
+
     try {
       const user = await getAuthenticatedUser();
       const roles = roleLabels
@@ -125,10 +113,9 @@ export default function AdminAccessGenerator() {
         .filter(Boolean);
 
       // Get entity ID - either selected or platform
-      let entityIdToUse = selectedEntityId;
-      if (inviteMode === "platform") {
-        entityIdToUse = await getOrCreatePlatformEntity(user.id);
-      }
+      const entityIdToUse = inviteMode === "platform" 
+        ? platformEntity!.id 
+        : selectedEntityId;
 
       await createInvitation.mutateAsync({
         entityId: entityIdToUse,
@@ -144,10 +131,11 @@ export default function AdminAccessGenerator() {
       setGeneratedLink(link);
 
       toast({ title: "Invitasjon opprettet!" });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Kunne ikke opprette invitasjon";
       toast({ 
         title: "Feil", 
-        description: error.message || "Kunne ikke opprette invitasjon", 
+        description: message, 
         variant: "destructive" 
       });
     }
@@ -178,7 +166,10 @@ export default function AdminAccessGenerator() {
     setCopied(false);
   };
 
-  const canGenerate = email && (inviteMode === "platform" || selectedEntityId);
+  const canGenerate = email && (inviteMode === "platform" ? !!platformEntity : !!selectedEntityId);
+
+  // Filter entity types for entity mode (exclude system types if any)
+  const selectableEntityTypes = entityTypes?.filter(et => et.is_enabled) || [];
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -225,7 +216,7 @@ export default function AdminAccessGenerator() {
               className="h-auto py-4 flex flex-col items-center gap-2"
               onClick={() => setInviteMode("entity")}
             >
-              <Users className="h-6 w-6" />
+              <EntityTypeIcon iconKey="users" className="h-6 w-6" />
               <div className="text-center">
                 <div className="font-medium">Entity-invitasjon</div>
                 <div className="text-xs text-muted-foreground font-normal">
@@ -247,26 +238,25 @@ export default function AdminAccessGenerator() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Entity type selector */}
+            {/* Entity type selector - dynamic from entity_types */}
             <div className="space-y-2">
               <Label>Entity-type</Label>
-              <div className="flex gap-2">
-                {TYPE_OPTIONS.map((option) => {
-                  const Icon = option.icon;
-                  const isSelected = entityType === option.value;
+              <div className="flex gap-2 flex-wrap">
+                {selectableEntityTypes.map((option) => {
+                  const isSelected = entityType === option.key;
                   return (
                     <Button
-                      key={option.value}
+                      key={option.key}
                       type="button"
                       variant={isSelected ? "default" : "outline"}
-                      className="flex-1"
+                      className="flex-1 min-w-[100px]"
                       onClick={() => {
-                        setEntityType(option.value);
+                        setEntityType(option.key);
                         setSelectedEntityId("");
                       }}
                     >
-                      <Icon className="h-4 w-4 mr-2" />
-                      {option.label}
+                      <EntityTypeIcon iconKey={option.icon_key} className="h-4 w-4 mr-2" />
+                      {option.label_nb}
                     </Button>
                   );
                 })}
@@ -289,7 +279,7 @@ export default function AdminAccessGenerator() {
                   <SelectContent>
                     {entities?.length === 0 ? (
                       <div className="p-4 text-center text-muted-foreground text-sm">
-                        Ingen {entityType === 'venue' ? 'venues' : 'artister'} funnet
+                        Ingen {getConfig(entityType).label_nb.toLowerCase()} funnet
                       </div>
                     ) : (
                       entities?.map((entity) => (
@@ -310,9 +300,9 @@ export default function AdminAccessGenerator() {
               )}
               {selectedEntity && (
                 <div className="flex items-center gap-2 mt-2">
-                  <Badge variant="outline">{selectedEntity.type}</Badge>
+                  <Badge variant="outline">{getConfig(selectedEntity.type).label_nb}</Badge>
                   <span className="text-sm text-muted-foreground">
-                    /{selectedEntity.type === 'venue' ? 'venue' : 'project'}/{selectedEntity.slug}
+                    {getConfig(selectedEntity.type).public_route_base}/{selectedEntity.slug}
                   </span>
                 </div>
               )}

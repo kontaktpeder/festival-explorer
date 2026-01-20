@@ -2,21 +2,21 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { Plus, ExternalLink, Settings, Users, Building2, User } from "lucide-react";
+import { Plus, ExternalLink, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEntityTypes } from "@/hooks/useEntityTypes";
+import { getEntityTypeConfig, getDefaultEntityTypeConfig } from "@/lib/entity-types";
+import { EntityTypeIcon } from "@/components/ui/EntityTypeIcon";
 import type { EntityType } from "@/types/database";
-
-const TYPE_CONFIG: Record<EntityType, { label: string; icon: React.ReactNode; route: string }> = {
-  venue: { label: "Venue", icon: <Building2 className="h-4 w-4" />, route: "/venue" },
-  solo: { label: "Solo", icon: <User className="h-4 w-4" />, route: "/project" },
-  band: { label: "Band", icon: <Users className="h-4 w-4" />, route: "/project" },
-};
 
 export default function AdminEntities() {
   const queryClient = useQueryClient();
-  const [typeFilter, setTypeFilter] = useState<EntityType | "all">("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  
+  // Load entity types from database
+  const { data: entityTypes } = useEntityTypes();
 
   const { data: entities, isLoading } = useQuery({
     queryKey: ["admin-entities", typeFilter],
@@ -24,10 +24,11 @@ export default function AdminEntities() {
       let query = supabase
         .from("entities")
         .select("*")
+        .eq("is_system", false) // Exclude system entities from admin list
         .order("name");
       
       if (typeFilter !== "all") {
-        query = query.eq("type", typeFilter);
+        query = query.eq("type", typeFilter as "venue" | "solo" | "band");
       }
       
       const { data } = await query;
@@ -43,6 +44,13 @@ export default function AdminEntities() {
       queryClient.invalidateQueries({ queryKey: ["admin-entities"] });
     },
   });
+
+  // Get config for a type, falling back to defaults if not loaded
+  const getConfig = (type: string) => {
+    return entityTypes?.length
+      ? getEntityTypeConfig(type, entityTypes) || getDefaultEntityTypeConfig(type)
+      : getDefaultEntityTypeConfig(type);
+  };
 
   if (isLoading) {
     return <div className="text-muted-foreground p-4">Laster entities...</div>;
@@ -60,28 +68,22 @@ export default function AdminEntities() {
         </Button>
       </div>
 
-      {/* Type filter */}
+      {/* Type filter - dynamic from entity_types */}
       <Tabs value={typeFilter} onValueChange={(v) => setTypeFilter(v as EntityType | "all")}>
         <TabsList>
           <TabsTrigger value="all">Alle</TabsTrigger>
-          <TabsTrigger value="venue">
-            <Building2 className="h-4 w-4 mr-1" />
-            Venues
-          </TabsTrigger>
-          <TabsTrigger value="solo">
-            <User className="h-4 w-4 mr-1" />
-            Solo
-          </TabsTrigger>
-          <TabsTrigger value="band">
-            <Users className="h-4 w-4 mr-1" />
-            Band
-          </TabsTrigger>
+          {entityTypes?.map((et) => (
+            <TabsTrigger key={et.key} value={et.key}>
+              <EntityTypeIcon iconKey={et.icon_key} className="h-4 w-4 mr-1" />
+              {et.label_nb}
+            </TabsTrigger>
+          ))}
         </TabsList>
       </Tabs>
 
       <div className="space-y-3">
         {entities?.map((entity) => {
-          const typeConfig = TYPE_CONFIG[entity.type as EntityType];
+          const typeConfig = getConfig(entity.type);
           
           return (
             <div
@@ -92,7 +94,7 @@ export default function AdminEntities() {
               <div className="flex flex-col gap-3 md:hidden">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    {typeConfig.icon}
+                    <EntityTypeIcon iconKey={typeConfig.icon_key} />
                     <h2 className="text-base font-semibold text-foreground truncate">
                       {entity.name}
                     </h2>
@@ -104,7 +106,7 @@ export default function AdminEntities() {
                       </Link>
                     </Button>
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-                      <Link to={`${typeConfig.route}/${entity.slug}`} target="_blank">
+                      <Link to={`${typeConfig.public_route_base}/${entity.slug}`} target="_blank">
                         <ExternalLink className="h-4 w-4" />
                       </Link>
                     </Button>
@@ -113,7 +115,7 @@ export default function AdminEntities() {
                 
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="secondary" className="text-xs">
-                    {typeConfig.label}
+                    {typeConfig.label_nb}
                   </Badge>
                   <Badge variant={entity.is_published ? "default" : "outline"} className="text-xs">
                     {entity.is_published ? "Publisert" : "Utkast"}
@@ -142,12 +144,12 @@ export default function AdminEntities() {
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      {typeConfig.icon}
+                      <EntityTypeIcon iconKey={typeConfig.icon_key} />
                       <h2 className="text-xl font-semibold text-foreground">
                         {entity.name}
                       </h2>
                       <Badge variant="secondary">
-                        {typeConfig.label}
+                        {typeConfig.label_nb}
                       </Badge>
                       <Badge variant={entity.is_published ? "default" : "outline"}>
                         {entity.is_published ? "Publisert" : "Utkast"}
@@ -171,7 +173,7 @@ export default function AdminEntities() {
                       </Link>
                     </Button>
                     <Button asChild variant="ghost" size="sm">
-                      <Link to={`${typeConfig.route}/${entity.slug}`} target="_blank">
+                      <Link to={`${typeConfig.public_route_base}/${entity.slug}`} target="_blank">
                         <ExternalLink className="h-4 w-4" />
                       </Link>
                     </Button>

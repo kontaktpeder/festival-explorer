@@ -128,11 +128,13 @@ export type Database = {
           hero_image_url: string | null
           id: string
           is_published: boolean
+          is_system: boolean
           name: string
           slug: string
           tagline: string | null
           type: Database["public"]["Enums"]["entity_type"]
           updated_at: string
+          visibility: Database["public"]["Enums"]["entity_visibility"]
         }
         Insert: {
           address?: string | null
@@ -143,11 +145,13 @@ export type Database = {
           hero_image_url?: string | null
           id?: string
           is_published?: boolean
+          is_system?: boolean
           name: string
           slug: string
           tagline?: string | null
           type: Database["public"]["Enums"]["entity_type"]
           updated_at?: string
+          visibility?: Database["public"]["Enums"]["entity_visibility"]
         }
         Update: {
           address?: string | null
@@ -158,11 +162,13 @@ export type Database = {
           hero_image_url?: string | null
           id?: string
           is_published?: boolean
+          is_system?: boolean
           name?: string
           slug?: string
           tagline?: string | null
           type?: Database["public"]["Enums"]["entity_type"]
           updated_at?: string
+          visibility?: Database["public"]["Enums"]["entity_visibility"]
         }
         Relationships: [
           {
@@ -280,6 +286,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      entity_types: {
+        Row: {
+          admin_route: string
+          capabilities: Json
+          created_at: string
+          icon_key: string
+          is_enabled: boolean
+          key: string
+          label_nb: string
+          public_route_base: string
+          sort_order: number
+        }
+        Insert: {
+          admin_route: string
+          capabilities?: Json
+          created_at?: string
+          icon_key: string
+          is_enabled?: boolean
+          key: string
+          label_nb: string
+          public_route_base: string
+          sort_order?: number
+        }
+        Update: {
+          admin_route?: string
+          capabilities?: Json
+          created_at?: string
+          icon_key?: string
+          is_enabled?: boolean
+          key?: string
+          label_nb?: string
+          public_route_base?: string
+          sort_order?: number
+        }
+        Relationships: []
       }
       event_entities: {
         Row: {
@@ -1160,6 +1202,7 @@ export type Database = {
       access_level: "owner" | "admin" | "editor" | "viewer"
       app_role: "admin" | "moderator" | "user"
       entity_type: "venue" | "solo" | "band"
+      entity_visibility: "public" | "unlisted" | "private"
       project_type: "solo" | "band"
       publish_status: "draft" | "submitted" | "published"
       social_entity_type: "project" | "event" | "festival" | "venue"
@@ -1296,6 +1339,7 @@ export const Constants = {
       access_level: ["owner", "admin", "editor", "viewer"],
       app_role: ["admin", "moderator", "user"],
       entity_type: ["venue", "solo", "band"],
+      entity_visibility: ["public", "unlisted", "private"],
       project_type: ["solo", "band"],
       publish_status: ["draft", "submitted", "published"],
       social_entity_type: ["project", "event", "festival", "venue"],

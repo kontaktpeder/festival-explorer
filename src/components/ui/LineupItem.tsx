@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import type { EventProject, EventEntity } from "@/types/database";
+import { useEntityTypes } from "@/hooks/useEntityTypes";
+import { getEntityPublicRoute } from "@/lib/entity-types";
 
 // Support both legacy EventProject and new EventEntity
 type LineupItemData = EventProject | EventEntity;
@@ -15,16 +17,20 @@ function isEventEntity(item: LineupItemData): item is EventEntity {
 }
 
 export function LineupItem({ item, showBilling }: LineupItemProps) {
+  const { data: entityTypes } = useEntityTypes();
+  
   // Handle both new entity format and legacy project format
   const entityData = isEventEntity(item) ? item.entity : item.project;
   if (!entityData) return null;
 
-  // Determine the route based on entity type (if available) or default to project
+  // Get route from entity_types config
   const entityType = isEventEntity(item) && item.entity?.type;
-  const routePrefix = entityType === 'venue' ? '/venue' : '/project';
+  const route = entityType 
+    ? getEntityPublicRoute(entityType, entityData.slug, entityTypes)
+    : `/project/${entityData.slug}`;
 
   return (
-    <Link to={`${routePrefix}/${entityData.slug}`} className="lineup-item group">
+    <Link to={route} className="lineup-item group">
       <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-secondary">
         {entityData.hero_image_url ? (
           <img
