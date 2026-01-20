@@ -109,8 +109,8 @@ export default function Dashboard() {
       id: "profile",
       icon: <Camera className="h-6 w-6" />,
       title: "Lage offentlig profil",
-      description: "Vis deg frem som person (kommer snart)",
-      disabled: true,
+      description: "Vis deg frem som person på GIGGEN",
+      link: "/dashboard/personas/new",
     },
     {
       id: "explore",
@@ -137,7 +137,7 @@ export default function Dashboard() {
           <Link to="/" className="text-lg font-bold text-foreground">
             GIGGEN
           </Link>
-          <PersonaSelector entities={entities || []} />
+          <PersonaSelector />
         </div>
       </header>
 

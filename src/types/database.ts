@@ -11,6 +11,23 @@ export type TimelineEventType = 'live_show' | 'release' | 'milestone' | 'collabo
 export type TimelineVisibility = 'public' | 'pro' | 'private';
 
 // ============================================
+// Personas (Public User Identities)
+// ============================================
+
+export interface Persona {
+  id: string;
+  user_id: string;
+  name: string;
+  slug: string;
+  bio?: string | null;
+  avatar_url?: string | null;
+  category_tags: string[];
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================
 // Core Entity Model (NEW - replaces Project/Venue)
 // ============================================
 

@@ -12,6 +12,9 @@ import ExplorePage from "./pages/ExplorePage";
 import SearchPage from "./pages/SearchPage";
 import AcceptInvitation from "./pages/AcceptInvitation";
 import Dashboard from "./pages/dashboard/Dashboard";
+import MyPersonas from "./pages/dashboard/MyPersonas";
+import PersonaEdit from "./pages/dashboard/PersonaEdit";
+import PersonaPage from "./pages/PersonaPage";
 import NotFound from "./pages/NotFound";
 
 // Admin pages
@@ -55,6 +58,10 @@ const App = () => (
           <Route path="/search" element={<SearchPage />} />
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/personas" element={<MyPersonas />} />
+          <Route path="/dashboard/personas/new" element={<PersonaEdit />} />
+          <Route path="/dashboard/personas/:id" element={<PersonaEdit />} />
+          <Route path="/p/:slug" element={<PersonaPage />} />
           
           {/* Admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
