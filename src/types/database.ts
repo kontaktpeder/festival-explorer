@@ -11,6 +11,21 @@ export type TimelineEventType = 'live_show' | 'release' | 'milestone' | 'collabo
 export type TimelineVisibility = 'public' | 'pro' | 'private';
 
 // ============================================
+// Platform Access (NEW - replaces Platform entity membership)
+// ============================================
+
+export interface PlatformAccess {
+  id: string;
+  user_id: string;
+  access_level: AccessLevel;
+  role_labels: string[];
+  granted_by: string | null;
+  granted_at: string;
+  revoked_at?: string | null;
+  updated_at: string;
+}
+
+// ============================================
 // Personas (Public User Identities)
 // ============================================
 

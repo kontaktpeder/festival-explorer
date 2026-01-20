@@ -834,6 +834,39 @@ export type Database = {
           },
         ]
       }
+      platform_access: {
+        Row: {
+          access_level: Database["public"]["Enums"]["access_level"]
+          granted_at: string
+          granted_by: string | null
+          id: string
+          revoked_at: string | null
+          role_labels: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_level?: Database["public"]["Enums"]["access_level"]
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          revoked_at?: string | null
+          role_labels?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_level?: Database["public"]["Enums"]["access_level"]
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          revoked_at?: string | null
+          role_labels?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1241,6 +1274,10 @@ export type Database = {
       }
       can_edit_entity: { Args: { p_entity_id: string }; Returns: boolean }
       get_invitation_by_token: { Args: { p_token: string }; Returns: Json }
+      get_platform_access_level: {
+        Args: never
+        Returns: Database["public"]["Enums"]["access_level"]
+      }
       get_user_entities: {
         Args: never
         Returns: {
@@ -1248,6 +1285,7 @@ export type Database = {
           entity_id: string
         }[]
       }
+      has_platform_access: { Args: never; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
