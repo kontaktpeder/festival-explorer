@@ -113,7 +113,7 @@ export default function AcceptInvitation() {
       
       // Redirect after short delay
       setTimeout(() => {
-        navigate("/admin/entities");
+        navigate("/dashboard");
       }, 2000);
     } catch (error: any) {
       toast({ 
@@ -247,7 +247,7 @@ export default function AcceptInvitation() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardHeader className="text-center">
-            <AlertCircle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+            <AlertCircle className="h-12 w-12 text-accent mx-auto mb-4" />
             <CardTitle>Invitasjonen har utløpt</CardTitle>
             <CardDescription>
               Denne invitasjonen har utløpt. Be om en ny lenke fra administratoren.
@@ -269,10 +269,10 @@ export default function AcceptInvitation() {
     
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-md w-full border-green-500/30 bg-green-500/5">
+        <Card className="max-w-md w-full border-accent/30 bg-accent/5">
           <CardHeader className="text-center">
-            <Check className="h-12 w-12 text-green-600 mx-auto mb-4" />
-            <CardTitle className="text-green-600">Velkommen!</CardTitle>
+            <Check className="h-12 w-12 text-accent mx-auto mb-4" />
+            <CardTitle className="text-accent">Velkommen!</CardTitle>
             <CardDescription>
               Du er nå med i teamet til{" "}
               <strong className="text-foreground">{invitation.entity?.name}</strong>
@@ -298,7 +298,7 @@ export default function AcceptInvitation() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardHeader className="text-center">
-            <AlertCircle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+            <AlertCircle className="h-12 w-12 text-accent mx-auto mb-4" />
             <CardTitle>Feil e-postadresse</CardTitle>
             <CardDescription>
               Du er logget inn som <strong>{currentUser.email}</strong>, men denne invitasjonen er for <strong>{email}</strong>.
