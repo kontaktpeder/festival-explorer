@@ -291,18 +291,32 @@ export function useAcceptInvitation() {
         throw new Error("Invitation has expired");
       }
       
-      // Add user to team
-      const { error: teamError } = await supabase
+      // Check if user is already a team member
+      const { data: existingMember } = await supabase
         .from("entity_team")
-        .insert({
-          entity_id: invitation.entity_id,
-          user_id: userId,
-          access: invitation.access,
-          role_labels: invitation.role_labels,
-          is_public: false,
-        });
+        .select("id, access")
+        .eq("entity_id", invitation.entity_id)
+        .eq("user_id", userId)
+        .is("left_at", null)
+        .maybeSingle();
       
-      if (teamError) throw teamError;
+      if (existingMember) {
+        // User already has access - just mark invitation as accepted
+        console.log("User already has access to entity, skipping team insert");
+      } else {
+        // Add user to team
+        const { error: teamError } = await supabase
+          .from("entity_team")
+          .insert({
+            entity_id: invitation.entity_id,
+            user_id: userId,
+            access: invitation.access,
+            role_labels: invitation.role_labels,
+            is_public: false,
+          });
+        
+        if (teamError) throw teamError;
+      }
       
       // Mark invitation as accepted
       const { error: updateError } = await supabase
