@@ -124,7 +124,7 @@ export function PersonaSelector() {
         <DropdownMenuItem asChild>
           <Link to="/admin">
             <Settings className="h-4 w-4 mr-2" />
-            Admin panel
+            Innstillinger
           </Link>
         </DropdownMenuItem>
         

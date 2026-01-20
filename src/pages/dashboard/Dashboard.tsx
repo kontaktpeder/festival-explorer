@@ -145,12 +145,12 @@ export default function Dashboard() {
         {/* Welcome section */}
         <div className="space-y-2">
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-            Velkommen, {userName}!
+            Hei, {userName}!
           </h1>
           <p className="text-muted-foreground">
             {showOnboarding 
               ? "Hva vil du gjøre først?" 
-              : "Administrer dine entities og se hva som skjer."
+              : "Her finner du alt som er ditt. Klar for neste steg?"
             }
           </p>
         </div>
@@ -199,16 +199,16 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* My entities section */}
+        {/* My projects section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground">
-              Mine entities ({entities?.length || 0})
+              Mine prosjekter & scener
             </h2>
             <Button asChild size="sm">
               <Link to="/admin/entities/new">
                 <Plus className="h-4 w-4 mr-2" />
-                Ny entity
+                Start noe nytt
               </Link>
             </Button>
           </div>
@@ -276,12 +276,12 @@ export default function Dashboard() {
             <Card className="border-dashed">
               <CardContent className="py-8 text-center">
                 <p className="text-muted-foreground mb-4">
-                  Du har ingen entities ennå.
+                  Du har ikke opprettet noe ennå – men det er bare å sette i gang.
                 </p>
                 <Button asChild>
                   <Link to="/admin/entities/new">
                     <Plus className="h-4 w-4 mr-2" />
-                    Opprett din første entity
+                    Start ditt første prosjekt
                   </Link>
                 </Button>
               </CardContent>
