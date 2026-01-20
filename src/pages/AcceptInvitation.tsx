@@ -19,17 +19,15 @@ const TYPE_ICONS: Record<EntityType, typeof Building2> = {
   band: Users,
 };
 
-const TYPE_LABELS: Record<EntityType, string> = {
-  venue: "venue",
-  solo: "artist",
-  band: "band",
-};
+// Platform entity slug for general invitations
+const PLATFORM_SLUG = "giggen-platform";
 
-const ACCESS_LABELS: Record<AccessLevel, string> = {
-  owner: "Eier",
-  admin: "Admin",
-  editor: "Redaktør",
-  viewer: "Leser",
+// Human-friendly access descriptions
+const ACCESS_CONFIG: Record<AccessLevel, { label: string; description: string }> = {
+  owner: { label: "Eier", description: "Full kontroll over alt innhold og innstillinger" },
+  admin: { label: "Administrator", description: "Du kan redigere innhold og invitere andre" },
+  editor: { label: "Redaktør", description: "Du kan redigere innhold" },
+  viewer: { label: "Leser", description: "Du kan se innhold" },
 };
 
 export default function AcceptInvitation() {
@@ -281,7 +279,7 @@ export default function AcceptInvitation() {
           <CardContent className="text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
               <TypeIcon className="h-5 w-5 text-muted-foreground" />
-              <Badge>{ACCESS_LABELS[invitation.access]}</Badge>
+              <Badge>{ACCESS_CONFIG[invitation.access].label}</Badge>
             </div>
             <p className="text-sm text-muted-foreground">
               Du blir sendt videre om noen sekunder...
@@ -331,17 +329,21 @@ export default function AcceptInvitation() {
 
   // Main form (signup or login)
   const TypeIcon = invitation.entity ? TYPE_ICONS[invitation.entity.type] : User;
-  const typeLabel = invitation.entity ? TYPE_LABELS[invitation.entity.type] : "entity";
+  
+  // Determine if this is a platform/general invitation
+  const isPlatformInvitation = invitation.entity?.slug === PLATFORM_SLUG || !invitation.entity?.name;
+  const entityName = invitation.entity?.name || "GIGGEN";
+  const accessConfig = ACCESS_CONFIG[invitation.access];
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
-          {/* Entity info */}
+          {/* Entity/Platform visual */}
           {invitation.entity?.hero_image_url ? (
             <img
               src={invitation.entity.hero_image_url}
-              alt={invitation.entity.name}
+              alt={entityName}
               className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
             />
           ) : (
@@ -349,16 +351,28 @@ export default function AcceptInvitation() {
               <TypeIcon className="h-10 w-10 text-muted-foreground" />
             </div>
           )}
-          <CardTitle>Du er invitert!</CardTitle>
-          <CardDescription>
-            Du er invitert til å bli del av {typeLabel}en{" "}
-            <strong className="text-foreground">{invitation.entity?.name || "Ukjent"}</strong>
+          
+          <CardTitle className="text-2xl">Du er invitert</CardTitle>
+          
+          <CardDescription className="text-base mt-2">
+            {isPlatformInvitation ? (
+              "Du har fått tilgang til GIGGEN-plattformen"
+            ) : (
+              <>
+                Du er invitert til å bli med i{" "}
+                <strong className="text-foreground">{entityName}</strong>
+              </>
+            )}
           </CardDescription>
           
-          {/* Access level badge */}
-          <div className="flex items-center justify-center gap-2 mt-4">
-            <Badge variant="outline">{typeLabel}</Badge>
-            <Badge>{ACCESS_LABELS[invitation.access]}</Badge>
+          {/* Access level - human readable */}
+          <div className="mt-4 space-y-2">
+            <Badge variant="secondary" className="text-sm">
+              Tilgang: {accessConfig.label}
+            </Badge>
+            <p className="text-xs text-muted-foreground">
+              {accessConfig.description}
+            </p>
           </div>
         </CardHeader>
 
@@ -396,12 +410,12 @@ export default function AcceptInvitation() {
               ) : isSignup ? (
                 <>
                   <User className="h-4 w-4 mr-2" />
-                  Opprett konto og aksepter
+                  Opprett konto og få tilgang
                 </>
               ) : (
                 <>
                   <LogIn className="h-4 w-4 mr-2" />
-                  Logg inn og aksepter
+                  Logg inn og få tilgang
                 </>
               )}
             </Button>
@@ -413,8 +427,8 @@ export default function AcceptInvitation() {
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 {isSignup
-                  ? "Har du allerede en konto? Logg inn"
-                  : "Ingen konto? Opprett en"}
+                  ? "Har du allerede konto? Logg inn og aksepter invitasjonen"
+                  : "Ingen konto? Opprett en ny"}
               </button>
             </div>
           </form>
