@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
-import type { Project } from "@/types/database";
+import type { Project, Entity } from "@/types/database";
+
+// Support both legacy Project and new Entity types
+type ProjectOrEntity = Project | Entity;
 
 interface ProjectCardProps {
-  project: Project;
+  project: ProjectOrEntity;
   size?: "sm" | "md";
 }
 

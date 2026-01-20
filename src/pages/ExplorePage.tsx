@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Compass, Calendar, Music, ArrowRight } from "lucide-react";
-import { useExploreEvents, useExploreProjects, useExploreFeaturedEvents } from "@/hooks/useExplore";
+import { useExploreEvents, useExploreEntities, useExploreFeaturedEvents } from "@/hooks/useExplore";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { EventCard } from "@/components/ui/EventCard";
 import { ProjectCard } from "@/components/ui/ProjectCard";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { Button } from "@/components/ui/button";
-import type { Event, Project } from "@/types/database";
+import type { Event, Entity } from "@/types/database";
 
-type Tab = "events" | "projects";
+type Tab = "events" | "artists";
 
 export default function ExplorePage() {
   const [searchParams] = useSearchParams();
@@ -20,11 +20,11 @@ export default function ExplorePage() {
   
   const { data: featuredEvents, isLoading: loadingFeatured } = useExploreFeaturedEvents();
   const { data: allEvents, isLoading: loadingAllEvents } = useExploreEvents();
-  const { data: projects, isLoading: loadingProjects } = useExploreProjects();
+  const { data: entities, isLoading: loadingEntities } = useExploreEntities();
 
   const isLoading = activeTab === "events" 
     ? (showAllEvents ? loadingAllEvents : loadingFeatured) 
-    : loadingProjects;
+    : loadingEntities;
   
   const events = showAllEvents ? allEvents : featuredEvents;
 
@@ -50,9 +50,9 @@ export default function ExplorePage() {
             Events
           </button>
           <button
-            onClick={() => setActiveTab("projects")}
+            onClick={() => setActiveTab("artists")}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === "projects"
+              activeTab === "artists"
                 ? "bg-accent text-accent-foreground"
                 : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
             }`}
@@ -108,16 +108,16 @@ export default function ExplorePage() {
         </div>
       )}
 
-      {!isLoading && activeTab === "projects" && (
+      {!isLoading && activeTab === "artists" && (
         <div className="px-4 grid grid-cols-2 gap-3">
-          {projects && projects.length > 0 ? (
-            projects.map((project, index) => (
+          {entities && entities.length > 0 ? (
+            entities.map((entity, index) => (
               <div
-                key={project.id}
+                key={entity.id}
                 className="animate-slide-up"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
-                <ProjectCard project={project as Project} />
+                <ProjectCard project={entity as Entity} />
               </div>
             ))
           ) : (
@@ -125,7 +125,7 @@ export default function ExplorePage() {
               <EmptyState
                 icon={<Music className="w-12 h-12" />}
                 title="Ingen artister"
-                description="Det er ingen publiserte artister/prosjekter for øyeblikket."
+                description="Det er ingen publiserte artister for øyeblikket."
               />
             </div>
           )}

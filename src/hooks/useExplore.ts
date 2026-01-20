@@ -22,17 +22,25 @@ export function useExploreEvents() {
   });
 }
 
+// Legacy - kept for backwards compatibility
 export function useExploreProjects() {
+  return useExploreEntities();
+}
+
+// New entities-based hook
+export function useExploreEntities(type?: 'solo' | 'band') {
   return useQuery({
-    queryKey: ["explore", "projects"],
+    queryKey: ["explore", "entities", type],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("projects")
+      let query = supabase
+        .from("entities")
         .select("*")
         .eq("is_published", true)
+        .in("type", type ? [type] : ["solo", "band"])
         .order("name", { ascending: true })
         .limit(20);
 
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     },
@@ -74,11 +82,11 @@ export function useSearch(query: string) {
   return useQuery({
     queryKey: ["search", query],
     queryFn: async () => {
-      if (!query || query.length < 2) return { events: [], projects: [] };
+      if (!query || query.length < 2) return { events: [], entities: [] };
 
       const searchPattern = `%${query}%`;
 
-      const [eventsResult, projectsResult] = await Promise.all([
+      const [eventsResult, entitiesResult] = await Promise.all([
         supabase
           .from("events")
           .select("id, title, slug, start_at, hero_image_url")
@@ -86,16 +94,17 @@ export function useSearch(query: string) {
           .ilike("title", searchPattern)
           .limit(10),
         supabase
-          .from("projects")
-          .select("id, name, slug, tagline, hero_image_url")
+          .from("entities")
+          .select("id, name, slug, tagline, type, hero_image_url")
           .eq("is_published", true)
+          .in("type", ["solo", "band"])
           .ilike("name", searchPattern)
           .limit(10),
       ]);
 
       return {
         events: eventsResult.data || [],
-        projects: projectsResult.data || [],
+        entities: entitiesResult.data || [],
       };
     },
     enabled: query.length >= 2,
