@@ -17,12 +17,14 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminFestivals from "./pages/admin/AdminFestivals";
-// AdminFestivalEdit merged into AdminSections
 import AdminSections from "./pages/admin/AdminSections";
 import AdminFestivalProgram from "./pages/admin/AdminFestivalProgram";
 import AdminEvents from "./pages/admin/AdminEvents";
 import AdminEventEdit from "./pages/admin/AdminEventEdit";
 import AdminEventLineup from "./pages/admin/AdminEventLineup";
+import AdminEntities from "./pages/admin/AdminEntities";
+import AdminEntityEdit from "./pages/admin/AdminEntityEdit";
+// Legacy - kept for backwards compatibility
 import AdminProjects from "./pages/admin/AdminProjects";
 import AdminProjectEdit from "./pages/admin/AdminProjectEdit";
 import AdminVenues from "./pages/admin/AdminVenues";
@@ -59,6 +61,10 @@ const App = () => (
             <Route path="events" element={<AdminEvents />} />
             <Route path="events/:id" element={<AdminEventEdit />} />
             <Route path="events/:id/lineup" element={<AdminEventLineup />} />
+            {/* New entities routes */}
+            <Route path="entities" element={<AdminEntities />} />
+            <Route path="entities/:id" element={<AdminEntityEdit />} />
+            {/* Legacy routes - redirect to entities in future */}
             <Route path="projects" element={<AdminProjects />} />
             <Route path="projects/:id" element={<AdminProjectEdit />} />
             <Route path="venues" element={<AdminVenues />} />
