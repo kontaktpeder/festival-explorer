@@ -148,7 +148,7 @@ export default function AdminAccessGenerator() {
         ? platformEntity!.id 
         : selectedEntityId;
 
-      await createInvitation.mutateAsync({
+      const created = await createInvitation.mutateAsync({
         entityId: entityIdToUse,
         email,
         access: accessLevel,
@@ -156,9 +156,13 @@ export default function AdminAccessGenerator() {
         invitedBy: user.id,
       });
 
-      // Generate the invitation link using published URL
+      // Generate the invitation link using published URL + token (works before login)
       const publishedUrl = "https://giggn.lovable.app";
-      const link = `${publishedUrl}/accept-invitation?email=${encodeURIComponent(email)}&entity_id=${entityIdToUse}`;
+      const token = (created as { token?: string | null })?.token;
+      const link = token
+        ? `${publishedUrl}/accept-invitation?token=${encodeURIComponent(token)}`
+        : `${publishedUrl}/accept-invitation?email=${encodeURIComponent(email)}&entity_id=${entityIdToUse}`;
+
       setGeneratedLink(link);
 
       toast({ title: "Invitasjon opprettet!" });
