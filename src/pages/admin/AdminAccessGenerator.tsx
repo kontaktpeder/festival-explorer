@@ -156,9 +156,9 @@ export default function AdminAccessGenerator() {
         invitedBy: user.id,
       });
 
-      // Generate the invitation link
-      const baseUrl = window.location.origin;
-      const link = `${baseUrl}/accept-invitation?email=${encodeURIComponent(email)}&entity_id=${entityIdToUse}`;
+      // Generate the invitation link using published URL
+      const publishedUrl = "https://giggn.lovable.app";
+      const link = `${publishedUrl}/accept-invitation?email=${encodeURIComponent(email)}&entity_id=${entityIdToUse}`;
       setGeneratedLink(link);
 
       toast({ title: "Invitasjon opprettet!" });
