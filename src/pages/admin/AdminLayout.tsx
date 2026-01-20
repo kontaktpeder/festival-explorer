@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
-import { LayoutDashboard, Calendar, MapPin, Music, Users, FolderOpen, Menu, X, Clock, Layers, UserPlus } from "lucide-react";
+import { LayoutDashboard, Calendar, MapPin, Music, Users, FolderOpen, Menu, X, Clock, Layers, UserPlus, Home } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -80,11 +80,19 @@ export default function AdminLayout() {
         })}
       </nav>
 
-      <div className="p-3 md:p-4 border-t border-border">
+      <div className="p-3 md:p-4 border-t border-border space-y-2">
+        <Link 
+          to="/dashboard" 
+          onClick={() => setSidebarOpen(false)}
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <Home className="h-4 w-4" />
+          Brukerdashboard
+        </Link>
         <Link 
           to="/" 
           onClick={() => setSidebarOpen(false)}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors block"
         >
           ← Tilbake til siden
         </Link>
