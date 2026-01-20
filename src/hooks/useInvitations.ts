@@ -16,7 +16,7 @@ export function useInvitation(params: { email?: string; entityId?: string; token
           p_token: params.token,
         });
         if (error) throw error;
-        return (data || null) as (AccessInvitation & { entity: Entity | null }) | null;
+        return (data as unknown as (AccessInvitation & { entity: Entity | null })) || null;
       }
 
       // Fallback: fetch by email+entityId (requires auth via RLS in most cases)
