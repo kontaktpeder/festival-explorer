@@ -4,17 +4,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMyEntities } from "@/hooks/useEntity";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { PersonaSelector } from "@/components/dashboard/PersonaSelector";
 import { 
-  Music, 
   Users, 
   Building2, 
   Camera, 
   Compass, 
-  Plus, 
-  Settings, 
+  Pencil, 
   ExternalLink,
   User,
   ArrowRight
@@ -90,21 +88,8 @@ export default function Dashboard() {
   const showOnboarding = !isLoading && entities?.length === 0 && !hasExplored;
   const userName = currentUser?.displayName || currentUser?.email?.split("@")[0] || "der";
 
+  // Onboarding choices - no entity creation, only explore options
   const onboardingChoices: OnboardingChoice[] = [
-    {
-      id: "artist",
-      icon: <Music className="h-6 w-6" />,
-      title: "Lage artist / band",
-      description: "Opprett din første artist- eller bandprofil",
-      link: "/admin/entities/new?type=solo",
-    },
-    {
-      id: "venue",
-      icon: <Building2 className="h-6 w-6" />,
-      title: "Knyttes til venue",
-      description: "Koble deg til et spillested eller lokale",
-      link: "/admin/entities/new?type=venue",
-    },
     {
       id: "profile",
       icon: <Camera className="h-6 w-6" />,
@@ -115,8 +100,8 @@ export default function Dashboard() {
     {
       id: "explore",
       icon: <Compass className="h-6 w-6" />,
-      title: "Bare utforske",
-      description: "Se deg rundt uten å opprette noe",
+      title: "Utforske",
+      description: "Se deg rundt og oppdage artister og scener",
       action: handleExplore,
     },
   ];
@@ -128,6 +113,9 @@ export default function Dashboard() {
       </div>
     );
   }
+
+  // Helper to check if user can edit this entity
+  const canEdit = (access: AccessLevel) => ["editor", "admin", "owner"].includes(access);
 
   return (
     <div className="min-h-screen bg-background">
@@ -149,8 +137,8 @@ export default function Dashboard() {
           </h1>
           <p className="text-muted-foreground">
             {showOnboarding 
-              ? "Hva vil du gjøre først?" 
-              : "Her finner du alt som er ditt. Klar for neste steg?"
+              ? "Velkommen til ditt rom på GIGGEN." 
+              : "Her finner du alt som er ditt."
             }
           </p>
         </div>
@@ -205,18 +193,13 @@ export default function Dashboard() {
             <h2 className="text-lg font-semibold text-foreground">
               Mine prosjekter & scener
             </h2>
-            <Button asChild size="sm">
-              <Link to="/admin/entities/new">
-                <Plus className="h-4 w-4 mr-2" />
-                Start noe nytt
-              </Link>
-            </Button>
           </div>
 
           {entities && entities.length > 0 ? (
             <div className="space-y-3">
               {entities.map((entity) => {
                 const typeConfig = TYPE_CONFIG[entity.type as EntityType];
+                const userCanEdit = canEdit(entity.access);
                 
                 return (
                   <div
@@ -254,11 +237,15 @@ export default function Dashboard() {
                       </div>
 
                       <div className="flex gap-1 flex-shrink-0">
-                        <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-                          <Link to={`/admin/entities/${entity.id}`}>
-                            <Settings className="h-4 w-4" />
-                          </Link>
-                        </Button>
+                        {/* Edit button - only for editor/admin/owner, links to dashboard */}
+                        {userCanEdit && (
+                          <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                            <Link to={`/dashboard/entities/${entity.id}/edit`}>
+                              <Pencil className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        )}
+                        {/* View public page - for all who have access */}
                         {entity.is_published && (
                           <Button asChild variant="ghost" size="icon" className="h-8 w-8">
                             <Link to={`${typeConfig.route}/${entity.slug}`} target="_blank">
@@ -274,20 +261,34 @@ export default function Dashboard() {
             </div>
           ) : (
             <Card className="border-dashed">
-              <CardContent className="py-8 text-center">
-                <p className="text-muted-foreground mb-4">
-                  Du har ikke opprettet noe ennå – men det er bare å sette i gang.
+              <CardContent className="py-8 text-center space-y-4">
+                <p className="text-muted-foreground">
+                  Du har ikke tilgang til noen prosjekter eller scener ennå.
                 </p>
-                <Button asChild>
-                  <Link to="/admin/entities/new">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Start ditt første prosjekt
-                  </Link>
-                </Button>
+                <p className="text-sm text-muted-foreground">
+                  Vil du starte et nytt prosjekt eller venue?{" "}
+                  <a href="mailto:hei@giggen.no" className="underline text-foreground hover:text-accent">
+                    Send oss en e-post
+                  </a>
+                  .
+                </p>
               </CardContent>
             </Card>
           )}
         </div>
+
+        {/* Passive CTA for new projects */}
+        {entities && entities.length > 0 && (
+          <div className="text-center pt-4 border-t border-border">
+            <p className="text-sm text-muted-foreground">
+              Vil du starte et nytt prosjekt eller knyttes til en scene?{" "}
+              <a href="mailto:hei@giggen.no" className="underline text-foreground hover:text-accent">
+                Ta kontakt
+              </a>
+              .
+            </p>
+          </div>
+        )}
       </main>
     </div>
   );
