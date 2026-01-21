@@ -18,7 +18,7 @@ import {
 import { LoadingState } from "@/components/ui/LoadingState";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { parseImageSettings, type ImageSettings } from "@/types/database";
-import { getObjectPositionFromFocal } from "@/lib/image-crop-helpers";
+import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import { toast } from "sonner";
 
 export default function PersonaEdit() {
@@ -136,7 +136,7 @@ export default function PersonaEdit() {
               <Avatar className="h-20 w-20">
                 <AvatarImage 
                   src={avatarUrl || undefined} 
-                  style={{ objectPosition: getObjectPositionFromFocal(avatarImageSettings) }}
+                  style={getCroppedImageStyles(avatarImageSettings)}
                 />
                 <AvatarFallback className="text-xl">
                   {name ? name.substring(0, 2).toUpperCase() : "?"}
