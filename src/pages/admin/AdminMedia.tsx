@@ -33,9 +33,16 @@ export default function AdminMedia() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showUpload, setShowUpload] = useState(false);
 
+  // Admin media page - always show all files for admins
   const { data: media, isLoading } = useQuery({
     queryKey: ["admin-media", selectedType, search],
     queryFn: async () => {
+      // Verify admin status first
+      const { data: isAdmin } = await supabase.rpc("is_admin");
+      if (!isAdmin) {
+        return []; // Non-admins see nothing in admin media page
+      }
+
       let query = supabase
         .from("media")
         .select("*")

@@ -15,13 +15,25 @@ export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Check if user is authenticated
-  const { data: session, isLoading } = useQuery({
+  const { data: session, isLoading: isLoadingSession } = useQuery({
     queryKey: ["session"],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       return session;
     },
   });
+
+  // Check if user is admin
+  const { data: isAdmin, isLoading: isLoadingAdmin } = useQuery({
+    queryKey: ["is-admin"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("is_admin");
+      return data || false;
+    },
+    enabled: !!session,
+  });
+
+  const isLoading = isLoadingSession || (!!session && isLoadingAdmin);
 
   const navItems = [
     { to: "/admin", icon: LayoutDashboard, label: "Dashboard", exact: true },
@@ -46,6 +58,11 @@ export default function AdminLayout() {
 
   if (!session) {
     return <Navigate to="/admin/login" replace />;
+  }
+
+  // Redirect non-admin users to dashboard
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   const NavContent = () => (
