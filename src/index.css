@@ -11,68 +11,75 @@
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     
-    /* Cosmic Dark Base */
-    --background: 240 10% 6%;
-    --foreground: 45 20% 92%;
+    /* Retro Poster Palette - Kaytranada inspired */
+    /* Deep purple base */
+    --background: 258 35% 22%;
+    --foreground: 45 30% 90%;
     
-    /* Surface layers */
-    --card: 240 8% 10%;
-    --card-foreground: 45 20% 92%;
-    --popover: 240 10% 8%;
-    --popover-foreground: 45 20% 92%;
+    /* Surface layers - purple tones */
+    --card: 258 30% 26%;
+    --card-foreground: 45 30% 90%;
+    --popover: 258 35% 20%;
+    --popover-foreground: 45 30% 90%;
     
-    /* Primary - subtle cosmic */
-    --primary: 45 20% 92%;
-    --primary-foreground: 240 10% 6%;
+    /* Primary - cream/off-white */
+    --primary: 45 30% 90%;
+    --primary-foreground: 258 35% 22%;
     
-    /* Secondary - muted cosmic */
-    --secondary: 240 6% 16%;
-    --secondary-foreground: 45 15% 80%;
+    /* Secondary - muted purple */
+    --secondary: 258 25% 30%;
+    --secondary-foreground: 45 25% 85%;
     
     /* Muted surfaces */
-    --muted: 240 6% 14%;
-    --muted-foreground: 45 10% 55%;
+    --muted: 258 20% 28%;
+    --muted-foreground: 45 15% 60%;
     
-    /* Accent - ORANGE only for CTAs */
-    --accent: 24 95% 53%;
-    --accent-foreground: 240 10% 6%;
+    /* Accent - HOT PINK / MAGENTA */
+    --accent: 330 100% 60%;
+    --accent-foreground: 258 35% 12%;
+    
+    /* Secondary accent - warm orange (for subtle touches) */
+    --accent-warm: 24 95% 55%;
+    
+    /* Mint/sage border accent */
+    --accent-mint: 162 40% 70%;
     
     /* Destructive */
     --destructive: 0 72% 51%;
-    --destructive-foreground: 45 20% 92%;
+    --destructive-foreground: 45 30% 90%;
     
-    /* Borders & inputs */
-    --border: 240 6% 18%;
-    --input: 240 6% 14%;
-    --ring: 24 95% 53%;
+    /* Borders & inputs - mint-tinted */
+    --border: 162 20% 35%;
+    --input: 258 20% 28%;
+    --ring: 330 100% 60%;
     
-    --radius: 0.625rem;
+    --radius: 0.25rem;
     
-    /* Cosmic custom tokens */
-    --cosmic-grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    --cosmic-overlay: linear-gradient(180deg, hsl(240 10% 6% / 0.3) 0%, hsl(240 10% 6% / 0.9) 100%);
-    --cosmic-glow: 0 0 60px hsl(24 95% 53% / 0.15);
-    --cosmic-border: 1px solid hsl(240 6% 18% / 0.6);
+    /* Retro grain texture - more visible */
+    --cosmic-grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    --cosmic-overlay: linear-gradient(180deg, hsl(258 35% 22% / 0.3) 0%, hsl(258 35% 22% / 0.9) 100%);
+    --cosmic-glow: 0 0 60px hsl(330 100% 60% / 0.25);
+    --cosmic-border: 2px solid hsl(162 40% 70% / 0.3);
     
-    /* Shadow system */
-    --shadow-sm: 0 2px 8px hsl(240 10% 3% / 0.3);
-    --shadow-md: 0 4px 16px hsl(240 10% 3% / 0.4);
-    --shadow-lg: 0 8px 32px hsl(240 10% 3% / 0.5);
-    --shadow-glow: 0 0 40px hsl(24 95% 53% / 0.2);
+    /* Shadow system - purple tinted */
+    --shadow-sm: 0 2px 8px hsl(258 40% 10% / 0.4);
+    --shadow-md: 0 4px 16px hsl(258 40% 10% / 0.5);
+    --shadow-lg: 0 8px 32px hsl(258 40% 10% / 0.6);
+    --shadow-glow: 0 0 40px hsl(330 100% 60% / 0.3);
     
-    /* Typography scale */
+    /* Typography - retro condensed feel */
     --font-display: 'Space Grotesk', system-ui, sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
+    --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
     
     /* Sidebar (keeping for shadcn compatibility) */
-    --sidebar-background: 240 10% 8%;
-    --sidebar-foreground: 45 20% 92%;
-    --sidebar-primary: 24 95% 53%;
-    --sidebar-primary-foreground: 240 10% 6%;
-    --sidebar-accent: 240 6% 16%;
-    --sidebar-accent-foreground: 45 20% 92%;
-    --sidebar-border: 240 6% 18%;
-    --sidebar-ring: 24 95% 53%;
+    --sidebar-background: 258 30% 20%;
+    --sidebar-foreground: 45 30% 90%;
+    --sidebar-primary: 330 100% 60%;
+    --sidebar-primary-foreground: 258 35% 12%;
+    --sidebar-accent: 258 25% 30%;
+    --sidebar-accent-foreground: 45 30% 90%;
+    --sidebar-border: 162 20% 35%;
+    --sidebar-ring: 330 100% 60%;
   }
 }
 
@@ -85,14 +92,14 @@
     font-family: var(--font-display);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: hsl(240 10% 6%);
+    background-color: hsl(258 35% 22%);
   }
   
   body {
     @apply bg-background text-foreground;
     min-height: 100svh;
     position: relative;
-    background-color: hsl(240 10% 6%);
+    background-color: hsl(258 35% 22%);
     /* Prevent iOS overscroll showing white */
     overscroll-behavior: none;
   }
@@ -102,26 +109,27 @@
     min-height: 100svh;
   }
   
-  /* Grain overlay on body */
+  /* Grain overlay on body - more visible for retro feel */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
     background-image: var(--cosmic-grain);
-    opacity: 0.03;
+    opacity: 0.06;
     pointer-events: none;
     z-index: 9999;
+    mix-blend-mode: overlay;
   }
 }
 
 @layer components {
-  /* Cosmic Hero Section */
+  /* Retro Hero Section */
   .cosmic-hero {
     @apply relative overflow-hidden;
     background: linear-gradient(
       180deg,
       hsl(var(--background)) 0%,
-      hsl(240 12% 8%) 50%,
+      hsl(258 40% 28%) 50%,
       hsl(var(--background)) 100%
     );
   }
@@ -131,15 +139,15 @@
     @apply absolute inset-0;
     background: radial-gradient(
       ellipse at 50% 0%,
-      hsl(24 95% 53% / 0.08) 0%,
+      hsl(330 100% 60% / 0.12) 0%,
       transparent 60%
     );
   }
   
-  /* Card variants */
+  /* Card variants - retro poster style */
   .cosmic-card {
-    @apply bg-card rounded-lg;
-    border: var(--cosmic-border);
+    @apply bg-card rounded-sm;
+    border: 2px solid hsl(var(--accent-mint) / 0.2);
     box-shadow: var(--shadow-md);
     backdrop-filter: blur(8px);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -147,7 +155,7 @@
   
   .cosmic-card:hover {
     box-shadow: var(--shadow-lg), var(--shadow-glow);
-    border-color: hsl(var(--accent) / 0.3);
+    border-color: hsl(var(--accent) / 0.5);
     transform: translateY(-2px);
   }
   
@@ -178,31 +186,31 @@
     );
   }
   
-  /* CTA Button accent style */
+  /* CTA Button accent style - hot pink */
   .btn-accent {
-    @apply bg-accent text-accent-foreground font-semibold;
-    @apply px-6 py-3 rounded-lg;
+    @apply bg-accent text-accent-foreground font-bold uppercase tracking-wider;
+    @apply px-6 py-3 rounded-sm;
     @apply transition-all duration-300;
     box-shadow: var(--shadow-glow);
   }
   
   .btn-accent:hover {
     @apply brightness-110;
-    box-shadow: 0 0 50px hsl(24 95% 53% / 0.35);
+    box-shadow: 0 0 50px hsl(330 100% 60% / 0.45);
     transform: translateY(-1px);
   }
   
-  /* Ghost button for secondary actions */
+  /* Ghost button for secondary actions - mint border */
   .btn-ghost {
-    @apply text-foreground/80 font-medium;
-    @apply px-4 py-2 rounded-lg;
-    @apply border border-border/50;
+    @apply text-foreground/80 font-medium uppercase tracking-wide;
+    @apply px-4 py-2 rounded-sm;
+    @apply border-2 border-[hsl(162_40%_70%_/_0.4)];
     @apply transition-all duration-200;
   }
   
   .btn-ghost:hover {
     @apply bg-secondary text-foreground;
-    @apply border-border;
+    @apply border-[hsl(162_40%_70%_/_0.7)];
   }
   
   /* Bottom navigation */
@@ -265,7 +273,7 @@
   }
 
   .section-vignette {
-    background: radial-gradient(ellipse at center, transparent 0%, hsl(240 10% 6% / 0.4) 100%);
+    background: radial-gradient(ellipse at center, transparent 0%, hsl(258 35% 22% / 0.5) 100%);
   }
 
   .section-gradient {
@@ -273,24 +281,24 @@
   }
 
   .section-bg-about {
-    background: hsl(240 8% 10%);
+    background: hsl(258 30% 26%);
   }
 
   .section-bg-artists {
-    background: hsl(240 6% 14%);
+    background: hsl(258 25% 30%);
   }
 
   .section-bg-venue {
-    background: hsl(240 10% 8%);
+    background: hsl(258 35% 24%);
     background-attachment: fixed;
   }
 
   .section-bg-practical {
-    background: hsl(240 12% 12%);
+    background: hsl(258 32% 28%);
   }
 
   .section-bg-footer {
-    background: hsl(240 10% 6%);
+    background: hsl(258 35% 18%);
   }
 }
 

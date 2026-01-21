@@ -89,16 +89,22 @@ export function StaticLogo() {
         }}
       >
         <div className="flex flex-col items-start group">
-          {/* Main logo text - spaced letters */}
+          {/* Retro frame accent */}
+          <div className="absolute -inset-2 border border-[hsl(162_40%_70%_/_0.3)] rounded-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
+          {/* Main logo text - bold condensed retro style */}
           <span 
-            className="font-black text-foreground tracking-[0.4em] md:tracking-[0.5em] text-xl md:text-2xl uppercase transition-all duration-300 group-hover:text-accent"
-            style={{ letterSpacing: '0.4em' }}
+            className="font-black text-foreground tracking-[0.3em] md:tracking-[0.4em] text-2xl md:text-3xl uppercase transition-all duration-300 group-hover:text-accent relative"
+            style={{ 
+              fontFamily: "'Space Grotesk', system-ui, sans-serif",
+              textShadow: '2px 2px 0 hsl(330 100% 60% / 0.2)'
+            }}
           >
             GIGGEN
           </span>
-          {/* Tagline */}
-          <span className="text-[10px] md:text-xs text-muted-foreground/80 font-medium tracking-wide -mt-0.5">
-            – en festival for en kveld
+          {/* Tagline - retro subtitle */}
+          <span className="text-[10px] md:text-xs text-[hsl(162_40%_70%)] font-medium tracking-widest uppercase -mt-0.5">
+            en festival for en kveld
           </span>
         </div>
       </Link>
