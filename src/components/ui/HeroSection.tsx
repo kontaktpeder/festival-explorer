@@ -106,6 +106,9 @@ export function HeroSection({
   const imageScale = scrollExpand ? 1 + overscrollProgress * 0.35 : 1;
   const textOpacity = scrollExpand ? 1 - overscrollProgress * 2.5 : 1;
 
+  // When useNaturalAspect is true with aspect ratio, use img tag for better control
+  const useImgTag = useNaturalAspect && imageAspectRatio;
+
   return (
     <div 
       ref={heroRef}
@@ -123,6 +126,21 @@ export function HeroSection({
             imageUrlMobile={imageUrlMobile}
             intensity={0.3}
             imageFitMode={imageFitMode}
+          />
+        ) : useImgTag ? (
+          // Use img tag for natural aspect ratio control - respects image dimensions
+          <img
+            src={activeImage}
+            alt=""
+            className="absolute inset-0 w-full h-full will-change-transform"
+            style={{ 
+              objectFit: 'contain',
+              objectPosition: getObjectPositionFromFocal(imageSettings),
+              transform: `scale(${imageScale})`,
+              transformOrigin: 'center center',
+              transition: overscrollProgress === 0 ? 'transform 0.3s ease-out' : 'none',
+              top: 'calc(-1 * var(--safe-top, 0px))',
+            }}
           />
         ) : (
           <div
