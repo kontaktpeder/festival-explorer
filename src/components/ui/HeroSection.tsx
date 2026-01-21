@@ -35,7 +35,24 @@ export function HeroSection({
   scrollExpand = false
 }: HeroSectionProps) {
   const [overscrollProgress, setOverscrollProgress] = useState(0);
+  const [scrollFadeHeight, setScrollFadeHeight] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
+
+  // Scroll-based fade height - grows as you scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      // Map scroll position to fade height: 0% at top, grows to 700% as you scroll
+      const maxScroll = 500; // pixels of scroll to reach max fade
+      const progress = Math.min(scrollY / maxScroll, 1);
+      const fadeHeight = progress * 700; // 0% to 700%
+      setScrollFadeHeight(fadeHeight);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Initial call
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     if (!scrollExpand) return;
@@ -129,19 +146,18 @@ export function HeroSection({
         )
       )}
       
-      {/* Top fade - scrolls with hero like a roller blind, extends far down */}
+      {/* Top fade - grows as you scroll, always stays under logo */}
       <div 
         className="absolute inset-x-0 pointer-events-none z-[3] md:hidden"
         style={{ 
           top: 'calc(-1 * var(--safe-top, 0px))',
-          height: '60vh',
+          height: `${scrollFadeHeight}vh`,
           background: `linear-gradient(
             to bottom, 
             hsl(var(--background)) 0%,
-            hsl(var(--background) / 0.95) 10%,
-            hsl(var(--background) / 0.7) 25%,
-            hsl(var(--background) / 0.4) 45%,
-            hsl(var(--background) / 0.15) 65%,
+            hsl(var(--background) / 0.9) 15%,
+            hsl(var(--background) / 0.6) 35%,
+            hsl(var(--background) / 0.3) 55%,
             transparent 100%
           )`,
         }}
