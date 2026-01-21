@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Calendar, Clock, MapPin, Ticket } from "lucide-react";
 import { useEvent } from "@/hooks/useFestival";
+import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
 import { LineupItem } from "@/components/ui/LineupItem";
@@ -12,6 +13,9 @@ import { StaticLogo } from "@/components/ui/StaticLogo";
 export default function EventPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: event, isLoading, error } = useEvent(slug || "");
+  
+  // Signed URL for public viewing
+  const heroImageUrl = useSignedMediaUrl(event?.hero_image_url, 'public');
 
   if (isLoading) {
     return (
@@ -41,7 +45,7 @@ export default function EventPage() {
       {/* Static logo in header */}
       <StaticLogo />
 
-      <HeroSection imageUrl={event.hero_image_url || undefined} compact scrollExpand>
+      <HeroSection imageUrl={heroImageUrl || undefined} compact scrollExpand>
         <div className="text-mono text-accent mb-1 text-xs uppercase tracking-widest opacity-80">
           {format(startDate, "EEEE d. MMMM", { locale: nb })}
         </div>

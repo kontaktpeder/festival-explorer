@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import type { Project, Entity } from "@/types/database";
+import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 
 // Support both legacy Project and new Entity types
 type ProjectOrEntity = Project | Entity;
@@ -10,15 +11,18 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, size = "md" }: ProjectCardProps) {
+  // Signed URL for public viewing
+  const imageUrl = useSignedMediaUrl(project.hero_image_url, 'public');
+
   return (
     <Link
       to={`/project/${project.slug}`}
       className="cosmic-card block group overflow-hidden"
     >
-      {project.hero_image_url ? (
+      {imageUrl ? (
         <div className={`relative ${size === "sm" ? "h-24 w-24" : "h-40"} overflow-hidden`}>
           <img
-            src={project.hero_image_url}
+            src={imageUrl}
             alt={project.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
