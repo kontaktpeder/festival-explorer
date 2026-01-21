@@ -49,29 +49,6 @@ export function StaticLogo() {
 
   return (
     <>
-      {/* Solid black bar at very top to cover iPhone notch */}
-      <div 
-        className={`fixed inset-x-0 z-40 pointer-events-none transition-opacity duration-500 ease-out md:hidden ${
-          showCentered ? 'opacity-100' : 'opacity-0'
-        }`}
-        style={{
-          top: 0,
-          height: 'var(--safe-top, 47px)',
-          background: 'hsl(var(--background))'
-        }}
-      />
-      
-      {/* Gradient fade below the solid bar */}
-      <div 
-        className={`fixed inset-x-0 z-40 pointer-events-none transition-opacity duration-500 ease-out md:hidden ${
-          showCentered ? 'opacity-100' : 'opacity-0'
-        }`}
-        style={{
-          top: 'var(--safe-top, 47px)',
-          height: '100px',
-          background: 'linear-gradient(to bottom, hsl(var(--background)) 0%, hsl(var(--background) / 0.7) 40%, transparent 100%)'
-        }}
-      />
       
       {/* Logo - Bold text with orange accent */}
       <Link
