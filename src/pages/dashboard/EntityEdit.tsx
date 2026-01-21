@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, UserPlus, ExternalLink, Users } from "lucide-react";
+import { ArrowLeft, Save, UserPlus, ExternalLink, Users, Sparkles } from "lucide-react";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Badge } from "@/components/ui/badge";
 import { EntityTimelineManager } from "@/components/dashboard/EntityTimelineManager";
+import { EntityPersonaBindingsEditor } from "@/components/admin/EntityPersonaBindingsEditor";
 import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
 
@@ -168,6 +169,7 @@ export default function EntityEdit() {
   const userAccess = entityWithAccess.access;
   const canEdit = ["editor", "admin", "owner"].includes(userAccess);
   const canInvite = ["admin", "owner"].includes(userAccess);
+  const canManagePersonas = ["admin", "owner"].includes(userAccess);
   const isReadOnly = !canEdit;
   const isViewer = userAccess === "viewer";
 
@@ -341,6 +343,23 @@ export default function EntityEdit() {
           entityId={entityWithAccess.id}
           canEdit={canEdit}
         />
+
+        {/* Personer bak prosjektet – admin/owner only */}
+        {canManagePersonas && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-muted-foreground" />
+              <h2 className="font-semibold text-foreground">Personer bak prosjektet</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Velg hvilke profiler som skal vises offentlig på prosjektsiden.
+            </p>
+            <EntityPersonaBindingsEditor
+              entityId={entityWithAccess.id}
+              entityName={entityWithAccess.name}
+            />
+          </div>
+        )}
 
         {/* Team members section */}
         {teamMembers && teamMembers.length > 0 && (
