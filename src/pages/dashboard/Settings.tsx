@@ -10,7 +10,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { PersonaSelector } from "@/components/dashboard/PersonaSelector";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
-import { User, Mail, Lock, Users, Building2 } from "lucide-react";
+import { User, Mail, Lock, ArrowLeft } from "lucide-react";
 import { InlineMediaPicker } from "@/components/admin/InlineMediaPicker";
 
 export default function Settings() {
@@ -208,26 +208,15 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {/* Quick Links */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Hurtiglenker</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link to="/dashboard/personas">
-                <Users className="h-4 w-4 mr-2" />
-                Mine personas
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/dashboard">
-                <Building2 className="h-4 w-4 mr-2" />
-                Mine prosjekter & scener
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+        {/* Back to dashboard */}
+        <div className="pt-4">
+          <Button asChild variant="outline">
+            <Link to="/dashboard">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Tilbake til backstage
+            </Link>
+          </Button>
+        </div>
       </main>
     </div>
   );
