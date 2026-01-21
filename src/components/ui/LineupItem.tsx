@@ -3,6 +3,7 @@ import type { EventProject, EventEntity } from "@/types/database";
 import { useEntityTypes } from "@/hooks/useEntityTypes";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { getEntityPublicRoute } from "@/lib/entity-types";
+import { getObjectPositionFromFocal } from "@/lib/image-crop-helpers";
 
 // Support both legacy EventProject and new EventEntity
 type LineupItemData = EventProject | EventEntity;
@@ -17,6 +18,10 @@ function isEventEntity(item: LineupItemData): item is EventEntity {
   return 'entity_id' in item && 'entity' in item;
 }
 
+/**
+ * LineupItem - displays lineup artist/entity with hero image
+ * Uses hero_image_settings for focal point positioning when available
+ */
 export function LineupItem({ item, showBilling }: LineupItemProps) {
   const { data: entityTypes } = useEntityTypes();
   
@@ -25,6 +30,11 @@ export function LineupItem({ item, showBilling }: LineupItemProps) {
   
   // Signed URL for public viewing
   const imageUrl = useSignedMediaUrl(entityData?.hero_image_url, 'public');
+  
+  // Get image settings if available (Entity type has it)
+  const imageSettings = isEventEntity(item) && item.entity 
+    ? item.entity.hero_image_settings 
+    : null;
   
   if (!entityData) return null;
 
@@ -42,6 +52,7 @@ export function LineupItem({ item, showBilling }: LineupItemProps) {
             src={imageUrl}
             alt={entityData.name}
             className="w-full h-full object-cover"
+            style={{ objectPosition: getObjectPositionFromFocal(imageSettings) }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

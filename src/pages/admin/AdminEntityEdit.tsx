@@ -8,14 +8,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, ImageIcon, Users } from "lucide-react";
-import { MediaPicker } from "@/components/admin/MediaPicker";
+import { ArrowLeft, Save, Users } from "lucide-react";
+import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
 import { generateSlug } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { EntityPersonaBindingsEditor } from "@/components/admin/EntityPersonaBindingsEditor";
-import type { EntityType, AccessLevel } from "@/types/database";
+import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
+import { parseImageSettings } from "@/types/database";
 
 const TYPE_OPTIONS: { value: EntityType; label: string }[] = [
   { value: "venue", label: "Scene" },
@@ -48,7 +49,7 @@ export default function AdminEntityEdit() {
     city: "",
     is_published: false,
   });
-  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const [heroImageSettings, setHeroImageSettings] = useState<ImageSettings | null>(null);
 
   // Fetch entity data
   const { data: entity, isLoading } = useQuery({
@@ -101,6 +102,8 @@ export default function AdminEntityEdit() {
         city: entity.city || "",
         is_published: entity.is_published || false,
       });
+      // Parse hero_image_settings from JSONB
+      setHeroImageSettings(parseImageSettings(entity.hero_image_settings) || null);
     }
   }, [entity]);
 
@@ -116,15 +119,17 @@ export default function AdminEntityEdit() {
         tagline: formData.tagline || null,
         description: formData.description || null,
         hero_image_url: formData.hero_image_url || null,
+        hero_image_settings: heroImageSettings,
         address: formData.address || null,
         city: formData.city || null,
         is_published: formData.is_published,
       };
 
       if (isNew) {
+        const insertPayload = { ...payload, created_by: user.id };
         const { data, error } = await supabase
           .from("entities")
-          .insert({ ...payload, created_by: user.id })
+          .insert(insertPayload as never)
           .select()
           .single();
         if (error) throw error;
@@ -132,7 +137,7 @@ export default function AdminEntityEdit() {
       } else {
         const { data, error } = await supabase
           .from("entities")
-          .update(payload)
+          .update(payload as never)
           .eq("id", id)
           .select()
           .single();
@@ -282,36 +287,19 @@ export default function AdminEntityEdit() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="hero_image_url">Hero-bilde</Label>
-            <div className="flex gap-2">
-              <Input
-                id="hero_image_url"
-                value={formData.hero_image_url}
-                onChange={(e) => setFormData((prev) => ({ ...prev, hero_image_url: e.target.value }))}
-                placeholder="https://... eller velg fra filbank"
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setMediaPickerOpen(true)}
-                className="flex-shrink-0"
-              >
-                <ImageIcon className="h-4 w-4 mr-2" />
-                Velg fra filbank
-              </Button>
-            </div>
-            {mediaPickerOpen && (
-              <MediaPicker
-                open={mediaPickerOpen}
-                onOpenChange={(open) => !open && setMediaPickerOpen(false)}
-                onSelect={(mediaId, publicUrl) => {
-                  setFormData((prev) => ({ ...prev, hero_image_url: publicUrl }));
-                  setMediaPickerOpen(false);
-                }}
-                fileType="image"
-              />
-            )}
+            <Label>Hero-bilde</Label>
+            <InlineMediaPickerWithCrop
+              value={formData.hero_image_url}
+              imageSettings={heroImageSettings}
+              onChange={(url) => setFormData((prev) => ({ ...prev, hero_image_url: url }))}
+              onSettingsChange={setHeroImageSettings}
+              cropMode="hero"
+              placeholder="Velg hero-bilde"
+              showAllForAdmin
+            />
+            <p className="text-xs text-muted-foreground">
+              Velg bilde og juster fokuspunkt for beste visning
+            </p>
           </div>
 
           <div className="space-y-2">

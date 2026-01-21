@@ -2,10 +2,14 @@ import { ReactNode, useEffect, useState, useRef } from "react";
 import { useResponsiveImage } from "@/hooks/useResponsiveImage";
 import { ParallaxBackground } from "./ParallaxBackground";
 import { MobileFadeOverlay } from "./MobileFadeOverlay";
+import { getObjectPositionFromFocal } from "@/lib/image-crop-helpers";
+import type { ImageSettings } from "@/types/database";
 
 interface HeroSectionProps {
   imageUrl?: string;
   imageUrlMobile?: string;
+  /** Image crop/focal point settings from DB */
+  imageSettings?: ImageSettings | unknown | null;
   children: ReactNode;
   compact?: boolean;
   fullScreen?: boolean;
@@ -15,9 +19,14 @@ interface HeroSectionProps {
   scrollExpand?: boolean;
 }
 
+/**
+ * HeroSection - displays hero image with focal point positioning
+ * Uses imageSettings for object-position when available
+ */
 export function HeroSection({ 
   imageUrl, 
   imageUrlMobile,
+  imageSettings,
   children, 
   compact, 
   fullScreen,
@@ -101,9 +110,10 @@ export function HeroSection({
           />
         ) : (
           <div
-            className="absolute inset-0 bg-no-repeat bg-cover bg-center will-change-transform"
+            className="absolute inset-0 bg-no-repeat bg-cover will-change-transform"
             style={{ 
               backgroundImage: `url(${activeImage})`,
+              backgroundPosition: getObjectPositionFromFocal(imageSettings),
               transform: `scale(${imageScale})`,
               transformOrigin: 'center center',
               transition: overscrollProgress === 0 ? 'transform 0.3s ease-out' : 'none'

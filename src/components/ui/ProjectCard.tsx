@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import type { Project, Entity } from "@/types/database";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
+import { CroppedImage } from "./CroppedImage";
 
 // Support both legacy Project and new Entity types
 type ProjectOrEntity = Project | Entity;
@@ -10,9 +11,16 @@ interface ProjectCardProps {
   size?: "sm" | "md";
 }
 
+/**
+ * ProjectCard - displays entity/project with hero image using crop settings
+ * Uses hero_image_settings for focal point positioning when available
+ */
 export function ProjectCard({ project, size = "md" }: ProjectCardProps) {
   // Signed URL for public viewing
   const imageUrl = useSignedMediaUrl(project.hero_image_url, 'public');
+
+  // Get image settings if available (Entity type has it, legacy Project may not)
+  const imageSettings = 'hero_image_settings' in project ? project.hero_image_settings : null;
 
   return (
     <Link
@@ -21,10 +29,12 @@ export function ProjectCard({ project, size = "md" }: ProjectCardProps) {
     >
       {imageUrl ? (
         <div className={`relative ${size === "sm" ? "h-24 w-24" : "h-40"} overflow-hidden`}>
-          <img
+          <CroppedImage
             src={imageUrl}
             alt={project.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            imageSettings={imageSettings}
+            aspect="hero"
+            className="w-full h-full transition-transform duration-500 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
         </div>
