@@ -15,7 +15,8 @@ import {
   Pencil, 
   ExternalLink,
   User,
-  ArrowRight
+  ArrowRight,
+  Eye
 } from "lucide-react";
 import type { EntityType, AccessLevel } from "@/types/database";
 
@@ -237,15 +238,17 @@ export default function Dashboard() {
                       </div>
 
                       <div className="flex gap-1 flex-shrink-0">
-                        {/* Edit button - only for editor/admin/owner, links to dashboard */}
-                        {userCanEdit && (
-                          <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-                            <Link to={`/dashboard/entities/${entity.id}/edit`}>
+                        {/* View/Edit button - viewers get view, editors get edit */}
+                        <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                          <Link to={`/dashboard/entities/${entity.id}/edit`}>
+                            {userCanEdit ? (
                               <Pencil className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                        )}
-                        {/* View public page - for all who have access */}
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </Link>
+                        </Button>
+                        {/* View public page - for all who have access, only if published */}
                         {entity.is_published && (
                           <Button asChild variant="ghost" size="icon" className="h-8 w-8">
                             <Link to={`${typeConfig.route}/${entity.slug}`} target="_blank">
