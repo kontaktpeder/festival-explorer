@@ -151,6 +151,7 @@ export default function FestivalPage() {
                 fullScreen
                 backgroundFixed={section.bg_mode === "fixed"}
                 imageFitMode={heroFitMode}
+                useNaturalAspect
               >
                 <div>
                   {showDateRange && (

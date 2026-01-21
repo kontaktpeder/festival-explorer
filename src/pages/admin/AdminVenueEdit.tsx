@@ -213,6 +213,7 @@ export default function AdminVenueEdit() {
               cropMode="hero"
               placeholder="Velg hero-bilde"
               showAllForAdmin
+              useNaturalAspect
             />
             <p className="text-xs text-muted-foreground">
               Velg bilde og juster fokuspunkt for beste visning

@@ -48,6 +48,7 @@ export default function VenuePage() {
         imageSettings={heroImageSettings}
         compact 
         scrollExpand
+        useNaturalAspect
       >
         {venue.city && (
           <div className="text-mono text-accent mb-1 text-xs uppercase tracking-widest opacity-80">{venue.city}</div>

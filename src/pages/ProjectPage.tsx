@@ -73,6 +73,7 @@ export default function ProjectPage() {
         imageSettings={heroImageSettings}
         fullScreen
         scrollExpand
+        useNaturalAspect
       >
         <div className="space-y-3">
           {entity.tagline && (

@@ -309,6 +309,7 @@ export default function EntityEdit() {
                     onSettingsChange={setHeroImageSettings}
                     cropMode="hero"
                     placeholder="Velg hero-bilde"
+                    useNaturalAspect
                   />
                 ) : (
                   formData.hero_image_url && (
