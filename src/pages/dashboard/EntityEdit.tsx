@@ -144,6 +144,14 @@ export default function EntityEdit() {
   const canEdit = ["editor", "admin", "owner"].includes(userAccess);
   const canInvite = ["admin", "owner"].includes(userAccess);
   const isReadOnly = !canEdit;
+  const isViewer = userAccess === "viewer";
+
+  // Viewers see limited fields - they're team members but not editors
+  const viewerFields = ["name", "tagline", "description", "hero_image_url"];
+  const showField = (fieldName: string) => {
+    if (canEdit) return true;
+    return viewerFields.includes(fieldName);
+  };
 
   const typeConfig = {
     venue: { route: "/venue" },
@@ -184,9 +192,9 @@ export default function EntityEdit() {
               <Badge variant="outline" className="text-muted-foreground">Utkast</Badge>
             )}
           </div>
-          {isReadOnly && (
+          {isViewer && (
             <p className="text-sm text-muted-foreground">
-              Du har lesetilgang. Kontakt en administrator for å gjøre endringer.
+              Du har lesetilgang til dette prosjektet.
             </p>
           )}
         </div>
@@ -222,85 +230,93 @@ export default function EntityEdit() {
           className="space-y-6"
         >
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Navn</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder={isVenue ? "Venue navn" : "Artist/band navn"}
-                disabled={isReadOnly}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="tagline">Tagline</Label>
-              <Input
-                id="tagline"
-                value={formData.tagline}
-                onChange={(e) => setFormData((prev) => ({ ...prev, tagline: e.target.value }))}
-                placeholder="Kort beskrivelse (én linje)"
-                disabled={isReadOnly}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Beskrivelse</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                placeholder="Full beskrivelse..."
-                rows={4}
-                disabled={isReadOnly}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="hero_image_url">Hero-bilde</Label>
-              <div className="flex gap-2">
+            {showField("name") && (
+              <div className="space-y-2">
+                <Label htmlFor="name">Navn</Label>
                 <Input
-                  id="hero_image_url"
-                  value={formData.hero_image_url}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, hero_image_url: e.target.value }))}
-                  placeholder="https://... eller velg fra filbank"
-                  className="flex-1"
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                  placeholder={isVenue ? "Venue navn" : "Artist/band navn"}
+                  disabled={isReadOnly}
+                  required={canEdit}
+                />
+              </div>
+            )}
+
+            {showField("tagline") && (
+              <div className="space-y-2">
+                <Label htmlFor="tagline">Tagline</Label>
+                <Input
+                  id="tagline"
+                  value={formData.tagline}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, tagline: e.target.value }))}
+                  placeholder="Kort beskrivelse (én linje)"
                   disabled={isReadOnly}
                 />
-                {canEdit && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setMediaPickerOpen(true)}
-                    className="flex-shrink-0"
-                  >
-                    <ImageIcon className="h-4 w-4 mr-2" />
-                    Velg
-                  </Button>
+              </div>
+            )}
+
+            {showField("description") && (
+              <div className="space-y-2">
+                <Label htmlFor="description">Beskrivelse</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                  placeholder="Full beskrivelse..."
+                  rows={4}
+                  disabled={isReadOnly}
+                />
+              </div>
+            )}
+
+            {showField("hero_image_url") && (
+              <div className="space-y-2">
+                <Label htmlFor="hero_image_url">Hero-bilde</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="hero_image_url"
+                    value={formData.hero_image_url}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, hero_image_url: e.target.value }))}
+                    placeholder="https://... eller velg fra filbank"
+                    className="flex-1"
+                    disabled={isReadOnly}
+                  />
+                  {canEdit && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setMediaPickerOpen(true)}
+                      className="flex-shrink-0"
+                    >
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                      Velg
+                    </Button>
+                  )}
+                </div>
+                {formData.hero_image_url && (
+                  <div className="mt-2 rounded-lg overflow-hidden border border-border">
+                    <img 
+                      src={formData.hero_image_url} 
+                      alt="Hero preview" 
+                      className="w-full h-40 object-cover"
+                    />
+                  </div>
+                )}
+                {mediaPickerOpen && (
+                  <MediaPicker
+                    open={mediaPickerOpen}
+                    onOpenChange={(open) => !open && setMediaPickerOpen(false)}
+                    onSelect={(mediaId, publicUrl) => {
+                      setFormData((prev) => ({ ...prev, hero_image_url: publicUrl }));
+                      setMediaPickerOpen(false);
+                    }}
+                    fileType="image"
+                  />
                 )}
               </div>
-              {formData.hero_image_url && (
-                <div className="mt-2 rounded-lg overflow-hidden border border-border">
-                  <img 
-                    src={formData.hero_image_url} 
-                    alt="Hero preview" 
-                    className="w-full h-40 object-cover"
-                  />
-                </div>
-              )}
-              {mediaPickerOpen && (
-                <MediaPicker
-                  open={mediaPickerOpen}
-                  onOpenChange={(open) => !open && setMediaPickerOpen(false)}
-                  onSelect={(mediaId, publicUrl) => {
-                    setFormData((prev) => ({ ...prev, hero_image_url: publicUrl }));
-                    setMediaPickerOpen(false);
-                  }}
-                  fileType="image"
-                />
-              )}
-            </div>
+            )}
           </div>
 
           {canEdit && (
