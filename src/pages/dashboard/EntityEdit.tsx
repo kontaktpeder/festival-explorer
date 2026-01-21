@@ -361,7 +361,7 @@ export default function EntityEdit() {
                 const profile = member.profile as { id: string; display_name?: string; handle?: string; avatar_url?: string } | null;
                 if (!profile) return null;
                 
-                const displayName = profile.display_name || profile.handle || "Ukjent";
+                const displayName = profile.display_name || profile.handle || "Ingen navn";
                 
                 return (
                   <div key={member.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">

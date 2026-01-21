@@ -375,7 +375,7 @@ export default function AdminEntityEdit() {
                   </div>
                   <div>
                     <p className="font-medium text-sm">
-                      {member.profile?.display_name || member.profile?.handle || "Ukjent"}
+                      {member.profile?.display_name || member.profile?.handle || "Ingen navn"}
                     </p>
                     {member.role_labels && member.role_labels.length > 0 && (
                       <p className="text-xs text-muted-foreground">

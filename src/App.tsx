@@ -16,6 +16,8 @@ import MyPersonas from "./pages/dashboard/MyPersonas";
 import PersonaEdit from "./pages/dashboard/PersonaEdit";
 import EntityEdit from "./pages/dashboard/EntityEdit";
 import EntityInvite from "./pages/dashboard/EntityInvite";
+import Settings from "./pages/dashboard/Settings";
+import ChangePassword from "./pages/dashboard/ChangePassword";
 import PersonaPage from "./pages/PersonaPage";
 import NotFound from "./pages/NotFound";
 
@@ -65,6 +67,8 @@ const App = () => (
           <Route path="/dashboard/personas" element={<MyPersonas />} />
           <Route path="/dashboard/personas/new" element={<PersonaEdit />} />
           <Route path="/dashboard/personas/:id" element={<PersonaEdit />} />
+          <Route path="/dashboard/settings" element={<Settings />} />
+          <Route path="/dashboard/settings/change-password" element={<ChangePassword />} />
           
           {/* Admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
