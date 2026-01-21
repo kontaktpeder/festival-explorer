@@ -134,7 +134,7 @@ export function HeroSection({
         className="absolute inset-x-0 pointer-events-none z-[3] md:hidden"
         style={{ 
           top: 'calc(-1 * var(--safe-top, 0px))',
-          height: '40vh',
+          height: '60vh',
           background: `linear-gradient(
             to bottom, 
             hsl(var(--background)) 0%,
