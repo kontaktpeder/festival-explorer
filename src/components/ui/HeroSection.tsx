@@ -1,7 +1,6 @@
 import { ReactNode, useEffect, useState, useRef } from "react";
 import { useResponsiveImage } from "@/hooks/useResponsiveImage";
 import { ParallaxBackground } from "./ParallaxBackground";
-import { MobileFadeOverlay } from "./MobileFadeOverlay";
 import { getObjectPositionFromFocal } from "@/lib/image-crop-helpers";
 import type { ImageSettings } from "@/types/database";
 
@@ -35,24 +34,7 @@ export function HeroSection({
   scrollExpand = false
 }: HeroSectionProps) {
   const [overscrollProgress, setOverscrollProgress] = useState(0);
-  const [scrollFadeHeight, setScrollFadeHeight] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
-
-  // Scroll-based fade height - grows as you scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      // Map scroll position to fade height: 0% at top, grows to 700% as you scroll
-      const maxScroll = 500; // pixels of scroll to reach max fade
-      const progress = Math.min(scrollY / maxScroll, 1);
-      const fadeHeight = progress * 700; // 0% to 700%
-      setScrollFadeHeight(fadeHeight);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Initial call
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   useEffect(() => {
     if (!scrollExpand) return;
@@ -74,14 +56,12 @@ export function HeroSection({
       
       // Only trigger when pulling down at top of page
       if (diff > 0 && window.scrollY <= 0) {
-        // More aggressive scaling - faster response
         const progress = Math.min(1, diff / 80);
         setOverscrollProgress(progress);
       }
     };
 
     const handleTouchEnd = () => {
-      // Animate back smoothly
       setOverscrollProgress(0);
     };
 
@@ -108,7 +88,6 @@ export function HeroSection({
     fallbackUrl: imageUrl,
   });
 
-  // More dramatic scaling and faster text fade
   const imageScale = scrollExpand ? 1 + overscrollProgress * 0.35 : 1;
   const textOpacity = scrollExpand ? 1 - overscrollProgress * 2.5 : 1;
 
@@ -117,7 +96,6 @@ export function HeroSection({
       ref={heroRef}
       className={`cosmic-hero relative ${baseHeight}`}
       style={{
-        // Extend hero into safe-area on mobile
         marginTop: 'calc(-1 * var(--safe-top, 0px))',
         paddingTop: 'var(--safe-top, 0px)',
       }}
@@ -139,52 +117,13 @@ export function HeroSection({
               transform: `scale(${imageScale})`,
               transformOrigin: 'center center',
               transition: overscrollProgress === 0 ? 'transform 0.3s ease-out' : 'none',
-              // Extend image into safe-area
               top: 'calc(-1 * var(--safe-top, 0px))',
             }}
           />
         )
       )}
       
-      {/* Top fade - grows as you scroll, always stays under logo */}
-      <div 
-        className="absolute inset-x-0 pointer-events-none z-[3] md:hidden"
-        style={{ 
-          top: 'calc(-1 * var(--safe-top, 0px))',
-          height: `${scrollFadeHeight}vh`,
-          background: `linear-gradient(
-            to bottom, 
-            hsl(var(--background)) 0%,
-            hsl(var(--background) / 0.9) 15%,
-            hsl(var(--background) / 0.6) 35%,
-            hsl(var(--background) / 0.3) 55%,
-            transparent 100%
-          )`,
-        }}
-      />
-      
-      {/* Gradient overlay - fades out with overscroll to reveal image */}
-      <div 
-        className="absolute inset-0 pointer-events-none z-[1] transition-opacity duration-150"
-        style={{ 
-          background: 'linear-gradient(to top, hsl(240 10% 6% / 0.85) 0%, hsl(240 10% 6% / 0.2) 40%, transparent 70%)',
-          opacity: 1 - overscrollProgress * 0.8
-        }}
-      />
-      
-      {/* Vignette overlay - fades out with overscroll */}
-      <div 
-        className="absolute inset-0 pointer-events-none z-[2] transition-opacity duration-150"
-        style={{ 
-          background: 'radial-gradient(ellipse at center, transparent 0%, hsl(240 10% 6% / 0.4) 100%)',
-          opacity: 1 - overscrollProgress
-        }}
-      />
-      
-      {/* Mobile fade overlay (bottom) */}
-      <MobileFadeOverlay />
-      
-      {/* Content - fixed at very bottom, fades quickly */}
+      {/* Content */}
       <div 
         className="absolute bottom-0 left-0 right-0 z-10 px-5 pb-4"
         style={{ 
