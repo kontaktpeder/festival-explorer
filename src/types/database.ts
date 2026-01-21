@@ -2,6 +2,40 @@
 // These are simplified types for UI use - the actual DB types are in src/integrations/supabase/types.ts
 
 // ============================================
+// Image Crop/Focal Point Settings
+// ============================================
+
+/**
+ * Image settings for focal point and crop data.
+ * Used for avatars (1:1) and hero images (16:9).
+ * 
+ * focal_x: 0-1, horizontal position (0=left, 0.5=center, 1=right)
+ * focal_y: 0-1, vertical position (0=top, 0.5=center, 1=bottom)
+ * zoom: 1+, zoom level (1=no zoom)
+ * 
+ * To extend for gallery mode in the future, add additional fields:
+ * - mode: 'avatar' | 'hero' | 'gallery' | 'custom'
+ * - aspect_ratio: number (for custom modes)
+ */
+export interface ImageSettings {
+  focal_x: number;
+  focal_y: number;
+  zoom?: number;
+}
+
+// Type-safe parser for JSONB image settings from Supabase
+export function parseImageSettings(json: unknown): ImageSettings | null {
+  if (!json || typeof json !== 'object') return null;
+  const obj = json as Record<string, unknown>;
+  if (typeof obj.focal_x !== 'number' || typeof obj.focal_y !== 'number') return null;
+  return {
+    focal_x: obj.focal_x,
+    focal_y: obj.focal_y,
+    zoom: typeof obj.zoom === 'number' ? obj.zoom : undefined,
+  };
+}
+
+// ============================================
 // Enums
 // ============================================
 
@@ -9,7 +43,6 @@ export type EntityType = 'venue' | 'solo' | 'band';
 export type AccessLevel = 'owner' | 'admin' | 'editor' | 'viewer';
 export type TimelineEventType = 'live_show' | 'release' | 'milestone' | 'collaboration' | 'media' | 'award' | 'personal_memory';
 export type TimelineVisibility = 'public' | 'pro' | 'private';
-
 // ============================================
 // Platform Access (NEW - replaces Platform entity membership)
 // ============================================
@@ -36,6 +69,7 @@ export interface Persona {
   slug: string;
   bio?: string | null;
   avatar_url?: string | null;
+  avatar_image_settings?: unknown; // JSONB from DB, use parseImageSettings() to access
   category_tags: string[];
   is_public: boolean;
   created_at: string;
@@ -54,6 +88,7 @@ export interface Entity {
   tagline?: string | null;
   description?: string | null;
   hero_image_url?: string | null;
+  hero_image_settings?: unknown; // JSONB from DB, use parseImageSettings() to access
   address?: string | null; // For venues
   city?: string | null; // For venues
   is_published: boolean;
@@ -181,13 +216,14 @@ export interface Event {
   start_at: string;
   end_at?: string | null;
   hero_image_url?: string | null;
+  hero_image_settings?: unknown; // JSONB from DB, use parseImageSettings() to access
   city?: string | null;
   venue_id?: string | null;
   status: 'draft' | 'submitted' | 'published';
   created_by: string;
   created_at: string;
   updated_at: string;
-  venue?: Venue | null;
+  venue?: Partial<Venue> | null; // Partial venue to allow minimal venue info from joins
 }
 
 /** @deprecated Use Entity instead */
