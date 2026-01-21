@@ -129,17 +129,19 @@ export function HeroSection({
         )
       )}
       
-      {/* Top fade - scrolls with hero, covers safe-area seamlessly */}
+      {/* Top fade - scrolls with hero like a roller blind, extends far down */}
       <div 
         className="absolute inset-x-0 pointer-events-none z-[3] md:hidden"
         style={{ 
           top: 'calc(-1 * var(--safe-top, 0px))',
-          height: 'calc(var(--safe-top, 47px) + 80px)',
+          height: '40vh',
           background: `linear-gradient(
             to bottom, 
             hsl(var(--background)) 0%,
-            hsl(var(--background) / 0.85) 30%,
-            hsl(var(--background) / 0.4) 60%,
+            hsl(var(--background) / 0.95) 10%,
+            hsl(var(--background) / 0.7) 25%,
+            hsl(var(--background) / 0.4) 45%,
+            hsl(var(--background) / 0.15) 65%,
             transparent 100%
           )`,
         }}
