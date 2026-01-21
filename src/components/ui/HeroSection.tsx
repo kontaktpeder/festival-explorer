@@ -85,12 +85,14 @@ export function HeroSection({
     };
   }, [scrollExpand]);
 
-  // Determine height behavior
-  const baseHeight = fullScreen 
-    ? "min-h-screen" 
-    : compact 
-      ? "min-h-[45vh]" 
-      : "min-h-[60vh]";
+  // Determine height behavior - skip min-height when using natural aspect
+  const baseHeight = useNaturalAspect && imageAspectRatio
+    ? "" // No min-height when using natural aspect
+    : fullScreen 
+      ? "min-h-screen" 
+      : compact 
+        ? "min-h-[45vh]" 
+        : "min-h-[60vh]";
 
   // Dynamic height based on natural aspect ratio
   const aspectStyle = useNaturalAspect && imageAspectRatio
@@ -132,9 +134,8 @@ export function HeroSection({
           <img
             src={activeImage}
             alt=""
-            className="absolute inset-0 w-full h-full will-change-transform"
+            className="absolute inset-0 w-full h-full object-cover will-change-transform"
             style={{ 
-              objectFit: 'contain',
               objectPosition: getObjectPositionFromFocal(imageSettings),
               transform: `scale(${imageScale})`,
               transformOrigin: 'center center',
