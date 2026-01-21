@@ -112,17 +112,7 @@
     min-height: 100svh;
   }
   
-  /* Grain overlay on body - darker and grittier */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: var(--cosmic-grain);
-    opacity: 0.12;
-    pointer-events: none;
-    z-index: 9999;
-    mix-blend-mode: multiply;
-  }
+  /* Grain overlay disabled */
 }
 
 @layer components {
