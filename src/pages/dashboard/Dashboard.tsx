@@ -22,7 +22,9 @@ import {
   Sparkles,
   Filter,
   X,
-  Plus
+  Plus,
+  Music,
+  CircleUser
 } from "lucide-react";
 import type { EntityType, AccessLevel } from "@/types/database";
 
@@ -151,16 +153,16 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+      <main className="max-w-4xl mx-auto px-4 py-8 space-y-10">
         {/* Welcome section */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             Hei, {userName}!
           </h1>
           <p className="text-muted-foreground">
             {showOnboarding 
               ? "Velkommen til backstage på GIGGEN." 
-              : "Her finner du alt som er ditt."
+              : "På GIGGEN har du to ting: profiler (deg) og prosjekter (det du lager sammen med andre)."
             }
           </p>
         </div>
@@ -226,25 +228,33 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* My personas section */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">
-              Mine offentlige profiler
-            </h2>
-            <div className="flex gap-2">
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/dashboard/personas">
-                  Administrer
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="sm">
-                <Link to="/dashboard/personas/new">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Ny profil
-                </Link>
-              </Button>
+        {/* Persona section - identity */}
+        <section className="space-y-4">
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <CircleUser className="h-5 w-5 text-accent" />
+                Hvem du er på GIGGEN
+              </h2>
+              <div className="flex gap-2">
+                {personas && personas.length > 0 && (
+                  <Button asChild variant="ghost" size="sm">
+                    <Link to="/dashboard/personas">
+                      Alle profiler
+                    </Link>
+                  </Button>
+                )}
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/dashboard/personas/new">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Ny profil
+                  </Link>
+                </Button>
+              </div>
             </div>
+            <p className="text-sm text-muted-foreground">
+              Profilene dine representerer deg som person – musiker, DJ, fotograf eller andre roller.
+            </p>
           </div>
 
           {!isLoadingPersonas && personas && personas.length > 0 ? (
@@ -253,11 +263,11 @@ export default function Dashboard() {
                 <Link
                   key={persona.id}
                   to={`/dashboard/personas/${persona.id}`}
-                  className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2 hover:border-accent/50 transition-colors"
+                  className="flex items-center gap-3 bg-card border border-border rounded-full pl-1 pr-4 py-1 hover:border-accent/50 hover:bg-accent/5 transition-all"
                 >
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-10 w-10 border-2 border-background">
                     <AvatarImage src={persona.avatar_url || undefined} />
-                    <AvatarFallback className="text-xs">
+                    <AvatarFallback className="text-sm bg-accent/10 text-accent">
                       {persona.name.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -270,48 +280,45 @@ export default function Dashboard() {
                     )}
                   </div>
                   {!persona.is_public && (
-                    <Badge variant="outline" className="text-[10px] ml-1">Skjult</Badge>
+                    <Badge variant="outline" className="text-[10px]">Skjult</Badge>
                   )}
                 </Link>
               ))}
-              <Link
-                to="/dashboard/personas"
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2"
-              >
-                Se alle →
-              </Link>
             </div>
           ) : !isLoadingPersonas ? (
-            <Card className="border-dashed bg-accent/5">
-              <CardContent className="py-6 flex items-center justify-between gap-4">
+            <Card className="border-dashed border-accent/30 bg-accent/5">
+              <CardContent className="py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-accent/10">
+                  <div className="p-3 rounded-full bg-accent/10">
                     <Sparkles className="h-5 w-5 text-accent" />
                   </div>
                   <div>
-                    <p className="font-medium text-foreground">Opprett din første profil</p>
+                    <p className="font-medium text-foreground">Opprett din profil</p>
                     <p className="text-sm text-muted-foreground">
                       Vis deg frem som musiker, fotograf, DJ eller hva du vil
                     </p>
                   </div>
                 </div>
-                <Button asChild>
+                <Button asChild className="shrink-0">
                   <Link to="/dashboard/personas/new">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Opprett
+                    Lag min profil
                   </Link>
                 </Button>
               </CardContent>
             </Card>
           ) : null}
-        </div>
+        </section>
 
-        {/* My projects section */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">
-              {selectedPersonaId ? "Prosjekter for denne profilen" : "Mine prosjekter"}
+        {/* Projects section - workspaces */}
+        <section className="space-y-4">
+          <div className="space-y-1">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <Music className="h-5 w-5 text-primary" />
+              {selectedPersonaId ? "Prosjekter for denne profilen" : "Det du jobber med"}
             </h2>
+            <p className="text-sm text-muted-foreground">
+              Prosjekter er band, soloartister og scener du er en del av.
+            </p>
           </div>
 
           {entities && entities.length > 0 ? (
@@ -323,23 +330,20 @@ export default function Dashboard() {
                 return (
                   <div
                     key={entity.id}
-                    className="bg-card border border-border rounded-lg p-4"
+                    className="bg-card border border-border rounded-lg p-4 hover:border-primary/30 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3 min-w-0">
-                        <div className="p-2 rounded-lg bg-secondary flex-shrink-0">
+                        <div className="p-2 rounded-md bg-primary/10 text-primary flex-shrink-0">
                           {typeConfig.icon}
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="font-semibold text-foreground truncate">
                               {entity.name}
                             </h3>
                             <Badge variant="secondary" className="text-xs">
                               {typeConfig.label}
-                            </Badge>
-                            <Badge variant="outline" className="text-xs">
-                              {ACCESS_LABELS[entity.access]}
                             </Badge>
                             {!entity.is_published && (
                               <Badge variant="outline" className="text-xs text-muted-foreground">
@@ -348,10 +352,13 @@ export default function Dashboard() {
                             )}
                           </div>
                           {entity.tagline && (
-                            <p className="text-sm text-muted-foreground mt-1 truncate">
+                            <p className="text-sm text-muted-foreground truncate">
                               {entity.tagline}
                             </p>
                           )}
+                          <p className="text-xs text-muted-foreground">
+                            Din rolle: <span className="text-foreground font-medium">{ACCESS_LABELS[entity.access]}</span>
+                          </p>
                         </div>
                       </div>
 
@@ -395,12 +402,12 @@ export default function Dashboard() {
                 ) : (
                   <>
                     <p className="text-muted-foreground">
-                      Du har ikke tilgang til noen prosjekter eller scener ennå.
+                      Du er ikke med i noen prosjekter eller scener ennå.
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Vil du starte et nytt prosjekt eller venue?{" "}
+                      Vil du starte noe nytt eller kobles på en scene?{" "}
                       <a href="mailto:hei@giggen.no" className="underline text-foreground hover:text-accent">
-                        Send oss en e-post
+                        Ta kontakt
                       </a>
                       .
                     </p>
@@ -409,7 +416,7 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           )}
-        </div>
+        </section>
 
         {/* Passive CTA for new projects */}
         {entities && entities.length > 0 && (
