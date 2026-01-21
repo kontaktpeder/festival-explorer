@@ -180,3 +180,73 @@ export function useEntityById(id: string | undefined) {
     enabled: !!id,
   });
 }
+
+/**
+ * Fetch entities filtered by selected persona (via entity_persona_bindings)
+ * If no persona selected, returns all user's entities
+ */
+export function useMyEntitiesFilteredByPersona(personaId: string | null) {
+  return useQuery({
+    queryKey: ["my-entities-filtered", personaId],
+    queryFn: async () => {
+      // Get user's entities via RPC
+      const { data: userEntities, error: rpcError } = await supabase.rpc('get_user_entities');
+      if (rpcError) throw rpcError;
+      if (!userEntities || userEntities.length === 0) return [];
+
+      const userEntityIds = userEntities.map((row: { entity_id: string }) => row.entity_id);
+
+      // If no persona selected, return all user's entities
+      if (!personaId) {
+        const { data: entities, error: entitiesError } = await supabase
+          .from("entities")
+          .select("*")
+          .in("id", userEntityIds)
+          .order("name", { ascending: true });
+
+        if (entitiesError) throw entitiesError;
+
+        return (entities || []).map((entity) => {
+          const userEntity = userEntities.find((row: { entity_id: string; access: AccessLevel }) => row.entity_id === entity.id);
+          return {
+            ...entity,
+            access: userEntity?.access || 'viewer',
+          } as EntityWithAccess;
+        });
+      }
+
+      // Get entities where this persona is bound
+      const { data: bindings, error: bindingsError } = await supabase
+        .from("entity_persona_bindings")
+        .select("entity_id")
+        .eq("persona_id", personaId);
+
+      if (bindingsError) throw bindingsError;
+
+      // Filter to only show entities with persona bindings that user has access to
+      const boundEntityIds = (bindings || []).map(b => b.entity_id);
+      const filteredIds = userEntityIds.filter((id: string) => boundEntityIds.includes(id));
+
+      if (filteredIds.length === 0) return [];
+
+      // Fetch full entity data
+      const { data: entities, error: entitiesError } = await supabase
+        .from("entities")
+        .select("*")
+        .in("id", filteredIds)
+        .order("name", { ascending: true });
+
+      if (entitiesError) throw entitiesError;
+
+      // Merge with access levels
+      return (entities || []).map((entity) => {
+        const userEntity = userEntities.find((row: { entity_id: string; access: AccessLevel }) => row.entity_id === entity.id);
+        return {
+          ...entity,
+          access: userEntity?.access || 'viewer',
+        } as EntityWithAccess;
+      });
+    },
+    enabled: true,
+  });
+}
