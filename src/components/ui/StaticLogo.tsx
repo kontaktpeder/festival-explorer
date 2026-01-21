@@ -49,21 +49,6 @@ export function StaticLogo() {
 
   return (
     <>
-      {/* Fixed fade behind logo - always visible on mobile to keep logo readable */}
-      <div 
-        className="fixed inset-x-0 z-40 pointer-events-none md:hidden"
-        style={{
-          top: 0,
-          height: 'calc(var(--safe-top, 47px) + 70px)',
-          background: `linear-gradient(
-            to bottom, 
-            hsl(var(--background)) 0%,
-            hsl(var(--background) / 0.9) 40%,
-            hsl(var(--background) / 0.5) 70%,
-            transparent 100%
-          )`,
-        }}
-      />
       
       {/* Logo - Bold text with orange accent */}
       <Link
