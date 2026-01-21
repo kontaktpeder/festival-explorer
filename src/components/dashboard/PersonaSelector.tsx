@@ -150,7 +150,7 @@ export function PersonaSelector() {
 
         <DropdownMenuSeparator />
         
-        {/* Tydeligere CTA for å opprette persona når ingen finnes */}
+        {/* CTA for personas - enten opprett første eller administrer */}
         {!hasPersonas && !isLoading && (
           <DropdownMenuItem asChild className="bg-accent/10 hover:bg-accent/20">
             <Link to="/dashboard/personas/new" className="flex items-center">
@@ -161,12 +161,20 @@ export function PersonaSelector() {
         )}
         
         {hasPersonas && (
-          <DropdownMenuItem asChild>
-            <Link to="/dashboard/personas/new">
-              <Plus className="h-4 w-4 mr-2" />
-              Opprett ny profil
-            </Link>
-          </DropdownMenuItem>
+          <>
+            <DropdownMenuItem asChild>
+              <Link to="/dashboard/personas">
+                <User className="h-4 w-4 mr-2" />
+                Mine profiler
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/dashboard/personas/new">
+                <Plus className="h-4 w-4 mr-2" />
+                Opprett ny profil
+              </Link>
+            </DropdownMenuItem>
+          </>
         )}
         
         <DropdownMenuItem asChild>
