@@ -191,12 +191,20 @@ export default function Settings() {
               </p>
             </div>
 
-            <Button asChild variant="outline">
-              <Link to="/dashboard/settings/change-password">
-                <Lock className="h-4 w-4 mr-2" />
-                Endre passord
-              </Link>
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild variant="outline">
+                <Link to="/dashboard/settings/change-password">
+                  <Lock className="h-4 w-4 mr-2" />
+                  Endre passord
+                </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to="/dashboard/account">
+                  <User className="h-4 w-4 mr-2" />
+                  Kontosenter
+                </Link>
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

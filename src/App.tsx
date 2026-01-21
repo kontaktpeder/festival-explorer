@@ -18,6 +18,8 @@ import EntityEdit from "./pages/dashboard/EntityEdit";
 import EntityInvite from "./pages/dashboard/EntityInvite";
 import Settings from "./pages/dashboard/Settings";
 import ChangePassword from "./pages/dashboard/ChangePassword";
+import AccountCenter from "./pages/dashboard/AccountCenter";
+import Privacy from "./pages/dashboard/Privacy";
 import PersonaPage from "./pages/PersonaPage";
 import NotFound from "./pages/NotFound";
 
@@ -69,6 +71,8 @@ const App = () => (
           <Route path="/dashboard/personas/:id" element={<PersonaEdit />} />
           <Route path="/dashboard/settings" element={<Settings />} />
           <Route path="/dashboard/settings/change-password" element={<ChangePassword />} />
+          <Route path="/dashboard/account" element={<AccountCenter />} />
+          <Route path="/dashboard/privacy" element={<Privacy />} />
           
           {/* Admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
