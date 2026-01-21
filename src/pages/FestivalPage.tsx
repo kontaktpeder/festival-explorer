@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useFestival } from "@/hooks/useFestival";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
+import { parseImageSettings } from "@/types/database";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
 import { FestivalEventAccordion } from "@/components/ui/FestivalEventAccordion";
@@ -139,11 +140,14 @@ export default function FestivalPage() {
           // Spesialhåndtering for hero (må ha logo og festival-info)
           if (section.type === "hero") {
             const heroFitMode = (section.image_fit_mode === 'contain' ? 'contain' : 'cover') as 'cover' | 'contain';
+            // Parse section background image settings for focal point
+            const sectionImageSettings = parseImageSettings(section.bg_image_settings);
             return (
               <HeroSection
                 key={section.id}
                 imageUrl={section.bg_image_url_desktop || section.bg_image_url || heroImage}
                 imageUrlMobile={section.bg_image_url_mobile || section.bg_image_url || heroImage}
+                imageSettings={sectionImageSettings}
                 fullScreen
                 backgroundFixed={section.bg_mode === "fixed"}
                 imageFitMode={heroFitMode}
@@ -242,7 +246,13 @@ export default function FestivalPage() {
       <StaticLogo />
 
       {/* SEKSJON 1: HERO - Fullskjerm, bg-fixed */}
-      <HeroSection imageUrl={heroImage} fullScreen backgroundFixed>
+      {/* Parse theme hero image settings for focal point */}
+      <HeroSection 
+        imageUrl={heroImage} 
+        imageSettings={parseImageSettings(festival?.theme?.hero_image_settings)}
+        fullScreen 
+        backgroundFixed
+      >
         <div className="animate-slide-up pb-8">
           {dateRange && (
             <div className="text-mono text-accent mb-3">{dateRange}</div>

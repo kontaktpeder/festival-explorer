@@ -4,6 +4,7 @@ import { nb } from "date-fns/locale";
 import { Calendar, Clock, MapPin, Ticket } from "lucide-react";
 import { useEvent } from "@/hooks/useFestival";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
+import { parseImageSettings } from "@/types/database";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
 import { LineupItem } from "@/components/ui/LineupItem";
@@ -40,12 +41,20 @@ export default function EventPage() {
   const startDate = new Date(event.start_at);
   const endDate = event.end_at ? new Date(event.end_at) : null;
 
+  // Parse hero image settings for focal point positioning
+  const heroImageSettings = parseImageSettings(event.hero_image_settings);
+
   return (
     <PageLayout>
       {/* Static logo in header */}
       <StaticLogo />
 
-      <HeroSection imageUrl={heroImageUrl || undefined} compact scrollExpand>
+      <HeroSection 
+        imageUrl={heroImageUrl || undefined} 
+        imageSettings={heroImageSettings}
+        compact 
+        scrollExpand
+      >
         <div className="text-mono text-accent mb-1 text-xs uppercase tracking-widest opacity-80">
           {format(startDate, "EEEE d. MMMM", { locale: nb })}
         </div>

@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { Music } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { parseImageSettings } from "@/types/database";
 
 type EntityType = Database["public"]["Enums"]["entity_type"];
 
@@ -58,12 +59,20 @@ export default function ProjectPage() {
     );
   }
 
+  // Parse hero image settings for focal point positioning
+  const heroImageSettings = parseImageSettings(entity.hero_image_settings);
+
   return (
     <PageLayout>
       {/* Static logo in header */}
       <StaticLogo />
 
-      <HeroSection imageUrl={heroImageUrl || undefined} compact scrollExpand>
+      <HeroSection 
+        imageUrl={heroImageUrl || undefined} 
+        imageSettings={heroImageSettings}
+        compact 
+        scrollExpand
+      >
         {entity.tagline && (
           <div className="text-mono text-accent mb-1 text-xs uppercase tracking-widest opacity-80">{entity.tagline}</div>
         )}

@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, User, Users } from "lucide-react";
 import { usePersona } from "@/hooks/usePersona";
 import { usePersonaEntityBindings } from "@/hooks/usePersonaBindings";
+import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
+import { parseImageSettings } from "@/types/database";
+import { getObjectPositionFromFocal } from "@/lib/image-crop-helpers";
 import { LoadingState } from "@/components/ui/LoadingState";
 import type { EntityType } from "@/types/database";
 
@@ -43,12 +46,19 @@ export default function PersonaPage() {
     );
   }
 
+  // Use signed URL and parse image settings for avatar
+  const avatarUrl = useSignedMediaUrl(persona.avatar_url, 'public');
+  const avatarImageSettings = parseImageSettings(persona.avatar_image_settings);
+
   return (
     <div className="container max-w-2xl py-8 space-y-8">
       {/* Profile Header */}
       <div className="flex flex-col items-center text-center space-y-4">
         <Avatar className="h-24 w-24">
-          <AvatarImage src={persona.avatar_url || undefined} />
+          <AvatarImage 
+            src={avatarUrl || undefined} 
+            style={{ objectPosition: getObjectPositionFromFocal(avatarImageSettings) }}
+          />
           <AvatarFallback className="text-2xl">
             {persona.name.substring(0, 2).toUpperCase()}
           </AvatarFallback>
