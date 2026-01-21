@@ -99,6 +99,11 @@ export function HeroSection({
     <div 
       ref={heroRef}
       className={`cosmic-hero relative ${baseHeight}`}
+      style={{
+        // Extend hero into safe-area on mobile
+        marginTop: 'calc(-1 * var(--safe-top, 0px))',
+        paddingTop: 'var(--safe-top, 0px)',
+      }}
     >
       {activeImage && (
         backgroundFixed ? (
@@ -116,11 +121,29 @@ export function HeroSection({
               backgroundPosition: getObjectPositionFromFocal(imageSettings),
               transform: `scale(${imageScale})`,
               transformOrigin: 'center center',
-              transition: overscrollProgress === 0 ? 'transform 0.3s ease-out' : 'none'
+              transition: overscrollProgress === 0 ? 'transform 0.3s ease-out' : 'none',
+              // Extend image into safe-area
+              top: 'calc(-1 * var(--safe-top, 0px))',
             }}
           />
         )
       )}
+      
+      {/* Top fade - scrolls with hero, covers safe-area seamlessly */}
+      <div 
+        className="absolute inset-x-0 pointer-events-none z-[3] md:hidden"
+        style={{ 
+          top: 'calc(-1 * var(--safe-top, 0px))',
+          height: 'calc(var(--safe-top, 47px) + 80px)',
+          background: `linear-gradient(
+            to bottom, 
+            hsl(var(--background)) 0%,
+            hsl(var(--background) / 0.85) 30%,
+            hsl(var(--background) / 0.4) 60%,
+            transparent 100%
+          )`,
+        }}
+      />
       
       {/* Gradient overlay - fades out with overscroll to reveal image */}
       <div 
@@ -140,7 +163,7 @@ export function HeroSection({
         }}
       />
       
-      {/* Mobile fade overlay */}
+      {/* Mobile fade overlay (bottom) */}
       <MobileFadeOverlay />
       
       {/* Content - fixed at very bottom, fades quickly */}
