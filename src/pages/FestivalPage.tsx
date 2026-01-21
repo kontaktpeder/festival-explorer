@@ -81,6 +81,9 @@ export default function FestivalPage() {
     enabled: !!festival?.id,
   });
 
+  // Signed URL for theme hero image - MUST be called before early returns
+  const themeHeroUrl = useSignedMediaUrl(festival?.theme?.hero_image_url, 'public');
+
   if (isLoading) {
     return (
       <PageLayout>
@@ -108,8 +111,6 @@ export default function FestivalPage() {
         ? format(new Date(festival.start_at), "d. MMMM yyyy", { locale: nb })
         : null;
 
-  // Signed URL for theme hero image
-  const themeHeroUrl = useSignedMediaUrl(festival.theme?.hero_image_url, 'public');
   const heroImage = themeHeroUrl || undefined;
 
   const validEvents = (festival.festivalEvents || []).filter(
