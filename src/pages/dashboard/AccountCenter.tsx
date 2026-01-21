@@ -105,6 +105,7 @@ export default function AccountCenter() {
         deleted_platform_access: number;
         deleted_invitations: number;
         deleted_media: number;
+        deleted_designs: number;
         transferred_media: number;
         transferred_entities: number;
         transferred_events: number;
@@ -113,7 +114,7 @@ export default function AccountCenter() {
     },
     onSuccess: (data) => {
       const summary = [];
-      if (data?.deleted_personas > 0) summary.push(`${data.deleted_personas} profil(er)`);
+      if (data?.deleted_personas > 0) summary.push(`${data.deleted_personas} persona(er)`);
       if (data?.transferred_entities > 0) summary.push(`${data.transferred_entities} prosjekt(er) overført`);
       if (data?.transferred_media > 0) summary.push(`${data.transferred_media} mediefil(er) bevart`);
       
