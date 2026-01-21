@@ -80,30 +80,48 @@ export default function AccountCenter() {
     },
   });
 
-  // Delete account mutation
+  // Delete account mutation - uses safe RPC that preserves shared projects
   const deleteAccountMutation = useMutation({
     mutationFn: async () => {
       if (!session?.user) throw new Error("Not authenticated");
 
-      // First, try to delete profile (cascades should handle related data)
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .delete()
-        .eq("id", session.user.id);
+      // Call the safe deletion RPC that:
+      // - Transfers ownership of shared entities/events/festivals to other team members
+      // - Preserves media files that are in use by shared projects
+      // - Deletes personal data: profile, personas, team memberships, platform access
+      const { data, error } = await supabase.rpc('delete_user_safely', {
+        p_user_id: session.user.id
+      });
 
-      if (profileError) {
-        // If profile deletion fails, continue anyway - auth user might not have profile yet
-        console.error("Profile deletion error:", profileError);
-      }
+      if (error) throw error;
 
-      // Delete auth user requires admin access, so we'll sign out instead
-      // The user can request account deletion from support or it can be done via admin
+      // Sign out after successful deletion
       await supabase.auth.signOut();
+      
+      return data as {
+        success: boolean;
+        deleted_personas: number;
+        deleted_team_memberships: number;
+        deleted_platform_access: number;
+        deleted_invitations: number;
+        deleted_media: number;
+        transferred_media: number;
+        transferred_entities: number;
+        transferred_events: number;
+        transferred_festivals: number;
+      };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      const summary = [];
+      if (data?.deleted_personas > 0) summary.push(`${data.deleted_personas} profil(er)`);
+      if (data?.transferred_entities > 0) summary.push(`${data.transferred_entities} prosjekt(er) overført`);
+      if (data?.transferred_media > 0) summary.push(`${data.transferred_media} mediefil(er) bevart`);
+      
       toast({ 
         title: "Konto slettet", 
-        description: "Din konto og profil har blitt slettet." 
+        description: summary.length > 0 
+          ? `Din konto er slettet. ${summary.join(', ')}.`
+          : "Din konto og profil har blitt slettet."
       });
       window.location.href = "/";
     },
@@ -150,7 +168,7 @@ export default function AccountCenter() {
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <Link to="/dashboard" className="text-xl font-bold text-primary hover:opacity-80 transition-opacity">
-            GIGGEN
+            GIGGEN <span className="text-muted-foreground font-normal">BACKSTAGE</span>
           </Link>
           <PersonaSelector />
         </div>
@@ -274,16 +292,26 @@ export default function AccountCenter() {
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-destructive">Advarsel: Permanent sletting</p>
                   <p className="text-sm text-muted-foreground">
-                    Når du sletter kontoen din, vil følgende bli permanent slettet:
+                    Når du sletter kontoen din:
                   </p>
+                  
+                  <p className="text-xs font-medium text-foreground mt-2">Følgende slettes permanent:</p>
                   <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
                     <li>Din profil og all profilinformasjon</li>
-                    <li>Alle personas knyttet til kontoen</li>
-                    <li>Tilganger til prosjekter og scener</li>
-                    <li>All innhold du har opprettet</li>
+                    <li>Alle dine personas (offentlige profiler)</li>
+                    <li>Dine tilganger til prosjekter og scener</li>
+                    <li>Mediefiler som kun du bruker</li>
                   </ul>
-                  <p className="text-sm text-destructive font-medium">
-                    Du kan ikke angre denne handlingen. Alle data vil være borte permanent.
+                  
+                  <p className="text-xs font-medium text-foreground mt-2">Følgende bevares for delte prosjekter:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Prosjekter du har opprettet (overføres til andre team-medlemmer)</li>
+                    <li>Bilder og filer som er i bruk av prosjekter (eierskap overføres)</li>
+                    <li>Arrangementer og festivaler (forblir tilgjengelige)</li>
+                  </ul>
+                  
+                  <p className="text-sm text-destructive font-medium mt-2">
+                    Du kan ikke angre denne handlingen.
                   </p>
                 </div>
               </div>

@@ -1297,6 +1297,7 @@ export type Database = {
         }
       }
       can_edit_entity: { Args: { p_entity_id: string }; Returns: boolean }
+      delete_user_safely: { Args: { p_user_id: string }; Returns: Json }
       get_invitation_by_token: { Args: { p_token: string }; Returns: Json }
       get_platform_access_level: {
         Args: never
