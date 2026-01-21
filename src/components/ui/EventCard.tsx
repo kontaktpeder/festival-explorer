@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { MapPin, Clock } from "lucide-react";
+import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import type { Event, EventProject } from "@/types/database";
 
 interface EventCardProps {
@@ -14,13 +15,16 @@ interface EventCardProps {
 
 export function EventCard({ event, showDate = true }: EventCardProps) {
   const startTime = new Date(event.start_at);
+  
+  // Signed URL for public viewing
+  const heroImageUrl = useSignedMediaUrl(event.hero_image_url, 'public');
 
   return (
     <Link to={`/event/${event.slug}`} className="event-card block group">
-      {event.hero_image_url && (
+      {heroImageUrl && (
         <div className="relative h-32 -mx-4 -mt-4 mb-3 overflow-hidden rounded-t-lg">
           <img
-            src={event.hero_image_url}
+            src={heroImageUrl}
             alt={event.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />

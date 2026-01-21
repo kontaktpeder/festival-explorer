@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/ui/LoadingState";
 import { ParallaxBackground } from "@/components/ui/ParallaxBackground";
 import { MobileFadeOverlay } from "@/components/ui/MobileFadeOverlay";
 import { useResponsiveImage } from "@/hooks/useResponsiveImage";
+import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import giggenLogo from "@/assets/giggen-logo.png";
 import type { Json } from "@/integrations/supabase/types";
 // NOTE: Default section background images removed to allow black backgrounds
@@ -60,11 +61,16 @@ function SectionBackground({
   section: FestivalSection; 
   venueImage?: string | null;
 }) {
-  // No default fallback - allows black backgrounds when no image is set
+  // Get signed URLs for section backgrounds
+  const desktopUrl = useSignedMediaUrl(section.bg_image_url_desktop, 'public');
+  const mobileUrl = useSignedMediaUrl(section.bg_image_url_mobile, 'public');
+  const fallbackUrl = useSignedMediaUrl(venueImage || section.bg_image_url, 'public');
+
+  // Responsive image selection with signed URLs
   const activeImage = useResponsiveImage({
-    desktopUrl: section.bg_image_url_desktop,
-    mobileUrl: section.bg_image_url_mobile,
-    fallbackUrl: venueImage || section.bg_image_url || null,
+    desktopUrl: desktopUrl || undefined,
+    mobileUrl: mobileUrl || undefined,
+    fallbackUrl: fallbackUrl || null,
   });
 
   // If no image, return null (black background)
@@ -75,8 +81,8 @@ function SectionBackground({
   if (section.bg_mode === "fixed") {
     return (
       <ParallaxBackground
-        imageUrl={section.bg_image_url_desktop || section.bg_image_url || ""}
-        imageUrlMobile={section.bg_image_url_mobile || section.bg_image_url || ""}
+        imageUrl={desktopUrl || section.bg_image_url || ""}
+        imageUrlMobile={mobileUrl || section.bg_image_url || ""}
         intensity={0.3}
         imageFitMode={imageFitMode}
         isAnimated={true}
