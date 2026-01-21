@@ -24,6 +24,7 @@ import { CroppedImage } from "@/components/ui/CroppedImage";
 import type { CropMode } from "@/lib/image-crop-helpers";
 import type { ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
+import { supabase } from "@/integrations/supabase/client";
 
 interface InlineMediaPickerWithCropProps {
   value?: string;
@@ -34,6 +35,8 @@ interface InlineMediaPickerWithCropProps {
   accept?: string;
   placeholder?: string;
   showAllForAdmin?: boolean;
+  /** Use image's natural aspect ratio instead of mode preset */
+  useNaturalAspect?: boolean;
 }
 
 export function InlineMediaPickerWithCrop({
@@ -45,43 +48,63 @@ export function InlineMediaPickerWithCrop({
   accept,
   placeholder = "Velg bilde",
   showAllForAdmin = false,
+  useNaturalAspect = false,
 }: InlineMediaPickerWithCropProps) {
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
   const [pendingImageUrl, setPendingImageUrl] = useState<string | null>(null);
+  const [imageAspectRatio, setImageAspectRatio] = useState<number | undefined>(undefined);
 
-  // Parse existing settings for initial crop values
+  // Parse existing settings for initial crop values and aspect ratio
   const parsedSettings = parseImageSettings(imageSettings);
 
-  const handleMediaSelect = useCallback((_mediaId: string, publicUrl: string) => {
-    // Store the selected URL and open crop dialog
+  const handleMediaSelect = useCallback(async (mediaId: string, publicUrl: string) => {
+    // Store the selected URL
     setPendingImageUrl(publicUrl);
     setMediaPickerOpen(false);
+
+    // Fetch image dimensions from media table if using natural aspect
+    if (useNaturalAspect) {
+      const { data: mediaItem } = await supabase
+        .from("media")
+        .select("width, height")
+        .eq("id", mediaId)
+        .single();
+
+      if (mediaItem?.width && mediaItem?.height) {
+        setImageAspectRatio(mediaItem.width / mediaItem.height);
+      } else {
+        setImageAspectRatio(undefined);
+      }
+    }
+
     setCropDialogOpen(true);
-  }, []);
+  }, [useNaturalAspect]);
 
   const handleCropSave = useCallback((crop: CropSettings) => {
+    const settings: ImageSettings = {
+      focal_x: crop.focalX,
+      focal_y: crop.focalY,
+      zoom: crop.zoom,
+      // Store aspect ratio if using natural aspect
+      ...(useNaturalAspect && imageAspectRatio ? { aspect_ratio: imageAspectRatio } : {}),
+    };
+
     if (pendingImageUrl) {
       // New image was selected - save both URL and settings
       onChange(pendingImageUrl);
-      onSettingsChange?.({
-        focal_x: crop.focalX,
-        focal_y: crop.focalY,
-        zoom: crop.zoom,
-      });
+      onSettingsChange?.(settings);
       setPendingImageUrl(null);
     } else if (value) {
       // Re-cropping existing image - only update settings
-      onSettingsChange?.({
-        focal_x: crop.focalX,
-        focal_y: crop.focalY,
-        zoom: crop.zoom,
-      });
+      onSettingsChange?.(settings);
     }
-  }, [pendingImageUrl, value, onChange, onSettingsChange]);
+    setImageAspectRatio(undefined);
+  }, [pendingImageUrl, value, onChange, onSettingsChange, useNaturalAspect, imageAspectRatio]);
 
   const handleCropCancel = useCallback(() => {
     setPendingImageUrl(null);
+    setImageAspectRatio(undefined);
   }, []);
 
   const handleClear = useCallback(() => {
@@ -92,9 +115,13 @@ export function InlineMediaPickerWithCrop({
   const handleOpenCropExisting = useCallback(() => {
     if (value) {
       setPendingImageUrl(null); // Indicate we're editing existing
+      // Use existing aspect ratio from settings if available
+      if (useNaturalAspect && parsedSettings?.aspect_ratio) {
+        setImageAspectRatio(parsedSettings.aspect_ratio);
+      }
       setCropDialogOpen(true);
     }
-  }, [value]);
+  }, [value, useNaturalAspect, parsedSettings]);
 
   // Determine file type from accept
   const getFileType = (): "image" | "video" | "audio" | "document" | undefined => {
@@ -107,6 +134,11 @@ export function InlineMediaPickerWithCrop({
 
   const aspectClass = cropMode === "avatar" ? "aspect-square" : "aspect-video";
   const previewHeight = cropMode === "avatar" ? "h-24 w-24" : "h-24 w-full";
+
+  // Determine preview aspect ratio
+  const previewAspect = useNaturalAspect && parsedSettings?.aspect_ratio
+    ? parsedSettings.aspect_ratio
+    : undefined;
 
   return (
     <div className="space-y-2">
@@ -145,12 +177,15 @@ export function InlineMediaPickerWithCrop({
       </div>
 
       {value && (
-        <div className={`relative rounded-md overflow-hidden border border-border ${previewHeight}`}>
+        <div 
+          className="relative rounded-md overflow-hidden border border-border"
+          style={previewAspect ? { aspectRatio: previewAspect } : {}}
+        >
           <CroppedImage
             src={value}
             alt="Selected media"
             imageSettings={imageSettings}
-            aspect={cropMode}
+            aspect={useNaturalAspect ? "auto" : cropMode}
             className="w-full h-full"
           />
         </div>
@@ -181,6 +216,7 @@ export function InlineMediaPickerWithCrop({
         }
         onSave={handleCropSave}
         onCancel={handleCropCancel}
+        imageAspectRatio={useNaturalAspect ? imageAspectRatio : undefined}
       />
     </div>
   );

@@ -3,6 +3,7 @@ import { useResponsiveImage } from "@/hooks/useResponsiveImage";
 import { ParallaxBackground } from "./ParallaxBackground";
 import { getObjectPositionFromFocal } from "@/lib/image-crop-helpers";
 import type { ImageSettings } from "@/types/database";
+import { parseImageSettings } from "@/types/database";
 
 interface HeroSectionProps {
   imageUrl?: string;
@@ -16,11 +17,14 @@ interface HeroSectionProps {
   imageFitMode?: 'cover' | 'contain';
   /** Enable scroll-to-expand effect where image grows and text fades on overscroll */
   scrollExpand?: boolean;
+  /** Use image's natural aspect ratio instead of fixed height */
+  useNaturalAspect?: boolean;
 }
 
 /**
  * HeroSection - displays hero image with focal point positioning
  * Uses imageSettings for object-position when available
+ * Can adapt to image's natural aspect ratio when useNaturalAspect is true
  */
 export function HeroSection({ 
   imageUrl, 
@@ -31,10 +35,15 @@ export function HeroSection({
   fullScreen,
   backgroundFixed = false,
   imageFitMode = 'cover',
-  scrollExpand = false
+  scrollExpand = false,
+  useNaturalAspect = false,
 }: HeroSectionProps) {
   const [overscrollProgress, setOverscrollProgress] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
+
+  // Parse image settings for aspect ratio
+  const parsedSettings = parseImageSettings(imageSettings);
+  const imageAspectRatio = parsedSettings?.aspect_ratio;
 
   useEffect(() => {
     if (!scrollExpand) return;
@@ -76,11 +85,17 @@ export function HeroSection({
     };
   }, [scrollExpand]);
 
+  // Determine height behavior
   const baseHeight = fullScreen 
     ? "min-h-screen" 
     : compact 
       ? "min-h-[45vh]" 
       : "min-h-[60vh]";
+
+  // Dynamic height based on natural aspect ratio
+  const aspectStyle = useNaturalAspect && imageAspectRatio
+    ? { aspectRatio: `${imageAspectRatio}` }
+    : {};
 
   const activeImage = useResponsiveImage({
     desktopUrl: imageUrl,
@@ -94,10 +109,11 @@ export function HeroSection({
   return (
     <div 
       ref={heroRef}
-      className={`cosmic-hero relative ${baseHeight}`}
+      className={`cosmic-hero relative ${useNaturalAspect && imageAspectRatio ? '' : baseHeight}`}
       style={{
         marginTop: 'calc(-1 * var(--safe-top, 0px))',
         paddingTop: 'var(--safe-top, 0px)',
+        ...aspectStyle,
       }}
     >
       {activeImage && (

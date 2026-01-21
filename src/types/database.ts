@@ -21,6 +21,7 @@ export interface ImageSettings {
   focal_x: number;
   focal_y: number;
   zoom?: number;
+  aspect_ratio?: number; // Image's natural aspect ratio (width/height)
 }
 
 // Type-safe parser for JSONB image settings from Supabase
@@ -32,6 +33,7 @@ export function parseImageSettings(json: unknown): ImageSettings | null {
     focal_x: obj.focal_x,
     focal_y: obj.focal_y,
     zoom: typeof obj.zoom === 'number' ? obj.zoom : undefined,
+    aspect_ratio: typeof obj.aspect_ratio === 'number' ? obj.aspect_ratio : undefined,
   };
 }
 

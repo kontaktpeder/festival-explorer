@@ -13,20 +13,26 @@
  *   className="w-full h-40"
  * />
  * 
- * FUTURE EXTENSIONS:
- * - Add aspect="gallery" for gallery mode
- * - Add aspect="custom" with customAspect prop for arbitrary ratios
+ * For natural aspect ratio (uses aspect_ratio from imageSettings):
+ * <CroppedImage
+ *   src={signedUrl}
+ *   alt="Photo"
+ *   imageSettings={entity.hero_image_settings}
+ *   aspect="auto"
+ *   className="w-full"
+ * />
  */
 
 import { cn } from "@/lib/utils";
 import { getCroppedImageStyles, type CropMode } from "@/lib/image-crop-helpers";
 import type { ImageSettings } from "@/types/database";
+import { parseImageSettings } from "@/types/database";
 
 interface CroppedImageProps {
   src: string;
   alt?: string;
   imageSettings?: ImageSettings | unknown | null;
-  aspect?: CropMode | "auto"; // "auto" = no aspect constraint
+  aspect?: CropMode | "auto"; // "auto" = use natural aspect from imageSettings
   className?: string;
   containerClassName?: string;
   onError?: React.ReactEventHandler<HTMLImageElement>;
@@ -43,15 +49,28 @@ export function CroppedImage({
 }: CroppedImageProps) {
   const cropStyles = getCroppedImageStyles(imageSettings);
   
-  // Apply aspect ratio via padding-top trick for consistent sizing
-  const aspectClass = aspect === "avatar" 
-    ? "aspect-square" 
-    : aspect === "hero" 
-      ? "aspect-video" 
-      : "";
+  // Parse settings to get natural aspect ratio if available
+  const parsedSettings = parseImageSettings(imageSettings);
+  const naturalAspectRatio = parsedSettings?.aspect_ratio;
+  
+  // Determine aspect ratio styling
+  let aspectClass = "";
+  let aspectStyle: React.CSSProperties = {};
+  
+  if (aspect === "avatar") {
+    aspectClass = "aspect-square";
+  } else if (aspect === "hero") {
+    aspectClass = "aspect-video";
+  } else if (aspect === "auto" && naturalAspectRatio) {
+    // Use natural aspect ratio from image settings
+    aspectStyle = { aspectRatio: `${naturalAspectRatio}` };
+  }
 
   return (
-    <div className={cn("overflow-hidden", aspectClass, containerClassName)}>
+    <div 
+      className={cn("overflow-hidden", aspectClass, containerClassName)}
+      style={aspectStyle}
+    >
       <img
         src={src}
         alt={alt}
