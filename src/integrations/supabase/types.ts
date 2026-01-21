@@ -125,6 +125,7 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          hero_image_settings: Json | null
           hero_image_url: string | null
           id: string
           is_published: boolean
@@ -142,6 +143,7 @@ export type Database = {
           created_at?: string
           created_by: string
           description?: string | null
+          hero_image_settings?: Json | null
           hero_image_url?: string | null
           id?: string
           is_published?: boolean
@@ -159,6 +161,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           description?: string | null
+          hero_image_settings?: Json | null
           hero_image_url?: string | null
           id?: string
           is_published?: boolean
@@ -450,6 +453,7 @@ export type Database = {
           created_by: string
           description: string | null
           end_at: string | null
+          hero_image_settings: Json | null
           hero_image_url: string | null
           id: string
           slug: string
@@ -465,6 +469,7 @@ export type Database = {
           created_by: string
           description?: string | null
           end_at?: string | null
+          hero_image_settings?: Json | null
           hero_image_url?: string | null
           id?: string
           slug: string
@@ -480,6 +485,7 @@ export type Database = {
           created_by?: string
           description?: string | null
           end_at?: string | null
+          hero_image_settings?: Json | null
           hero_image_url?: string | null
           id?: string
           slug?: string
@@ -548,6 +554,7 @@ export type Database = {
       festival_sections: {
         Row: {
           accent_override: string | null
+          bg_image_settings: Json | null
           bg_image_url: string | null
           bg_image_url_desktop: string | null
           bg_image_url_mobile: string | null
@@ -566,6 +573,7 @@ export type Database = {
         }
         Insert: {
           accent_override?: string | null
+          bg_image_settings?: Json | null
           bg_image_url?: string | null
           bg_image_url_desktop?: string | null
           bg_image_url_mobile?: string | null
@@ -584,6 +592,7 @@ export type Database = {
         }
         Update: {
           accent_override?: string | null
+          bg_image_settings?: Json | null
           bg_image_url?: string | null
           bg_image_url_desktop?: string | null
           bg_image_url_mobile?: string | null
@@ -789,6 +798,7 @@ export type Database = {
       }
       personas: {
         Row: {
+          avatar_image_settings: Json | null
           avatar_url: string | null
           bio: string | null
           category_tags: string[] | null
@@ -801,6 +811,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          avatar_image_settings?: Json | null
           avatar_url?: string | null
           bio?: string | null
           category_tags?: string[] | null
@@ -813,6 +824,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          avatar_image_settings?: Json | null
           avatar_url?: string | null
           bio?: string | null
           category_tags?: string[] | null
@@ -869,6 +881,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_image_settings: Json | null
           avatar_url: string | null
           bio: string | null
           city: string | null
@@ -880,6 +893,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          avatar_image_settings?: Json | null
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
@@ -891,6 +905,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          avatar_image_settings?: Json | null
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
@@ -1012,6 +1027,7 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          hero_image_settings: Json | null
           hero_image_url: string | null
           id: string
           is_published: boolean
@@ -1025,6 +1041,7 @@ export type Database = {
           created_at?: string
           created_by: string
           description?: string | null
+          hero_image_settings?: Json | null
           hero_image_url?: string | null
           id?: string
           is_published?: boolean
@@ -1038,6 +1055,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           description?: string | null
+          hero_image_settings?: Json | null
           hero_image_url?: string | null
           id?: string
           is_published?: boolean
@@ -1113,6 +1131,7 @@ export type Database = {
           accent_color: string | null
           created_at: string
           font_preset: Database["public"]["Enums"]["theme_font_preset"]
+          hero_image_settings: Json | null
           hero_image_url: string | null
           id: string
           name: string
@@ -1122,6 +1141,7 @@ export type Database = {
           accent_color?: string | null
           created_at?: string
           font_preset?: Database["public"]["Enums"]["theme_font_preset"]
+          hero_image_settings?: Json | null
           hero_image_url?: string | null
           id?: string
           name: string
@@ -1131,6 +1151,7 @@ export type Database = {
           accent_color?: string | null
           created_at?: string
           font_preset?: Database["public"]["Enums"]["theme_font_preset"]
+          hero_image_settings?: Json | null
           hero_image_url?: string | null
           id?: string
           name?: string
@@ -1202,6 +1223,7 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          hero_image_settings: Json | null
           hero_image_url: string | null
           id: string
           is_published: boolean
@@ -1215,6 +1237,7 @@ export type Database = {
           created_at?: string
           created_by: string
           description?: string | null
+          hero_image_settings?: Json | null
           hero_image_url?: string | null
           id?: string
           is_published?: boolean
@@ -1228,6 +1251,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           description?: string | null
+          hero_image_settings?: Json | null
           hero_image_url?: string | null
           id?: string
           is_published?: boolean

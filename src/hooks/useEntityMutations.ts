@@ -40,9 +40,10 @@ export function useUpdateEntity() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Entity> & { id: string }) => {
+      // Cast updates to allow JSONB fields
       const { data, error } = await supabase
         .from("entities")
-        .update(updates)
+        .update(updates as Record<string, unknown>)
         .eq("id", id)
         .select()
         .single();

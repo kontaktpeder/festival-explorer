@@ -11,7 +11,10 @@ import { PersonaSelector } from "@/components/dashboard/PersonaSelector";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { User, Mail, Lock, ArrowLeft } from "lucide-react";
-import { InlineMediaPicker } from "@/components/admin/InlineMediaPicker";
+import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
+import type { ImageSettings } from "@/types/database";
+import { parseImageSettings } from "@/types/database";
+import { getObjectPositionFromFocal } from "@/lib/image-crop-helpers";
 
 export default function Settings() {
   const { toast } = useToast();
@@ -20,6 +23,7 @@ export default function Settings() {
   const [displayName, setDisplayName] = useState("");
   const [handle, setHandle] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarImageSettings, setAvatarImageSettings] = useState<ImageSettings | null>(null);
 
   // Get current user profile
   const { data: profile, isLoading } = useQuery({
@@ -45,18 +49,19 @@ export default function Settings() {
       setDisplayName(profile.display_name || "");
       setHandle(profile.handle || "");
       setAvatarUrl(profile.avatar_url || "");
+      setAvatarImageSettings(parseImageSettings(profile.avatar_image_settings) || null);
     }
   }, [profile]);
 
   // Update profile mutation
   const updateProfile = useMutation({
-    mutationFn: async (updates: { display_name?: string | null; handle?: string | null; avatar_url?: string | null }) => {
+    mutationFn: async (updates: { display_name?: string | null; handle?: string | null; avatar_url?: string | null; avatar_image_settings?: ImageSettings | null }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { error } = await supabase
         .from("profiles")
-        .update(updates)
+        .update(updates as Record<string, unknown>)
         .eq("id", user.id);
 
       if (error) throw error;
@@ -76,6 +81,7 @@ export default function Settings() {
       display_name: displayName || null,
       handle: handle || null,
       avatar_url: avatarUrl || null,
+      avatar_image_settings: avatarImageSettings,
     });
   };
 
@@ -115,7 +121,10 @@ export default function Settings() {
           <CardContent className="space-y-6">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
-                <AvatarImage src={avatarUrl || undefined} />
+                <AvatarImage 
+                  src={avatarUrl || undefined} 
+                  style={{ objectPosition: getObjectPositionFromFocal(avatarImageSettings) }}
+                />
                 <AvatarFallback className="text-lg">
                   {(displayName || profile?.email || "U").charAt(0).toUpperCase()}
                 </AvatarFallback>
@@ -128,10 +137,12 @@ export default function Settings() {
 
             <div className="space-y-2">
               <Label>Profilbilde</Label>
-              <InlineMediaPicker
+              <InlineMediaPickerWithCrop
                 value={avatarUrl}
+                imageSettings={avatarImageSettings}
                 onChange={setAvatarUrl}
-                accept="image/*"
+                onSettingsChange={setAvatarImageSettings}
+                cropMode="avatar"
                 placeholder="Velg profilbilde"
               />
               <p className="text-xs text-muted-foreground">
