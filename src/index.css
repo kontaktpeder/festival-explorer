@@ -53,10 +53,13 @@
     --input: 258 20% 28%;
     --ring: 330 100% 60%;
     
+    /* Orange accent for subtle touches */
+    --accent-orange: 24 100% 55%;
+    
     --radius: 0.25rem;
     
-    /* Retro grain texture - more visible */
-    --cosmic-grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    /* Retro grain texture - darker and grittier */
+    --cosmic-grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
     --cosmic-overlay: linear-gradient(180deg, hsl(258 35% 22% / 0.3) 0%, hsl(258 35% 22% / 0.9) 100%);
     --cosmic-glow: 0 0 60px hsl(330 100% 60% / 0.25);
     --cosmic-border: 2px solid hsl(162 40% 70% / 0.3);
@@ -109,16 +112,16 @@
     min-height: 100svh;
   }
   
-  /* Grain overlay on body - more visible for retro feel */
+  /* Grain overlay on body - darker and grittier */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
     background-image: var(--cosmic-grain);
-    opacity: 0.06;
+    opacity: 0.12;
     pointer-events: none;
     z-index: 9999;
-    mix-blend-mode: overlay;
+    mix-blend-mode: multiply;
   }
 }
 

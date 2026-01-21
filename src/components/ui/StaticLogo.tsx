@@ -73,7 +73,7 @@ export function StaticLogo() {
         }}
       />
       
-      {/* Logo - Bold text */}
+      {/* Logo - Bold text with orange accent */}
       <Link
         to="/"
         onClick={handleClick}
@@ -89,35 +89,49 @@ export function StaticLogo() {
         }}
       >
         <div className="flex flex-col items-start group">
-          {/* Retro frame accent */}
-          <div className="absolute -inset-2 border border-[hsl(162_40%_70%_/_0.3)] rounded-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          
-          {/* Main logo text - bold condensed retro style */}
+          {/* Main logo text - bolder with orange underline accent */}
           <span 
-            className="font-black text-foreground tracking-[0.3em] md:tracking-[0.4em] text-2xl md:text-3xl uppercase transition-all duration-300 group-hover:text-accent relative"
+            className={`font-black text-foreground uppercase transition-all duration-300 group-hover:text-accent relative ${
+              showCentered 
+                ? 'text-xl tracking-[0.25em]' 
+                : 'text-2xl md:text-3xl tracking-[0.3em] md:tracking-[0.4em]'
+            }`}
             style={{ 
               fontFamily: "'Space Grotesk', system-ui, sans-serif",
-              textShadow: '2px 2px 0 hsl(330 100% 60% / 0.2)'
+              textShadow: '3px 3px 0 hsl(24 100% 55% / 0.3), -1px -1px 0 hsl(330 100% 60% / 0.15)'
             }}
           >
             GIGGEN
+            {/* Orange accent dot */}
+            <span 
+              className="absolute -right-2 top-0 w-1.5 h-1.5 rounded-full"
+              style={{ background: 'hsl(24 100% 55%)' }}
+            />
           </span>
-          {/* Tagline - retro subtitle */}
-          <span className="text-[10px] md:text-xs text-[hsl(162_40%_70%)] font-medium tracking-widest uppercase -mt-0.5">
-            en festival for en kveld
+          {/* Tagline - updated text */}
+          <span className={`text-[hsl(24_100%_55%_/_0.8)] font-medium tracking-widest uppercase transition-all duration-300 ${
+            showCentered ? 'text-[8px] -mt-0.5' : 'text-[10px] md:text-xs -mt-0.5'
+          }`}>
+            festival for en kveld
           </span>
         </div>
       </Link>
 
-      {/* BACKSTAGE link - top right */}
+      {/* BACKSTAGE link - top right, smaller when logo is centered */}
       <Link
         to={session ? "/dashboard" : "/admin/login"}
-        className="fixed z-50 right-4 transition-all duration-500 ease-out"
+        className={`fixed z-50 right-4 transition-all duration-500 ease-out ${
+          showCentered ? 'opacity-70' : 'opacity-100'
+        }`}
         style={{
-          top: 'calc(var(--safe-top, 0px) + 20px)'
+          top: showCentered 
+            ? 'calc(var(--safe-top, 0px) + 16px)' 
+            : 'calc(var(--safe-top, 0px) + 20px)'
         }}
       >
-        <span className="text-sm font-medium text-foreground/80 hover:text-accent transition-colors uppercase tracking-wider">
+        <span className={`font-medium text-foreground/80 hover:text-accent transition-colors uppercase tracking-wider ${
+          showCentered ? 'text-[10px]' : 'text-sm'
+        }`}>
           BACKSTAGE
         </span>
       </Link>

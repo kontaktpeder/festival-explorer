@@ -187,27 +187,29 @@ export function SectionRenderer({
       return (
         <section className="fullscreen-section relative overflow-hidden">
           <SectionBackground section={section} />
+          {/* Weaker overlay so text stands out */}
+          <div className="absolute inset-0 bg-background/60 pointer-events-none z-[1]" />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <MobileFadeOverlay />
 
           <div className="relative z-10 w-full max-w-2xl mx-auto px-6 py-16">
-            {/* Editorial style content with Merriweather */}
-            <div className="space-y-12" style={{ fontFamily: "'Merriweather', Georgia, serif" }}>
+            {/* Editorial style content with Crimson Pro serif */}
+            <div className="space-y-12" style={{ fontFamily: "'Crimson Pro', 'Source Serif 4', Georgia, serif" }}>
               
               {/* Opening paragraph */}
-              <p className="animate-blur-in text-foreground/80 text-lg md:text-xl leading-relaxed text-center italic">
+              <p className="animate-blur-in text-foreground/90 text-xl md:text-2xl leading-relaxed text-center italic font-light">
                 GIGGEN startet med et sterkt ønske om å spille mer musikk live. Etter hvert vokste det til et større engasjement – for alle som vil skape flere scener, eller løfte fram de som allerede finnes.
               </p>
 
-              {/* Accent line */}
-              <div className="animate-line-grow delay-200 h-px w-24 mx-auto bg-accent/50 origin-center" />
+              {/* Accent line - orange */}
+              <div className="animate-line-grow delay-200 h-0.5 w-24 mx-auto origin-center" style={{ background: 'hsl(24 100% 55% / 0.6)' }} />
 
               {/* Section 1: Tankesett */}
               <div className="animate-slide-up delay-300 text-center space-y-4">
                 <h3 className="text-foreground text-2xl md:text-3xl font-bold tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                   GIGGEN er et tankesett.
                 </h3>
-                <p className="text-foreground/70 text-base md:text-lg leading-relaxed max-w-xl mx-auto">
+                <p className="text-foreground/80 text-lg md:text-xl leading-relaxed max-w-xl mx-auto font-light">
                   Vi hyller de som tar beslutningene i egne hender. De som ikke venter på at jobber og muligheter skal bli servert, men skaper dem selv.
                 </p>
               </div>
@@ -217,27 +219,27 @@ export function SectionRenderer({
                 <h3 className="text-foreground text-2xl md:text-3xl font-bold tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                   Samtidig er GIGGEN et produkt.
                 </h3>
-                <p className="text-foreground/70 text-base md:text-lg leading-relaxed max-w-xl mx-auto">
+                <p className="text-foreground/80 text-lg md:text-xl leading-relaxed max-w-xl mx-auto font-light">
                   I dag er det en plattform der du blant annet kan bli kjent med mini-festivalen vår.
                 </p>
               </div>
 
               {/* Section 3: Festivalen */}
               <div className="animate-slide-up delay-500 text-center space-y-4">
-                <p className="text-foreground/70 text-base md:text-lg leading-relaxed max-w-xl mx-auto">
+                <p className="text-foreground/80 text-lg md:text-xl leading-relaxed max-w-xl mx-auto font-light">
                   Festivalen markerer starten på en ny måte å følge band, artister og musikere på. Du skal ikke trenge stipend, priser eller bransjestempel for å fortelle historien din. Og du skal ikke måtte forstå algoritmer eller kjempe om oppmerksomhet i et evig scroll.
                 </p>
               </div>
 
-              {/* Accent line */}
-              <div className="animate-line-grow delay-600 h-px w-24 mx-auto bg-accent/50 origin-center" />
+              {/* Accent line - orange */}
+              <div className="animate-line-grow delay-600 h-0.5 w-24 mx-auto origin-center" style={{ background: 'hsl(24 100% 55% / 0.6)' }} />
 
               {/* Closing statement */}
               <div className="animate-slide-up delay-700 text-center space-y-3">
-                <p className="text-foreground text-xl md:text-2xl font-semibold">
+                <p className="text-foreground text-xl md:text-2xl font-semibold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                   Først og fremst er vi GIGGEN.
                 </p>
-                <p className="text-accent text-lg md:text-xl italic">
+                <p className="text-lg md:text-xl italic" style={{ color: 'hsl(24 100% 55%)' }}>
                   Og vi er klare for å gi musikkbransjen et friskt pust.
                 </p>
               </div>
@@ -247,27 +249,27 @@ export function SectionRenderer({
       );
 
     case "artister": {
-      // Vis ALLE artister fra festivalen
+      // Vis ALLE artister fra festivalen - RIGHT ALIGNED
       return (
         <section className="fullscreen-section relative">
           <SectionBackground section={section} />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <MobileFadeOverlay />
 
-          <div className="relative z-10 w-full max-w-lg mx-auto px-5">
-            {/* Header */}
-            <h2 className="animate-slide-up text-display text-section-title mb-10">
-              {section.title || "Artister"}
+          <div className="relative z-10 w-full max-w-lg ml-auto mr-4 md:mr-12 px-5">
+            {/* Header - right aligned */}
+            <h2 className="animate-slide-up text-display text-section-title mb-10 text-right">
+              {section.title || "Lineup"}
             </h2>
             
-            {/* Artist list - clean stacked layout */}
+            {/* Artist list - right aligned */}
             <div className="space-y-6">
               {featuredArtists.length > 0 ? (
                 featuredArtists.map((artist, i) => (
                   <Link
                     key={artist.id}
                     to={`/project/${artist.slug}`}
-                    className={`animate-slide-up block group py-4 border-b border-foreground/10 last:border-0`}
+                    className={`animate-slide-up block group py-4 border-b border-foreground/10 last:border-0 text-right`}
                     style={{ animationDelay: `${0.1 + i * 0.08}s` }}
                   >
                     <h3 className="text-display text-2xl md:text-3xl text-foreground/90 group-hover:text-accent transition-colors duration-300">
@@ -281,8 +283,8 @@ export function SectionRenderer({
                   </Link>
                 ))
               ) : (
-                <p className="text-foreground/40 text-base">
-                  Artister kommer snart.
+                <p className="text-foreground/40 text-base text-right">
+                  Lineup kommer snart.
                 </p>
               )}
             </div>
@@ -371,38 +373,49 @@ export function SectionRenderer({
       return (
         <footer className="fullscreen-section relative flex items-end">
           <SectionBackground section={section} />
+          {/* Weaker background overlay */}
+          <div className="absolute inset-0 bg-background/40 pointer-events-none z-[1]" />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
 
           <div className="relative z-10 w-full max-w-md px-5 pb-8">
-            {/* Logo */}
-            <img
-              src={giggenLogo}
-              alt="Giggen"
-              className="animate-slide-up h-20 w-auto mb-5 opacity-80"
-            />
+            {/* Text logo instead of image */}
+            <div className="animate-slide-up mb-6">
+              <span 
+                className="font-black text-foreground text-3xl md:text-4xl uppercase tracking-[0.3em]"
+                style={{ 
+                  fontFamily: "'Space Grotesk', system-ui, sans-serif",
+                  textShadow: '3px 3px 0 hsl(24 100% 55% / 0.3)'
+                }}
+              >
+                GIGGEN
+              </span>
+              <span 
+                className="block text-sm uppercase tracking-widest mt-1"
+                style={{ color: 'hsl(24 100% 55% / 0.8)' }}
+              >
+                festival for en kveld
+              </span>
+            </div>
             
-            {/* Tagline */}
+            {/* Tagline - clearer text */}
             {getText() ? (
               <div 
-                className="animate-slide-up delay-100 prose-rich-text text-foreground/50 text-sm leading-relaxed mb-6 max-w-xs"
+                className="animate-slide-up delay-100 prose-rich-text text-foreground/70 text-base leading-relaxed mb-8 max-w-sm"
                 dangerouslySetInnerHTML={{ __html: getText() }}
               />
             ) : (
-              <p className="animate-slide-up delay-100 text-foreground/50 text-sm leading-relaxed mb-6 max-w-xs">
+              <p className="animate-slide-up delay-100 text-foreground/70 text-base leading-relaxed mb-8 max-w-sm">
                 Et engasjement for å løfte frem dem som jobber med eksisterende musikkarenaer, og dem som ønsker å skape nye.
               </p>
             )}
             
-            {/* Minimal links */}
-            <div className="animate-slide-up delay-200 flex gap-6 text-xs text-foreground/30">
-              <Link to="/search?type=event" className="hover:text-foreground/60 transition-colors">
-                Events
-              </Link>
-              <Link to="/search?type=project" className="hover:text-foreground/60 transition-colors">
-                Artister
-              </Link>
-              <Link to="/search?type=venue" className="hover:text-foreground/60 transition-colors">
-                Venues
+            {/* Only backstage link */}
+            <div className="animate-slide-up delay-200">
+              <Link 
+                to="/admin/login" 
+                className="text-sm text-foreground/50 hover:text-accent transition-colors uppercase tracking-wider"
+              >
+                Backstage →
               </Link>
             </div>
           </div>
