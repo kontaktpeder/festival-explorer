@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, ImageIcon, UserPlus, ExternalLink, Users } from "lucide-react";
-import { MediaPicker } from "@/components/admin/MediaPicker";
+import { ArrowLeft, Save, UserPlus, ExternalLink, Users } from "lucide-react";
+import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Badge } from "@/components/ui/badge";
-import type { EntityType, AccessLevel } from "@/types/database";
+import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
+import { parseImageSettings } from "@/types/database";
 
 const TYPE_LABELS: Record<EntityType, string> = {
   venue: "Scene",
@@ -38,7 +39,7 @@ export default function EntityEdit() {
     description: "",
     hero_image_url: "",
   });
-  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const [heroImageSettings, setHeroImageSettings] = useState<ImageSettings | null>(null);
 
   // Fetch entity with user's access level
   const { data: entityWithAccess, isLoading, error } = useQuery({
@@ -111,10 +112,12 @@ export default function EntityEdit() {
         description: entityWithAccess.description || "",
         hero_image_url: entityWithAccess.hero_image_url || "",
       });
+      // Parse hero_image_settings from JSONB
+      setHeroImageSettings(parseImageSettings(entityWithAccess.hero_image_settings) || null);
     }
   }, [entityWithAccess]);
 
-  // Save mutation
+  // Save mutation - includes hero_image_settings JSONB
   const saveMutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
@@ -124,7 +127,8 @@ export default function EntityEdit() {
           tagline: formData.tagline || null,
           description: formData.description || null,
           hero_image_url: formData.hero_image_url || null,
-        })
+          hero_image_settings: heroImageSettings,
+        } as Record<string, unknown>)
         .eq("id", id);
       
       if (error) throw error;
@@ -293,48 +297,30 @@ export default function EntityEdit() {
 
             {showField("hero_image_url") && (
               <div className="space-y-2">
-                <Label htmlFor="hero_image_url">Hero-bilde</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="hero_image_url"
+                <Label>Hero-bilde</Label>
+                {canEdit ? (
+                  <InlineMediaPickerWithCrop
                     value={formData.hero_image_url}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, hero_image_url: e.target.value }))}
-                    placeholder="https://... eller velg fra filbank"
-                    className="flex-1"
-                    disabled={isReadOnly}
+                    imageSettings={heroImageSettings}
+                    onChange={(url) => setFormData((prev) => ({ ...prev, hero_image_url: url }))}
+                    onSettingsChange={setHeroImageSettings}
+                    cropMode="hero"
+                    placeholder="Velg hero-bilde"
                   />
-                  {canEdit && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setMediaPickerOpen(true)}
-                      className="flex-shrink-0"
-                    >
-                      <ImageIcon className="h-4 w-4 mr-2" />
-                      Velg
-                    </Button>
-                  )}
-                </div>
-                {formData.hero_image_url && (
-                  <div className="mt-2 rounded-lg overflow-hidden border border-border">
-                    <img 
-                      src={formData.hero_image_url} 
-                      alt="Hero preview" 
-                      className="w-full h-40 object-cover"
-                    />
-                  </div>
+                ) : (
+                  formData.hero_image_url && (
+                    <div className="rounded-lg overflow-hidden border border-border">
+                      <img 
+                        src={formData.hero_image_url} 
+                        alt="Hero preview" 
+                        className="w-full h-40 object-cover"
+                      />
+                    </div>
+                  )
                 )}
-                {mediaPickerOpen && (
-                  <MediaPicker
-                    open={mediaPickerOpen}
-                    onOpenChange={(open) => !open && setMediaPickerOpen(false)}
-                    onSelect={(mediaId, publicUrl) => {
-                      setFormData((prev) => ({ ...prev, hero_image_url: publicUrl }));
-                      setMediaPickerOpen(false);
-                    }}
-                    fileType="image"
-                  />
-                )}
+                <p className="text-xs text-muted-foreground">
+                  Velg bilde og juster fokuspunkt for beste visning
+                </p>
               </div>
             )}
           </div>

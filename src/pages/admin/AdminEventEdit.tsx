@@ -10,11 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Users, ImageIcon, Check, ChevronsUpDown, Plus } from "lucide-react";
-import { MediaPicker } from "@/components/admin/MediaPicker";
+import { ArrowLeft, Save, Users, Check, ChevronsUpDown, Plus } from "lucide-react";
+import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
 import { generateSlug, cn } from "@/lib/utils";
+import type { ImageSettings } from "@/types/database";
+import { parseImageSettings } from "@/types/database";
 
 export default function AdminEventEdit() {
   const { id } = useParams<{ id: string }>();
@@ -34,7 +36,7 @@ export default function AdminEventEdit() {
     hero_image_url: "",
     status: "draft" as "draft" | "submitted" | "published",
   });
-  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const [heroImageSettings, setHeroImageSettings] = useState<ImageSettings | null>(null);
   const [venuePickerOpen, setVenuePickerOpen] = useState(false);
 
   // Fetch event data
@@ -80,6 +82,8 @@ export default function AdminEventEdit() {
         hero_image_url: event.hero_image_url || "",
         status: event.status || "draft",
       });
+      // Parse hero_image_settings from JSONB
+      setHeroImageSettings(parseImageSettings(event.hero_image_settings) || null);
     }
   }, [event]);
 
@@ -94,13 +98,15 @@ export default function AdminEventEdit() {
         end_at: formData.end_at ? new Date(formData.end_at).toISOString() : null,
         venue_id: formData.venue_id || null,
         hero_image_url: formData.hero_image_url || null,
+        hero_image_settings: heroImageSettings,
         city: formData.city || null,
       };
 
       if (isNew) {
+        const insertPayload = { ...payload, created_by: user.id };
         const { data, error } = await supabase
           .from("events")
-          .insert({ ...payload, created_by: user.id })
+          .insert(insertPayload as never)
           .select()
           .single();
         if (error) throw error;
@@ -108,7 +114,7 @@ export default function AdminEventEdit() {
       } else {
         const { data, error } = await supabase
           .from("events")
-          .update(payload)
+          .update(payload as never)
           .eq("id", id)
           .select()
           .single();
@@ -308,36 +314,19 @@ export default function AdminEventEdit() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="hero_image_url">Hero-bilde</Label>
-            <div className="flex gap-2">
-              <Input
-                id="hero_image_url"
-                value={formData.hero_image_url}
-                onChange={(e) => setFormData((prev) => ({ ...prev, hero_image_url: e.target.value }))}
-                placeholder="https://... eller velg fra filbank"
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setMediaPickerOpen(true)}
-                className="flex-shrink-0"
-              >
-                <ImageIcon className="h-4 w-4 mr-2" />
-                Velg fra filbank
-              </Button>
-            </div>
-            {mediaPickerOpen && (
-              <MediaPicker
-                open={mediaPickerOpen}
-                onOpenChange={(open) => !open && setMediaPickerOpen(false)}
-                onSelect={(mediaId, publicUrl) => {
-                  setFormData((prev) => ({ ...prev, hero_image_url: publicUrl }));
-                  setMediaPickerOpen(false);
-                }}
-                fileType="image"
-              />
-            )}
+            <Label>Hero-bilde</Label>
+            <InlineMediaPickerWithCrop
+              value={formData.hero_image_url}
+              imageSettings={heroImageSettings}
+              onChange={(url) => setFormData((prev) => ({ ...prev, hero_image_url: url }))}
+              onSettingsChange={setHeroImageSettings}
+              cropMode="hero"
+              placeholder="Velg hero-bilde"
+              showAllForAdmin
+            />
+            <p className="text-xs text-muted-foreground">
+              Velg bilde og juster fokuspunkt for beste visning
+            </p>
           </div>
 
           <div className="space-y-2">

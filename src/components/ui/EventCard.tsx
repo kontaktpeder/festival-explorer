@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { MapPin, Clock } from "lucide-react";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
+import { CroppedImage } from "./CroppedImage";
 import type { Event, EventProject } from "@/types/database";
 
 interface EventCardProps {
@@ -13,6 +14,10 @@ interface EventCardProps {
   showDate?: boolean;
 }
 
+/**
+ * EventCard - displays event with hero image using crop settings
+ * Uses hero_image_settings for focal point positioning when available
+ */
 export function EventCard({ event, showDate = true }: EventCardProps) {
   const startTime = new Date(event.start_at);
   
@@ -23,10 +28,12 @@ export function EventCard({ event, showDate = true }: EventCardProps) {
     <Link to={`/event/${event.slug}`} className="event-card block group">
       {heroImageUrl && (
         <div className="relative h-32 -mx-4 -mt-4 mb-3 overflow-hidden rounded-t-lg">
-          <img
+          <CroppedImage
             src={heroImageUrl}
             alt={event.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            imageSettings={event.hero_image_settings}
+            aspect="hero"
+            className="w-full h-full transition-transform duration-500 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
         </div>
