@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { PersonaSelector, useSelectedPersonaId } from "@/components/dashboard/PersonaSelector";
+import { useMyPersonas } from "@/hooks/usePersona";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Users, 
   Building2, 
@@ -19,7 +21,8 @@ import {
   Eye,
   Sparkles,
   Filter,
-  X
+  X,
+  Plus
 } from "lucide-react";
 import type { EntityType, AccessLevel } from "@/types/database";
 
@@ -51,6 +54,9 @@ export default function Dashboard() {
   const selectedPersonaId = useSelectedPersonaId();
   const [currentUser, setCurrentUser] = useState<{ id: string; email: string; displayName?: string } | null>(null);
   const [hasExplored, setHasExplored] = useState(false);
+
+  // Fetch personas
+  const { data: personas, isLoading: isLoadingPersonas } = useMyPersonas();
 
   // Use filtered entities based on selected persona
   const { data: allEntities, isLoading: isLoadingAll } = useMyEntities();
@@ -219,6 +225,79 @@ export default function Dashboard() {
             ))}
           </div>
         )}
+
+        {/* My personas section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground">
+              Mine offentlige profiler
+            </h2>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/dashboard/personas/new">
+                <Plus className="h-4 w-4 mr-2" />
+                Ny profil
+              </Link>
+            </Button>
+          </div>
+
+          {!isLoadingPersonas && personas && personas.length > 0 ? (
+            <div className="flex flex-wrap gap-3">
+              {personas.map((persona) => (
+                <Link
+                  key={persona.id}
+                  to={`/dashboard/personas/${persona.id}`}
+                  className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2 hover:border-accent/50 transition-colors"
+                >
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={persona.avatar_url || undefined} />
+                    <AvatarFallback className="text-xs">
+                      {persona.name.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-foreground">{persona.name}</span>
+                    {persona.category_tags && persona.category_tags.length > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        {persona.category_tags.slice(0, 2).join(", ")}
+                      </span>
+                    )}
+                  </div>
+                  {!persona.is_public && (
+                    <Badge variant="outline" className="text-[10px] ml-1">Skjult</Badge>
+                  )}
+                </Link>
+              ))}
+              <Link
+                to="/dashboard/personas"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2"
+              >
+                Se alle →
+              </Link>
+            </div>
+          ) : !isLoadingPersonas ? (
+            <Card className="border-dashed bg-accent/5">
+              <CardContent className="py-6 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-accent/10">
+                    <Sparkles className="h-5 w-5 text-accent" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">Opprett din første profil</p>
+                    <p className="text-sm text-muted-foreground">
+                      Vis deg frem som musiker, fotograf, DJ eller hva du vil
+                    </p>
+                  </div>
+                </div>
+                <Button asChild>
+                  <Link to="/dashboard/personas/new">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Opprett
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : null}
+        </div>
 
         {/* My projects section */}
         <div className="space-y-4">
