@@ -78,6 +78,7 @@ const App = () => (
           <Route path="/dashboard/settings/change-password" element={<ChangePassword />} />
           <Route path="/dashboard/account" element={<AccountCenter />} />
           <Route path="/dashboard/privacy" element={<Privacy />} />
+          <Route path="/p/:slug" element={<PersonaPage />} />
           
           {/* Admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
