@@ -85,7 +85,7 @@ export default function AdminLogin() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground">GIGGEN Backstage</h1>
           <p className="text-muted-foreground mt-2">
-            {isSignUp ? "Opprett konto" : "Logg inn for å fortsette"}
+            {isSignUp ? "Opprett konto for å få tilgang til backstage" : "Logg inn for å fortsette"}
           </p>
         </div>
 
@@ -120,7 +120,7 @@ export default function AdminLogin() {
           </Button>
         </form>
 
-        <div className="text-center">
+        <div className="text-center space-y-3">
           <button
             type="button"
             onClick={() => setIsSignUp(!isSignUp)}
@@ -128,6 +128,11 @@ export default function AdminLogin() {
           >
             {isSignUp ? "Har du allerede konto? Logg inn" : "Ingen konto? Opprett en"}
           </button>
+          {isSignUp && (
+            <p className="text-xs text-muted-foreground">
+              Prosjekter opprettes av administrator. Du får tilgang via invitasjon.
+            </p>
+          )}
         </div>
       </div>
     </div>

@@ -28,9 +28,9 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
 const ACCESS_OPTIONS: { value: Exclude<AccessLevel, "owner">; label: string; description: string }[] = [
-  { value: "admin", label: "Admin", description: "Full tilgang til å redigere og administrere" },
-  { value: "editor", label: "Redaktør", description: "Kan redigere innhold" },
-  { value: "viewer", label: "Leser", description: "Kun lesetilgang" },
+  { value: "admin", label: "Administrer", description: "Full tilgang til å redigere og administrere" },
+  { value: "editor", label: "Rediger", description: "Kan redigere innhold" },
+  { value: "viewer", label: "Se", description: "Kun lesetilgang" },
 ];
 
 const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
@@ -42,9 +42,9 @@ const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secon
 
 const ACCESS_LABELS: Record<AccessLevel, string> = {
   owner: "Eier",
-  admin: "Admin",
-  editor: "Redaktør",
-  viewer: "Leser",
+  admin: "Administrer",
+  editor: "Rediger",
+  viewer: "Se",
 };
 
 export default function EntityInvite() {

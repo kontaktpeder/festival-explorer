@@ -14,16 +14,16 @@ import { Badge } from "@/components/ui/badge";
 import type { EntityType, AccessLevel } from "@/types/database";
 
 const TYPE_LABELS: Record<EntityType, string> = {
-  venue: "Venue",
-  solo: "Solo",
+  venue: "Scene",
+  solo: "Soloartist",
   band: "Band",
 };
 
 const ACCESS_LABELS: Record<AccessLevel, string> = {
   owner: "Eier",
-  admin: "Admin",
-  editor: "Redaktør",
-  viewer: "Leser",
+  admin: "Administrer",
+  editor: "Rediger",
+  viewer: "Se",
 };
 
 export default function EntityEdit() {
@@ -174,7 +174,7 @@ export default function EntityEdit() {
   };
 
   const typeConfig = {
-    venue: { route: "/venue" },
+    venue: { route: "/project" },
     solo: { route: "/project" },
     band: { route: "/project" },
   };
