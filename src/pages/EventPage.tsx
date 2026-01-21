@@ -60,6 +60,7 @@ export default function EventPage() {
         imageSettings={heroImageSettings}
         fullScreen
         scrollExpand
+        useNaturalAspect
       >
         <div className="text-mono text-accent/70 mb-3 text-xs uppercase tracking-[0.3em]">
           {format(startDate, "EEEE", { locale: nb })}
