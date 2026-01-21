@@ -67,81 +67,94 @@ export default function ProjectPage() {
       {/* Static logo in header */}
       <StaticLogo />
 
+      {/* HERO – Full screen identity */}
       <HeroSection 
         imageUrl={heroImageUrl || undefined} 
         imageSettings={heroImageSettings}
-        compact 
+        fullScreen
         scrollExpand
       >
-        {entity.tagline && (
-          <div className="text-mono text-accent mb-1 text-xs uppercase tracking-widest opacity-80">{entity.tagline}</div>
-        )}
-        <h1 className="font-black text-2xl md:text-3xl uppercase tracking-tight leading-none">{entity.name}</h1>
+        <div className="space-y-3">
+          {entity.tagline && (
+            <div className="text-mono text-accent/70 text-xs uppercase tracking-[0.2em]">
+              {entity.tagline}
+            </div>
+          )}
+          <h1 className="font-display font-black text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight leading-[0.9]">
+            {entity.name}
+          </h1>
+        </div>
       </HeroSection>
 
-      <div className="section">
-        {entity.description && (
-          <p className="text-foreground/80 leading-relaxed whitespace-pre-line">
-            {entity.description}
-          </p>
-        )}
-      </div>
-
-      {/* Personas section - "Bak prosjektet" */}
-      {publicBindings.length > 0 && (
-        <>
-          <div className="accent-line" />
-          <section className="section">
-            <h2 className="section-title">{getPersonasSectionTitle(entity.type)}</h2>
-
-            <div className="space-y-4">
-              {publicBindings.map((binding) => {
-                const persona = binding.persona;
-                if (!persona) return null;
-
-                return (
-                  <Link 
-                    key={binding.id} 
-                    to={`/p/${persona.slug}`}
-                    className="flex items-center gap-4 hover:bg-muted/50 rounded-lg p-2 -mx-2 transition-colors"
-                  >
-                    <div className="w-14 h-14 rounded-full overflow-hidden bg-secondary flex-shrink-0">
-                      {persona.avatar_url ? (
-                        <img
-                          src={persona.avatar_url}
-                          alt={persona.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-lg font-bold text-muted-foreground/40">
-                            {persona.name.charAt(0)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <div className="font-semibold">
-                        {persona.name}
-                      </div>
-                      {binding.role_label && (
-                        <div className="text-sm text-muted-foreground">
-                          {binding.role_label}
-                        </div>
-                      )}
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </section>
-        </>
+      {/* OM PROSJEKTET – The voice */}
+      {entity.description && (
+        <section className="py-20 md:py-32 px-6 md:px-12">
+          <div className="max-w-2xl">
+            <p className="text-lg md:text-xl text-foreground/85 leading-relaxed whitespace-pre-line font-light">
+              {entity.description}
+            </p>
+          </div>
+        </section>
       )}
 
-      {/* Timeline section */}
-      <div className="accent-line" />
-      <section className="section">
-        <h2 className="section-title">Historien</h2>
+      {/* MED PÅ SCENEN – The people */}
+      {publicBindings.length > 0 && (
+        <section className="py-16 md:py-28 px-6 md:px-12 border-t border-border/20">
+          <h2 className="text-xs uppercase tracking-[0.25em] text-muted-foreground/60 mb-12 md:mb-16">
+            {getPersonasSectionTitle(entity.type)}
+          </h2>
+
+          <div className="space-y-10 md:space-y-14">
+            {publicBindings.map((binding) => {
+              const persona = binding.persona;
+              if (!persona) return null;
+
+              return (
+                <Link 
+                  key={binding.id} 
+                  to={`/p/${persona.slug}`}
+                  className="group flex items-center gap-6 md:gap-8"
+                >
+                  {/* Large avatar */}
+                  <div className="w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden bg-secondary/50 flex-shrink-0 ring-1 ring-border/10">
+                    {persona.avatar_url ? (
+                      <img
+                        src={persona.avatar_url}
+                        alt={persona.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/30">
+                        <span className="text-2xl md:text-3xl font-display font-bold text-muted-foreground/30">
+                          {persona.name.charAt(0)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Name and role */}
+                  <div className="space-y-1">
+                    <div className="text-xl md:text-2xl font-medium text-foreground group-hover:text-primary transition-colors">
+                      {persona.name}
+                    </div>
+                    {binding.role_label && (
+                      <div className="text-sm md:text-base text-muted-foreground/70 font-light">
+                        {binding.role_label}
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* HISTORIEN – The journey */}
+      <section className="py-16 md:py-28 px-6 md:px-12 border-t border-border/20">
+        <h2 className="text-xs uppercase tracking-[0.25em] text-muted-foreground/60 mb-12 md:mb-20">
+          Historien
+        </h2>
         <EntityTimeline entityId={entity.id} viewerRole="fan" />
       </section>
     </PageLayout>

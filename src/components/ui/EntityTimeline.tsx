@@ -45,11 +45,12 @@ export function EntityTimeline({ entityId, viewerRole = "fan" }: EntityTimelineP
   }
 
   return (
-    <div className="relative pl-6">
-      {/* Vertical timeline line - themed */}
-      <div className="absolute left-2 top-2 bottom-2 w-px bg-gradient-to-b from-primary/60 via-primary/30 to-transparent" />
+    <div className="relative pl-8 md:pl-12">
+      {/* Vertical timeline line - subtle, elegant */}
+      <div className="absolute left-3 md:left-4 top-4 bottom-4 w-px bg-gradient-to-b from-primary/40 via-primary/20 to-transparent" />
 
-      <div className="space-y-8">
+      {/* More breathing room between events */}
+      <div className="space-y-14 md:space-y-20">
         {events.map((event, index) => (
           <TimelineItem key={event.id} event={event} index={index} />
         ))}
@@ -123,72 +124,65 @@ function TimelineItem({ event, index }: TimelineItemProps) {
     <div
       ref={ref}
       className={`
-        relative transition-all duration-500 ease-out
-        ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
+        relative transition-all duration-700 ease-out
+        ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}
       `}
-      style={{ transitionDelay: `${index * 80}ms` }}
+      style={{ transitionDelay: `${index * 120}ms` }}
     >
-      {/* Timeline dot */}
-      <div className="absolute -left-4 top-1 w-2 h-2 rounded-full bg-primary" />
+      {/* Timeline dot - larger, more presence */}
+      <div className="absolute -left-6 md:-left-8 top-2 w-3 h-3 rounded-full bg-primary/80 ring-4 ring-background" />
 
-      {/* Content - no card, clean layout */}
-      <div className="flex items-start gap-4">
-        {/* Icon */}
-        <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center text-primary/70">
-          <EventIcon className="w-4 h-4" />
-        </div>
+      {/* Content - spacious, magazine-like */}
+      <div className="space-y-3">
+        {/* Year - large, editorial */}
+        {dateStr && (
+          <div className="text-2xl md:text-3xl font-display font-light text-primary/60 tracking-wide">
+            {dateStr}
+          </div>
+        )}
 
-        <div className="flex-1 min-w-0">
-          {/* Year prominent */}
-          {dateStr && (
-            <span className="text-xs font-medium text-primary/80 tracking-wider uppercase">
-              {dateStr}
-            </span>
-          )}
+        {/* Title - prominent */}
+        <h3 className="text-lg md:text-xl font-medium text-foreground leading-snug">
+          {event.title}
+        </h3>
 
-          {/* Title */}
-          <h3 className="font-medium text-foreground leading-snug mt-0.5">
-            {event.title}
-          </h3>
+        {/* Location - subtle */}
+        {locationStr && (
+          <p className="text-sm text-muted-foreground/60 flex items-center gap-2">
+            <MapPin className="w-3.5 h-3.5" />
+            {locationStr}
+          </p>
+        )}
 
-          {/* Location inline */}
-          {locationStr && (
-            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
-              {locationStr}
-            </p>
-          )}
+        {/* Description - readable */}
+        {event.description && (
+          <p className="text-base text-foreground/70 whitespace-pre-line leading-relaxed max-w-xl font-light">
+            {event.description}
+          </p>
+        )}
 
-          {/* Description */}
-          {event.description && (
-            <p className="mt-2 text-sm text-foreground/70 whitespace-pre-line leading-relaxed">
-              {event.description}
-            </p>
-          )}
-
-          {/* Media */}
-          {event.media && event.media.length > 0 && (
-            <div className="mt-3 flex gap-2 flex-wrap">
-              {event.media.map((m, i) => (
-                <div key={i} className="w-20 h-20 rounded overflow-hidden">
-                  {m.type === "image" ? (
-                    <img
-                      src={m.url}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <video
-                      src={m.url}
-                      className="w-full h-full object-cover"
-                      muted
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Media - larger thumbnails */}
+        {event.media && event.media.length > 0 && (
+          <div className="pt-4 flex gap-3 flex-wrap">
+            {event.media.map((m, i) => (
+              <div key={i} className="w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden ring-1 ring-border/10">
+                {m.type === "image" ? (
+                  <img
+                    src={m.url}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <video
+                    src={m.url}
+                    className="w-full h-full object-cover"
+                    muted
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
