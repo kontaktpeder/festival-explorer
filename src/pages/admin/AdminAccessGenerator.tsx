@@ -21,9 +21,9 @@ import type { EntityType, AccessLevel, Entity } from "@/types/database";
 type InviteMode = "platform" | "entity";
 
 const ACCESS_OPTIONS: { value: Exclude<AccessLevel, 'owner'>; label: string; description: string }[] = [
-  { value: "admin", label: "Admin", description: "Full tilgang til å redigere og administrere" },
-  { value: "editor", label: "Redaktør", description: "Kan redigere innhold" },
-  { value: "viewer", label: "Leser", description: "Kun lesetilgang" },
+  { value: "admin", label: "Administrer", description: "Full tilgang til å redigere og administrere" },
+  { value: "editor", label: "Rediger", description: "Kan redigere innhold" },
+  { value: "viewer", label: "Se", description: "Kun lesetilgang" },
 ];
 
 export default function AdminAccessGenerator() {

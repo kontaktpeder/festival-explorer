@@ -27,16 +27,16 @@ import {
 import type { EntityType, AccessLevel } from "@/types/database";
 
 const TYPE_CONFIG: Record<EntityType, { label: string; icon: React.ReactNode; route: string }> = {
-  venue: { label: "Venue", icon: <Building2 className="h-4 w-4" />, route: "/venue" },
-  solo: { label: "Solo", icon: <User className="h-4 w-4" />, route: "/project" },
+  venue: { label: "Scene", icon: <Building2 className="h-4 w-4" />, route: "/project" },
+  solo: { label: "Soloartist", icon: <User className="h-4 w-4" />, route: "/project" },
   band: { label: "Band", icon: <Users className="h-4 w-4" />, route: "/project" },
 };
 
 const ACCESS_LABELS: Record<AccessLevel, string> = {
   owner: "Eier",
-  admin: "Admin",
-  editor: "Redaktør",
-  viewer: "Leser",
+  admin: "Administrer",
+  editor: "Rediger",
+  viewer: "Se",
 };
 
 interface OnboardingChoice {
@@ -310,7 +310,7 @@ export default function Dashboard() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground">
-              {selectedPersonaId ? "Prosjekter for denne profilen" : "Mine prosjekter & scener"}
+              {selectedPersonaId ? "Prosjekter for denne profilen" : "Mine prosjekter"}
             </h2>
           </div>
 

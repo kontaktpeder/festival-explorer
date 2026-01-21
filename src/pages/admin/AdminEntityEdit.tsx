@@ -18,16 +18,16 @@ import { EntityPersonaBindingsEditor } from "@/components/admin/EntityPersonaBin
 import type { EntityType, AccessLevel } from "@/types/database";
 
 const TYPE_OPTIONS: { value: EntityType; label: string }[] = [
-  { value: "venue", label: "Venue" },
-  { value: "solo", label: "Solo" },
+  { value: "venue", label: "Scene" },
+  { value: "solo", label: "Soloartist" },
   { value: "band", label: "Band" },
 ];
 
 const ACCESS_LABELS: Record<AccessLevel, string> = {
   owner: "Eier",
-  admin: "Admin",
-  editor: "Redaktør",
-  viewer: "Leser",
+  admin: "Administrer",
+  editor: "Rediger",
+  viewer: "Se",
 };
 
 export default function AdminEntityEdit() {
