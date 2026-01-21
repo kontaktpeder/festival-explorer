@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Plus, Trash2, Eye, EyeOff, User, Check, ChevronsUpDown, UserPlus, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +65,48 @@ export function EntityPersonaBindingsEditor({
   const availablePersonas = (myPersonas || []).filter(
     (persona) => !bindings?.some((b) => b.persona_id === persona.id)
   );
+
+  // Auto-fill role when persona is selected
+  useEffect(() => {
+    if (!selectedPersonaId || !entityId) {
+      return;
+    }
+
+    const fetchExistingRole = async () => {
+      // 1. Check if user is a team member with role_labels
+      const selectedPersona = myPersonas?.find((p) => p.id === selectedPersonaId);
+      if (selectedPersona?.user_id) {
+        const { data: teamMember } = await supabase
+          .from("entity_team")
+          .select("role_labels")
+          .eq("entity_id", entityId)
+          .eq("user_id", selectedPersona.user_id)
+          .is("left_at", null)
+          .maybeSingle();
+
+        if (teamMember?.role_labels && teamMember.role_labels.length > 0) {
+          setRoleLabel(teamMember.role_labels[0]);
+          return;
+        }
+      }
+
+      // 2. Check if persona has a binding to another entity with a role
+      const { data: otherBinding } = await supabase
+        .from("entity_persona_bindings")
+        .select("role_label")
+        .eq("persona_id", selectedPersonaId)
+        .not("role_label", "is", null)
+        .limit(1)
+        .maybeSingle();
+
+      if (otherBinding?.role_label) {
+        setRoleLabel(otherBinding.role_label);
+        return;
+      }
+    };
+
+    fetchExistingRole();
+  }, [selectedPersonaId, entityId, myPersonas]);
 
   const handleAdd = async () => {
     if (!selectedPersonaId) {
