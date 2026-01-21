@@ -248,6 +248,12 @@ export function EntityPersonaBindingsEditor({
                                 value={persona.name}
                                 onSelect={() => {
                                   setSelectedPersonaId(persona.id);
+                                  // Auto-fill role from persona category_tags
+                                  setRoleLabel(
+                                    persona.category_tags && persona.category_tags.length > 0
+                                      ? persona.category_tags[0]
+                                      : ""
+                                  );
                                   setPersonaPopoverOpen(false);
                                 }}
                               >
