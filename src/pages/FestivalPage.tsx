@@ -5,6 +5,7 @@ import { Calendar, Settings } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useFestival } from "@/hooks/useFestival";
+import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
 import { FestivalEventAccordion } from "@/components/ui/FestivalEventAccordion";
@@ -107,7 +108,9 @@ export default function FestivalPage() {
         ? format(new Date(festival.start_at), "d. MMMM yyyy", { locale: nb })
         : null;
 
-  const heroImage = festival.theme?.hero_image_url || undefined;
+  // Signed URL for theme hero image
+  const themeHeroUrl = useSignedMediaUrl(festival.theme?.hero_image_url, 'public');
+  const heroImage = themeHeroUrl || undefined;
 
   const validEvents = (festival.festivalEvents || []).filter(
     (fe) => fe.event && fe.event.status === "published"
