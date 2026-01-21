@@ -130,7 +130,7 @@ export default function EntityInvite() {
     const emailToUse = prefillEmail || email;
     
     // Validate email
-    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(emailToUse)) {
       toast({
         title: "Ugyldig e-post",
