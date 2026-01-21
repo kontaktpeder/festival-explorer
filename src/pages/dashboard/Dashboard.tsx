@@ -147,7 +147,7 @@ export default function Dashboard() {
       <header className="border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="text-lg font-bold text-foreground">
-            GIGGEN
+            GIGGEN <span className="text-muted-foreground font-normal">BACKSTAGE</span>
           </Link>
           <PersonaSelector />
         </div>
