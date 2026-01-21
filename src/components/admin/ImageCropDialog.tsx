@@ -49,6 +49,8 @@ interface ImageCropDialogProps {
   initialCrop?: CropSettings;
   onSave: (crop: CropSettings) => void;
   onCancel?: () => void;
+  /** Override aspect ratio with image's natural ratio */
+  imageAspectRatio?: number;
 }
 
 export function ImageCropDialog({
@@ -59,6 +61,7 @@ export function ImageCropDialog({
   initialCrop,
   onSave,
   onCancel,
+  imageAspectRatio,
 }: ImageCropDialogProps) {
   const [focalX, setFocalX] = useState(initialCrop?.focalX ?? 0.5);
   const [focalY, setFocalY] = useState(initialCrop?.focalY ?? 0.5);
@@ -75,7 +78,8 @@ export function ImageCropDialog({
     }
   }, [open, initialCrop, imageUrl]);
 
-  const aspectRatio = ASPECT_RATIOS[mode];
+  // Use image's natural aspect ratio if provided, otherwise fall back to mode preset
+  const aspectRatio = imageAspectRatio ?? ASPECT_RATIOS[mode];
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     setIsDragging(true);
