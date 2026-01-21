@@ -8,6 +8,9 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { PersonaSelector, useSelectedPersonaId } from "@/components/dashboard/PersonaSelector";
 import { useMyPersonas } from "@/hooks/usePersona";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
+import { parseImageSettings, type ImageSettings } from "@/types/database";
+import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import { 
   Users, 
   Building2, 
@@ -52,7 +55,13 @@ interface OnboardingChoice {
 export default function Dashboard() {
   const navigate = useNavigate();
   const selectedPersonaId = useSelectedPersonaId();
-  const [currentUser, setCurrentUser] = useState<{ id: string; email: string; displayName?: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ 
+    id: string; 
+    email: string; 
+    displayName?: string;
+    avatarUrl?: string;
+    avatarImageSettings?: ImageSettings | null;
+  } | null>(null);
   const [hasExplored, setHasExplored] = useState(false);
 
   // Fetch personas
@@ -74,10 +83,10 @@ export default function Dashboard() {
         return;
       }
       
-      // Get profile info
+      // Get profile info including avatar
       const { data: profile } = await supabase
         .from("profiles")
-        .select("display_name")
+        .select("display_name, avatar_url, avatar_image_settings")
         .eq("id", session.user.id)
         .single();
       
@@ -85,6 +94,8 @@ export default function Dashboard() {
         id: session.user.id,
         email: session.user.email || "",
         displayName: profile?.display_name || undefined,
+        avatarUrl: profile?.avatar_url || undefined,
+        avatarImageSettings: parseImageSettings(profile?.avatar_image_settings),
       });
     };
     checkAuth();
@@ -109,6 +120,10 @@ export default function Dashboard() {
 
   const showOnboarding = !isLoading && allEntities?.length === 0 && !hasExplored;
   const userName = currentUser?.displayName || currentUser?.email?.split("@")[0] || "der";
+  
+  // Profile avatar with signed URL and crop styles
+  const profileAvatarUrl = useSignedMediaUrl(currentUser?.avatarUrl || null, "private");
+  const profileAvatarStyles = getCroppedImageStyles(currentUser?.avatarImageSettings);
 
   // Onboarding choices - no entity creation, only explore options
   const onboardingChoices: OnboardingChoice[] = [
@@ -152,20 +167,32 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-10 space-y-12">
-        {/* Welcome - warmer, more personal */}
-        <div className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
-            Hei, {userName}
-          </h1>
-          {showOnboarding ? (
-            <p className="text-lg text-muted-foreground">
-              Velkommen backstage.
-            </p>
-          ) : (
-            <p className="text-muted-foreground">
-              Ditt rom før scenen.
-            </p>
-          )}
+        {/* Welcome - with profile avatar */}
+        <div className="flex items-start gap-5">
+          <Avatar className="h-16 w-16 md:h-20 md:w-20 border-2 border-border/50 flex-shrink-0">
+            <AvatarImage 
+              src={profileAvatarUrl || undefined} 
+              style={profileAvatarStyles}
+              className="object-cover"
+            />
+            <AvatarFallback className="text-xl md:text-2xl bg-muted text-muted-foreground">
+              {(currentUser?.displayName || currentUser?.email || "U").charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="space-y-1 pt-1">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
+              Hei, {userName}
+            </h1>
+            {showOnboarding ? (
+              <p className="text-lg text-muted-foreground">
+                Velkommen backstage.
+              </p>
+            ) : (
+              <p className="text-muted-foreground">
+                Ditt rom før scenen.
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Filter indicator - softer */}
