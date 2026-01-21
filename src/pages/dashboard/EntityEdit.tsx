@@ -11,6 +11,7 @@ import { ArrowLeft, Save, UserPlus, ExternalLink, Users } from "lucide-react";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Badge } from "@/components/ui/badge";
+import { EntityTimelineManager } from "@/components/dashboard/EntityTimelineManager";
 import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
 
@@ -334,6 +335,12 @@ export default function EntityEdit() {
             </div>
           )}
         </form>
+
+        {/* Timeline section - for editors, admins, owners */}
+        <EntityTimelineManager
+          entityId={entityWithAccess.id}
+          canEdit={canEdit}
+        />
 
         {/* Team members section */}
         {teamMembers && teamMembers.length > 0 && (
