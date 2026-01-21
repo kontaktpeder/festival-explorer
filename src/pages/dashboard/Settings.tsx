@@ -14,7 +14,7 @@ import { User, Mail, Lock, ArrowLeft } from "lucide-react";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import type { ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
-import { getObjectPositionFromFocal } from "@/lib/image-crop-helpers";
+import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 
 export default function Settings() {
   const { toast } = useToast();
@@ -123,7 +123,7 @@ export default function Settings() {
               <Avatar className="h-16 w-16">
                 <AvatarImage 
                   src={avatarUrl || undefined} 
-                  style={{ objectPosition: getObjectPositionFromFocal(avatarImageSettings) }}
+                  style={getCroppedImageStyles(avatarImageSettings)}
                 />
                 <AvatarFallback className="text-lg">
                   {(displayName || profile?.email || "U").charAt(0).toUpperCase()}
