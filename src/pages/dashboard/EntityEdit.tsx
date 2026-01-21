@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, ImageIcon, UserPlus, ExternalLink } from "lucide-react";
+import { ArrowLeft, Save, ImageIcon, UserPlus, ExternalLink, Users } from "lucide-react";
 import { MediaPicker } from "@/components/admin/MediaPicker";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Badge } from "@/components/ui/badge";
@@ -80,6 +80,26 @@ export default function EntityEdit() {
     },
     enabled: !!id,
     retry: 1,
+  });
+
+  // Fetch team members
+  const { data: teamMembers } = useQuery({
+    queryKey: ["entity-team", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("entity_team")
+        .select(`
+          *,
+          profile:profiles(id, display_name, handle, avatar_url)
+        `)
+        .eq("entity_id", id)
+        .is("left_at", null)
+        .order("joined_at", { ascending: true });
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!id,
   });
 
   // Populate form when entity data loads
@@ -328,6 +348,51 @@ export default function EntityEdit() {
             </div>
           )}
         </form>
+
+        {/* Team members section */}
+        {teamMembers && teamMembers.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <h2 className="font-semibold text-foreground">Team-medlemmer</h2>
+            </div>
+            <div className="space-y-2">
+              {teamMembers.map((member) => {
+                const profile = member.profile as { id: string; display_name?: string; handle?: string; avatar_url?: string } | null;
+                if (!profile) return null;
+                
+                const displayName = profile.display_name || profile.handle || "Ukjent";
+                
+                return (
+                  <div key={member.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                    <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {profile.avatar_url ? (
+                        <img src={profile.avatar_url} alt={displayName} className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="text-sm font-medium text-muted-foreground">
+                          {displayName.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-foreground text-sm truncate">{displayName}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="outline" className="text-xs">
+                          {ACCESS_LABELS[member.access as AccessLevel]}
+                        </Badge>
+                        {member.role_labels && member.role_labels.length > 0 && (
+                          <span className="text-xs text-muted-foreground">
+                            {member.role_labels.join(", ")}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Info about publishing */}
         {!entityWithAccess.is_published && (
