@@ -232,12 +232,19 @@ export default function Dashboard() {
             <h2 className="text-lg font-semibold text-foreground">
               Mine offentlige profiler
             </h2>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/dashboard/personas/new">
-                <Plus className="h-4 w-4 mr-2" />
-                Ny profil
-              </Link>
-            </Button>
+            <div className="flex gap-2">
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/dashboard/personas">
+                  Administrer
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/dashboard/personas/new">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ny profil
+                </Link>
+              </Button>
+            </div>
           </div>
 
           {!isLoadingPersonas && personas && personas.length > 0 ? (
