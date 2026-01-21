@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, X, ImagePlus } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { 
   usePersonaById, 
   useCreatePersona, 
@@ -16,7 +16,9 @@ import {
   PERSONA_CATEGORIES 
 } from "@/hooks/usePersona";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { MediaPicker } from "@/components/admin/MediaPicker";
+import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
+import { parseImageSettings, type ImageSettings } from "@/types/database";
+import { getObjectPositionFromFocal } from "@/lib/image-crop-helpers";
 import { toast } from "sonner";
 
 export default function PersonaEdit() {
@@ -31,10 +33,10 @@ export default function PersonaEdit() {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarImageSettings, setAvatarImageSettings] = useState<ImageSettings | null>(null);
   const [categoryTags, setCategoryTags] = useState<string[]>([]);
   const [isPublic, setIsPublic] = useState(true);
   const [customTag, setCustomTag] = useState("");
-  const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
 
   // Load existing persona data
   useEffect(() => {
@@ -42,6 +44,7 @@ export default function PersonaEdit() {
       setName(existingPersona.name);
       setBio(existingPersona.bio || "");
       setAvatarUrl(existingPersona.avatar_url || "");
+      setAvatarImageSettings(parseImageSettings(existingPersona.avatar_image_settings) || null);
       setCategoryTags(existingPersona.category_tags || []);
       setIsPublic(existingPersona.is_public);
     }
@@ -62,6 +65,7 @@ export default function PersonaEdit() {
           name: name.trim(),
           bio: bio.trim() || null,
           avatar_url: avatarUrl.trim() || null,
+          avatar_image_settings: avatarImageSettings,
           category_tags: categoryTags,
           is_public: isPublic,
         });
@@ -71,6 +75,7 @@ export default function PersonaEdit() {
           name: name.trim(),
           bio: bio.trim() || undefined,
           avatar_url: avatarUrl.trim() || undefined,
+          avatar_image_settings: avatarImageSettings,
           category_tags: categoryTags,
           is_public: isPublic,
         });
@@ -126,45 +131,32 @@ export default function PersonaEdit() {
             <CardTitle>Grunnleggende info</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Avatar Preview + MediaPicker */}
-            <div className="flex items-center gap-4">
+            {/* Avatar Preview + InlineMediaPickerWithCrop */}
+            <div className="flex items-start gap-4">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={avatarUrl || undefined} />
+                <AvatarImage 
+                  src={avatarUrl || undefined} 
+                  style={{ objectPosition: getObjectPositionFromFocal(avatarImageSettings) }}
+                />
                 <AvatarFallback className="text-xl">
                   {name ? name.substring(0, 2).toUpperCase() : "?"}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 space-y-2">
                 <Label>Profilbilde</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={avatarUrl}
-                    onChange={(e) => setAvatarUrl(e.target.value)}
-                    placeholder="URL eller velg fra filbank"
-                    className="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsMediaPickerOpen(true)}
-                  >
-                    <ImagePlus className="h-4 w-4 mr-2" />
-                    Velg bilde
-                  </Button>
-                </div>
+                <InlineMediaPickerWithCrop
+                  value={avatarUrl}
+                  imageSettings={avatarImageSettings}
+                  onChange={setAvatarUrl}
+                  onSettingsChange={setAvatarImageSettings}
+                  cropMode="avatar"
+                  placeholder="Velg profilbilde"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Velg bilde og juster fokuspunkt for best resultat.
+                </p>
               </div>
             </div>
-
-            <MediaPicker
-              open={isMediaPickerOpen}
-              onOpenChange={setIsMediaPickerOpen}
-              onSelect={(_, publicUrl) => {
-                setAvatarUrl(publicUrl);
-                setIsMediaPickerOpen(false);
-              }}
-              fileType="image"
-              userOnly={true}
-            />
 
             <div>
               <Label htmlFor="name">Navn *</Label>

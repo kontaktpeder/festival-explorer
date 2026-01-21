@@ -3,6 +3,8 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { MapPin, Calendar } from "lucide-react";
 import { useVenue } from "@/hooks/useFestival";
+import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
+import { parseImageSettings } from "@/types/database";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
@@ -32,12 +34,21 @@ export default function VenuePage() {
     );
   }
 
+  // Use signed URL and parse image settings
+  const heroImageUrl = useSignedMediaUrl(venue.hero_image_url, 'public');
+  const heroImageSettings = parseImageSettings(venue.hero_image_settings);
+
   return (
     <PageLayout>
       {/* Static logo */}
       <StaticLogo />
 
-      <HeroSection imageUrl={venue.hero_image_url || undefined} compact scrollExpand>
+      <HeroSection 
+        imageUrl={heroImageUrl || undefined} 
+        imageSettings={heroImageSettings}
+        compact 
+        scrollExpand
+      >
         {venue.city && (
           <div className="text-mono text-accent mb-1 text-xs uppercase tracking-widest opacity-80">{venue.city}</div>
         )}

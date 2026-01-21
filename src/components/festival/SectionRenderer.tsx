@@ -6,6 +6,8 @@ import { ParallaxBackground } from "@/components/ui/ParallaxBackground";
 import { MobileFadeOverlay } from "@/components/ui/MobileFadeOverlay";
 import { useResponsiveImage } from "@/hooks/useResponsiveImage";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
+import { getObjectPositionFromFocal } from "@/lib/image-crop-helpers";
+import { parseImageSettings } from "@/types/database";
 import giggenLogo from "@/assets/giggen-logo.png";
 import type { Json } from "@/integrations/supabase/types";
 // NOTE: Default section background images removed to allow black backgrounds
@@ -22,6 +24,8 @@ interface FestivalSection {
   overlay_strength?: number | null;
   content_json?: Json | null;
   image_fit_mode?: string | null;
+  /** JSONB crop/focal point settings for section background */
+  bg_image_settings?: unknown | null;
 }
 
 interface SectionRendererProps {
@@ -90,6 +94,9 @@ function SectionBackground({
     );
   }
 
+  // Parse image settings for focal point positioning
+  const imageSettings = parseImageSettings(section.bg_image_settings);
+
   // Always use <img> tag to ensure GIF animations work (GIFs may have .jpg extension from storage)
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -98,7 +105,7 @@ function SectionBackground({
         alt=""
         className={`w-full h-full ${imageFitMode === 'contain' ? 'object-contain' : 'object-cover'}`}
         style={{ 
-          objectPosition: imageFitMode === 'contain' ? 'center top' : 'center center',
+          objectPosition: getObjectPositionFromFocal(imageSettings),
         }}
       />
     </div>

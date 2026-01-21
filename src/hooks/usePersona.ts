@@ -141,6 +141,7 @@ export function useCreatePersona() {
       name: string;
       bio?: string;
       avatar_url?: string;
+      avatar_image_settings?: { focal_x: number; focal_y: number; zoom?: number } | null;
       category_tags?: string[];
       is_public?: boolean;
     }) => {
@@ -165,17 +166,20 @@ export function useCreatePersona() {
         counter++;
       }
 
+      const insertPayload = {
+        user_id: user.id,
+        name: persona.name,
+        slug,
+        bio: persona.bio || null,
+        avatar_url: persona.avatar_url || null,
+        avatar_image_settings: persona.avatar_image_settings || null,
+        category_tags: persona.category_tags || [],
+        is_public: persona.is_public ?? true,
+      };
+
       const { data, error } = await supabase
         .from("personas")
-        .insert({
-          user_id: user.id,
-          name: persona.name,
-          slug,
-          bio: persona.bio || null,
-          avatar_url: persona.avatar_url || null,
-          category_tags: persona.category_tags || [],
-          is_public: persona.is_public ?? true,
-        })
+        .insert(insertPayload as never)
         .select()
         .single();
 
@@ -198,12 +202,13 @@ export function useUpdatePersona() {
       name?: string;
       bio?: string | null;
       avatar_url?: string | null;
+      avatar_image_settings?: { focal_x: number; focal_y: number; zoom?: number } | null;
       category_tags?: string[];
       is_public?: boolean;
     }) => {
       const { data, error } = await supabase
         .from("personas")
-        .update(updates)
+        .update(updates as never)
         .eq("id", id)
         .select()
         .single();
