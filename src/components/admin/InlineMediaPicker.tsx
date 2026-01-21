@@ -8,6 +8,7 @@ interface InlineMediaPickerProps {
   onChange: (url: string) => void;
   accept?: string;
   placeholder?: string;
+  showAllForAdmin?: boolean; // Tillat admin å se alle filer
 }
 
 export function InlineMediaPicker({
@@ -15,6 +16,7 @@ export function InlineMediaPicker({
   onChange,
   accept,
   placeholder = "Velg bilde",
+  showAllForAdmin = false,
 }: InlineMediaPickerProps) {
   const [open, setOpen] = useState(false);
 
@@ -75,6 +77,8 @@ export function InlineMediaPicker({
         onOpenChange={setOpen}
         onSelect={handleSelect}
         fileType={getFileType()}
+        userOnly={true}
+        showAllForAdmin={showAllForAdmin}
       />
     </div>
   );
