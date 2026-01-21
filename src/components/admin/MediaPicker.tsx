@@ -34,7 +34,8 @@ interface MediaPickerProps {
   onOpenChange: (open: boolean) => void;
   onSelect: (mediaId: string, publicUrl: string) => void;
   fileType?: "image" | "video" | "audio" | "document";
-  userOnly?: boolean; // Vis kun brukerens egne filer
+  userOnly?: boolean; // Vis kun brukerens egne filer (default: true for sikkerhet)
+  showAllForAdmin?: boolean; // Tillat admin å se alle filer
 }
 
 export function MediaPicker({
@@ -42,7 +43,8 @@ export function MediaPicker({
   onOpenChange,
   onSelect,
   fileType,
-  userOnly = false,
+  userOnly = true, // Default til true for sikkerhet
+  showAllForAdmin = false, // Admin må eksplisitt aktivere for å se alle
 }: MediaPickerProps) {
   const [search, setSearch] = useState("");
   const [selectedType, setSelectedType] = useState<string>(fileType || "all");
@@ -50,20 +52,26 @@ export function MediaPicker({
   const [activeTab, setActiveTab] = useState<"library" | "upload">("library");
 
   const { data: media, isLoading } = useQuery({
-    queryKey: ["admin-media", selectedType, search, userOnly],
+    queryKey: ["admin-media", selectedType, search, userOnly, showAllForAdmin],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      // Sjekk om bruker er admin
+      const { data: isAdmin } = await supabase.rpc("is_admin");
+
       let query = supabase
         .from("media")
         .select("*")
         .order("created_at", { ascending: false })
         .limit(50);
 
-      // Filtrer på brukerens egne filer hvis userOnly er aktivert
-      if (userOnly) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          query = query.eq("created_by", user.id);
-        }
+      // Sikkerhetskontroll: Vis kun egne filer med mindre admin med showAllForAdmin
+      if (isAdmin && showAllForAdmin) {
+        // Admin kan se alle filer hvis eksplisitt aktivert
+      } else if (userOnly || !isAdmin) {
+        // Standard: kun egne filer
+        query = query.eq("created_by", user.id);
       }
 
       if (selectedType !== "all") {
