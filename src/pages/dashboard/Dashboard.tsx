@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useMyEntities } from "@/hooks/useEntity";
+import { useMyEntities, useMyEntitiesFilteredByPersona } from "@/hooks/useEntity";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { PersonaSelector } from "@/components/dashboard/PersonaSelector";
+import { PersonaSelector, useSelectedPersonaId } from "@/components/dashboard/PersonaSelector";
 import { 
   Users, 
   Building2, 
@@ -16,7 +16,10 @@ import {
   ExternalLink,
   User,
   ArrowRight,
-  Eye
+  Eye,
+  Sparkles,
+  Filter,
+  X
 } from "lucide-react";
 import type { EntityType, AccessLevel } from "@/types/database";
 
@@ -45,9 +48,16 @@ interface OnboardingChoice {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { data: entities, isLoading } = useMyEntities();
+  const selectedPersonaId = useSelectedPersonaId();
   const [currentUser, setCurrentUser] = useState<{ id: string; email: string; displayName?: string } | null>(null);
   const [hasExplored, setHasExplored] = useState(false);
+
+  // Use filtered entities based on selected persona
+  const { data: allEntities, isLoading: isLoadingAll } = useMyEntities();
+  const { data: filteredEntities, isLoading: isLoadingFiltered } = useMyEntitiesFilteredByPersona(selectedPersonaId);
+  
+  const entities = selectedPersonaId ? filteredEntities : allEntities;
+  const isLoading = selectedPersonaId ? isLoadingFiltered : isLoadingAll;
 
   // Check auth status
   useEffect(() => {
@@ -86,7 +96,12 @@ export default function Dashboard() {
     navigate("/");
   };
 
-  const showOnboarding = !isLoading && entities?.length === 0 && !hasExplored;
+  const clearPersonaFilter = () => {
+    localStorage.removeItem("selectedPersonaId");
+    window.dispatchEvent(new Event("personaChanged"));
+  };
+
+  const showOnboarding = !isLoading && allEntities?.length === 0 && !hasExplored;
   const userName = currentUser?.displayName || currentUser?.email?.split("@")[0] || "der";
 
   // Onboarding choices - no entity creation, only explore options
@@ -144,6 +159,23 @@ export default function Dashboard() {
           </p>
         </div>
 
+        {/* Filter indicator when persona is selected */}
+        {selectedPersonaId && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 rounded-lg px-3 py-2">
+            <Filter className="h-4 w-4" />
+            <span>Viser prosjekter for den valgte profilen</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-auto h-6 px-2 text-xs"
+              onClick={clearPersonaFilter}
+            >
+              <X className="h-3 w-3 mr-1" />
+              Vis alle
+            </Button>
+          </div>
+        )}
+
         {/* Onboarding cards - only show if no entities and not explored */}
         {showOnboarding && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -192,7 +224,7 @@ export default function Dashboard() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground">
-              Mine prosjekter & scener
+              {selectedPersonaId ? "Prosjekter for denne profilen" : "Mine prosjekter & scener"}
             </h2>
           </div>
 
@@ -265,16 +297,29 @@ export default function Dashboard() {
           ) : (
             <Card className="border-dashed">
               <CardContent className="py-8 text-center space-y-4">
-                <p className="text-muted-foreground">
-                  Du har ikke tilgang til noen prosjekter eller scener ennå.
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Vil du starte et nytt prosjekt eller venue?{" "}
-                  <a href="mailto:hei@giggen.no" className="underline text-foreground hover:text-accent">
-                    Send oss en e-post
-                  </a>
-                  .
-                </p>
+                {selectedPersonaId ? (
+                  <>
+                    <p className="text-muted-foreground">
+                      Denne profilen er ikke knyttet til noen prosjekter ennå.
+                    </p>
+                    <Button variant="outline" onClick={clearPersonaFilter}>
+                      Se alle prosjekter
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-muted-foreground">
+                      Du har ikke tilgang til noen prosjekter eller scener ennå.
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Vil du starte et nytt prosjekt eller venue?{" "}
+                      <a href="mailto:hei@giggen.no" className="underline text-foreground hover:text-accent">
+                        Send oss en e-post
+                      </a>
+                      .
+                    </p>
+                  </>
+                )}
               </CardContent>
             </Card>
           )}

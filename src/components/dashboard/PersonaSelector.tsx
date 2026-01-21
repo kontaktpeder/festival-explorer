@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,34 +11,69 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChevronDown, User, Plus, Settings, LogOut } from "lucide-react";
+import { ChevronDown, User, Plus, Settings, LogOut, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMyPersonas } from "@/hooks/usePersona";
+
+// Custom event for persona changes (same-tab communication)
+const PERSONA_CHANGE_EVENT = "personaChanged";
+
+export function useSelectedPersonaId() {
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(() => 
+    localStorage.getItem("selectedPersonaId")
+  );
+
+  useEffect(() => {
+    const handleChange = () => {
+      setSelectedPersonaId(localStorage.getItem("selectedPersonaId"));
+    };
+    window.addEventListener(PERSONA_CHANGE_EVENT, handleChange);
+    window.addEventListener("storage", handleChange);
+    return () => {
+      window.removeEventListener(PERSONA_CHANGE_EVENT, handleChange);
+      window.removeEventListener("storage", handleChange);
+    };
+  }, []);
+
+  return selectedPersonaId;
+}
 
 export function PersonaSelector() {
   const { data: personas, isLoading } = useMyPersonas();
   const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(null);
   
-  // Load from localStorage
+  // Load from localStorage and auto-select first persona if none selected
   useEffect(() => {
     const saved = localStorage.getItem("selectedPersonaId");
+    
     if (saved && personas?.some(p => p.id === saved)) {
+      // Use saved persona if valid
       setSelectedPersonaId(saved);
-    } else if (saved && personas && !personas.some(p => p.id === saved)) {
-      // Clear invalid selection
-      localStorage.removeItem("selectedPersonaId");
+    } else if (personas && personas.length > 0) {
+      // Auto-select first persona if none saved or invalid
+      const firstPersona = personas[0];
+      setSelectedPersonaId(firstPersona.id);
+      localStorage.setItem("selectedPersonaId", firstPersona.id);
+      window.dispatchEvent(new Event(PERSONA_CHANGE_EVENT));
+    } else {
+      // No personas available, clear selection
       setSelectedPersonaId(null);
+      if (saved) {
+        localStorage.removeItem("selectedPersonaId");
+        window.dispatchEvent(new Event(PERSONA_CHANGE_EVENT));
+      }
     }
   }, [personas]);
 
-  const handleSelect = (id: string | null) => {
+  const handleSelect = useCallback((id: string | null) => {
     setSelectedPersonaId(id);
     if (id) {
       localStorage.setItem("selectedPersonaId", id);
     } else {
       localStorage.removeItem("selectedPersonaId");
     }
-  };
+    window.dispatchEvent(new Event(PERSONA_CHANGE_EVENT));
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -46,6 +81,7 @@ export function PersonaSelector() {
   };
 
   const selectedPersona = personas?.find(p => p.id === selectedPersonaId);
+  const hasPersonas = personas && personas.length > 0;
 
   return (
     <DropdownMenu>
@@ -70,7 +106,7 @@ export function PersonaSelector() {
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel className="text-xs text-muted-foreground">
           Du handler som
         </DropdownMenuLabel>
@@ -83,7 +119,7 @@ export function PersonaSelector() {
           )}
         </DropdownMenuItem>
 
-        {!isLoading && personas && personas.length > 0 && (
+        {!isLoading && hasPersonas && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-xs text-muted-foreground">
@@ -114,12 +150,24 @@ export function PersonaSelector() {
 
         <DropdownMenuSeparator />
         
-        <DropdownMenuItem asChild>
-          <Link to="/dashboard/personas/new">
-            <Plus className="h-4 w-4 mr-2" />
-            Opprett profil
-          </Link>
-        </DropdownMenuItem>
+        {/* Tydeligere CTA for å opprette persona når ingen finnes */}
+        {!hasPersonas && !isLoading && (
+          <DropdownMenuItem asChild className="bg-accent/10 hover:bg-accent/20">
+            <Link to="/dashboard/personas/new" className="flex items-center">
+              <Sparkles className="h-4 w-4 mr-2 text-accent" />
+              <span className="font-medium">Opprett din første profil</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
+        
+        {hasPersonas && (
+          <DropdownMenuItem asChild>
+            <Link to="/dashboard/personas/new">
+              <Plus className="h-4 w-4 mr-2" />
+              Opprett ny profil
+            </Link>
+          </DropdownMenuItem>
+        )}
         
         <DropdownMenuItem asChild>
           <Link to="/admin">
