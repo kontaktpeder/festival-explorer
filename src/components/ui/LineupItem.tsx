@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import type { EventProject, EventEntity } from "@/types/database";
 import { useEntityTypes } from "@/hooks/useEntityTypes";
+import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { getEntityPublicRoute } from "@/lib/entity-types";
 
 // Support both legacy EventProject and new EventEntity
@@ -21,6 +22,10 @@ export function LineupItem({ item, showBilling }: LineupItemProps) {
   
   // Handle both new entity format and legacy project format
   const entityData = isEventEntity(item) ? item.entity : item.project;
+  
+  // Signed URL for public viewing
+  const imageUrl = useSignedMediaUrl(entityData?.hero_image_url, 'public');
+  
   if (!entityData) return null;
 
   // Get route from entity_types config
@@ -32,9 +37,9 @@ export function LineupItem({ item, showBilling }: LineupItemProps) {
   return (
     <Link to={route} className="lineup-item group">
       <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-secondary">
-        {entityData.hero_image_url ? (
+        {imageUrl ? (
           <img
-            src={entityData.hero_image_url}
+            src={imageUrl}
             alt={entityData.name}
             className="w-full h-full object-cover"
           />

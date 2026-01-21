@@ -18,6 +18,7 @@ function getPersonasSectionTitle(entityType: EntityType): string {
 }
 import { useEntity } from "@/hooks/useEntity";
 import { useEntityPersonaBindings } from "@/hooks/usePersonaBindings";
+import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
@@ -28,6 +29,9 @@ export default function ProjectPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: entity, isLoading, error } = useEntity(slug || "");
   const { data: personaBindings } = useEntityPersonaBindings(entity?.id);
+  
+  // Signed URL for public viewing
+  const heroImageUrl = useSignedMediaUrl(entity?.hero_image_url, 'public');
 
   // Filter to only show public bindings with public personas
   const publicBindings = (personaBindings || []).filter(
@@ -59,7 +63,7 @@ export default function ProjectPage() {
       {/* Static logo in header */}
       <StaticLogo />
 
-      <HeroSection imageUrl={entity.hero_image_url || undefined} compact scrollExpand>
+      <HeroSection imageUrl={heroImageUrl || undefined} compact scrollExpand>
         {entity.tagline && (
           <div className="text-mono text-accent mb-1 text-xs uppercase tracking-widest opacity-80">{entity.tagline}</div>
         )}
