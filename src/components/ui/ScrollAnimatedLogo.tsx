@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import giggenLogo from "@/assets/giggen-logo-new.png";
 
 export function ScrollAnimatedLogo() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -10,7 +9,6 @@ export function ScrollAnimatedLogo() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // Two discrete positions: corner when < 200px, center when >= 200px
       setIsScrolled(window.scrollY >= 200);
     };
 
@@ -21,7 +19,6 @@ export function ScrollAnimatedLogo() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleResize, { passive: true });
     
-    // Initial check
     handleScroll();
     handleResize();
     
@@ -34,44 +31,51 @@ export function ScrollAnimatedLogo() {
   const handleClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     
-    // If already on home/festival page, scroll to top
     if (location.pathname === "/" || location.pathname.startsWith("/festival/")) {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      // Navigate to home and scroll to top
       navigate("/");
       setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
     }
   }, [location.pathname, navigate]);
 
-  // Sizes: smaller on mobile when centered
-  const centerSize = isMobile ? 180 : 300;
-  const cornerSize = isMobile ? 60 : 80;
-
   return (
     <Link
       to="/"
       onClick={handleClick}
-      className="fixed z-50"
+      className="fixed z-50 transition-all duration-500 ease-out"
       style={isScrolled ? {
         left: "50%",
-        top: isMobile ? "-60px" : "-100px",
+        top: isMobile ? "12px" : "16px",
         transform: "translateX(-50%)",
       } : {
         left: "16px",
-        top: isMobile ? "-16px" : "-24px",
+        top: isMobile ? "12px" : "16px",
         transform: "none",
       }}
     >
-      <img
-        src={giggenLogo}
-        alt="Giggen"
-        className="opacity-90 hover:opacity-100"
-        style={{
-          height: isScrolled ? `${centerSize}px` : `${cornerSize}px`,
-          width: "auto",
-        }}
-      />
+      <div className="flex flex-col items-start group">
+        {/* Main logo text - spaced letters */}
+        <span 
+          className={`font-black text-foreground uppercase transition-all duration-500 group-hover:text-accent ${
+            isScrolled 
+              ? 'text-2xl md:text-4xl tracking-[0.5em] md:tracking-[0.6em]' 
+              : 'text-xl md:text-2xl tracking-[0.4em] md:tracking-[0.5em]'
+          }`}
+        >
+          GIGGEN
+        </span>
+        {/* Tagline - shows when not scrolled or on mobile */}
+        <span 
+          className={`text-muted-foreground/80 font-medium tracking-wide transition-all duration-500 ${
+            isScrolled && !isMobile 
+              ? 'opacity-0 h-0 -mt-2' 
+              : 'opacity-100 text-[10px] md:text-xs -mt-0.5'
+          }`}
+        >
+          – en festival for en kveld
+        </span>
+      </div>
     </Link>
   );
 }

@@ -2,7 +2,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import giggenLogo from "@/assets/giggen-logo-new.png";
 
 export function StaticLogo() {
   const location = useLocation();
@@ -28,7 +27,6 @@ export function StaticLogo() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // Trigger centered logo a bit later for smoother transition
       setIsScrolled(window.scrollY > 80);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -59,7 +57,7 @@ export function StaticLogo() {
         style={{
           top: 0,
           height: 'var(--safe-top, 47px)',
-          background: 'hsl(240 10% 6% / 1)'
+          background: 'hsl(var(--background))'
         }}
       />
       
@@ -71,11 +69,11 @@ export function StaticLogo() {
         style={{
           top: 'var(--safe-top, 47px)',
           height: '100px',
-          background: 'linear-gradient(to bottom, hsl(240 10% 6% / 1) 0%, hsl(240 10% 6% / 0.7) 40%, transparent 100%)'
+          background: 'linear-gradient(to bottom, hsl(var(--background)) 0%, hsl(var(--background) / 0.7) 40%, transparent 100%)'
         }}
       />
       
-      {/* Logo */}
+      {/* Logo - Bold text */}
       <Link
         to="/"
         onClick={handleClick}
@@ -86,15 +84,23 @@ export function StaticLogo() {
         }`}
         style={{
           top: showCentered 
-            ? 'calc(var(--safe-top, 0px) + 8px)' 
-            : 'calc(var(--safe-top, 0px) + 8px)'
+            ? 'calc(var(--safe-top, 0px) + 12px)' 
+            : 'calc(var(--safe-top, 0px) + 16px)'
         }}
       >
-        <img
-          src={giggenLogo}
-          alt="Giggen"
-          className="h-24 w-auto opacity-90 hover:opacity-100 transition-all duration-500"
-        />
+        <div className="flex flex-col items-start group">
+          {/* Main logo text - spaced letters */}
+          <span 
+            className="font-black text-foreground tracking-[0.4em] md:tracking-[0.5em] text-xl md:text-2xl uppercase transition-all duration-300 group-hover:text-accent"
+            style={{ letterSpacing: '0.4em' }}
+          >
+            GIGGEN
+          </span>
+          {/* Tagline */}
+          <span className="text-[10px] md:text-xs text-muted-foreground/80 font-medium tracking-wide -mt-0.5">
+            – en festival for en kveld
+          </span>
+        </div>
       </Link>
 
       {/* BACKSTAGE link - top right */}
