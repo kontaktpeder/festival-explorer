@@ -21,6 +21,9 @@ import AccountCenter from "./pages/dashboard/AccountCenter";
 import Privacy from "./pages/dashboard/Privacy";
 import PersonaPage from "./pages/PersonaPage";
 import NotFound from "./pages/NotFound";
+import TicketsPage from "./pages/TicketsPage";
+import SuccessPage from "./pages/SuccessPage";
+import TicketViewPage from "./pages/TicketViewPage";
 
 // Admin pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -67,6 +70,9 @@ const App = () => (
           {/* TODO: Reaktiver etter MVP - explore blir global navigasjon */}
           {/* <Route path="/explore" element={<ExplorePage />} /> */}
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/tickets" element={<TicketsPage />} />
+          <Route path="/success" element={<SuccessPage />} />
+          <Route path="/t/:ticketCode" element={<TicketViewPage />} />
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/entities/:id/edit" element={<EntityEdit />} />
