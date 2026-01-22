@@ -7,19 +7,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, UserPlus, ExternalLink, Users, Sparkles } from "lucide-react";
+import { ArrowLeft, Save, UserPlus, ExternalLink, Users, Sparkles, Info } from "lucide-react";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { EntityTimelineManager } from "@/components/dashboard/EntityTimelineManager";
 import { EntityPersonaBindingsEditor } from "@/components/admin/EntityPersonaBindingsEditor";
 import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
 
+// Tydeligere prosjekt-type labels med ikoner
 const TYPE_LABELS: Record<EntityType, string> = {
-  venue: "Scene",
-  solo: "Soloartist",
-  band: "Band",
+  venue: "🏛️ Scene",
+  solo: "🎤 Artistprosjekt",
+  band: "🎸 Band",
+};
+
+// Beskrivelser for hver prosjekt-type
+const TYPE_DESCRIPTIONS: Record<EntityType, string> = {
+  venue: "En scene eller venue hvor events arrangeres.",
+  solo: "Dette er det du opptrer som. Publikum ser dette navnet.",
+  band: "Et band eller kollektiv du er del av.",
 };
 
 const ACCESS_LABELS: Record<AccessLevel, string> = {
@@ -226,6 +235,15 @@ export default function EntityEdit() {
           )}
         </div>
 
+        {/* Info-boks om prosjekt-typen */}
+        <Alert className="bg-accent/5 border-accent/20">
+          <Info className="h-4 w-4 text-accent" />
+          <AlertDescription className="text-sm">
+            <strong className="text-foreground">{TYPE_LABELS[entityWithAccess.type as EntityType]}</strong>
+            <span className="text-muted-foreground"> – {TYPE_DESCRIPTIONS[entityWithAccess.type as EntityType]}</span>
+          </AlertDescription>
+        </Alert>
+
         {/* Action buttons */}
         <div className="flex gap-2 flex-wrap">
           {entityWithAccess.is_published && (
@@ -408,13 +426,22 @@ export default function EntityEdit() {
         )}
 
         {/* Info about publishing */}
-        {!entityWithAccess.is_published && (
+        {!entityWithAccess.is_published ? (
           <div className="p-4 bg-muted/50 rounded-lg">
             <p className="text-sm text-muted-foreground">
               <strong>Utkast:</strong> Dette prosjektet er ikke publisert ennå. 
               Kontakt en administrator for å få det publisert.
             </p>
           </div>
+        ) : (
+          <Alert className="bg-accent/5 border-accent/20">
+            <Info className="h-4 w-4 text-accent" />
+            <AlertDescription className="text-sm text-muted-foreground">
+              Dette prosjektet kan bli lagt til events av festivalen.
+              Du trenger kun å holde prosjektet oppdatert med riktig informasjon, 
+              bilder og beskrivelse. Festivalen setter sammen programmet.
+            </AlertDescription>
+          </Alert>
         )}
       </main>
     </div>
