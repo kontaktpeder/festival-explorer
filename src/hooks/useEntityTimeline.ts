@@ -2,27 +2,86 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { EntityTimelineEvent, TimelineVisibility } from "@/types/database";
 
+// Unified timeline event type (works for both entities and personas)
+export type TimelineEvent = {
+  id: string;
+  entity_id?: string | null;
+  persona_id?: string | null;
+  title: string;
+  event_type: string;
+  visibility: string;
+  date?: string | null;
+  year?: number | null;
+  location_name?: string | null;
+  city?: string | null;
+  country?: string | null;
+  description?: string | null;
+  media?: Array<{ type: "image" | "video"; url: string }> | null;
+  created_at: string;
+  updated_at: string;
+};
+
 /**
  * Public timeline events (only visibility='public')
+ * Supports both entities and personas
  */
-export function usePublicEntityTimelineEvents(entityId: string | undefined) {
+export function usePublicEntityTimelineEvents(
+  entityId?: string | undefined,
+  personaId?: string | undefined
+) {
   return useQuery({
-    queryKey: ["entity-timeline-events", entityId, "public"],
+    queryKey: ["entity-timeline-events", entityId, personaId, "public"],
     queryFn: async () => {
-      if (!entityId) return [];
-      
-      const { data, error } = await supabase
-        .from("entity_timeline_events")
-        .select("*")
-        .eq("entity_id", entityId)
-        .eq("visibility", "public")
-        .order("date", { ascending: true, nullsFirst: false })
-        .order("year", { ascending: true, nullsFirst: false });
+      const events: TimelineEvent[] = [];
 
-      if (error) throw error;
-      return (data || []) as EntityTimelineEvent[];
+      // Fetch from entity_timeline_events if entityId is provided
+      if (entityId) {
+        const { data, error } = await supabase
+          .from("entity_timeline_events")
+          .select("*")
+          .eq("entity_id", entityId)
+          .eq("visibility", "public")
+          .order("date", { ascending: true, nullsFirst: false })
+          .order("year", { ascending: true, nullsFirst: false });
+
+        if (error) throw error;
+        if (data) {
+          events.push(...(data as TimelineEvent[]));
+        }
+      }
+
+      // Fetch from persona_timeline_events if personaId is provided
+      if (personaId) {
+        const { data, error } = await supabase
+          .from("persona_timeline_events")
+          .select("*")
+          .eq("persona_id", personaId)
+          .eq("visibility", "public")
+          .order("date", { ascending: true, nullsFirst: false })
+          .order("year", { ascending: true, nullsFirst: false });
+
+        if (error) throw error;
+        if (data) {
+          events.push(...(data as TimelineEvent[]));
+        }
+      }
+
+      // Sort combined results by date/year
+      return events.sort((a, b) => {
+        if (a.date && b.date) {
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
+        }
+        if (a.year && b.year) {
+          return a.year - b.year;
+        }
+        if (a.date) return -1;
+        if (b.date) return 1;
+        if (a.year) return -1;
+        if (b.year) return 1;
+        return 0;
+      });
     },
-    enabled: !!entityId,
+    enabled: !!entityId || !!personaId,
   });
 }
 

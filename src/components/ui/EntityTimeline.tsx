@@ -19,12 +19,13 @@ const EVENT_TYPE_CONFIG: Record<TimelineEventType, { icon: LucideIcon }> = {
 };
 
 interface EntityTimelineProps {
-  entityId: string;
+  entityId?: string;
+  personaId?: string;
   viewerRole?: "fan" | "pro" | "owner" | "admin";
 }
 
-export function EntityTimeline({ entityId, viewerRole = "fan" }: EntityTimelineProps) {
-  const { data: events, isLoading } = usePublicEntityTimelineEvents(entityId);
+export function EntityTimeline({ entityId, personaId, viewerRole = "fan" }: EntityTimelineProps) {
+  const { data: events, isLoading } = usePublicEntityTimelineEvents(entityId, personaId);
 
   if (isLoading) {
     return (
