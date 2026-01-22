@@ -18,6 +18,7 @@ import {
 } from "@/hooks/usePersona";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
+import { PersonaTimelineManager } from "@/components/dashboard/PersonaTimelineManager";
 import { parseImageSettings, type ImageSettings } from "@/types/database";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import { toast } from "sonner";
@@ -293,13 +294,10 @@ export default function PersonaEdit() {
                 </AlertDescription>
               </Alert>
               
-              <div className="py-8 text-center text-muted-foreground border border-dashed rounded-lg">
-                <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">Tidslinje-funksjonalitet for profiler kommer snart.</p>
-                <p className="text-xs mt-1 opacity-70">
-                  Du kan i mellomtiden legge til tidslinje på prosjektene dine.
-                </p>
-              </div>
+              <PersonaTimelineManager 
+                personaId={id} 
+                canEdit={true} 
+              />
             </CardContent>
           </Card>
         )}
