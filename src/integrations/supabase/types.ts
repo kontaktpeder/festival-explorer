@@ -831,6 +831,65 @@ export type Database = {
           },
         ]
       }
+      persona_timeline_events: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          date: string | null
+          description: string | null
+          event_type: string
+          id: string
+          location_name: string | null
+          media: Json | null
+          persona_id: string
+          title: string
+          updated_at: string
+          visibility: string
+          year: number | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          event_type: string
+          id?: string
+          location_name?: string | null
+          media?: Json | null
+          persona_id: string
+          title: string
+          updated_at?: string
+          visibility?: string
+          year?: number | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          event_type?: string
+          id?: string
+          location_name?: string | null
+          media?: Json | null
+          persona_id?: string
+          title?: string
+          updated_at?: string
+          visibility?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "persona_timeline_events_persona_id_fkey"
+            columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       personas: {
         Row: {
           avatar_image_settings: Json | null

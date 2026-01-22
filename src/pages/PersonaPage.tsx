@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Building2, User, Users, ExternalLink, Clock, Info } from "lucide-react";
+import { EntityTimeline } from "@/components/ui/EntityTimeline";
 import { usePersona } from "@/hooks/usePersona";
 import { usePersonaEntityBindings } from "@/hooks/usePersonaBindings";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
@@ -211,10 +212,11 @@ export default function PersonaPage() {
               </AlertDescription>
             </Alert>
             
-            <div className="py-6 text-center text-muted-foreground">
-              <Clock className="h-6 w-6 mx-auto mb-2 opacity-40" />
-              <p className="text-sm">Tidslinje kommer snart</p>
-            </div>
+            {persona && (
+              <div className="pt-2">
+                <EntityTimeline personaId={persona.id} viewerRole="fan" />
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
