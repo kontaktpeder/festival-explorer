@@ -71,6 +71,41 @@ export type Database = {
           },
         ]
       }
+      checkins: {
+        Row: {
+          checked_in_at: string | null
+          checked_in_by: string
+          id: string
+          method: string | null
+          note: string | null
+          ticket_id: string
+        }
+        Insert: {
+          checked_in_at?: string | null
+          checked_in_by: string
+          id?: string
+          method?: string | null
+          note?: string | null
+          ticket_id: string
+        }
+        Update: {
+          checked_in_at?: string | null
+          checked_in_by?: string
+          id?: string
+          method?: string | null
+          note?: string | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkins_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       designs: {
         Row: {
           background: Json
@@ -1126,6 +1161,24 @@ export type Database = {
           },
         ]
       }
+      staff_roles: {
+        Row: {
+          created_at: string | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       themes: {
         Row: {
           accent_color: string | null
@@ -1158,6 +1211,155 @@ export type Database = {
           texture_preset?: Database["public"]["Enums"]["theme_texture_preset"]
         }
         Relationships: []
+      }
+      ticket_events: {
+        Row: {
+          capacity: number | null
+          created_at: string | null
+          id: string
+          name: string
+          slug: string
+          starts_at: string
+          venue_name: string | null
+        }
+        Insert: {
+          capacity?: number | null
+          created_at?: string | null
+          id?: string
+          name: string
+          slug: string
+          starts_at: string
+          venue_name?: string | null
+        }
+        Update: {
+          capacity?: number | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          starts_at?: string
+          venue_name?: string | null
+        }
+        Relationships: []
+      }
+      ticket_types: {
+        Row: {
+          capacity: number
+          code: string
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          event_id: string
+          id: string
+          name: string
+          price_nok: number
+          sales_end: string | null
+          sales_start: string | null
+          sort_order: number | null
+          stripe_price_id: string | null
+          visible: boolean | null
+        }
+        Insert: {
+          capacity: number
+          code: string
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          event_id: string
+          id?: string
+          name: string
+          price_nok: number
+          sales_end?: string | null
+          sales_start?: string | null
+          sort_order?: number | null
+          stripe_price_id?: string | null
+          visible?: boolean | null
+        }
+        Update: {
+          capacity?: number
+          code?: string
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          event_id?: string
+          id?: string
+          name?: string
+          price_nok?: number
+          sales_end?: string | null
+          sales_start?: string | null
+          sort_order?: number | null
+          stripe_price_id?: string | null
+          visible?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_types_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          buyer_email: string
+          buyer_name: string
+          checked_in_at: string | null
+          checked_in_by: string | null
+          created_at: string | null
+          event_id: string
+          id: string
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string
+          ticket_code: string
+          ticket_type_id: string
+        }
+        Insert: {
+          buyer_email: string
+          buyer_name: string
+          checked_in_at?: string | null
+          checked_in_by?: string | null
+          created_at?: string | null
+          event_id: string
+          id?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id: string
+          ticket_code: string
+          ticket_type_id: string
+        }
+        Update: {
+          buyer_email?: string
+          buyer_name?: string
+          checked_in_at?: string | null
+          checked_in_by?: string | null
+          created_at?: string | null
+          event_id?: string
+          id?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string
+          ticket_code?: string
+          ticket_type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_ticket_type_id_fkey"
+            columns: ["ticket_type_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -1298,6 +1500,7 @@ export type Database = {
       }
       can_edit_entity: { Args: { p_entity_id: string }; Returns: boolean }
       delete_user_safely: { Args: { p_user_id: string }; Returns: Json }
+      generate_ticket_code: { Args: never; Returns: string }
       get_invitation_by_token: { Args: { p_token: string }; Returns: Json }
       get_platform_access_level: {
         Args: never
@@ -1318,12 +1521,18 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_staff_role: {
+        Args: { _role: string; _user_id: string }
+        Returns: boolean
+      }
       is_admin: { Args: never; Returns: boolean }
       is_entity_admin: { Args: { p_entity_id: string }; Returns: boolean }
       is_entity_owner: { Args: { p_entity_id: string }; Returns: boolean }
       is_entity_team_member: { Args: { p_entity_id: string }; Returns: boolean }
       is_project_admin: { Args: { p_project_id: string }; Returns: boolean }
       is_project_member: { Args: { p_project_id: string }; Returns: boolean }
+      is_staff: { Args: never; Returns: boolean }
+      is_ticket_admin: { Args: never; Returns: boolean }
       is_venue_admin: { Args: { p_venue_id: string }; Returns: boolean }
     }
     Enums: {
