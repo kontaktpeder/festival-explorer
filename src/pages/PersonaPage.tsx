@@ -2,7 +2,8 @@ import { useParams, Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, User, Users, ExternalLink } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Building2, User, Users, ExternalLink, Clock, Info } from "lucide-react";
 import { usePersona } from "@/hooks/usePersona";
 import { usePersonaEntityBindings } from "@/hooks/usePersonaBindings";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
@@ -193,6 +194,29 @@ export default function PersonaPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Min reise (tidslinje) */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Min reise
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert className="bg-muted/50 border-border/50">
+              <Info className="h-4 w-4 text-muted-foreground" />
+              <AlertDescription className="text-sm text-muted-foreground">
+                Tidslinje viser personlig reise som artist eller kreativ.
+              </AlertDescription>
+            </Alert>
+            
+            <div className="py-6 text-center text-muted-foreground">
+              <Clock className="h-6 w-6 mx-auto mb-2 opacity-40" />
+              <p className="text-sm">Tidslinje kommer snart</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </PageLayout>
   );
