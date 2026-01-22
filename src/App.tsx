@@ -24,6 +24,8 @@ import NotFound from "./pages/NotFound";
 import TicketsPage from "./pages/TicketsPage";
 import SuccessPage from "./pages/SuccessPage";
 import TicketViewPage from "./pages/TicketViewPage";
+import ValidatorPage from "./pages/ValidatorPage";
+import CrewCheckInPage from "./pages/CrewCheckInPage";
 
 // Admin pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -73,6 +75,8 @@ const App = () => (
           <Route path="/tickets" element={<TicketsPage />} />
           <Route path="/success" element={<SuccessPage />} />
           <Route path="/t/:ticketCode" element={<TicketViewPage />} />
+          <Route path="/v/:ticketCode" element={<ValidatorPage />} />
+          <Route path="/crew/checkin" element={<CrewCheckInPage />} />
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/entities/:id/edit" element={<EntityEdit />} />
