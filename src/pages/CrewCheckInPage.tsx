@@ -1,13 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, QrCode, Download, Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import { Search, QrCode, Download, Loader2, AlertCircle, CheckCircle, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { Html5Qrcode } from "html5-qrcode";
 
 interface TicketResult {
   ticketCode: string;
@@ -24,6 +25,8 @@ export default function CrewCheckInPage() {
   const [searchResults, setSearchResults] = useState<TicketResult[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState<boolean | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -71,6 +74,9 @@ export default function CrewCheckInPage() {
       toast.success("Billett sjekket inn!");
       setTicketCode("");
       setSearchResults([]);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -107,7 +113,7 @@ export default function CrewCheckInPage() {
       toast.error("Skriv inn ticket code");
       return;
     }
-    checkInMutation.mutate({ code: ticketCode.toUpperCase() });
+    checkInMutation.mutate({ code: ticketCode.toUpperCase(), method: "manual" });
   };
 
   const handleSearch = () => {
@@ -116,6 +122,43 @@ export default function CrewCheckInPage() {
       return;
     }
     searchMutation.mutate(searchQuery);
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsProcessing(true);
+
+    try {
+      const html5QrCode = new Html5Qrcode("qr-reader-hidden");
+      
+      const decodedText = await html5QrCode.scanFile(file, false);
+      
+      // Extract ticket code from URL if it's a full URL
+      let extractedCode = decodedText;
+      if (decodedText.includes("/v/")) {
+        extractedCode = decodedText.split("/v/")[1]?.split("?")[0] || decodedText;
+      } else if (decodedText.includes("/t/")) {
+        extractedCode = decodedText.split("/t/")[1]?.split("?")[0] || decodedText;
+      }
+
+      // Validate format (GIGG-XXXX-XXXX)
+      if (extractedCode.match(/^GIGG-[A-Z0-9]{4}-[A-Z0-9]{4}$/)) {
+        setTicketCode(extractedCode);
+        checkInMutation.mutate({ code: extractedCode, method: "qr" });
+      } else {
+        toast.error("Ugyldig QR-kode format: " + extractedCode);
+      }
+    } catch (error) {
+      console.error("Error scanning QR code:", error);
+      toast.error("Kunne ikke lese QR-kode. Prøv igjen eller skriv inn koden manuelt.");
+    } finally {
+      setIsProcessing(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   const handleExportCSV = async () => {
@@ -149,7 +192,11 @@ export default function CrewCheckInPage() {
   };
 
   if (isStaff === null) {
-    return <div className="flex justify-center items-center min-h-screen"><Loader2 className="animate-spin" /></div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="animate-spin" />
+      </div>
+    );
   }
 
   if (!isStaff) {
@@ -186,6 +233,54 @@ export default function CrewCheckInPage() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
+          {/* QR Scanner - Native Mobile */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Camera className="w-5 h-5" /> Scan QR-kode
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileSelect}
+                className="hidden"
+                id="qr-file-input"
+              />
+              <label
+                htmlFor="qr-file-input"
+                className={`flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+                  isProcessing 
+                    ? "border-primary bg-primary/5" 
+                    : "border-muted-foreground/30 hover:border-primary hover:bg-primary/5"
+                }`}
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                    <span className="text-sm text-muted-foreground">Behandler bilde...</span>
+                  </>
+                ) : (
+                  <>
+                    <Camera className="w-10 h-10 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground text-center">
+                      Trykk for å ta bilde av QR-kode
+                    </span>
+                  </>
+                )}
+              </label>
+              <p className="text-xs text-muted-foreground text-center">
+                Bruk kameraet til å ta bilde av QR-koden på billetten
+              </p>
+              
+              {/* Hidden div for html5-qrcode */}
+              <div id="qr-reader-hidden" className="hidden" />
+            </CardContent>
+          </Card>
+
           {/* Manual Entry */}
           <Card>
             <CardHeader>
@@ -213,33 +308,35 @@ export default function CrewCheckInPage() {
                 </p>
               )}
               {checkInMutation.isSuccess && (
-                <p className="text-sm text-green-600">✓ Billett sjekket inn!</p>
+                <p className="text-sm text-green-600 flex items-center gap-1">
+                  <CheckCircle className="w-4 h-4" /> Billett sjekket inn!
+                </p>
               )}
             </CardContent>
           </Card>
-
-          {/* Search */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Search className="w-5 h-5" /> Søk
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Navn, e-post eller kode"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                />
-                <Button onClick={handleSearch} disabled={searchMutation.isPending}>
-                  {searchMutation.isPending ? <Loader2 className="animate-spin" /> : <Search />}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
+
+        {/* Search */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Search className="w-5 h-5" /> Søk
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Navn, e-post eller kode"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              />
+              <Button onClick={handleSearch} disabled={searchMutation.isPending}>
+                {searchMutation.isPending ? <Loader2 className="animate-spin" /> : <Search />}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Search Results */}
         {searchResults.length > 0 && (
