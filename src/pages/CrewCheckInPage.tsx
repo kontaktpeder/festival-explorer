@@ -108,12 +108,45 @@ export default function CrewCheckInPage() {
     },
   });
 
+  // Format ticket code automatically (add dashes if missing)
+  const formatTicketCode = (input: string): string => {
+    let cleaned = input.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+    
+    if (cleaned.startsWith('GIGG')) {
+      cleaned = cleaned.substring(4);
+    }
+    
+    if (cleaned.length >= 8) {
+      return `GIGG-${cleaned.substring(0, 4)}-${cleaned.substring(4, 8)}`;
+    } else if (cleaned.length >= 4) {
+      return `GIGG-${cleaned.substring(0, 4)}-${cleaned.substring(4)}`;
+    } else if (cleaned.length > 0) {
+      return `GIGG-${cleaned}`;
+    }
+    return cleaned;
+  };
+
+  const handleTicketCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTicketCode(e.target.value.toUpperCase());
+  };
+
+  const handleTicketCodeBlur = () => {
+    if (ticketCode.trim()) {
+      setTicketCode(formatTicketCode(ticketCode));
+    }
+  };
+
   const handleCheckIn = () => {
     if (!ticketCode.trim()) {
       toast.error("Skriv inn ticket code");
       return;
     }
-    checkInMutation.mutate({ code: ticketCode.toUpperCase(), method: "manual" });
+    const formattedCode = formatTicketCode(ticketCode);
+    if (!formattedCode.match(/^GIGG-[A-Z0-9]{4}-[A-Z0-9]{4}$/)) {
+      toast.error("Ugyldig format. Forventet: GIGG-XXXX-XXXX");
+      return;
+    }
+    checkInMutation.mutate({ code: formattedCode, method: "manual" });
   };
 
   const handleSearch = () => {
@@ -143,10 +176,11 @@ export default function CrewCheckInPage() {
         extractedCode = decodedText.split("/t/")[1]?.split("?")[0] || decodedText;
       }
 
-      // Validate format (GIGG-XXXX-XXXX)
-      if (extractedCode.match(/^GIGG-[A-Z0-9]{4}-[A-Z0-9]{4}$/)) {
-        setTicketCode(extractedCode);
-        checkInMutation.mutate({ code: extractedCode, method: "qr" });
+      // Format and validate
+      const formattedCode = formatTicketCode(extractedCode);
+      if (formattedCode.match(/^GIGG-[A-Z0-9]{4}-[A-Z0-9]{4}$/)) {
+        setTicketCode(formattedCode);
+        checkInMutation.mutate({ code: formattedCode, method: "qr" });
       } else {
         toast.error("Ugyldig QR-kode format: " + extractedCode);
       }
@@ -221,149 +255,169 @@ export default function CrewCheckInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background pb-safe-bottom">
+      {/* Mobile-optimized header */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3 safe-top">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Check-in</h1>
+          <h1 className="text-xl font-bold">Check-in</h1>
           {isAdmin && (
-            <Button variant="outline" onClick={handleExportCSV}>
-              <Download className="w-4 h-4 mr-2" /> Eksporter CSV
+            <Button variant="ghost" size="sm" onClick={handleExportCSV}>
+              <Download className="w-4 h-4" />
             </Button>
           )}
         </div>
+      </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          {/* QR Scanner - Native Mobile */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Camera className="w-5 h-5" /> Scan QR-kode
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleFileSelect}
-                className="hidden"
-                id="qr-file-input"
-              />
-              <label
-                htmlFor="qr-file-input"
-                className={`flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
-                  isProcessing 
-                    ? "border-primary bg-primary/5" 
-                    : "border-muted-foreground/30 hover:border-primary hover:bg-primary/5"
-                }`}
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="w-10 h-10 animate-spin text-primary" />
-                    <span className="text-sm text-muted-foreground">Behandler bilde...</span>
-                  </>
-                ) : (
-                  <>
-                    <Camera className="w-10 h-10 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground text-center">
-                      Trykk for å ta bilde av QR-kode
-                    </span>
-                  </>
-                )}
-              </label>
-              <p className="text-xs text-muted-foreground text-center">
-                Bruk kameraet til å ta bilde av QR-koden på billetten
-              </p>
-              
-              {/* Hidden div for html5-qrcode */}
-              <div id="qr-reader-hidden" className="hidden" />
-            </CardContent>
-          </Card>
-
-          {/* Manual Entry */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <QrCode className="w-5 h-5" /> Skriv kode
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="GIGG-XXXX-XXXX"
-                  value={ticketCode}
-                  onChange={(e) => setTicketCode(e.target.value.toUpperCase())}
-                  onKeyDown={(e) => e.key === "Enter" && handleCheckIn()}
-                  className="font-mono"
-                />
-                <Button onClick={handleCheckIn} disabled={checkInMutation.isPending}>
-                  {checkInMutation.isPending ? <Loader2 className="animate-spin" /> : <CheckCircle />}
-                </Button>
-              </div>
-
-              {checkInMutation.isError && (
-                <p className="text-sm text-destructive flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" /> {(checkInMutation.error as Error).message}
-                </p>
+      <div className="p-4 space-y-4 max-w-lg mx-auto">
+        {/* QR Scanner - Primary action, large touch target */}
+        <Card className="overflow-hidden">
+          <CardContent className="p-0">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleFileSelect}
+              className="hidden"
+              id="qr-file-input"
+            />
+            <label
+              htmlFor="qr-file-input"
+              className={`flex flex-col items-center justify-center gap-4 p-8 cursor-pointer transition-colors active:bg-accent/10 ${
+                isProcessing 
+                  ? "bg-primary/5" 
+                  : "bg-muted/30 hover:bg-muted/50"
+              }`}
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                  <span className="text-base font-medium">Behandler...</span>
+                </>
+              ) : (
+                <>
+                  <div className="p-4 rounded-full bg-primary/10">
+                    <Camera className="w-10 h-10 text-primary" />
+                  </div>
+                  <div className="text-center">
+                    <p className="font-semibold text-lg">Scan QR-kode</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Trykk for å åpne kamera
+                    </p>
+                  </div>
+                </>
               )}
-              {checkInMutation.isSuccess && (
-                <p className="text-sm text-green-600 flex items-center gap-1">
-                  <CheckCircle className="w-4 h-4" /> Billett sjekket inn!
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+            </label>
+          </CardContent>
+        </Card>
 
-        {/* Search */}
+        {/* Manual Entry - Compact but touch-friendly */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Search className="w-5 h-5" /> Søk
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <QrCode className="w-4 h-4" /> Manuell innsjekk
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
+            <div className="flex gap-2">
+              <Input
+                placeholder="GIGG-XXXX-XXXX"
+                value={ticketCode}
+                onChange={handleTicketCodeChange}
+                onBlur={handleTicketCodeBlur}
+                onKeyDown={(e) => e.key === "Enter" && handleCheckIn()}
+                className="font-mono text-base h-12"
+              />
+              <Button 
+                onClick={handleCheckIn} 
+                disabled={checkInMutation.isPending}
+                size="lg"
+                className="h-12 px-6"
+              >
+                {checkInMutation.isPending ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <CheckCircle />
+                )}
+              </Button>
+            </div>
+
+            {checkInMutation.isError && (
+              <p className="text-sm text-destructive flex items-center gap-2 p-3 bg-destructive/10 rounded-lg">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                {(checkInMutation.error as Error).message}
+              </p>
+            )}
+            {checkInMutation.isSuccess && (
+              <p className="text-sm text-accent flex items-center gap-2 p-3 bg-accent/10 rounded-lg">
+                <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                Billett sjekket inn!
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Search - Collapsible on mobile */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Search className="w-4 h-4" /> Søk
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="flex gap-2">
               <Input
                 placeholder="Navn, e-post eller kode"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                className="h-12 text-base"
               />
-              <Button onClick={handleSearch} disabled={searchMutation.isPending}>
+              <Button 
+                onClick={handleSearch} 
+                disabled={searchMutation.isPending}
+                size="lg"
+                className="h-12 px-6"
+              >
                 {searchMutation.isPending ? <Loader2 className="animate-spin" /> : <Search />}
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Search Results */}
+        {/* Search Results - Touch-friendly list */}
         {searchResults.length > 0 && (
           <Card>
-            <CardHeader>
-              <CardTitle>Søkeresultater ({searchResults.length})</CardTitle>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">
+                Resultater ({searchResults.length})
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              {searchResults.map((ticket) => (
-                <div
-                  key={ticket.ticketCode}
-                  className="flex items-center justify-between p-3 rounded-lg border cursor-pointer hover:bg-muted/50"
-                  onClick={() => navigate(`/v/${ticket.ticketCode}`)}
-                >
-                  <div>
-                    <p className="font-medium">{ticket.buyerName}</p>
-                    <p className="text-sm font-mono text-muted-foreground">{ticket.ticketCode}</p>
-                    <p className="text-xs text-muted-foreground">{ticket.ticketType}</p>
+            <CardContent className="p-0">
+              <div className="divide-y divide-border">
+                {searchResults.map((ticket) => (
+                  <div
+                    key={ticket.ticketCode}
+                    className="flex items-center justify-between p-4 active:bg-muted/50 cursor-pointer"
+                    onClick={() => navigate(`/v/${ticket.ticketCode}`)}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate">{ticket.buyerName}</p>
+                      <p className="text-sm font-mono text-muted-foreground">{ticket.ticketCode}</p>
+                      <p className="text-xs text-muted-foreground">{ticket.ticketType}</p>
+                    </div>
+                    <Badge className={`${statusColors[ticket.status]} text-white ml-3 flex-shrink-0`}>
+                      {ticket.status}
+                    </Badge>
                   </div>
-                  <Badge className={`${statusColors[ticket.status]} text-white`}>
-                    {ticket.status}
-                  </Badge>
-                </div>
-              ))}
+                ))}
+              </div>
             </CardContent>
           </Card>
         )}
+        
+        {/* Hidden div for html5-qrcode */}
+        <div id="qr-reader-hidden" className="hidden" />
       </div>
     </div>
   );
