@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Search, QrCode, Download, Loader2, AlertCircle, CheckCircle, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Html5Qrcode } from "html5-qrcode";
 
 interface TicketResult {
   ticketCode: string;
@@ -25,8 +24,6 @@ export default function CrewCheckInPage() {
   const [searchResults, setSearchResults] = useState<TicketResult[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState<boolean | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -74,9 +71,6 @@ export default function CrewCheckInPage() {
       toast.success("Billett sjekket inn!");
       setTicketCode("");
       setSearchResults([]);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -157,44 +151,6 @@ export default function CrewCheckInPage() {
     searchMutation.mutate(searchQuery);
   };
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsProcessing(true);
-
-    try {
-      const html5QrCode = new Html5Qrcode("qr-reader-hidden");
-      
-      const decodedText = await html5QrCode.scanFile(file, false);
-      
-      // Extract ticket code from URL if it's a full URL
-      let extractedCode = decodedText;
-      if (decodedText.includes("/v/")) {
-        extractedCode = decodedText.split("/v/")[1]?.split("?")[0] || decodedText;
-      } else if (decodedText.includes("/t/")) {
-        extractedCode = decodedText.split("/t/")[1]?.split("?")[0] || decodedText;
-      }
-
-      // Format and validate
-      const formattedCode = formatTicketCode(extractedCode);
-      if (formattedCode.match(/^GIGG-[A-Z0-9]{4}-[A-Z0-9]{4}$/)) {
-        setTicketCode(formattedCode);
-        checkInMutation.mutate({ code: formattedCode, method: "qr" });
-      } else {
-        toast.error("Ugyldig QR-kode format: " + extractedCode);
-      }
-    } catch (error) {
-      console.error("Error scanning QR code:", error);
-      toast.error("Kunne ikke lese QR-kode. Prøv igjen eller skriv inn koden manuelt.");
-    } finally {
-      setIsProcessing(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
-
   const handleExportCSV = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
@@ -249,7 +205,7 @@ export default function CrewCheckInPage() {
   }
 
   const statusColors: Record<string, string> = {
-    VALID: "bg-green-500",
+    VALID: "bg-accent",
     USED: "bg-destructive",
     CANCELLED: "bg-muted",
   };
@@ -269,53 +225,11 @@ export default function CrewCheckInPage() {
       </div>
 
       <div className="p-4 space-y-4 max-w-lg mx-auto">
-        {/* QR Scanner - Primary action, large touch target */}
-        <Card className="overflow-hidden">
-          <CardContent className="p-0">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handleFileSelect}
-              className="hidden"
-              id="qr-file-input"
-            />
-            <label
-              htmlFor="qr-file-input"
-              className={`flex flex-col items-center justify-center gap-4 p-8 cursor-pointer transition-colors active:bg-accent/10 ${
-                isProcessing 
-                  ? "bg-primary/5" 
-                  : "bg-muted/30 hover:bg-muted/50"
-              }`}
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                  <span className="text-base font-medium">Behandler...</span>
-                </>
-              ) : (
-                <>
-                  <div className="p-4 rounded-full bg-primary/10">
-                    <Camera className="w-10 h-10 text-primary" />
-                  </div>
-                  <div className="text-center">
-                    <p className="font-semibold text-lg">Scan QR-kode</p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Trykk for å åpne kamera
-                    </p>
-                  </div>
-                </>
-              )}
-            </label>
-          </CardContent>
-        </Card>
-
-        {/* Manual Entry - Compact but touch-friendly */}
+        {/* Manual Entry - Primary on mobile without QR scanning library */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <QrCode className="w-4 h-4" /> Manuell innsjekk
+              <QrCode className="w-4 h-4" /> Sjekk inn billett
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -342,6 +256,10 @@ export default function CrewCheckInPage() {
               </Button>
             </div>
 
+            <p className="text-xs text-muted-foreground">
+              Skriv inn billettkoden. Format legges til automatisk.
+            </p>
+
             {checkInMutation.isError && (
               <p className="text-sm text-destructive flex items-center gap-2 p-3 bg-destructive/10 rounded-lg">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -357,7 +275,7 @@ export default function CrewCheckInPage() {
           </CardContent>
         </Card>
 
-        {/* Search - Collapsible on mobile */}
+        {/* Search */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
@@ -415,9 +333,6 @@ export default function CrewCheckInPage() {
             </CardContent>
           </Card>
         )}
-        
-        {/* Hidden div for html5-qrcode */}
-        <div id="qr-reader-hidden" className="hidden" />
       </div>
     </div>
   );
