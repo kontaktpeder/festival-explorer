@@ -365,9 +365,9 @@ export function SectionRenderer({
             )}
             
             <div className="animate-slide-up delay-200 flex flex-col gap-3">
-              <button className="btn-accent w-full text-center py-4">
+              <Link to="/tickets" className="btn-accent w-full text-center py-4">
                 Kjøp billett
-              </button>
+              </Link>
               <button className="btn-ghost w-full text-center py-3 text-foreground/60">
                 Følg festivalen
               </button>

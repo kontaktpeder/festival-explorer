@@ -413,7 +413,7 @@ export default function FestivalPage() {
             <p>Billetter: Kjøp på døren eller forhåndsbestill</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4">
-            <button className="btn-accent text-center">Kjøp billett</button>
+            <Link to="/tickets" className="btn-accent text-center">Kjøp billett</Link>
             <button className="btn-ghost text-center">Følg festivalen</button>
           </div>
         </div>

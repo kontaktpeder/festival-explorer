@@ -119,10 +119,13 @@ export default function EventPage() {
       {/* 4. BILLETT CTA – Én tydelig handling, sentrert */}
       <section className="py-16 md:py-20">
         <div className="flex flex-col items-center gap-4">
-          <button className="inline-flex items-center justify-center gap-3 py-4 px-10 border-2 border-accent text-accent bg-transparent hover:bg-accent hover:text-background transition-all duration-300 font-medium text-lg tracking-wide">
+          <Link 
+            to="/tickets"
+            className="inline-flex items-center justify-center gap-3 py-4 px-10 border-2 border-accent text-accent bg-transparent hover:bg-accent hover:text-background transition-all duration-300 font-medium text-lg tracking-wide"
+          >
             <Ticket className="w-5 h-5" />
             <span>Kjøp billett</span>
-          </button>
+          </Link>
           <span className="text-sm text-muted-foreground/60">
             Begrenset kapasitet
           </span>
