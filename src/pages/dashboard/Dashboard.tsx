@@ -24,7 +24,8 @@ import {
   Sparkles,
   X,
   Plus,
-  ChevronRight
+  ChevronRight,
+  QrCode
 } from "lucide-react";
 import type { EntityType, AccessLevel } from "@/types/database";
 
@@ -63,6 +64,7 @@ export default function Dashboard() {
     avatarImageSettings?: ImageSettings | null;
   } | null>(null);
   const [hasExplored, setHasExplored] = useState(false);
+  const [isStaff, setIsStaff] = useState<boolean | null>(null);
 
   // Fetch personas
   const { data: personas, isLoading: isLoadingPersonas } = useMyPersonas();
@@ -97,6 +99,15 @@ export default function Dashboard() {
         avatarUrl: profile?.avatar_url || undefined,
         avatarImageSettings: parseImageSettings(profile?.avatar_image_settings),
       });
+
+      // Check if user has staff role (crew or admin)
+      const { data: staffRole } = await supabase
+        .from("staff_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .single();
+      
+      setIsStaff(!!staffRole);
     };
     checkAuth();
   }, [navigate]);
@@ -194,6 +205,32 @@ export default function Dashboard() {
             )}
           </div>
         </div>
+
+        {/* Staff Check-in Section - Show if user has crew/admin role */}
+        {isStaff && (
+          <section className="space-y-4">
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              Crew
+            </h2>
+            <Link
+              to="/crew/checkin"
+              className="block p-6 rounded-2xl bg-accent/5 hover:bg-accent/10 border border-accent/20 hover:border-accent/30 transition-all group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-full bg-accent/10 group-hover:bg-accent/20 transition-colors">
+                  <QrCode className="h-5 w-5 text-accent" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-foreground">Check-in billetter</p>
+                  <p className="text-sm text-muted-foreground">
+                    Scan QR-kode eller søk etter billetter
+                  </p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground/50 group-hover:text-accent/70 transition-colors" />
+              </div>
+            </Link>
+          </section>
+        )}
 
         {/* Filter indicator - softer */}
         {selectedPersonaId && (
