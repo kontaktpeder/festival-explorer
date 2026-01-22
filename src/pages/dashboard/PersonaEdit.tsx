@@ -8,7 +8,8 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, X } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, X, Info, Clock } from "lucide-react";
 import { 
   usePersonaById, 
   useCreatePersona, 
@@ -270,6 +271,38 @@ export default function PersonaEdit() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Min reise (tidslinje) - vises kun ved redigering */}
+        {isEditing && id && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Min reise
+              </CardTitle>
+              <CardDescription>
+                Legg til milepæler i din karriere – første låt, første gig, samarbeid, vendepunkter
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert className="bg-accent/5 border-accent/20">
+                <Info className="h-4 w-4 text-accent" />
+                <AlertDescription className="text-sm text-muted-foreground">
+                  Tidslinje viser din personlige reise som musiker, fotograf eller arrangør. 
+                  Dette er forskjellig fra prosjekt-tidslinjer som viser prosjektets historie.
+                </AlertDescription>
+              </Alert>
+              
+              <div className="py-8 text-center text-muted-foreground border border-dashed rounded-lg">
+                <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">Tidslinje-funksjonalitet for profiler kommer snart.</p>
+                <p className="text-xs mt-1 opacity-70">
+                  Du kan i mellomtiden legge til tidslinje på prosjektene dine.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="flex gap-3">
           <Button type="submit" disabled={isSubmitting}>
