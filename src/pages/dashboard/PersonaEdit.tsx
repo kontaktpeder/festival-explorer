@@ -115,13 +115,16 @@ export default function PersonaEdit() {
     <div className="container max-w-2xl py-8 space-y-6">
       <div>
         <h1 className="text-2xl font-bold">
-          {isEditing ? "Rediger profil" : "Opprett profil"}
+          {isEditing ? "Rediger profil" : "Lag din profil"}
         </h1>
         <p className="text-muted-foreground">
           {isEditing 
-            ? "Oppdater din offentlige identitet"
-            : "Lag en offentlig profil du kan bruke på GIGGEN"
+            ? "Oppdater hvem du er – din personlige identitet på GIGGEN"
+            : "Fortell hvem du er – musiker, fotograf, DJ eller arrangør"
           }
+        </p>
+        <p className="text-xs text-muted-foreground/70 mt-2">
+          Profilen din er forskjellig fra prosjekter. Profilen er deg – prosjekter er det du lager og opptrer med.
         </p>
       </div>
 

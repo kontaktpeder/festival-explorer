@@ -25,14 +25,17 @@ import {
   X,
   Plus,
   ChevronRight,
-  QrCode
+  QrCode,
+  Info
 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { EntityType, AccessLevel } from "@/types/database";
 
+// Tydeligere prosjekt-type labels med ikoner
 const TYPE_CONFIG: Record<EntityType, { label: string; icon: React.ReactNode; route: string }> = {
-  venue: { label: "Scene", icon: <Building2 className="h-5 w-5" />, route: "/project" },
-  solo: { label: "Soloartist", icon: <User className="h-5 w-5" />, route: "/project" },
-  band: { label: "Band", icon: <Users className="h-5 w-5" />, route: "/project" },
+  venue: { label: "🏛️ Scene", icon: <Building2 className="h-5 w-5" />, route: "/project" },
+  solo: { label: "🎤 Artistprosjekt", icon: <User className="h-5 w-5" />, route: "/project" },
+  band: { label: "🎸 Band", icon: <Users className="h-5 w-5" />, route: "/project" },
 };
 
 // More human-centric role descriptions
@@ -206,6 +209,15 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Viktig info-boks om hvordan festivalen fungerer */}
+        <Alert className="bg-accent/5 border-accent/20">
+          <Info className="h-4 w-4 text-accent" />
+          <AlertDescription className="text-sm text-muted-foreground">
+            <strong className="text-foreground">Du trenger ikke lage events.</strong>{" "}
+            Festivalen setter sammen programmet. Du fyller inn hvem du er og hva du jobber med.
+          </AlertDescription>
+        </Alert>
+
         {/* Staff Check-in Section - Show if user has crew/admin role */}
         {isStaff && (
           <section className="space-y-4">
@@ -292,6 +304,9 @@ export default function Dashboard() {
               <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                 Din profil
               </h2>
+              <p className="text-xs text-muted-foreground/70 mt-1">
+                Hvem du er som musiker, fotograf eller arrangør
+              </p>
             </div>
             <div className="flex gap-2">
               {personas && personas.length > 0 && (
@@ -365,9 +380,18 @@ export default function Dashboard() {
               {selectedPersonaId ? "Prosjekter" : "Dine prosjekter"}
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Band, artister og scener du er med på.
+              Det du viser publikum – artistprosjekt, band, eller scene
             </p>
           </div>
+          
+          {/* Info om prosjekt-typer */}
+          <Alert className="bg-muted/30 border-border/50">
+            <Info className="h-4 w-4 text-muted-foreground" />
+            <AlertDescription className="text-xs text-muted-foreground">
+              <strong>Prosjekt-typer:</strong> Artistprosjekt (det du opptrer som), 
+              Band, eller Scene/venue. Festivalen bruker disse prosjektene når de setter sammen programmet.
+            </AlertDescription>
+          </Alert>
 
           {entities && entities.length > 0 ? (
             <div className="space-y-4">
@@ -467,7 +491,14 @@ export default function Dashboard() {
                   <p className="text-muted-foreground">
                     Du er ikke med i noen prosjekter ennå.
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <Alert className="mt-4 bg-accent/5 border-accent/20 max-w-md mx-auto">
+                    <Info className="h-4 w-4 text-accent" />
+                    <AlertDescription className="text-sm text-muted-foreground">
+                      Du trenger ikke lage events. Hold prosjektet ditt oppdatert, 
+                      så bruker festivalen det når de setter sammen programmet.
+                    </AlertDescription>
+                  </Alert>
+                  <p className="text-sm text-muted-foreground mt-4">
                     Vil du starte noe?{" "}
                     <a 
                       href="mailto:hei@giggen.no" 
