@@ -51,7 +51,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
     }
   }, [location.pathname, navigate]);
 
-  // Hero mode: centered, very large initially, shrinks on scroll
+  // Hero mode: centered, very large at top, shrinks on scroll
   if (heroMode) {
     return (
       <>
@@ -62,15 +62,15 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
           style={{
             top: isScrolled 
               ? 'calc(var(--safe-top, 0px) + 8px)' 
-              : 'calc(var(--safe-top, 0px) + 25vh)'
+              : 'calc(var(--safe-top, 0px) + 16px)'
           }}
         >
           {/* Fade cloud behind logo */}
           <div 
             className={`absolute rounded-full blur-3xl transition-all duration-500 ${
               isScrolled 
-                ? 'inset-0 -inset-x-4 -inset-y-2 opacity-70' 
-                : 'inset-0 -inset-x-16 -inset-y-8 opacity-50'
+                ? 'inset-0 -inset-x-4 -inset-y-2 opacity-80' 
+                : 'inset-0 -inset-x-12 -inset-y-6 opacity-60'
             }`}
             style={{ background: 'radial-gradient(ellipse, hsl(var(--background)) 0%, transparent 70%)' }}
           />
@@ -79,8 +79,8 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
             alt="GIGGEN - festival for en kveld"
             className={`relative drop-shadow-2xl transition-all duration-500 ${
               isScrolled 
-                ? 'h-12 md:h-16' 
-                : 'h-48 md:h-64 lg:h-80'
+                ? 'h-10 md:h-14' 
+                : 'h-24 md:h-32 lg:h-40'
             }`}
           />
         </Link>
@@ -93,7 +93,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
             top: 'calc(var(--safe-top, 0px) + 12px)'
           }}
         >
-          <span className="font-medium text-foreground/60 hover:text-accent transition-colors uppercase tracking-wider text-[10px] md:text-xs">
+          <span className="font-medium text-foreground/50 hover:text-accent transition-colors uppercase tracking-wider text-[9px] md:text-[10px]">
             BACKSTAGE
           </span>
         </Link>
