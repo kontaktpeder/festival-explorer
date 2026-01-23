@@ -126,15 +126,15 @@ export function ImageCropDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Velg fokuspunkt</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="max-w-2xl w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)] sm:max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-base sm:text-lg">Velg fokuspunkt</DialogTitle>
+          <DialogDescription className="text-xs sm:text-sm">
             Klikk eller dra for å velge hvor bildet skal fokuseres. {modeLabel}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {/* Image preview with focal point marker */}
           <div className="relative">
             {/* Aspect ratio container */}
@@ -143,6 +143,7 @@ export function ImageCropDialog({
               className="relative w-full overflow-hidden rounded-lg border-2 border-border cursor-crosshair touch-none"
               style={{
                 aspectRatio: aspectRatio,
+                maxHeight: "min(50vh, 400px)",
               }}
               onPointerDown={handlePointerDown}
               onPointerMove={handlePointerMove}
@@ -182,8 +183,8 @@ export function ImageCropDialog({
                   transform: "translate(-50%, -50%)",
                 }}
               >
-                <div className="w-10 h-10 rounded-full border-2 border-white shadow-lg flex items-center justify-center bg-black/30">
-                  <Move className="w-5 h-5 text-white" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-lg flex items-center justify-center bg-black/30">
+                  <Move className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
               </div>
 
@@ -195,11 +196,11 @@ export function ImageCropDialog({
           {/* Zoom slider */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="flex items-center gap-2">
+              <Label className="flex items-center gap-2 text-sm">
                 <ZoomIn className="w-4 h-4" />
                 Zoom
               </Label>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-xs sm:text-sm text-muted-foreground">
                 {Math.round(zoom * 100)}%
               </span>
             </div>
@@ -209,21 +210,22 @@ export function ImageCropDialog({
               max={2}
               step={0.05}
               onValueChange={([val]) => setZoom(val)}
+              className="touch-pan-x"
             />
           </div>
 
-          {/* Position info */}
-          <div className="text-xs text-muted-foreground flex gap-4">
+          {/* Position info - hidden on mobile for cleaner UI */}
+          <div className="hidden sm:flex text-xs text-muted-foreground gap-4">
             <span>X: {Math.round(focalX * 100)}%</span>
             <span>Y: {Math.round(focalY * 100)}%</span>
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleCancel}>
+        <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0 pt-2">
+          <Button variant="outline" onClick={handleCancel} className="w-full sm:w-auto">
             Avbryt
           </Button>
-          <Button onClick={handleSave}>
+          <Button onClick={handleSave} className="w-full sm:w-auto">
             Lagre fokuspunkt
           </Button>
         </DialogFooter>

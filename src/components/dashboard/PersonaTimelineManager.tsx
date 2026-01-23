@@ -339,19 +339,19 @@ function TimelineEventDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>{isEditing ? "Rediger hendelse" : "Ny hendelse"}</DialogTitle>
+      <DialogContent className="max-w-md w-[calc(100vw-1rem)] sm:w-full max-h-[calc(100vh-2rem)] overflow-y-auto">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-base sm:text-lg">{isEditing ? "Rediger hendelse" : "Ny hendelse"}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 pt-2">
-          <div className="space-y-2">
-            <Label>Kategori</Label>
+        <div className="space-y-3 sm:space-y-4 pt-1">
+          <div className="space-y-1.5">
+            <Label className="text-sm">Kategori</Label>
             <Select value={eventType} onValueChange={(v) => setEventType(v as TimelineEventType)}>
-              <SelectTrigger>
+              <SelectTrigger className="h-9 sm:h-10">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[40vh]">
                 {EVENT_TYPE_OPTIONS.map((opt) => {
                   const Icon = opt.icon;
                   return (
@@ -367,17 +367,18 @@ function TimelineEventDialog({
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label>Tittel *</Label>
+          <div className="space-y-1.5">
+            <Label className="text-sm">Tittel *</Label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="F.eks. Første festivalopptreden"
+              className="h-9 sm:h-10"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>År *</Label>
+          <div className="space-y-1.5">
+            <Label className="text-sm">År *</Label>
             <div className="flex gap-2 items-center">
               <Input
                 type="number"
@@ -386,11 +387,11 @@ function TimelineEventDialog({
                 placeholder="2014"
                 min={1900}
                 max={2100}
-                className="w-28"
+                className="w-24 sm:w-28 h-9 sm:h-10"
               />
               {year && (
                 <>
-                  <span className="text-muted-foreground">–</span>
+                  <span className="text-muted-foreground text-sm">–</span>
                   <Input
                     type="number"
                     value={yearTo}
@@ -398,119 +399,121 @@ function TimelineEventDialog({
                     placeholder="2017"
                     min={1900}
                     max={2100}
-                    className="w-28"
+                    className="w-24 sm:w-28 h-9 sm:h-10"
                   />
                 </>
               )}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Legg til "til-år" for å vise et datoområde (f.eks. 2014–2017)
+            <p className="text-[11px] sm:text-xs text-muted-foreground">
+              Legg til "til-år" for datoområde
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Label>Eksakt dato (valgfritt)</Label>
-            <div className="flex gap-2 items-center">
+          <div className="space-y-1.5">
+            <Label className="text-sm">Eksakt dato (valgfritt)</Label>
+            <div className="flex flex-wrap gap-2 items-center">
               <Input
                 type="date"
                 value={dateStr}
                 onChange={(e) => setDateStr(e.target.value)}
-                className="w-40"
+                className="w-full sm:w-40 h-9 sm:h-10"
               />
               {dateStr && (
                 <>
-                  <span className="text-muted-foreground">–</span>
+                  <span className="text-muted-foreground text-sm hidden sm:inline">–</span>
                   <Input
                     type="date"
                     value={dateToStr}
                     onChange={(e) => setDateToStr(e.target.value)}
-                    className="w-40"
+                    className="w-full sm:w-40 h-9 sm:h-10"
+                    placeholder="Til-dato"
                   />
                 </>
               )}
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Klokkeslett (valgfritt)</Label>
+          <div className="space-y-1.5">
+            <Label className="text-sm">Klokkeslett (valgfritt)</Label>
             <Input
               type="time"
               value={timeStr}
               onChange={(e) => setTimeStr(e.target.value)}
-              className="w-32"
+              className="w-28 sm:w-32 h-9 sm:h-10"
               disabled={!dateStr || !!dateToStr}
               placeholder="--:--"
             />
             {dateToStr && (
-              <p className="text-xs text-muted-foreground">
-                Klokkeslett er ikke tilgjengelig for datoområder
+              <p className="text-[11px] sm:text-xs text-muted-foreground">
+                Ikke tilgjengelig for datoområder
               </p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label>Synlighet</Label>
+          <div className="space-y-1.5">
+            <Label className="text-sm">Synlighet</Label>
             <Select value={visibility} onValueChange={(v) => setVisibility(v as TimelineVisibility)}>
-              <SelectTrigger>
+              <SelectTrigger className="h-9 sm:h-10">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="public">Offentlig</SelectItem>
-                <SelectItem value="pro">Pro (kun arrangører / bransje)</SelectItem>
+                <SelectItem value="pro">Pro (kun bransje)</SelectItem>
                 <SelectItem value="private">Privat (kun deg)</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label>Detaljer (valgfritt)</Label>
+          <div className="space-y-1.5">
+            <Label className="text-sm">Detaljer (valgfritt)</Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={3}
+              rows={2}
+              className="min-h-[60px] sm:min-h-[80px]"
               placeholder="Fortell litt mer om hendelsen..."
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>Bilde (valgfritt)</Label>
-            <div className="flex gap-3 items-center">
+          <div className="space-y-1.5">
+            <Label className="text-sm">Bilde (valgfritt)</Label>
+            <div className="flex gap-2 sm:gap-3 items-center flex-wrap">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => setMediaPickerOpen(true)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 h-8 sm:h-9 text-xs sm:text-sm"
               >
-                <ImageIcon className="w-4 h-4" />
-                Velg fra filbank
+                <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">Velg fra</span> filbank
               </Button>
               {mediaUrl && (
                 <div className="relative inline-block">
                   <img
                     src={mediaUrl}
                     alt="Preview"
-                    className="w-16 h-16 object-cover rounded-lg border border-border"
+                    className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg border border-border"
                   />
                   <Button
                     type="button"
                     variant="destructive"
                     size="icon"
-                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full"
+                    className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 h-4 w-4 sm:h-5 sm:w-5 rounded-full"
                     onClick={() => setMediaUrl("")}
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                   </Button>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-border/50">
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending} className="w-full sm:w-auto h-9 sm:h-10">
               Avbryt
             </Button>
-            <Button onClick={handleSave} disabled={isPending || !title.trim() || !year}>
+            <Button onClick={handleSave} disabled={isPending || !title.trim() || !year} className="w-full sm:w-auto h-9 sm:h-10">
               {isPending ? "Lagrer..." : "Lagre"}
             </Button>
           </div>
