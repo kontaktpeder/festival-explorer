@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
-import { LayoutDashboard, Calendar, MapPin, Music, Users, FolderOpen, Menu, X, Clock, Layers, UserPlus, Home } from "lucide-react";
+import { LayoutDashboard, Calendar, MapPin, Music, Users, FolderOpen, Menu, X, Clock, Layers, UserPlus, Home, Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -43,6 +43,7 @@ export default function AdminLayout() {
     { to: "/admin/access-generator", icon: UserPlus, label: "Tilgang" },
     { to: "/admin/timeline", icon: Clock, label: "Timeline" },
     { to: "/admin/media", icon: FolderOpen, label: "Filbank" },
+    { to: "/admin/deletion-requests", icon: Trash2, label: "Sletting" },
     // Legacy - hidden but still accessible
     // { to: "/admin/projects", icon: Users, label: "Artister (legacy)" },
     // { to: "/admin/venues", icon: MapPin, label: "Venues (legacy)" },

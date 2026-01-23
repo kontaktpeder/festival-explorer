@@ -7,11 +7,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, UserPlus, ExternalLink, Users, Sparkles, Info } from "lucide-react";
+import { ArrowLeft, Save, UserPlus, ExternalLink, Users, Sparkles, Info, Trash2 } from "lucide-react";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { EntityTimelineManager } from "@/components/dashboard/EntityTimelineManager";
 import { EntityPersonaBindingsEditor } from "@/components/admin/EntityPersonaBindingsEditor";
 import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
@@ -162,6 +173,28 @@ export default function EntityEdit() {
       queryClient.invalidateQueries({ queryKey: ["dashboard-entity", id] });
       queryClient.invalidateQueries({ queryKey: ["my-entities"] });
       toast({ title: "Endringene er lagret" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Feil", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Request deletion mutation
+  const requestDeletion = useMutation({
+    mutationFn: async () => {
+      if (!id) throw new Error("Ingen ID");
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Ikke innlogget");
+      
+      const { error } = await supabase.from("deletion_requests").insert({
+        entity_type: "entity",
+        entity_id: id,
+        requested_by: user.id,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Forespørsel sendt", description: "Admin vil vurdere din forespørsel om sletting." });
     },
     onError: (error: Error) => {
       toast({ title: "Feil", description: error.message, variant: "destructive" });
@@ -459,6 +492,41 @@ export default function EntityEdit() {
               bilder og beskrivelse. Festivalen setter sammen programmet.
             </AlertDescription>
           </Alert>
+        )}
+
+        {/* Danger zone - request deletion */}
+        {canEdit && (
+          <div className="pt-6 border-t border-border space-y-3">
+            <h2 className="font-semibold text-foreground text-destructive">Farlig sone</h2>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="border-destructive/50 text-destructive hover:bg-destructive/10">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Be om sletting av prosjekt
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Be om sletting?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Dette vil sende en forespørsel til admin om å slette prosjektet "{formData.name}".
+                    <br /><br />
+                    Admin vil vurdere forespørselen og du vil få beskjed når den er behandlet.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => requestDeletion.mutate()}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={requestDeletion.isPending}
+                  >
+                    {requestDeletion.isPending ? "Sender..." : "Send forespørsel"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         )}
       </main>
     </div>

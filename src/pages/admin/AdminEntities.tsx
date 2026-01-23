@@ -2,18 +2,31 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { Plus, ExternalLink, Settings } from "lucide-react";
+import { Plus, ExternalLink, Settings, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEntityTypes } from "@/hooks/useEntityTypes";
 import { getEntityTypeConfig, getDefaultEntityTypeConfig } from "@/lib/entity-types";
 import { EntityTypeIcon } from "@/components/ui/EntityTypeIcon";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 import type { EntityType } from "@/types/database";
 
 export default function AdminEntities() {
   const queryClient = useQueryClient();
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteName, setDeleteName] = useState<string>("");
   
   // Load entity types from database
   const { data: entityTypes } = useEntityTypes();
@@ -42,6 +55,29 @@ export default function AdminEntities() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-entities"] });
+    },
+  });
+
+  // Delete mutation
+  const deleteEntity = useMutation({
+    mutationFn: async (id: string) => {
+      // Delete related data first
+      await supabase.from("entity_team").delete().eq("entity_id", id);
+      await supabase.from("entity_timeline_events").delete().eq("entity_id", id);
+      await supabase.from("entity_persona_bindings").delete().eq("entity_id", id);
+      await supabase.from("event_entities").delete().eq("entity_id", id);
+      
+      const { error } = await supabase.from("entities").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-entities"] });
+      setDeleteId(null);
+      setDeleteName("");
+      toast.success("Prosjekt slettet");
+    },
+    onError: (error: Error) => {
+      toast.error("Kunne ikke slette: " + error.message);
     },
   });
 
@@ -110,6 +146,17 @@ export default function AdminEntities() {
                         <ExternalLink className="h-4 w-4" />
                       </Link>
                     </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      onClick={() => {
+                        setDeleteId(entity.id);
+                        setDeleteName(entity.name);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
                 
@@ -177,6 +224,17 @@ export default function AdminEntities() {
                         <ExternalLink className="h-4 w-4" />
                       </Link>
                     </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => {
+                        setDeleteId(entity.id);
+                        setDeleteName(entity.name);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
 
@@ -206,6 +264,31 @@ export default function AdminEntities() {
           </div>
         )}
       </div>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Slett prosjekt?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Er du sikker på at du vil slette "{deleteName}"?
+              <br /><br />
+              Dette vil permanent slette prosjektet og all tilknyttet data (team, tidslinje, persona-koblinger).
+              <br /><br />
+              <strong>Handlingen kan ikke angres.</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteId && deleteEntity.mutate(deleteId)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Slett permanent
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
