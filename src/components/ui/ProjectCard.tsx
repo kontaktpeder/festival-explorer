@@ -28,7 +28,7 @@ export function ProjectCard({ project, size = "md" }: ProjectCardProps) {
       className="cosmic-card block group overflow-hidden"
     >
       {imageUrl ? (
-        <div className={`relative ${size === "sm" ? "h-24 w-24" : "h-40"} overflow-hidden`}>
+        <div className={`relative ${size === "sm" ? "h-20 w-20 sm:h-24 sm:w-24" : "h-28 sm:h-40"} overflow-hidden`}>
           <CroppedImage
             src={imageUrl}
             alt={project.name}
@@ -39,19 +39,19 @@ export function ProjectCard({ project, size = "md" }: ProjectCardProps) {
           <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
         </div>
       ) : (
-        <div className={`${size === "sm" ? "h-24 w-24" : "h-40"} bg-secondary flex items-center justify-center`}>
-          <span className="text-3xl font-bold text-muted-foreground/30">
+        <div className={`${size === "sm" ? "h-20 w-20 sm:h-24 sm:w-24" : "h-28 sm:h-40"} bg-secondary flex items-center justify-center`}>
+          <span className="text-2xl sm:text-3xl font-bold text-muted-foreground/30">
             {project.name.charAt(0)}
           </span>
         </div>
       )}
 
-      <div className="p-3">
-        <h3 className="text-display font-semibold group-hover:text-accent transition-colors truncate">
+      <div className="p-2 sm:p-3">
+        <h3 className="text-sm sm:text-base text-display font-semibold group-hover:text-accent transition-colors truncate">
           {project.name}
         </h3>
         {project.tagline && (
-          <p className="text-sm text-muted-foreground truncate mt-0.5">
+          <p className="text-xs sm:text-sm text-muted-foreground truncate mt-0.5">
             {project.tagline}
           </p>
         )}
