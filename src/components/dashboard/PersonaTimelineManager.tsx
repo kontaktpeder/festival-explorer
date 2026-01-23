@@ -137,14 +137,23 @@ export function PersonaTimelineManager({ personaId, canEdit }: PersonaTimelineMa
                     {event.date ? (
                       <span className="flex items-center gap-1">
                         {format(new Date(event.date), "d. MMM yyyy", { locale: nb })}
-                        {new Date(event.date).getHours() !== 0 || new Date(event.date).getMinutes() !== 0 ? (
+                        {event.date_to && (
+                          <>
+                            <span>–</span>
+                            {format(new Date(event.date_to), "d. MMM yyyy", { locale: nb })}
+                          </>
+                        )}
+                        {!event.date_to && (new Date(event.date).getHours() !== 0 || new Date(event.date).getMinutes() !== 0) ? (
                           <span className="opacity-70">
                             kl. {format(new Date(event.date), "HH:mm", { locale: nb })}
                           </span>
                         ) : null}
                       </span>
                     ) : event.year ? (
-                      <span>{event.year}</span>
+                      <span>
+                        {event.year}
+                        {event.year_to && `–${event.year_to}`}
+                      </span>
                     ) : null}
                     <span>·</span>
                     <Badge variant="outline" className="text-[10px] py-0 h-4">
@@ -234,7 +243,9 @@ function TimelineEventDialog({
   const [eventType, setEventType] = useState<TimelineEventType>("start_identity");
   const [title, setTitle] = useState("");
   const [year, setYear] = useState<number | "">("");
+  const [yearTo, setYearTo] = useState<number | "">("");
   const [dateStr, setDateStr] = useState("");
+  const [dateToStr, setDateToStr] = useState("");
   const [timeStr, setTimeStr] = useState("");
   const [visibility, setVisibility] = useState<TimelineVisibility>("public");
   const [description, setDescription] = useState("");
@@ -246,6 +257,7 @@ function TimelineEventDialog({
       setEventType((existingEvent?.event_type as TimelineEventType) ?? "start_identity");
       setTitle(existingEvent?.title ?? "");
       setYear(existingEvent?.year ?? "");
+      setYearTo(existingEvent?.year_to ?? "");
       setVisibility((existingEvent?.visibility as TimelineVisibility) ?? "public");
       setDescription(existingEvent?.description ?? "");
       
@@ -260,6 +272,13 @@ function TimelineEventDialog({
       } else {
         setDateStr("");
         setTimeStr("");
+      }
+      
+      if (existingEvent?.date_to) {
+        const d = new Date(existingEvent.date_to);
+        setDateToStr(d.toISOString().slice(0, 10));
+      } else {
+        setDateToStr("");
       }
       
       if (existingEvent?.media && existingEvent.media.length > 0) {
@@ -283,13 +302,20 @@ function TimelineEventDialog({
       }
     }
 
+    let fullDateTo: string | null = null;
+    if (dateToStr) {
+      fullDateTo = new Date(`${dateToStr}T00:00:00`).toISOString();
+    }
+
     const payload = {
       persona_id: personaId,
       title: title.trim(),
       event_type: eventType,
       visibility,
       date: fullDate,
+      date_to: fullDateTo,
       year: Number(year),
+      year_to: yearTo ? Number(yearTo) : null,
       location_name: existingEvent?.location_name ?? null,
       city: existingEvent?.city ?? null,
       country: existingEvent?.country ?? null,
@@ -352,35 +378,74 @@ function TimelineEventDialog({
 
           <div className="space-y-2">
             <Label>År *</Label>
-            <Input
-              type="number"
-              value={year}
-              onChange={(e) => setYear(e.target.value ? parseInt(e.target.value, 10) : "")}
-              placeholder="2024"
-              min={1900}
-              max={2100}
-              className="w-32"
-            />
+            <div className="flex gap-2 items-center">
+              <Input
+                type="number"
+                value={year}
+                onChange={(e) => setYear(e.target.value ? parseInt(e.target.value, 10) : "")}
+                placeholder="2014"
+                min={1900}
+                max={2100}
+                className="w-28"
+              />
+              {year && (
+                <>
+                  <span className="text-muted-foreground">–</span>
+                  <Input
+                    type="number"
+                    value={yearTo}
+                    onChange={(e) => setYearTo(e.target.value ? parseInt(e.target.value, 10) : "")}
+                    placeholder="2017"
+                    min={1900}
+                    max={2100}
+                    className="w-28"
+                  />
+                </>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Legg til "til-år" for å vise et datoområde (f.eks. 2014–2017)
+            </p>
           </div>
 
           <div className="space-y-2">
-            <Label>Eksakt dato og klokkeslett (valgfritt)</Label>
-            <div className="flex gap-2">
+            <Label>Eksakt dato (valgfritt)</Label>
+            <div className="flex gap-2 items-center">
               <Input
                 type="date"
                 value={dateStr}
                 onChange={(e) => setDateStr(e.target.value)}
                 className="w-40"
               />
-              <Input
-                type="time"
-                value={timeStr}
-                onChange={(e) => setTimeStr(e.target.value)}
-                className="w-32"
-                disabled={!dateStr}
-                placeholder="--:--"
-              />
+              {dateStr && (
+                <>
+                  <span className="text-muted-foreground">–</span>
+                  <Input
+                    type="date"
+                    value={dateToStr}
+                    onChange={(e) => setDateToStr(e.target.value)}
+                    className="w-40"
+                  />
+                </>
+              )}
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Klokkeslett (valgfritt)</Label>
+            <Input
+              type="time"
+              value={timeStr}
+              onChange={(e) => setTimeStr(e.target.value)}
+              className="w-32"
+              disabled={!dateStr || !!dateToStr}
+              placeholder="--:--"
+            />
+            {dateToStr && (
+              <p className="text-xs text-muted-foreground">
+                Klokkeslett er ikke tilgjengelig for datoområder
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">

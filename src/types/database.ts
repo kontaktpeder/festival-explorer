@@ -129,7 +129,9 @@ export interface EntityTimelineEvent {
   title: string;
   description?: string | null;
   date?: string | null; // YYYY-MM-DD
+  date_to?: string | null; // YYYY-MM-DD (end date for ranges)
   year?: number | null;
+  year_to?: number | null; // End year for ranges
   location_name?: string | null;
   city?: string | null;
   country?: string | null;

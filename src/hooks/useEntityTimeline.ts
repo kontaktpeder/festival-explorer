@@ -11,7 +11,9 @@ export type TimelineEvent = {
   event_type: string;
   visibility: string;
   date?: string | null;
+  date_to?: string | null;
   year?: number | null;
+  year_to?: number | null;
   location_name?: string | null;
   city?: string | null;
   country?: string | null;
@@ -46,7 +48,7 @@ export function usePublicEntityTimelineEvents(
 
         if (error) throw error;
         if (data) {
-          events.push(...(data as TimelineEvent[]));
+          events.push(...(data as unknown as TimelineEvent[]));
         }
       }
 
@@ -62,7 +64,7 @@ export function usePublicEntityTimelineEvents(
 
         if (error) throw error;
         if (data) {
-          events.push(...(data as TimelineEvent[]));
+          events.push(...(data as unknown as TimelineEvent[]));
         }
       }
 
@@ -106,7 +108,7 @@ export function useAdminEntityTimelineEvents(visibilityFilter?: TimelineVisibili
 
       const { data, error } = await query;
       if (error) throw error;
-      return (data || []) as EntityTimelineEvent[];
+      return (data || []) as unknown as EntityTimelineEvent[];
     },
   });
 }
@@ -130,7 +132,7 @@ export function useEntityTimelineEvent(id: string | undefined) {
         .single();
 
       if (error) throw error;
-      return data as EntityTimelineEvent;
+      return data as unknown as EntityTimelineEvent;
     },
     enabled: !!id && id !== "new",
   });
@@ -153,7 +155,7 @@ export function useEntityTimelineEventsForEntity(entityId: string | undefined) {
         .order("year", { ascending: false, nullsFirst: false });
 
       if (error) throw error;
-      return (data || []) as EntityTimelineEvent[];
+      return (data || []) as unknown as EntityTimelineEvent[];
     },
     enabled: !!entityId,
   });

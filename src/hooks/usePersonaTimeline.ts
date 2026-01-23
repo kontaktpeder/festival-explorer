@@ -9,7 +9,9 @@ export interface PersonaTimelineEvent {
   event_type: TimelineEventType;
   visibility: TimelineVisibility;
   date?: string | null;
+  date_to?: string | null;
   year?: number | null;
+  year_to?: number | null;
   location_name?: string | null;
   city?: string | null;
   country?: string | null;
@@ -36,7 +38,7 @@ export function usePersonaTimelineEventsForPersona(personaId: string | undefined
         .order("year", { ascending: false, nullsFirst: false });
 
       if (error) throw error;
-      return (data || []) as PersonaTimelineEvent[];
+      return (data || []) as unknown as PersonaTimelineEvent[];
     },
     enabled: !!personaId,
   });
