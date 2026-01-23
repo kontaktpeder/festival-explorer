@@ -38,14 +38,9 @@ export function EntityTimeline({ entityId, personaId, viewerRole = "fan" }: Enti
     );
   }
 
+  // Return null when empty - parent should conditionally render the section
   if (!events || events.length === 0) {
-    return (
-      <div className="py-6 text-center">
-        <p className="text-sm text-muted-foreground">
-          Ingen hendelser lagt til ennå.
-        </p>
-      </div>
-    );
+    return null;
   }
 
   return (
