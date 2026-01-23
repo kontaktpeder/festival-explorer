@@ -48,23 +48,32 @@ Deno.serve(async (req) => {
     console.log(`Starting account deletion for user: ${user.id}`);
 
     // 1. Call delete_user_safely RPC (cleans up profile, personas, media, etc.)
-    const { data: rpcResult, error: rpcError } = await supabaseUser.rpc(
+    // Continue even if this fails (profile may already be deleted)
+    let rpcResult = null;
+    const { data, error: rpcError } = await supabaseUser.rpc(
       "delete_user_safely",
       { p_user_id: user.id }
     );
 
     if (rpcError) {
-      console.error("delete_user_safely RPC error:", rpcError);
-      return new Response(
-        JSON.stringify({
-          error: "Failed to delete user data",
-          details: rpcError.message,
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      // Profile not found is OK - continue to delete auth user
+      if (rpcError.message?.includes("profile not found")) {
+        console.log("Profile already deleted, continuing to delete auth user");
+      } else {
+        console.error("delete_user_safely RPC error:", rpcError);
+        return new Response(
+          JSON.stringify({
+            error: "Failed to delete user data",
+            details: rpcError.message,
+          }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+    } else {
+      rpcResult = data;
     }
 
     console.log("delete_user_safely result:", rpcResult);
