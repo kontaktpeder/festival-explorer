@@ -81,16 +81,16 @@ export default function MyPersonas() {
 
   return (
     <TooltipProvider>
-      <div className="container max-w-4xl py-8 space-y-6">
+      <div className="container max-w-4xl px-4 sm:px-6 py-6 sm:py-8 space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
           <div className="space-y-1">
-            <h1 className="text-2xl font-bold">Hvordan vil du være synlig på GIGGEN?</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-xl sm:text-2xl font-bold">Hvordan vil du være synlig på GIGGEN?</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Du kan ha flere profiler – f.eks. som musiker, fotograf eller arrangør.
             </p>
           </div>
-          <Button asChild>
+          <Button asChild size="sm" className="w-full sm:w-auto">
             <Link to="/dashboard/personas/new">
               <Plus className="h-4 w-4 mr-2" />
               Ny offentlig profil
@@ -128,19 +128,19 @@ export default function MyPersonas() {
           <div className="grid gap-4">
             {personas?.map((persona, index) => (
               <Card key={persona.id}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-start gap-4">
-                    <Avatar className="h-12 w-12">
+                <CardHeader className="pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
                       <AvatarImage src={persona.avatar_url || undefined} />
-                      <AvatarFallback>
+                      <AvatarFallback className="text-sm">
                         {persona.name.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 min-w-0 space-y-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <CardTitle className="text-lg">{persona.name}</CardTitle>
+                    <div className="flex-1 min-w-0 space-y-1.5 sm:space-y-2">
+                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                        <CardTitle className="text-base sm:text-lg">{persona.name}</CardTitle>
                         {persona.is_public ? (
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="secondary" className="text-[10px] sm:text-xs">
                             <Eye className="h-3 w-3 mr-1" />
                             Offentlig
                           </Badge>
@@ -182,13 +182,13 @@ export default function MyPersonas() {
                     </div>
                     
                     {/* Action buttons with tooltips */}
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
                       {persona.is_public && (
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" asChild>
                               <Link to={`/p/${persona.slug}`} target="_blank">
-                                <ExternalLink className="h-4 w-4" />
+                                <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                               </Link>
                             </Button>
                           </TooltipTrigger>
@@ -198,9 +198,9 @@ export default function MyPersonas() {
                       
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" asChild>
                             <Link to={`/dashboard/personas/${persona.id}`}>
-                              <Pencil className="h-4 w-4" />
+                              <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             </Link>
                           </Button>
                         </TooltipTrigger>
@@ -212,12 +212,13 @@ export default function MyPersonas() {
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="h-8 w-8 sm:h-9 sm:w-9"
                             onClick={() => handleTogglePublic(persona.id, persona.is_public)}
                           >
                             {persona.is_public ? (
-                              <EyeOff className="h-4 w-4" />
+                              <EyeOff className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             ) : (
-                              <Eye className="h-4 w-4" />
+                              <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             )}
                           </Button>
                         </TooltipTrigger>
@@ -230,14 +231,14 @@ export default function MyPersonas() {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                                <Trash2 className="h-4 w-4" />
+                              <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 text-destructive hover:text-destructive">
+                                <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                               </Button>
                             </AlertDialogTrigger>
                           </TooltipTrigger>
                           <TooltipContent>Slett profilen</TooltipContent>
                         </Tooltip>
-                        <AlertDialogContent>
+                        <AlertDialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg">
                           <AlertDialogHeader>
                             <AlertDialogTitle>Slett profil?</AlertDialogTitle>
                             <AlertDialogDescription>
@@ -245,11 +246,11 @@ export default function MyPersonas() {
                               Handlingen kan ikke angres.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+                            <AlertDialogCancel className="w-full sm:w-auto">Avbryt</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDelete(persona.id)}
-                              className="bg-destructive text-destructive-foreground"
+                              className="w-full sm:w-auto bg-destructive text-destructive-foreground"
                             >
                               Slett
                             </AlertDialogAction>

@@ -172,37 +172,37 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       {/* Header - cleaner, less admin-like */}
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="text-lg font-bold text-foreground tracking-tight">
-            GIGGEN <span className="text-muted-foreground/70 font-normal">BACKSTAGE</span>
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <Link to="/" className="text-base sm:text-lg font-bold text-foreground tracking-tight">
+            GIGGEN <span className="text-muted-foreground/70 font-normal text-xs sm:text-base">BACKSTAGE</span>
           </Link>
           <PersonaSelector />
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-10 space-y-12">
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-8 sm:space-y-12">
         {/* Welcome - with profile avatar */}
-        <div className="flex items-start gap-5">
-          <Avatar className="h-16 w-16 md:h-20 md:w-20 border-2 border-border/50 flex-shrink-0">
+        <div className="flex items-start gap-3 sm:gap-5">
+          <Avatar className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 border-2 border-border/50 flex-shrink-0">
             <AvatarImage 
               src={profileAvatarUrl || undefined} 
               style={profileAvatarStyles}
               className="object-cover"
             />
-            <AvatarFallback className="text-xl md:text-2xl bg-muted text-muted-foreground">
+            <AvatarFallback className="text-lg sm:text-xl md:text-2xl bg-muted text-muted-foreground">
               {(currentUser?.displayName || currentUser?.email || "U").charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="space-y-1 pt-1">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
+          <div className="space-y-1 pt-0.5 sm:pt-1">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground tracking-tight">
               Hei, {userName}
             </h1>
             {showOnboarding ? (
-              <p className="text-lg text-muted-foreground">
+              <p className="text-base sm:text-lg text-muted-foreground">
                 Velkommen backstage.
               </p>
             ) : (
-              <p className="text-muted-foreground">
+              <p className="text-sm sm:text-base text-muted-foreground">
                 Ditt rom før scenen.
               </p>
             )}
