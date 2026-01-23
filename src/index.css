@@ -34,12 +34,12 @@
     --muted: 258 20% 28%;
     --muted-foreground: 45 15% 60%;
     
-    /* Accent - HOT PINK / MAGENTA */
-    --accent: 330 100% 60%;
+    /* Accent - WARM ORANGE */
+    --accent: 24 100% 55%;
     --accent-foreground: 258 35% 12%;
     
-    /* Secondary accent - warm orange (for subtle touches) */
-    --accent-warm: 24 95% 55%;
+    /* Secondary accent - hot pink (for subtle touches) */
+    --accent-warm: 330 100% 60%;
     
     /* Mint/sage border accent */
     --accent-mint: 162 40% 70%;
@@ -51,24 +51,24 @@
     /* Borders & inputs - mint-tinted */
     --border: 162 20% 35%;
     --input: 258 20% 28%;
-    --ring: 330 100% 60%;
+    --ring: 24 100% 55%;
     
-    /* Orange accent for subtle touches */
-    --accent-orange: 24 100% 55%;
-    
+    /* Pink accent for subtle touches */
+    --accent-pink: 330 100% 60%;
+
     --radius: 0.25rem;
     
     /* Retro grain texture - darker and grittier */
     --cosmic-grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
     --cosmic-overlay: linear-gradient(180deg, hsl(258 35% 22% / 0.3) 0%, hsl(258 35% 22% / 0.9) 100%);
-    --cosmic-glow: 0 0 60px hsl(330 100% 60% / 0.25);
+    --cosmic-glow: 0 0 60px hsl(24 100% 55% / 0.25);
     --cosmic-border: 2px solid hsl(162 40% 70% / 0.3);
-    
+
     /* Shadow system - purple tinted */
     --shadow-sm: 0 2px 8px hsl(258 40% 10% / 0.4);
     --shadow-md: 0 4px 16px hsl(258 40% 10% / 0.5);
     --shadow-lg: 0 8px 32px hsl(258 40% 10% / 0.6);
-    --shadow-glow: 0 0 40px hsl(330 100% 60% / 0.3);
+    --shadow-glow: 0 0 40px hsl(24 100% 55% / 0.3);
     
     /* Typography - retro condensed feel */
     --font-display: 'Space Grotesk', system-ui, sans-serif;
@@ -77,12 +77,12 @@
     /* Sidebar (keeping for shadcn compatibility) */
     --sidebar-background: 258 30% 20%;
     --sidebar-foreground: 45 30% 90%;
-    --sidebar-primary: 330 100% 60%;
+    --sidebar-primary: 24 100% 55%;
     --sidebar-primary-foreground: 258 35% 12%;
     --sidebar-accent: 258 25% 30%;
     --sidebar-accent-foreground: 45 30% 90%;
     --sidebar-border: 162 20% 35%;
-    --sidebar-ring: 330 100% 60%;
+    --sidebar-ring: 24 100% 55%;
   }
 }
 
@@ -132,7 +132,7 @@
     @apply absolute inset-0;
     background: radial-gradient(
       ellipse at 50% 0%,
-      hsl(330 100% 60% / 0.12) 0%,
+      hsl(24 100% 55% / 0.12) 0%,
       transparent 60%
     );
   }
@@ -189,7 +189,7 @@
   
   .btn-accent:hover {
     @apply brightness-110;
-    box-shadow: 0 0 50px hsl(330 100% 60% / 0.45);
+    box-shadow: 0 0 50px hsl(24 100% 55% / 0.45);
     transform: translateY(-1px);
   }
   
