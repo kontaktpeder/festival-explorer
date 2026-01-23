@@ -79,8 +79,8 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
             alt="GIGGEN - festival for en kveld"
             className={`relative drop-shadow-2xl transition-all duration-500 ${
               isScrolled 
-                ? 'h-10 md:h-14' 
-                : 'h-24 md:h-32 lg:h-40'
+                ? 'h-12 md:h-16' 
+                : 'h-28 md:h-40 lg:h-48'
             }`}
           />
         </Link>
