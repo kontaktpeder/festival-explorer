@@ -51,39 +51,49 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
     }
   }, [location.pathname, navigate]);
 
-  // Hero mode: always centered at top, no animation, with fade cloud
+  // Hero mode: centered, very large initially, shrinks on scroll
   if (heroMode) {
     return (
       <>
         <Link
           to="/"
           onClick={handleClick}
-          className="fixed z-50 left-1/2 -translate-x-1/2"
+          className="fixed z-50 left-1/2 -translate-x-1/2 transition-all duration-500 ease-out"
           style={{
-            top: 'calc(var(--safe-top, 0px) + 12px)'
+            top: isScrolled 
+              ? 'calc(var(--safe-top, 0px) + 8px)' 
+              : 'calc(var(--safe-top, 0px) + 25vh)'
           }}
         >
           {/* Fade cloud behind logo */}
           <div 
-            className="absolute inset-0 -inset-x-8 -inset-y-4 rounded-full blur-2xl opacity-60"
+            className={`absolute rounded-full blur-3xl transition-all duration-500 ${
+              isScrolled 
+                ? 'inset-0 -inset-x-4 -inset-y-2 opacity-70' 
+                : 'inset-0 -inset-x-16 -inset-y-8 opacity-50'
+            }`}
             style={{ background: 'radial-gradient(ellipse, hsl(var(--background)) 0%, transparent 70%)' }}
           />
           <img 
             src={giggenLogo} 
             alt="GIGGEN - festival for en kveld"
-            className="relative h-16 md:h-24 drop-shadow-2xl"
+            className={`relative drop-shadow-2xl transition-all duration-500 ${
+              isScrolled 
+                ? 'h-12 md:h-16' 
+                : 'h-48 md:h-64 lg:h-80'
+            }`}
           />
         </Link>
 
-        {/* BACKSTAGE link - top right */}
+        {/* BACKSTAGE link - top right, very small */}
         <Link
           to={session ? "/dashboard" : "/admin/login"}
-          className="fixed z-50 right-4"
+          className="fixed z-50 right-3 transition-all duration-300"
           style={{
-            top: 'calc(var(--safe-top, 0px) + 20px)'
+            top: 'calc(var(--safe-top, 0px) + 12px)'
           }}
         >
-          <span className="font-medium text-foreground/80 hover:text-accent transition-colors uppercase tracking-wider text-sm">
+          <span className="font-medium text-foreground/60 hover:text-accent transition-colors uppercase tracking-wider text-[10px] md:text-xs">
             BACKSTAGE
           </span>
         </Link>
