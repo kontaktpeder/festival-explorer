@@ -44,6 +44,7 @@ export function parseImageSettings(json: unknown): ImageSettings | null {
 export type EntityType = 'venue' | 'solo' | 'band';
 export type AccessLevel = 'owner' | 'admin' | 'editor' | 'viewer';
 export type TimelineEventType = 
+  // Persona/Artist categories
   | 'start_identity'           // Start & identitet
   | 'artistic_development'     // Kunstnerisk utvikling
   | 'collaboration'            // Samarbeid
@@ -53,7 +54,16 @@ export type TimelineEventType =
   | 'course_competence'        // Kurs & kompetanse
   | 'recognition'              // Anerkjennelse
   | 'transitions_life'         // Overganger & liv
-  | 'present_direction';       // Nåtid & retning
+  | 'present_direction'        // Nåtid & retning
+  // Venue categories
+  | 'establishment'            // Etablering & identitet
+  | 'concept'                  // Konsept & retning
+  | 'program'                  // Program & innhold
+  | 'artists'                  // Kunstnere & øyeblikk
+  | 'development'              // Ombygging & utvikling
+  | 'pause'                    // Utfordringer & pauser
+  | 'relaunch'                 // Gjenåpning & nye kapitler
+  | 'focus_now';               // Nåtid & fokus
 export type TimelineVisibility = 'public' | 'pro' | 'private';
 // ============================================
 // Platform Access (NEW - replaces Platform entity membership)

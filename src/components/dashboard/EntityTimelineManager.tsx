@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { MediaPicker } from "@/components/admin/MediaPicker";
 import { useEntityTimelineEventsForEntity, useCreateEntityTimelineEvent, useUpdateEntityTimelineEvent, useDeleteEntityTimelineEvent } from "@/hooks/useEntityTimeline";
-import type { EntityTimelineEvent, TimelineVisibility, TimelineEventType } from "@/types/database";
+import { useEntityById } from "@/hooks/useEntity";
+import type { EntityTimelineEvent, TimelineVisibility, TimelineEventType, EntityType } from "@/types/database";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { 
@@ -18,6 +19,7 @@ import {
   Clock, 
   ImageIcon, 
   X,
+  // Persona/Artist icons
   Sparkles,        // Start & identitet
   Palette,         // Kunstnerisk utvikling
   Users2,          // Samarbeid
@@ -27,15 +29,28 @@ import {
   BookOpen,        // Kurs & kompetanse
   Trophy,          // Anerkjennelse
   RefreshCw,       // Overganger & liv
-  Target           // Nåtid & retning
+  Target,          // Nåtid & retning
+  // Venue icons
+  Building2,       // Etablering & identitet
+  Lightbulb,       // Konsept & retning
+  Calendar,        // Program & innhold
+  Music,           // Kunstnere & øyeblikk
+  Wrench,          // Ombygging & utvikling
+  AlertCircle,     // Utfordringer & pauser
+  RotateCw,        // Gjenåpning & nye kapitler
+  Compass          // Nåtid & fokus
 } from "lucide-react";
 
 interface EntityTimelineManagerProps {
   entityId: string;
+  entityType?: EntityType; // Optional - if provided, skips entity fetch
   canEdit: boolean;
 }
 
-const EVENT_TYPE_OPTIONS: { value: TimelineEventType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+type EventTypeOption = { value: TimelineEventType; label: string; icon: React.ComponentType<{ className?: string }> };
+
+// Persona/Artist event type options
+const PERSONA_EVENT_TYPE_OPTIONS: EventTypeOption[] = [
   { value: "start_identity", label: "Start & identitet", icon: Sparkles },
   { value: "artistic_development", label: "Kunstnerisk utvikling", icon: Palette },
   { value: "collaboration", label: "Samarbeid", icon: Users2 },
@@ -48,16 +63,38 @@ const EVENT_TYPE_OPTIONS: { value: TimelineEventType; label: string; icon: React
   { value: "present_direction", label: "Nåtid & retning", icon: Target },
 ];
 
+// Venue event type options
+const VENUE_EVENT_TYPE_OPTIONS: EventTypeOption[] = [
+  { value: "establishment", label: "Etablering & identitet", icon: Building2 },
+  { value: "concept", label: "Konsept & retning", icon: Lightbulb },
+  { value: "program", label: "Program & innhold", icon: Calendar },
+  { value: "collaboration", label: "Samarbeid", icon: Users2 },
+  { value: "milestone", label: "Milepæler", icon: Star },
+  { value: "artists", label: "Kunstnere & øyeblikk", icon: Music },
+  { value: "development", label: "Ombygging & utvikling", icon: Wrench },
+  { value: "recognition", label: "Anerkjennelse & omtale", icon: Trophy },
+  { value: "pause", label: "Utfordringer & pauser", icon: AlertCircle },
+  { value: "relaunch", label: "Gjenåpning & nye kapitler", icon: RotateCw },
+  { value: "focus_now", label: "Nåtid & fokus", icon: Compass },
+];
+
 const VISIBILITY_LABELS: Record<TimelineVisibility, string> = {
   public: "Offentlig",
   pro: "Pro",
   private: "Privat",
 };
 
-const getTypeConfig = (eventType: TimelineEventType | string) =>
-  EVENT_TYPE_OPTIONS.find((o) => o.value === eventType) || EVENT_TYPE_OPTIONS[2]; // fallback = milestone
+const getTypeConfig = (eventType: TimelineEventType | string, isVenue: boolean): EventTypeOption => {
+  const options = isVenue ? VENUE_EVENT_TYPE_OPTIONS : PERSONA_EVENT_TYPE_OPTIONS;
+  return options.find((o) => o.value === eventType) || (isVenue ? VENUE_EVENT_TYPE_OPTIONS[0] : PERSONA_EVENT_TYPE_OPTIONS[3]);
+};
 
-export function EntityTimelineManager({ entityId, canEdit }: EntityTimelineManagerProps) {
+export function EntityTimelineManager({ entityId, entityType, canEdit }: EntityTimelineManagerProps) {
+  // Only fetch entity if entityType is not provided
+  const { data: entity } = useEntityById(entityType ? undefined : entityId);
+  const isVenue = entityType === "venue" || entity?.type === "venue";
+  const eventTypeOptions = isVenue ? VENUE_EVENT_TYPE_OPTIONS : PERSONA_EVENT_TYPE_OPTIONS;
+  
   const { data: events, isLoading } = useEntityTimelineEventsForEntity(entityId);
   const createMutation = useCreateEntityTimelineEvent();
   const updateMutation = useUpdateEntityTimelineEvent();
@@ -98,7 +135,10 @@ export function EntityTimelineManager({ entityId, canEdit }: EntityTimelineManag
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Viktige hendelser i reisen til prosjektet.
+        {isVenue 
+          ? "Viktige hendelser i stedets historie."
+          : "Viktige hendelser i reisen til prosjektet."
+        }
       </p>
 
       {isLoading ? (
@@ -113,7 +153,7 @@ export function EntityTimelineManager({ entityId, canEdit }: EntityTimelineManag
       ) : (
         <div className="space-y-3">
           {events.map((event) => {
-            const typeConfig = getTypeConfig(event.event_type as TimelineEventType);
+            const typeConfig = getTypeConfig(event.event_type as TimelineEventType, isVenue);
             const TypeIcon = typeConfig.icon;
             const mediaUrl = event.media && event.media.length > 0 ? event.media[0].url : null;
 
@@ -132,7 +172,6 @@ export function EntityTimelineManager({ entityId, canEdit }: EntityTimelineManag
                     {event.date ? (
                       <span>
                         {format(new Date(event.date), "d. MMM yyyy", { locale: nb })}
-                        {/* Show time if not midnight */}
                         {new Date(event.date).getHours() !== 0 || new Date(event.date).getMinutes() !== 0 ? (
                           <span className="ml-1">
                             kl. {format(new Date(event.date), "HH:mm", { locale: nb })}
@@ -140,7 +179,10 @@ export function EntityTimelineManager({ entityId, canEdit }: EntityTimelineManag
                         ) : null}
                       </span>
                     ) : event.year ? (
-                      <span>{event.year}</span>
+                      <span>
+                        {event.year}
+                        {event.year_to && event.year_to !== event.year ? `–${event.year_to}` : ''}
+                      </span>
                     ) : null}
                     <span>·</span>
                     <Badge variant="outline" className="text-xs">
@@ -205,6 +247,8 @@ export function EntityTimelineManager({ entityId, canEdit }: EntityTimelineManag
           existingEvent={editingEvent}
           createMutation={createMutation}
           updateMutation={updateMutation}
+          isVenue={isVenue}
+          eventTypeOptions={eventTypeOptions}
         />
       )}
     </div>
@@ -218,6 +262,8 @@ interface TimelineEventDialogProps {
   existingEvent: EntityTimelineEvent | null;
   createMutation: ReturnType<typeof useCreateEntityTimelineEvent>;
   updateMutation: ReturnType<typeof useUpdateEntityTimelineEvent>;
+  isVenue: boolean;
+  eventTypeOptions: EventTypeOption[];
 }
 
 function TimelineEventDialog({
@@ -227,14 +273,19 @@ function TimelineEventDialog({
   existingEvent,
   createMutation,
   updateMutation,
+  isVenue,
+  eventTypeOptions,
 }: TimelineEventDialogProps) {
   const isEditing = !!existingEvent;
+  const defaultEventType = isVenue ? "establishment" : "milestone";
 
   // Form state
-  const [eventType, setEventType] = useState<TimelineEventType>("milestone");
+  const [eventType, setEventType] = useState<TimelineEventType>(defaultEventType);
   const [title, setTitle] = useState("");
   const [year, setYear] = useState<number | "">("");
+  const [yearTo, setYearTo] = useState<number | "">("");
   const [dateStr, setDateStr] = useState("");
+  const [dateToStr, setDateToStr] = useState("");
   const [timeStr, setTimeStr] = useState("");
   const [visibility, setVisibility] = useState<TimelineVisibility>("public");
   const [description, setDescription] = useState("");
@@ -244,25 +295,32 @@ function TimelineEventDialog({
   // Reset form when dialog opens/closes or event changes
   useEffect(() => {
     if (open) {
-      setEventType((existingEvent?.event_type as TimelineEventType) ?? "milestone");
+      setEventType((existingEvent?.event_type as TimelineEventType) ?? defaultEventType);
       setTitle(existingEvent?.title ?? "");
       setYear(existingEvent?.year ?? "");
+      setYearTo(existingEvent?.year_to ?? "");
       setVisibility((existingEvent?.visibility as TimelineVisibility) ?? "public");
       setDescription(existingEvent?.description ?? "");
       
       // Parse existing date/time
       if (existingEvent?.date) {
         const d = new Date(existingEvent.date);
-        setDateStr(d.toISOString().slice(0, 10)); // YYYY-MM-DD
-        // Only set time if it's not midnight
+        setDateStr(d.toISOString().slice(0, 10));
         if (d.getHours() !== 0 || d.getMinutes() !== 0) {
-          setTimeStr(d.toISOString().slice(11, 16)); // HH:MM
+          setTimeStr(d.toISOString().slice(11, 16));
         } else {
           setTimeStr("");
         }
       } else {
         setDateStr("");
         setTimeStr("");
+      }
+      
+      if (existingEvent?.date_to) {
+        const d = new Date(existingEvent.date_to);
+        setDateToStr(d.toISOString().slice(0, 10));
+      } else {
+        setDateToStr("");
       }
       
       // Parse existing media
@@ -272,7 +330,7 @@ function TimelineEventDialog({
         setMediaUrl("");
       }
     }
-  }, [open, existingEvent]);
+  }, [open, existingEvent, defaultEventType]);
 
   const handleSave = async () => {
     if (!title.trim()) return;
@@ -288,13 +346,20 @@ function TimelineEventDialog({
       }
     }
 
+    let fullDateTo: string | null = null;
+    if (dateToStr) {
+      fullDateTo = new Date(`${dateToStr}T00:00:00`).toISOString();
+    }
+
     const payload = {
       entity_id: entityId,
       title: title.trim(),
       event_type: eventType,
       visibility,
       date: fullDate,
+      date_to: fullDateTo,
       year: Number(year),
+      year_to: yearTo ? Number(yearTo) : null,
       location_name: existingEvent?.location_name ?? null,
       city: existingEvent?.city ?? null,
       country: existingEvent?.country ?? null,
@@ -332,7 +397,7 @@ function TimelineEventDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {EVENT_TYPE_OPTIONS.map((opt) => {
+                {eventTypeOptions.map((opt) => {
                   const Icon = opt.icon;
                   return (
                     <SelectItem key={opt.value} value={opt.value}>
@@ -354,45 +419,70 @@ function TimelineEventDialog({
               id="timeline-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="F.eks. Første festivalopptreden"
+              placeholder={isVenue ? "F.eks. Åpnet dørene første gang" : "F.eks. Første festivalopptreden"}
               className="h-9 sm:h-10 text-sm"
             />
           </div>
 
-          {/* Year */}
+          {/* Year with optional range */}
           <div className="space-y-1.5 sm:space-y-2">
-            <Label htmlFor="timeline-year" className="text-xs sm:text-sm">År *</Label>
-            <Input
-              id="timeline-year"
-              type="number"
-              value={year}
-              onChange={(e) => setYear(e.target.value ? parseInt(e.target.value, 10) : "")}
-              placeholder="2024"
-              min={1900}
-              max={2100}
-              className="w-28 sm:w-32 h-9 sm:h-10 text-sm"
-            />
+            <Label className="text-xs sm:text-sm">År *</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                value={year}
+                onChange={(e) => setYear(e.target.value ? parseInt(e.target.value, 10) : "")}
+                placeholder="2024"
+                min={1900}
+                max={2100}
+                className="w-24 h-9 sm:h-10 text-sm"
+              />
+              <span className="text-muted-foreground">–</span>
+              <Input
+                type="number"
+                value={yearTo}
+                onChange={(e) => setYearTo(e.target.value ? parseInt(e.target.value, 10) : "")}
+                placeholder="(til)"
+                min={1900}
+                max={2100}
+                className="w-24 h-9 sm:h-10 text-sm"
+              />
+              <span className="text-xs text-muted-foreground hidden sm:inline">(valgfritt)</span>
+            </div>
           </div>
 
           {/* Optional date + time */}
           <div className="space-y-1.5 sm:space-y-2">
-            <Label className="text-xs sm:text-sm">Eksakt dato og klokkeslett (valgfritt)</Label>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Input
-                type="date"
-                value={dateStr}
-                onChange={(e) => setDateStr(e.target.value)}
-                className="w-full sm:w-40 h-9 sm:h-10 text-sm"
-              />
+            <Label className="text-xs sm:text-sm">Eksakt dato (valgfritt)</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground">Fra</span>
+                <Input
+                  type="date"
+                  value={dateStr}
+                  onChange={(e) => setDateStr(e.target.value)}
+                  className="w-full h-9 sm:h-10 text-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground">Til</span>
+                <Input
+                  type="date"
+                  value={dateToStr}
+                  onChange={(e) => setDateToStr(e.target.value)}
+                  className="w-full h-9 sm:h-10 text-sm"
+                />
+              </div>
+            </div>
+            {dateStr && (
               <Input
                 type="time"
                 value={timeStr}
                 onChange={(e) => setTimeStr(e.target.value)}
-                className="w-full sm:w-32 h-9 sm:h-10 text-sm"
-                disabled={!dateStr}
+                className="w-32 h-9 sm:h-10 text-sm"
                 placeholder="--:--"
               />
-            </div>
+            )}
           </div>
 
           {/* Visibility */}

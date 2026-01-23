@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save } from "lucide-react";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { EntityTimelineManager } from "@/components/dashboard/EntityTimelineManager";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
 import { generateSlug } from "@/lib/utils";
 import type { ImageSettings } from "@/types/database";
@@ -244,6 +245,15 @@ export default function AdminVenueEdit() {
           </Button>
         </div>
       </form>
+
+      {/* Timeline for venue - only show for existing venues */}
+      {!isNew && id && (
+        <EntityTimelineManager 
+          entityId={id} 
+          entityType="venue"
+          canEdit={true} 
+        />
+      )}
     </div>
   );
 }
