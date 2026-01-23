@@ -811,6 +811,7 @@ export type Database = {
           original_filename: string
           original_size_bytes: number | null
           public_url: string
+          quality_level: string | null
           size_bytes: number
           storage_path: string
           tags: string[] | null
@@ -834,6 +835,7 @@ export type Database = {
           original_filename: string
           original_size_bytes?: number | null
           public_url: string
+          quality_level?: string | null
           size_bytes: number
           storage_path: string
           tags?: string[] | null
@@ -857,6 +859,7 @@ export type Database = {
           original_filename?: string
           original_size_bytes?: number | null
           public_url?: string
+          quality_level?: string | null
           size_bytes?: number
           storage_path?: string
           tags?: string[] | null
@@ -1030,6 +1033,8 @@ export type Database = {
           created_at: string
           display_name: string | null
           handle: string | null
+          high_res_count: number | null
+          high_res_max: number | null
           id: string
           slug: string | null
           updated_at: string
@@ -1042,6 +1047,8 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           handle?: string | null
+          high_res_count?: number | null
+          high_res_max?: number | null
           id: string
           slug?: string | null
           updated_at?: string
@@ -1054,6 +1061,8 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           handle?: string | null
+          high_res_count?: number | null
+          high_res_max?: number | null
           id?: string
           slug?: string | null
           updated_at?: string
@@ -1606,6 +1615,7 @@ export type Database = {
         }
       }
       can_edit_entity: { Args: { p_entity_id: string }; Returns: boolean }
+      can_upload_high_res: { Args: { p_user_id: string }; Returns: boolean }
       delete_user_safely: { Args: { p_user_id: string }; Returns: Json }
       generate_ticket_code: { Args: never; Returns: string }
       get_invitation_by_token: { Args: { p_token: string }; Returns: Json }

@@ -1179,6 +1179,7 @@ export default function AdminSections() {
                     toast({ title: "Bilde valgt fra filbank" });
                   }}
                   fileType="image"
+                  showQualitySelection={true}
                 />
               )}
             </div>

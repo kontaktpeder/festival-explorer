@@ -36,6 +36,8 @@ interface MediaPickerProps {
   fileType?: "image" | "video" | "audio" | "document";
   userOnly?: boolean; // Vis kun brukerens egne filer (default: true for sikkerhet)
   showAllForAdmin?: boolean; // Tillat admin å se alle filer
+  /** Show quality selection for image uploads (only for admins) */
+  showQualitySelection?: boolean;
 }
 
 export function MediaPicker({
@@ -45,6 +47,7 @@ export function MediaPicker({
   fileType,
   userOnly = true, // Default til true for sikkerhet
   showAllForAdmin = false, // Admin må eksplisitt aktivere for å se alle
+  showQualitySelection = false,
 }: MediaPickerProps) {
   const [search, setSearch] = useState("");
   const [selectedType, setSelectedType] = useState<string>(fileType || "all");
@@ -250,6 +253,7 @@ export function MediaPicker({
             <MediaUpload
               fileType={fileType}
               onUploadComplete={handleUploadComplete}
+              showQualitySelection={showQualitySelection}
             />
           </TabsContent>
         </Tabs>
