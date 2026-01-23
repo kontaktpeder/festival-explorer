@@ -51,35 +51,34 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
     }
   }, [location.pathname, navigate]);
 
-  // Hero mode: always centered, larger, positioned lower
+  // Hero mode: always centered at top, no animation, with fade cloud
   if (heroMode) {
     return (
       <>
         <Link
           to="/"
           onClick={handleClick}
-          className="fixed z-50 left-1/2 -translate-x-1/2 transition-all duration-500 ease-out"
+          className="fixed z-50 left-1/2 -translate-x-1/2"
           style={{
-            top: isScrolled 
-              ? 'calc(var(--safe-top, 0px) + 12px)' 
-              : 'calc(var(--safe-top, 0px) + 40vh - 80px)'
+            top: 'calc(var(--safe-top, 0px) + 12px)'
           }}
         >
+          {/* Fade cloud behind logo */}
+          <div 
+            className="absolute inset-0 -inset-x-8 -inset-y-4 rounded-full blur-2xl opacity-60"
+            style={{ background: 'radial-gradient(ellipse, hsl(var(--background)) 0%, transparent 70%)' }}
+          />
           <img 
             src={giggenLogo} 
             alt="GIGGEN - festival for en kveld"
-            className={`transition-all duration-500 drop-shadow-2xl ${
-              isScrolled 
-                ? 'h-14 md:h-20' 
-                : 'h-28 md:h-40 lg:h-48'
-            }`}
+            className="relative h-16 md:h-24 drop-shadow-2xl"
           />
         </Link>
 
         {/* BACKSTAGE link - top right */}
         <Link
           to={session ? "/dashboard" : "/admin/login"}
-          className="fixed z-50 right-4 transition-all duration-500 ease-out"
+          className="fixed z-50 right-4"
           style={{
             top: 'calc(var(--safe-top, 0px) + 20px)'
           }}
