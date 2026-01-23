@@ -26,10 +26,38 @@ import {
   Plus,
   ChevronRight,
   QrCode,
-  Info
+  Info,
+  MapPin
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CroppedImage } from "@/components/ui/CroppedImage";
 import type { EntityType, AccessLevel } from "@/types/database";
+import type { Json } from "@/integrations/supabase/types";
+
+// Helper component for entity hero image with signed URL
+function EntityHeroImage({ 
+  imageUrl, 
+  imageSettings, 
+  name 
+}: { 
+  imageUrl: string; 
+  imageSettings: unknown; 
+  name: string;
+}) {
+  const signedUrl = useSignedMediaUrl(imageUrl, 'public');
+  
+  if (!signedUrl) return null;
+  
+  return (
+    <CroppedImage
+      src={signedUrl}
+      alt={name}
+      imageSettings={imageSettings as Json | null}
+      aspect="hero"
+      className="w-full h-full object-cover"
+    />
+  );
+}
 
 // Tydeligere prosjekt-type labels med ikoner
 const TYPE_CONFIG: Record<EntityType, { label: string; icon: React.ReactNode; route: string }> = {
@@ -402,70 +430,91 @@ export default function Dashboard() {
                 return (
                   <div
                     key={entity.id}
-                    className="group p-5 rounded-2xl bg-card hover:bg-card/80 border border-border/50 hover:border-border transition-all"
+                    className="group rounded-2xl bg-card hover:bg-card/80 border border-border/50 hover:border-border transition-all overflow-hidden"
                   >
-                    <div className="flex items-start gap-4">
-                      {/* Icon - larger, more presence */}
-                      <div className="p-3 rounded-xl bg-primary/10 text-primary flex-shrink-0">
-                        {typeConfig.icon}
+                    <div className="flex flex-col sm:flex-row">
+                      {/* Hero image */}
+                      <div className="relative h-32 sm:h-auto sm:w-32 md:w-40 flex-shrink-0 bg-secondary">
+                        {entity.hero_image_url ? (
+                          <EntityHeroImage 
+                            imageUrl={entity.hero_image_url} 
+                            imageSettings={entity.hero_image_settings}
+                            name={entity.name}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <span className="text-3xl sm:text-4xl font-bold text-muted-foreground/20">
+                              {entity.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
                       </div>
                       
                       {/* Content */}
-                      <div className="flex-1 min-w-0 space-y-2">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <h3 className="text-lg font-semibold text-foreground truncate">
-                              {entity.name}
-                            </h3>
-                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                              <span className="text-sm text-muted-foreground">
-                                {typeConfig.label}
-                              </span>
-                              {!entity.is_published && (
-                              <span className="text-xs text-warning bg-warning/10 px-2 py-0.5 rounded-full">
-                                  Utkast
+                      <div className="flex-1 min-w-0 p-4 sm:p-5 flex flex-col justify-between">
+                        <div className="space-y-2">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <h3 className="text-base sm:text-lg font-semibold text-foreground truncate">
+                                {entity.name}
+                              </h3>
+                              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                <span className="text-xs sm:text-sm text-muted-foreground">
+                                  {typeConfig.label}
                                 </span>
-                              )}
+                                {entity.city && (
+                                  <span className="flex items-center gap-1 text-xs text-muted-foreground/70">
+                                    <MapPin className="h-3 w-3" />
+                                    {entity.city}
+                                  </span>
+                                )}
+                                {!entity.is_published && (
+                                  <span className="text-xs text-warning bg-warning/10 px-2 py-0.5 rounded-full">
+                                    Utkast
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                           
-                          {/* Actions - cleaner */}
-                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button asChild variant="ghost" size="sm" className="h-8 px-3">
+                          {entity.tagline && (
+                            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
+                              {entity.tagline}
+                            </p>
+                          )}
+                        </div>
+                        
+                        {/* Footer with role and actions */}
+                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/30">
+                          <p className="text-xs text-muted-foreground/70">
+                            {ACCESS_DESCRIPTIONS[entity.access]}
+                          </p>
+                          
+                          <div className="flex gap-1">
+                            <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs">
                               <Link to={`/dashboard/entities/${entity.id}/edit`}>
                                 {userCanEdit ? (
                                   <>
-                                    <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                                    <Pencil className="h-3 w-3 mr-1" />
                                     Rediger
                                   </>
                                 ) : (
                                   <>
-                                    <Eye className="h-3.5 w-3.5 mr-1.5" />
+                                    <Eye className="h-3 w-3 mr-1" />
                                     Se
                                   </>
                                 )}
                               </Link>
                             </Button>
                             {entity.is_published && (
-                              <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                              <Button asChild variant="ghost" size="icon" className="h-7 w-7">
                                 <Link to={`${typeConfig.route}/${entity.slug}`} target="_blank">
-                                  <ExternalLink className="h-3.5 w-3.5" />
+                                  <ExternalLink className="h-3 w-3" />
                                 </Link>
                               </Button>
                             )}
                           </div>
                         </div>
-                        
-                        {entity.tagline && (
-                          <p className="text-sm text-muted-foreground line-clamp-1">
-                            {entity.tagline}
-                          </p>
-                        )}
-                        
-                        {/* Role - human language, subtle */}
-                        <p className="text-xs text-muted-foreground/70">
-                          {ACCESS_DESCRIPTIONS[entity.access]}
-                        </p>
                       </div>
                     </div>
                   </div>
