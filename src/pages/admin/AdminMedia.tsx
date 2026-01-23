@@ -228,6 +228,7 @@ export default function AdminMedia() {
               queryClient.invalidateQueries({ queryKey: ["admin-media"] });
               toast({ title: "Fil lastet opp" });
             }}
+            showQualitySelection={true}
           />
         </DialogContent>
       </Dialog>

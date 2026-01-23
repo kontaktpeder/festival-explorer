@@ -1,11 +1,13 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, X, Image as ImageIcon, Video, Music, FileText, ExternalLink } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Upload, X, Image as ImageIcon, Video, Music, FileText, ExternalLink, Info } from "lucide-react";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
 
 interface MediaUploadProps {
@@ -13,6 +15,8 @@ interface MediaUploadProps {
   fileType?: "image" | "video" | "audio" | "document";
   accept?: string;
   maxSizeMB?: number;
+  /** Show quality selection (only for admins) */
+  showQualitySelection?: boolean;
 }
 
 type FileType = "image" | "video" | "audio" | "document";
@@ -21,20 +25,62 @@ export function MediaUpload({
   onUploadComplete, 
   fileType,
   accept,
-  maxSizeMB = 10
+  maxSizeMB = 10,
+  showQualitySelection = false
 }: MediaUploadProps) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [altText, setAltText] = useState("");
   const [externalUrl, setExternalUrl] = useState("");
   const [detectedFileType, setDetectedFileType] = useState<FileType | null>(null);
+  const [qualityLevel, setQualityLevel] = useState<"standard" | "high">("standard");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [highResInfo, setHighResInfo] = useState<{ count: number; max: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  // Check if user is admin and get high-res info
+  useEffect(() => {
+    if (showQualitySelection) {
+      supabase.rpc("is_admin").then(({ data }) => {
+        setIsAdmin(data || false);
+        if (data) {
+          supabase.auth.getUser().then(({ data: { user } }) => {
+            if (user) {
+              supabase
+                .from("profiles")
+                .select("high_res_count, high_res_max")
+                .eq("id", user.id)
+                .single()
+                .then(({ data }) => {
+                  if (data) {
+                    setHighResInfo({
+                      count: (data as any).high_res_count || 0,
+                      max: (data as any).high_res_max || 10,
+                    });
+                  }
+                });
+            }
+          });
+        }
+      });
+    }
+  }, [showQualitySelection]);
+
   const uploadMutation = useMutation({
     mutationFn: async () => {
       const user = await getAuthenticatedUser();
+
+      // Check high-res limit if selected
+      if (qualityLevel === "high" && showQualitySelection) {
+        const { data: canUpload } = await supabase.rpc("can_upload_high_res", {
+          p_user_id: user.id,
+        });
+        if (!canUpload) {
+          throw new Error("Du har nådd maks antall høyoppløsningsbilder.");
+        }
+      }
 
       // If external link (large videos)
       if (externalUrl && detectedFileType === "video") {
@@ -68,10 +114,11 @@ export function MediaUpload({
       // Direct file upload
       if (!file) throw new Error("Ingen fil valgt");
 
-      // Check size
+      // Check size (higher limit for high-res)
       const fileSizeMB = file.size / (1024 * 1024);
-      if (fileSizeMB > maxSizeMB) {
-        throw new Error(`Filen er for stor (${fileSizeMB.toFixed(1)}MB). Maks ${maxSizeMB}MB.`);
+      const effectiveMaxSize = qualityLevel === "high" ? maxSizeMB * 3 : maxSizeMB;
+      if (fileSizeMB > effectiveMaxSize) {
+        throw new Error(`Filen er for stor (${fileSizeMB.toFixed(1)}MB). Maks ${effectiveMaxSize}MB.`);
       }
 
       const ft = detectedFileType || fileType || detectFileType(file);
@@ -88,7 +135,13 @@ export function MediaUpload({
           processedFile = file;
           const dims = await getImageDimensions(file);
           dimensions = { width: dims.width, height: dims.height };
+        } else if (qualityLevel === "high" && showQualitySelection) {
+          // High-res: no compression, keep original
+          processedFile = file;
+          const dims = await getImageDimensions(file);
+          dimensions = { width: dims.width, height: dims.height };
         } else {
+          // Standard: compress
           const compressed = await compressImage(file, {
             maxWidth: 1920,
             maxHeight: 1920,
@@ -123,7 +176,7 @@ export function MediaUpload({
         dimensions = await getVideoDimensions(processedFile);
       }
 
-      // Save to database
+      // Save to database with quality_level
       const { data: mediaData, error: mediaError } = await supabase
         .from("media")
         .insert({
@@ -138,6 +191,7 @@ export function MediaUpload({
           alt_text: altText || null,
           width: dimensions.width || null,
           height: dimensions.height || null,
+          quality_level: showQualitySelection && ft === "image" ? qualityLevel : "standard",
           created_by: user.id,
         })
         .select()
@@ -149,6 +203,26 @@ export function MediaUpload({
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["admin-media"] });
+      // Refresh high-res count
+      if (showQualitySelection && qualityLevel === "high") {
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          if (user) {
+            supabase
+              .from("profiles")
+              .select("high_res_count, high_res_max")
+              .eq("id", user.id)
+              .single()
+              .then(({ data }) => {
+                if (data) {
+                  setHighResInfo({
+                    count: (data as any).high_res_count || 0,
+                    max: (data as any).high_res_max || 10,
+                  });
+                }
+              });
+          }
+        });
+      }
       const reduction = data.original_size_bytes 
         ? ` (${((1 - data.size_bytes / data.original_size_bytes) * 100).toFixed(0)}% mindre)`
         : "";
@@ -165,6 +239,7 @@ export function MediaUpload({
       setAltText("");
       setExternalUrl("");
       setDetectedFileType(null);
+      setQualityLevel("standard");
       if (fileInputRef.current) fileInputRef.current.value = "";
     },
     onError: (error: Error) => {
@@ -201,11 +276,13 @@ export function MediaUpload({
     setPreview(null);
     setExternalUrl("");
     setDetectedFileType(null);
+    setQualityLevel("standard");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const detectedType = detectedFileType || fileType;
   const acceptTypes = accept || getAcceptForFileType(fileType);
+  const canUploadHighRes = isAdmin && highResInfo && highResInfo.count < highResInfo.max;
 
   return (
     <div className="space-y-4">
@@ -276,10 +353,53 @@ export function MediaUpload({
             {detectedType === "image" &&
               (file.type.toLowerCase() === "image/gif" || file.name.toLowerCase().endsWith(".gif")
                 ? " - GIF blir ikke komprimert"
-                : " - Vil bli komprimert automatisk")}
+                : qualityLevel === "high" 
+                  ? " - Original kvalitet (ingen komprimering)"
+                  : " - Vil bli komprimert automatisk")}
           </p>
         )}
       </div>
+
+      {/* Quality selection (only for admins, only for images) */}
+      {showQualitySelection && isAdmin && detectedType === "image" && file && (
+        <div className="space-y-3 p-4 border border-border rounded-lg bg-card">
+          <Label className="text-sm font-medium">Bildekvalitet</Label>
+          <RadioGroup
+            value={qualityLevel}
+            onValueChange={(value) => setQualityLevel(value as "standard" | "high")}
+            className="space-y-2"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="standard" id="quality-standard" />
+              <Label htmlFor="quality-standard" className="text-sm font-normal cursor-pointer">
+                Standard (komprimert, opptil 1920px)
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem 
+                value="high" 
+                id="quality-high" 
+                disabled={!canUploadHighRes}
+              />
+              <Label 
+                htmlFor="quality-high" 
+                className={`text-sm font-normal cursor-pointer ${!canUploadHighRes ? 'text-muted-foreground' : ''}`}
+              >
+                Høy oppløsning (original, ingen komprimering)
+              </Label>
+            </div>
+          </RadioGroup>
+          {highResInfo && (
+            <Alert variant="default" className="py-2">
+              <Info className="h-4 w-4" />
+              <AlertDescription className="text-xs">
+                Du har brukt {highResInfo.count} av {highResInfo.max} høyoppløsningsbilder.
+                {!canUploadHighRes && " Du har nådd maks antall."}
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+      )}
 
       {preview && (
         <div className="space-y-2">
