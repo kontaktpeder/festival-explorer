@@ -70,7 +70,9 @@ interface TimelineItemProps {
     title: string;
     description?: string | null;
     date?: string | null;
+    date_to?: string | null;
     year?: number | null;
+    year_to?: number | null;
     location_name?: string | null;
     city?: string | null;
     country?: string | null;
@@ -108,10 +110,22 @@ function TimelineItem({ event, index }: TimelineItemProps) {
 
   const formatEventDate = () => {
     if (event.year) {
+      if (event.year_to) {
+        return `${event.year}–${event.year_to}`;
+      }
       return event.year.toString();
     }
     if (event.date) {
-      return format(new Date(event.date), "yyyy", { locale: nb });
+      const year = format(new Date(event.date), "yyyy", { locale: nb });
+      if (event.date_to) {
+        const yearTo = format(new Date(event.date_to), "yyyy", { locale: nb });
+        if (year !== yearTo) {
+          return `${year}–${yearTo}`;
+        }
+        // Same year - show month range
+        return `${format(new Date(event.date), "MMM", { locale: nb })}–${format(new Date(event.date_to), "MMM yyyy", { locale: nb })}`;
+      }
+      return year;
     }
     return null;
   };

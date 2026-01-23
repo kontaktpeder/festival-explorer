@@ -314,6 +314,7 @@ export type Database = {
           country: string | null
           created_at: string
           date: string | null
+          date_to: string | null
           description: string | null
           entity_id: string
           event_type: string
@@ -324,12 +325,14 @@ export type Database = {
           updated_at: string
           visibility: string
           year: number | null
+          year_to: number | null
         }
         Insert: {
           city?: string | null
           country?: string | null
           created_at?: string
           date?: string | null
+          date_to?: string | null
           description?: string | null
           entity_id: string
           event_type: string
@@ -340,12 +343,14 @@ export type Database = {
           updated_at?: string
           visibility?: string
           year?: number | null
+          year_to?: number | null
         }
         Update: {
           city?: string | null
           country?: string | null
           created_at?: string
           date?: string | null
+          date_to?: string | null
           description?: string | null
           entity_id?: string
           event_type?: string
@@ -356,6 +361,7 @@ export type Database = {
           updated_at?: string
           visibility?: string
           year?: number | null
+          year_to?: number | null
         }
         Relationships: [
           {
@@ -837,6 +843,7 @@ export type Database = {
           country: string | null
           created_at: string
           date: string | null
+          date_to: string | null
           description: string | null
           event_type: string
           id: string
@@ -847,12 +854,14 @@ export type Database = {
           updated_at: string
           visibility: string
           year: number | null
+          year_to: number | null
         }
         Insert: {
           city?: string | null
           country?: string | null
           created_at?: string
           date?: string | null
+          date_to?: string | null
           description?: string | null
           event_type: string
           id?: string
@@ -863,12 +872,14 @@ export type Database = {
           updated_at?: string
           visibility?: string
           year?: number | null
+          year_to?: number | null
         }
         Update: {
           city?: string | null
           country?: string | null
           created_at?: string
           date?: string | null
+          date_to?: string | null
           description?: string | null
           event_type?: string
           id?: string
@@ -879,6 +890,7 @@ export type Database = {
           updated_at?: string
           visibility?: string
           year?: number | null
+          year_to?: number | null
         }
         Relationships: [
           {
