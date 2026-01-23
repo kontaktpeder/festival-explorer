@@ -58,10 +58,10 @@ export function ScrollAnimatedLogo() {
       <img 
         src={giggenLogo} 
         alt="GIGGEN - festival for en kveld"
-        className={`transition-all duration-500 ${
+        className={`transition-all duration-500 drop-shadow-lg ${
           isScrolled 
-            ? 'h-12 md:h-16' 
-            : 'h-10 md:h-12'
+            ? 'h-14 md:h-20' 
+            : 'h-12 md:h-16'
         }`}
       />
     </Link>

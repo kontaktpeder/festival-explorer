@@ -385,23 +385,13 @@ export function SectionRenderer({
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
 
           <div className="relative z-10 w-full max-w-md px-5 pb-8">
-            {/* Text logo instead of image */}
+            {/* PNG logo */}
             <div className="animate-slide-up mb-6">
-              <span 
-                className="font-black text-foreground text-3xl md:text-4xl uppercase tracking-[0.3em]"
-                style={{ 
-                  fontFamily: "'Space Grotesk', system-ui, sans-serif",
-                  textShadow: '3px 3px 0 hsl(24 100% 55% / 0.3)'
-                }}
-              >
-                GIGGEN
-              </span>
-              <span 
-                className="block text-sm uppercase tracking-widest mt-1"
-                style={{ color: 'hsl(24 100% 55% / 0.8)' }}
-              >
-                festival for en kveld
-              </span>
+              <img 
+                src="/giggen-logo-full.png" 
+                alt="GIGGEN - festival for en kveld"
+                className="h-20 md:h-28 w-auto drop-shadow-lg"
+              />
             </div>
             
             {/* Tagline - clearer text */}
