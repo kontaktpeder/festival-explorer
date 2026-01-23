@@ -43,7 +43,17 @@ export function parseImageSettings(json: unknown): ImageSettings | null {
 
 export type EntityType = 'venue' | 'solo' | 'band';
 export type AccessLevel = 'owner' | 'admin' | 'editor' | 'viewer';
-export type TimelineEventType = 'live_show' | 'release' | 'milestone' | 'collaboration' | 'media' | 'award' | 'personal_memory';
+export type TimelineEventType = 
+  | 'start_identity'           // Start & identitet
+  | 'artistic_development'     // Kunstnerisk utvikling
+  | 'collaboration'            // Samarbeid
+  | 'milestone'                // Milepæler
+  | 'live_performance'         // Live & opptreden
+  | 'education'                // Utdanning
+  | 'course_competence'        // Kurs & kompetanse
+  | 'recognition'              // Anerkjennelse
+  | 'transitions_life'         // Overganger & liv
+  | 'present_direction';       // Nåtid & retning
 export type TimelineVisibility = 'public' | 'pro' | 'private';
 // ============================================
 // Platform Access (NEW - replaces Platform entity membership)

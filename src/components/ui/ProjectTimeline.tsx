@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { 
-  Calendar, MapPin, Sparkles, Footprints, Search, Disc3, 
-  Mic2, Trophy, Sprout, TreeDeciduous, LucideIcon 
+  MapPin, Sparkles, Palette, Users2, Star, Mic2, 
+  GraduationCap, BookOpen, Trophy, RefreshCw, Target, LucideIcon 
 } from "lucide-react";
 import { usePublicTimelineEvents } from "@/hooks/useTimeline";
 import { format } from "date-fns";
@@ -9,13 +9,16 @@ import { nb } from "date-fns/locale";
 import type { TimelineEventType } from "@/types/database";
 
 const EVENT_TYPE_CONFIG: Record<TimelineEventType, { icon: LucideIcon }> = {
-  live_show: { icon: Mic2 },
-  release: { icon: Disc3 },
-  milestone: { icon: Sparkles },
-  collaboration: { icon: Search },
-  media: { icon: Disc3 },
-  award: { icon: Trophy },
-  personal_memory: { icon: Sprout },
+  start_identity: { icon: Sparkles },
+  artistic_development: { icon: Palette },
+  collaboration: { icon: Users2 },
+  milestone: { icon: Star },
+  live_performance: { icon: Mic2 },
+  education: { icon: GraduationCap },
+  course_competence: { icon: BookOpen },
+  recognition: { icon: Trophy },
+  transitions_life: { icon: RefreshCw },
+  present_direction: { icon: Target },
 };
 
 interface ProjectTimelineProps {
