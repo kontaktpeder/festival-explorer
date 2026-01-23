@@ -27,7 +27,8 @@ import {
   ChevronRight,
   QrCode,
   Info,
-  MapPin
+  MapPin,
+  Settings
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CroppedImage } from "@/components/ui/CroppedImage";
@@ -96,6 +97,7 @@ export default function Dashboard() {
   } | null>(null);
   const [hasExplored, setHasExplored] = useState(false);
   const [isStaff, setIsStaff] = useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   // Fetch personas
   const { data: personas, isLoading: isLoadingPersonas } = useMyPersonas();
@@ -139,6 +141,10 @@ export default function Dashboard() {
         .single();
       
       setIsStaff(!!staffRole);
+
+      // Check if user is admin (global platform admin)
+      const { data: adminCheck } = await supabase.rpc("is_admin");
+      setIsAdmin(!!adminCheck);
     };
     checkAuth();
   }, [navigate]);
@@ -245,6 +251,32 @@ export default function Dashboard() {
             Festivalen setter sammen programmet. Du fyller inn hvem du er og hva du jobber med.
           </AlertDescription>
         </Alert>
+
+        {/* Admin Section - Show if user is global admin */}
+        {isAdmin && (
+          <section className="space-y-4">
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              Admin
+            </h2>
+            <Link
+              to="/admin"
+              className="block p-6 rounded-2xl bg-primary/5 hover:bg-primary/10 border border-primary/20 hover:border-primary/30 transition-all group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                  <Settings className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-foreground">Admin Panel</p>
+                  <p className="text-sm text-muted-foreground">
+                    Administrer festival, artister og innhold
+                  </p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground/50 group-hover:text-primary/70 transition-colors" />
+              </div>
+            </Link>
+          </section>
+        )}
 
         {/* Staff Check-in Section - Show if user has crew/admin role */}
         {isStaff && (
