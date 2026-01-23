@@ -80,32 +80,35 @@ export default function AccountCenter() {
     },
   });
 
-  // Delete account mutation - uses safe RPC that preserves shared projects
+  // Delete account mutation - calls edge function that deletes profile data AND auth user
   const deleteAccountMutation = useMutation({
     mutationFn: async () => {
       if (!session?.user) throw new Error("Not authenticated");
 
-      // Call the safe deletion RPC that:
-      // - Transfers ownership of shared entities/events/festivals to other team members
-      // - Preserves media files that are in use by shared projects
-      // - Deletes personal data: profile, personas, team memberships, platform access
-      const { data, error } = await supabase.rpc('delete_user_safely', {
-        p_user_id: session.user.id
-      });
+      // Call the delete-account edge function which:
+      // 1. Calls delete_user_safely RPC (transfers/deletes profile data)
+      // 2. Deletes the auth.users entry using service role
+      const { data, error } = await supabase.functions.invoke('delete-account');
 
       if (error) throw error;
+      
+      if (data?.error) {
+        throw new Error(data.details || data.error);
+      }
 
-      // Sign out after successful deletion
+      // Sign out locally (session is now invalid anyway)
       await supabase.auth.signOut();
       
       return data as {
         success: boolean;
+        warning?: string;
         deleted_personas: number;
         deleted_team_memberships: number;
         deleted_platform_access: number;
-        deleted_invitations: number;
+        affected_invitations: number;
         deleted_media: number;
         deleted_designs: number;
+        deleted_staff_roles: number;
         transferred_media: number;
         transferred_entities: number;
         transferred_events: number;
@@ -121,15 +124,15 @@ export default function AccountCenter() {
       toast({ 
         title: "Konto slettet", 
         description: summary.length > 0 
-          ? `Din konto er slettet. ${summary.join(', ')}.`
-          : "Din konto og profil har blitt slettet."
+          ? `Din konto er permanent slettet. ${summary.join(', ')}.`
+          : "Din konto og all tilknyttet data har blitt slettet."
       });
       window.location.href = "/";
     },
     onError: (error: Error) => {
       toast({ 
-        title: "Feil", 
-        description: error.message || "Kunne ikke slette konto", 
+        title: "Feil ved sletting", 
+        description: error.message || "Kunne ikke slette konto. Prøv igjen.", 
         variant: "destructive" 
       });
     },
