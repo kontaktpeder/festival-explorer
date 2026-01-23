@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import giggenLogo from "@/assets/giggen-logo-full.png";
 
 export function StaticLogo() {
   const location = useLocation();
@@ -65,33 +66,15 @@ export function StaticLogo() {
             : 'calc(var(--safe-top, 0px) + 16px)'
         }}
       >
-        <div className="flex flex-col items-start group">
-          {/* Main logo text - bolder with orange underline accent */}
-          <span 
-            className={`font-black text-foreground uppercase transition-all duration-300 group-hover:text-accent relative ${
-              showCentered 
-                ? 'text-xl tracking-[0.25em]' 
-                : 'text-2xl md:text-3xl tracking-[0.3em] md:tracking-[0.4em]'
-            }`}
-            style={{ 
-              fontFamily: "'Space Grotesk', system-ui, sans-serif",
-              textShadow: '3px 3px 0 hsl(24 100% 55% / 0.3), -1px -1px 0 hsl(330 100% 60% / 0.15)'
-            }}
-          >
-            GIGGEN
-            {/* Orange accent dot */}
-            <span 
-              className="absolute -right-2 top-0 w-1.5 h-1.5 rounded-full"
-              style={{ background: 'hsl(24 100% 55%)' }}
-            />
-          </span>
-          {/* Tagline - updated text */}
-          <span className={`text-[hsl(24_100%_55%_/_0.8)] font-medium tracking-widest uppercase transition-all duration-300 ${
-            showCentered ? 'text-[8px] -mt-0.5' : 'text-[10px] md:text-xs -mt-0.5'
-          }`}>
-            festival for en kveld
-          </span>
-        </div>
+        <img 
+          src={giggenLogo} 
+          alt="GIGGEN - festival for en kveld"
+          className={`transition-all duration-300 ${
+            showCentered 
+              ? 'h-8' 
+              : 'h-10 md:h-12'
+          }`}
+        />
       </Link>
 
       {/* BACKSTAGE link - top right, smaller when logo is centered */}

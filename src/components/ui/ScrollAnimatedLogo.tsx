@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import giggenLogo from "@/assets/giggen-logo-full.png";
 
 export function ScrollAnimatedLogo() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -54,28 +55,15 @@ export function ScrollAnimatedLogo() {
         transform: "none",
       }}
     >
-      <div className="flex flex-col items-start group">
-        {/* Main logo text - spaced letters */}
-        <span 
-          className={`font-black text-foreground uppercase transition-all duration-500 group-hover:text-accent ${
-            isScrolled 
-              ? 'text-2xl md:text-4xl tracking-[0.5em] md:tracking-[0.6em]' 
-              : 'text-xl md:text-2xl tracking-[0.4em] md:tracking-[0.5em]'
-          }`}
-        >
-          GIGGEN
-        </span>
-        {/* Tagline - shows when not scrolled or on mobile */}
-        <span 
-          className={`text-muted-foreground/80 font-medium tracking-wide transition-all duration-500 ${
-            isScrolled && !isMobile 
-              ? 'opacity-0 h-0 -mt-2' 
-              : 'opacity-100 text-[10px] md:text-xs -mt-0.5'
-          }`}
-        >
-          – en festival for en kveld
-        </span>
-      </div>
+      <img 
+        src={giggenLogo} 
+        alt="GIGGEN - festival for en kveld"
+        className={`transition-all duration-500 ${
+          isScrolled 
+            ? 'h-12 md:h-16' 
+            : 'h-10 md:h-12'
+        }`}
+      />
     </Link>
   );
 }
