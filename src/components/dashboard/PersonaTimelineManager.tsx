@@ -76,7 +76,7 @@ export function PersonaTimelineManager({ personaId, canEdit }: PersonaTimelineMa
           <h3 className="font-medium">Min reise</h3>
         </div>
         {canEdit && (
-          <Button variant="outline" size="sm" onClick={() => handleEdit(null)}>
+          <Button type="button" variant="outline" size="sm" onClick={() => handleEdit(null)}>
             <Plus className="h-4 w-4 mr-1" />
             Legg til
           </Button>
@@ -150,6 +150,7 @@ export function PersonaTimelineManager({ personaId, canEdit }: PersonaTimelineMa
                 {canEdit && (
                   <div className="flex-shrink-0 flex flex-col gap-1">
                     <Button
+                      type="button"
                       variant="ghost"
                       size="icon"
                       onClick={() => handleEdit(event)}
@@ -158,6 +159,7 @@ export function PersonaTimelineManager({ personaId, canEdit }: PersonaTimelineMa
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
                     <Button
+                      type="button"
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDelete(event.id)}
