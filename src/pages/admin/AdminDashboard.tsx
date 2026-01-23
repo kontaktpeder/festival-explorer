@@ -5,6 +5,18 @@ import { AlertCircle, CheckCircle, Calendar, Music, Users, MapPin } from "lucide
 import { Button } from "@/components/ui/button";
 import { QRCodeGenerator } from "@/components/admin/QRCodeGenerator";
 
+// Hent public URL fra environment variable, eller fallback til window.location.origin
+const getPublicUrl = () => {
+  const publicUrl = import.meta.env.VITE_PUBLIC_URL;
+  if (publicUrl) {
+    return publicUrl;
+  }
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return window.location.origin;
+  }
+  return window.location.origin;
+};
+
 export default function AdminDashboard() {
   const { data: activeFestival } = useQuery({
     queryKey: ["admin-active-festival"],
@@ -73,7 +85,7 @@ export default function AdminDashboard() {
 
       {/* QR Code Generator */}
       <QRCodeGenerator 
-        defaultUrl={activeFestival ? `${window.location.origin}/festival/${activeFestival.slug}` : undefined} 
+        defaultUrl={activeFestival ? `${getPublicUrl()}/festival/${activeFestival.slug}` : undefined} 
       />
 
       {/* Stats grid */}
