@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Building2, User, Users, ExternalLink, ArrowLeft } from "lucide-react";
 import { EntityTimeline } from "@/components/ui/EntityTimeline";
+import { usePublicEntityTimelineEvents } from "@/hooks/useEntityTimeline";
 import { usePersona } from "@/hooks/usePersona";
 import { usePersonaEntityBindings } from "@/hooks/usePersonaBindings";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
@@ -89,6 +90,7 @@ export default function PersonaPage() {
   const { data: persona, isLoading: isLoadingPersona, error } = usePersona(slug);
   const { data: bindings, isLoading: isLoadingBindings } = usePersonaEntityBindings(persona?.id);
   const { data: otherPersonas } = usePersonasByUserId(persona?.user_id);
+  const { data: timelineEvents } = usePublicEntityTimelineEvents(undefined, persona?.id);
 
   // Scroll reveal for sections - hero is visible immediately
   const heroReveal = useScrollReveal(true); // Always visible immediately
@@ -201,25 +203,27 @@ export default function PersonaPage() {
           </section>
         )}
 
-        {/* Timeline Section - Min reise */}
-        <section
-          ref={timelineReveal.ref}
-          className={`
-            py-16 md:py-24 px-6
-            transition-all duration-1000 ease-out delay-200
-            ${timelineReveal.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}
-          `}
-        >
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-display font-light text-center text-muted-foreground/60 mb-12 md:mb-16 tracking-wide">
-              Min reise
-            </h2>
-            
-            {persona && (
-              <EntityTimeline personaId={persona.id} viewerRole="fan" />
-            )}
-          </div>
-        </section>
+        {/* Timeline Section - Min reise - only show if events exist */}
+        {timelineEvents && timelineEvents.length > 0 && (
+          <section
+            ref={timelineReveal.ref}
+            className={`
+              py-16 md:py-24 px-6
+              transition-all duration-1000 ease-out delay-200
+              ${timelineReveal.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}
+            `}
+          >
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-2xl md:text-3xl font-display font-light text-center text-muted-foreground/60 mb-12 md:mb-16 tracking-wide">
+                Min reise
+              </h2>
+              
+              {persona && (
+                <EntityTimeline personaId={persona.id} viewerRole="fan" />
+              )}
+            </div>
+          </section>
+        )}
 
         {/* Medvirker på Section */}
         {!isLoadingBindings && publicBindings.length > 0 && (

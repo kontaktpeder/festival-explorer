@@ -3,6 +3,8 @@ import { Music } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { parseImageSettings } from "@/types/database";
 
+import { usePublicEntityTimelineEvents } from "@/hooks/useEntityTimeline";
+
 type EntityType = Database["public"]["Enums"]["entity_type"];
 
 function getPersonasSectionTitle(entityType: EntityType): string {
@@ -30,6 +32,7 @@ export default function ProjectPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: entity, isLoading, error } = useEntity(slug || "");
   const { data: personaBindings } = useEntityPersonaBindings(entity?.id);
+  const { data: timelineEvents } = usePublicEntityTimelineEvents(entity?.id);
   
   // Signed URL for public viewing
   const heroImageUrl = useSignedMediaUrl(entity?.hero_image_url, 'public');
@@ -151,13 +154,15 @@ export default function ProjectPage() {
         </section>
       )}
 
-      {/* HISTORIEN – The journey */}
-      <section className="py-16 md:py-28 px-6 md:px-12 border-t border-border/20">
-        <h2 className="text-xs uppercase tracking-[0.25em] text-muted-foreground/60 mb-12 md:mb-20">
-          Historien
-        </h2>
-        <EntityTimeline entityId={entity.id} viewerRole="fan" />
-      </section>
+      {/* HISTORIEN – The journey - only show if events exist */}
+      {timelineEvents && timelineEvents.length > 0 && (
+        <section className="py-16 md:py-28 px-6 md:px-12 border-t border-border/20">
+          <h2 className="text-xs uppercase tracking-[0.25em] text-muted-foreground/60 mb-12 md:mb-20">
+            Historien
+          </h2>
+          <EntityTimeline entityId={entity.id} viewerRole="fan" />
+        </section>
+      )}
     </PageLayout>
   );
 }
