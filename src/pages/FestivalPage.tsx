@@ -127,8 +127,8 @@ export default function FestivalPage() {
   if (festival.sections && festival.sections.length > 0) {
     return (
       <PageLayout>
-        {/* Universal logo */}
-        <StaticLogo />
+        {/* Universal logo - heroMode for centered, larger logo */}
+        <StaticLogo heroMode />
 
         {/* Render sections dynamisk */}
         {festival.sections.map((section) => {
