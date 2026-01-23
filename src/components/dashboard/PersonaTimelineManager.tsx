@@ -17,7 +17,24 @@ import {
 import type { TimelineVisibility, TimelineEventType } from "@/types/database";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Plus, Pencil, Trash2, Clock, ImageIcon, Mic2, Disc3, Sparkles, Users2, Newspaper, Trophy, Heart, X } from "lucide-react";
+import { 
+  Plus, 
+  Pencil, 
+  Trash2, 
+  Clock, 
+  ImageIcon, 
+  X,
+  Sparkles,        // Start & identitet
+  Palette,         // Kunstnerisk utvikling
+  Users2,          // Samarbeid
+  Star,            // Milepæler
+  Mic2,            // Live & opptreden
+  GraduationCap,   // Utdanning
+  BookOpen,        // Kurs & kompetanse
+  Trophy,          // Anerkjennelse
+  RefreshCw,       // Overganger & liv
+  Target           // Nåtid & retning
+} from "lucide-react";
 
 interface PersonaTimelineManagerProps {
   personaId: string;
@@ -25,13 +42,16 @@ interface PersonaTimelineManagerProps {
 }
 
 const EVENT_TYPE_OPTIONS: { value: TimelineEventType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { value: "live_show", label: "Live-opptreden", icon: Mic2 },
-  { value: "release", label: "Utgivelse", icon: Disc3 },
-  { value: "milestone", label: "Milepæl", icon: Sparkles },
+  { value: "start_identity", label: "Start & identitet", icon: Sparkles },
+  { value: "artistic_development", label: "Kunstnerisk utvikling", icon: Palette },
   { value: "collaboration", label: "Samarbeid", icon: Users2 },
-  { value: "media", label: "Media / omtale", icon: Newspaper },
-  { value: "award", label: "Pris / anerkjennelse", icon: Trophy },
-  { value: "personal_memory", label: "Personlig øyeblikk", icon: Heart },
+  { value: "milestone", label: "Milepæler", icon: Star },
+  { value: "live_performance", label: "Live & opptreden", icon: Mic2 },
+  { value: "education", label: "Utdanning", icon: GraduationCap },
+  { value: "course_competence", label: "Kurs & kompetanse", icon: BookOpen },
+  { value: "recognition", label: "Anerkjennelse", icon: Trophy },
+  { value: "transitions_life", label: "Overganger & liv", icon: RefreshCw },
+  { value: "present_direction", label: "Nåtid & retning", icon: Target },
 ];
 
 const VISIBILITY_LABELS: Record<TimelineVisibility, string> = {
@@ -211,7 +231,7 @@ function TimelineEventDialog({
 }: TimelineEventDialogProps) {
   const isEditing = !!existingEvent;
 
-  const [eventType, setEventType] = useState<TimelineEventType>("milestone");
+  const [eventType, setEventType] = useState<TimelineEventType>("start_identity");
   const [title, setTitle] = useState("");
   const [year, setYear] = useState<number | "">("");
   const [dateStr, setDateStr] = useState("");
@@ -223,7 +243,7 @@ function TimelineEventDialog({
 
   useEffect(() => {
     if (open) {
-      setEventType((existingEvent?.event_type as TimelineEventType) ?? "milestone");
+      setEventType((existingEvent?.event_type as TimelineEventType) ?? "start_identity");
       setTitle(existingEvent?.title ?? "");
       setYear(existingEvent?.year ?? "");
       setVisibility((existingEvent?.visibility as TimelineVisibility) ?? "public");

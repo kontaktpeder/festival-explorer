@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, Check, ChevronsUpDown, Globe, Tag, Lock, ChevronDown, ChevronUp, HelpCircle,
-  Sparkles, Footprints, Search, Disc3, Mic2, Trophy, Sprout, TreeDeciduous, LucideIcon,
+  Sparkles, Palette, Users2, Star, Mic2, GraduationCap, BookOpen, Trophy, RefreshCw, Target, LucideIcon,
   Building2, User, Users
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -52,83 +52,87 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { TimelineEventType, TimelineVisibility, EntityType } from "@/types/database";
 
-// Phases based on the artist journey
+// Phases based on the artist journey - aligned with TimelineEventType
 const PHASES: { 
-  value: string; 
+  value: TimelineEventType; 
   label: string; 
   icon: LucideIcon; 
   defaultVisibility: TimelineVisibility;
   placeholders: string[];
 }[] = [
   { 
-    value: "origin", 
-    label: "Opprinnelse & gnist", 
+    value: "start_identity", 
+    label: "Start & identitet", 
     icon: Sparkles, 
-    defaultVisibility: "private",
-    placeholders: ["Bandet fikk navnet sitt", "Første låt skrevet i kjelleren"]
-  },
-  { 
-    value: "first_steps", 
-    label: "De første stegene ut", 
-    icon: Footprints, 
     defaultVisibility: "public",
-    placeholders: ["Første konsert på vennefest", "Første betalte spillejobb"]
+    placeholders: ["Bandet fikk navnet sitt", "Første låt skrevet"]
   },
   { 
-    value: "identity", 
-    label: "Utforsking & identitet", 
-    icon: Search, 
+    value: "artistic_development", 
+    label: "Kunstnerisk utvikling", 
+    icon: Palette, 
     defaultVisibility: "public",
-    placeholders: ["Endring i besetning", "Første studioinnspilling"]
+    placeholders: ["Ny sjanger", "Første studioinnspilling"]
   },
   { 
-    value: "releases", 
-    label: "Utgivelser & synlighet", 
-    icon: Disc3, 
+    value: "collaboration", 
+    label: "Samarbeid", 
+    icon: Users2, 
     defaultVisibility: "public",
-    placeholders: ["Første singel sluppet", "Første radiospilling"]
+    placeholders: ["Samarbeid med annen artist", "Ny bandmedlem"]
   },
   { 
-    value: "live_momentum", 
-    label: "Live-liv & momentum", 
+    value: "milestone", 
+    label: "Milepæler", 
+    icon: Star, 
+    defaultVisibility: "public",
+    placeholders: ["Første singel sluppet", "10-årsjubileum"]
+  },
+  { 
+    value: "live_performance", 
+    label: "Live & opptreden", 
     icon: Mic2, 
     defaultVisibility: "public",
-    placeholders: ["Første utsolgte konsert", "Første festivalopptreden"]
+    placeholders: ["Første konsert", "Festivalopptreden"]
+  },
+  { 
+    value: "education", 
+    label: "Utdanning", 
+    icon: GraduationCap, 
+    defaultVisibility: "public",
+    placeholders: ["Musikkutdanning", "Masterclass"]
+  },
+  { 
+    value: "course_competence", 
+    label: "Kurs & kompetanse", 
+    icon: BookOpen, 
+    defaultVisibility: "public",
+    placeholders: ["Produksjonskurs", "Sertifisering"]
   },
   { 
     value: "recognition", 
-    label: "Anerkjennelse & profesjonalisering", 
+    label: "Anerkjennelse", 
     icon: Trophy, 
     defaultVisibility: "public",
-    placeholders: ["Første pris / nominasjon", "Signert av booking-agent"]
+    placeholders: ["Første pris", "Nominasjon"]
   },
   { 
-    value: "maturity", 
-    label: "Modning & valg", 
-    icon: Sprout, 
+    value: "transitions_life", 
+    label: "Overganger & liv", 
+    icon: RefreshCw, 
     defaultVisibility: "public",
-    placeholders: ["Ny kunstnerisk retning", "Album som markerer et skifte"]
+    placeholders: ["Ny kunstnerisk retning", "Pause fra musikk"]
   },
   { 
-    value: "legacy", 
-    label: "Forankring & arv", 
-    icon: TreeDeciduous, 
+    value: "present_direction", 
+    label: "Nåtid & retning", 
+    icon: Target, 
     defaultVisibility: "public",
-    placeholders: ["10-års jubileum", "Samarbeid med yngre artister"]
+    placeholders: ["Nåværende prosjekt", "Fremtidsplaner"]
   },
 ];
 
-// Map phases to event types for database storage
-const PHASE_TO_EVENT_TYPE: Record<string, TimelineEventType> = {
-  origin: "personal_memory",
-  first_steps: "live_show",
-  identity: "milestone",
-  releases: "release",
-  live_momentum: "live_show",
-  recognition: "award",
-  maturity: "milestone",
-  legacy: "milestone",
-};
+// Phase value is now the same as event type (no mapping needed)
 
 const VISIBILITY_OPTIONS: { 
   value: TimelineVisibility; 
@@ -174,7 +178,7 @@ export default function AdminTimelineEventEdit() {
   // Form state
   const [entityId, setEntityId] = useState("");
   const [entityOpen, setEntityOpen] = useState(false);
-  const [phase, setPhase] = useState("first_steps");
+  const [phase, setPhase] = useState<TimelineEventType>("start_identity");
   const [eventText, setEventText] = useState("");
   const [visibility, setVisibility] = useState<TimelineVisibility>("public");
   const [date, setDate] = useState("");
@@ -215,12 +219,9 @@ export default function AdminTimelineEventEdit() {
       if (existingEvent.media && existingEvent.media.length > 0) {
         setMediaUrl(existingEvent.media[0].url);
       }
-      // Try to map existing event_type back to a phase
-      const matchedPhase = Object.entries(PHASE_TO_EVENT_TYPE).find(
-        ([, eventType]) => eventType === existingEvent.event_type
-      );
-      if (matchedPhase) {
-        setPhase(matchedPhase[0]);
+      // Phase value is now directly the event_type
+      if (existingEvent.event_type) {
+        setPhase(existingEvent.event_type as TimelineEventType);
       }
       // Open details if there's existing data
       if (existingEvent.date || existingEvent.location_name || existingEvent.city || existingEvent.description) {
@@ -230,7 +231,7 @@ export default function AdminTimelineEventEdit() {
   }, [existingEvent]);
 
   // Set default visibility when phase changes
-  const handlePhaseChange = (newPhase: string) => {
+  const handlePhaseChange = (newPhase: TimelineEventType) => {
     setPhase(newPhase);
     const phaseConfig = PHASES.find((p) => p.value === newPhase);
     if (phaseConfig && isNew) {
@@ -255,7 +256,7 @@ export default function AdminTimelineEventEdit() {
     const eventData = {
       entity_id: entityId,
       title: eventText.trim(),
-      event_type: PHASE_TO_EVENT_TYPE[phase] || "milestone",
+      event_type: phase, // Phase value is now directly the event_type
       visibility,
       date: date || null,
       year: year ? Number(year) : null,
