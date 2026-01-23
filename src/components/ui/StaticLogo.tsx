@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import giggenLogo from "@/assets/giggen-logo-full.png";
+import giggenLogo from "@/assets/giggen-logo-wide.png";
 
 interface StaticLogoProps {
   /** If true, logo is always centered and larger (for homepage hero) */
