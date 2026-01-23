@@ -94,11 +94,11 @@ export default function EntityEdit() {
     retry: 1,
   });
 
-  // Fetch team members
+  // Fetch team members with personas
   const { data: teamMembers } = useQuery({
     queryKey: ["entity-team", id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: teamData, error } = await supabase
         .from("entity_team")
         .select(`
           *,
@@ -109,7 +109,21 @@ export default function EntityEdit() {
         .order("joined_at", { ascending: true });
       
       if (error) throw error;
-      return data || [];
+      
+      // Fetch personas for each team member
+      const userIds = teamData?.map(m => m.user_id) || [];
+      if (userIds.length === 0) return [];
+      
+      const { data: personasData } = await supabase
+        .from("personas")
+        .select("id, user_id, name, avatar_url, slug")
+        .in("user_id", userIds);
+      
+      // Map personas to team members
+      return (teamData || []).map(member => ({
+        ...member,
+        persona: personasData?.find(p => p.user_id === member.user_id) || null
+      }));
     },
     enabled: !!id,
   });
@@ -390,15 +404,17 @@ export default function EntityEdit() {
             <div className="space-y-2">
               {teamMembers.map((member) => {
                 const profile = member.profile as { id: string; display_name?: string; handle?: string; avatar_url?: string } | null;
-                if (!profile) return null;
+                const persona = member.persona as { id: string; name: string; avatar_url?: string; slug?: string } | null;
                 
-                const displayName = profile.display_name || profile.handle || "Ingen navn";
+                // Prioritize persona name, fallback to profile, then "Ingen navn"
+                const displayName = persona?.name || profile?.display_name || profile?.handle || "Ingen navn";
+                const avatarUrl = persona?.avatar_url || profile?.avatar_url;
                 
                 return (
                   <div key={member.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                     <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {profile.avatar_url ? (
-                        <img src={profile.avatar_url} alt={displayName} className="h-full w-full object-cover" />
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
                       ) : (
                         <span className="text-sm font-medium text-muted-foreground">
                           {displayName.charAt(0).toUpperCase()}
