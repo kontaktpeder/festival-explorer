@@ -131,8 +131,8 @@ export function MediaPicker({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] max-w-3xl h-[calc(100vh-2rem)] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] max-w-3xl max-h-[calc(100vh-2rem)] sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6">
+        <DialogHeader className="flex-shrink-0 pb-2">
           <DialogTitle className="text-base sm:text-lg">Velg fil fra filbank</DialogTitle>
         </DialogHeader>
 
@@ -154,8 +154,8 @@ export function MediaPicker({
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="library" className="flex-1 flex flex-col overflow-hidden mt-3 sm:mt-4">
-            <div className="flex flex-col sm:flex-row gap-2 mb-3 sm:mb-4">
+          <TabsContent value="library" className="flex-1 flex flex-col overflow-hidden mt-2 sm:mt-3 data-[state=inactive]:hidden">
+            <div className="flex flex-col sm:flex-row gap-2 mb-2 sm:mb-3 flex-shrink-0">
               {!fileType && (
                 <Select value={selectedType} onValueChange={setSelectedType}>
                   <SelectTrigger className="w-full sm:w-40 h-9">
@@ -239,7 +239,7 @@ export function MediaPicker({
               )}
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 sm:pt-4 border-t border-border mt-3 sm:mt-4">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 sm:pt-3 border-t border-border mt-2 sm:mt-3 flex-shrink-0">
               <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto" size="sm">
                 Avbryt
               </Button>
@@ -249,14 +249,12 @@ export function MediaPicker({
             </div>
           </TabsContent>
 
-          <TabsContent value="upload" className="flex-1 mt-3 sm:mt-4 overflow-y-auto">
-            <div className="pb-4">
-              <MediaUpload
-                fileType={fileType}
-                onUploadComplete={handleUploadComplete}
-                showQualitySelection={showQualitySelection}
-              />
-            </div>
+          <TabsContent value="upload" className="mt-2 sm:mt-3 overflow-y-auto data-[state=inactive]:hidden">
+            <MediaUpload
+              fileType={fileType}
+              onUploadComplete={handleUploadComplete}
+              showQualitySelection={showQualitySelection}
+            />
           </TabsContent>
         </Tabs>
       </DialogContent>
