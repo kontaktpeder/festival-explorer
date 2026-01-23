@@ -10,8 +10,21 @@ interface QRCodeGeneratorProps {
   defaultUrl?: string;
 }
 
+// Hent public URL fra environment variable, eller fallback til window.location.origin
+const getPublicUrl = () => {
+  const publicUrl = import.meta.env.VITE_PUBLIC_URL;
+  if (publicUrl) {
+    return publicUrl;
+  }
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return window.location.origin;
+  }
+  return window.location.origin;
+};
+
 export function QRCodeGenerator({ defaultUrl }: QRCodeGeneratorProps) {
-  const [url, setUrl] = useState(defaultUrl || window.location.origin);
+  const publicBaseUrl = getPublicUrl();
+  const [url, setUrl] = useState(defaultUrl || publicBaseUrl);
   const [size, setSize] = useState(1000);
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
@@ -74,6 +87,11 @@ export function QRCodeGenerator({ defaultUrl }: QRCodeGeneratorProps) {
             placeholder="https://..."
             className="mt-1"
           />
+          {publicBaseUrl !== window.location.origin && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Public URL: {publicBaseUrl}
+            </p>
+          )}
         </div>
 
         <div>
