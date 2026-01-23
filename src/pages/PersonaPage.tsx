@@ -48,28 +48,37 @@ function usePersonasByUserId(userId: string | undefined) {
   });
 }
 
-// Scroll reveal hook
-function useScrollReveal() {
+// Scroll reveal hook with fallback
+function useScrollReveal(initialVisible = false) {
   const ref = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(initialVisible);
 
   useEffect(() => {
+    if (initialVisible) return;
+    
+    // Fallback: make visible after delay if observer doesn't fire
+    const fallbackTimer = setTimeout(() => setIsVisible(true), 500);
+    
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
+          clearTimeout(fallbackTimer);
           observer.disconnect();
         }
       },
-      { threshold: 0.15, rootMargin: "0px 0px -50px 0px" }
+      { threshold: 0.1, rootMargin: "50px 0px 0px 0px" }
     );
 
     if (ref.current) {
       observer.observe(ref.current);
     }
 
-    return () => observer.disconnect();
-  }, []);
+    return () => {
+      clearTimeout(fallbackTimer);
+      observer.disconnect();
+    };
+  }, [initialVisible]);
 
   return { ref, isVisible };
 }
@@ -81,8 +90,8 @@ export default function PersonaPage() {
   const { data: bindings, isLoading: isLoadingBindings } = usePersonaEntityBindings(persona?.id);
   const { data: otherPersonas } = usePersonasByUserId(persona?.user_id);
 
-  // Scroll reveal for sections
-  const heroReveal = useScrollReveal();
+  // Scroll reveal for sections - hero is visible immediately
+  const heroReveal = useScrollReveal(true); // Always visible immediately
   const bioReveal = useScrollReveal();
   const timelineReveal = useScrollReveal();
   const entitiesReveal = useScrollReveal();
