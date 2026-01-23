@@ -325,56 +325,58 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Persona section - soft, identity-focused, lower visual weight */}
-        <section className="space-y-5">
-          <div className="flex items-baseline justify-between">
-            <div>
-              <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                Din profil
-              </h2>
-              <p className="text-xs text-muted-foreground/70 mt-1">
-                Hvem du er som musiker, fotograf eller arrangør
-              </p>
-            </div>
-            <div className="flex gap-2">
-              {personas && personas.length > 0 && (
-                <Link 
-                  to="/dashboard/personas"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Se alle
-                </Link>
-              )}
-            </div>
+        {/* Persona section - identity-focused with card styling */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground">
+              👤 Din profil
+            </h2>
+            {personas && personas.length > 0 && (
+              <Link 
+                to="/dashboard/personas"
+                className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Se alle →
+              </Link>
+            )}
           </div>
+          
+          <p className="text-xs sm:text-sm text-muted-foreground -mt-2">
+            Hvem du er som musiker, fotograf eller arrangør
+          </p>
 
           {!isLoadingPersonas && personas && personas.length > 0 ? (
-            <div className="flex flex-wrap gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {personas.map((persona) => (
                 <Link
                   key={persona.id}
                   to={`/dashboard/personas/${persona.id}`}
-                  className="group flex items-center gap-3 px-1 py-1 pr-4 rounded-full bg-muted/30 hover:bg-muted/60 transition-all"
+                  className="group flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-card hover:bg-card/80 border border-border/50 hover:border-border transition-all"
                 >
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={persona.avatar_url || undefined} />
-                    <AvatarFallback className="text-xs bg-accent/10 text-accent">
+                  <Avatar className="h-12 w-12 sm:h-14 sm:w-14 ring-2 ring-accent/20">
+                    <AvatarImage src={persona.avatar_url || undefined} className="object-cover" />
+                    <AvatarFallback className="text-sm bg-accent/10 text-accent font-medium">
                       {persona.name.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium text-foreground/90 group-hover:text-foreground transition-colors">
-                    {persona.name}
-                  </span>
-                  {!persona.is_public && (
-                    <span className="text-[10px] text-muted-foreground bg-background/50 px-1.5 py-0.5 rounded">
-                      Privat
-                    </span>
-                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm sm:text-base font-semibold text-foreground group-hover:text-accent transition-colors truncate">
+                      {persona.name}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {persona.is_public ? (
+                        <span className="text-xs text-muted-foreground">Offentlig profil</span>
+                      ) : (
+                        <span className="text-xs text-warning bg-warning/10 px-1.5 py-0.5 rounded">Privat</span>
+                      )}
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-accent transition-colors flex-shrink-0" />
                 </Link>
               ))}
               <Link
                 to="/dashboard/personas/new"
-                className="flex items-center gap-2 px-4 py-2 rounded-full text-sm text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all"
+                className="flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-border/50 hover:border-accent/50 text-sm text-muted-foreground hover:text-accent transition-all"
               >
                 <Plus className="h-4 w-4" />
                 Ny profil
@@ -383,15 +385,15 @@ export default function Dashboard() {
           ) : !isLoadingPersonas ? (
             <Link
               to="/dashboard/personas/new"
-              className="block p-6 rounded-2xl bg-accent/5 hover:bg-accent/10 border border-accent/20 hover:border-accent/30 transition-all group"
+              className="block p-5 sm:p-6 rounded-2xl bg-accent/5 hover:bg-accent/10 border border-accent/20 hover:border-accent/30 transition-all group"
             >
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-full bg-accent/10 group-hover:bg-accent/20 transition-colors">
                   <Sparkles className="h-5 w-5 text-accent" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-foreground">Lag din profil</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="font-semibold text-foreground">Lag din profil</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Vis deg frem som musiker, fotograf eller DJ
                   </p>
                 </div>
