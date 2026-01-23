@@ -131,8 +131,8 @@ export function MediaPicker({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] max-w-3xl max-h-[calc(100vh-2rem)] sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6">
-        <DialogHeader className="flex-shrink-0 pb-2">
+      <DialogContent className="w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] max-w-3xl max-h-[90vh] sm:max-h-[80vh] overflow-hidden flex flex-col p-3 sm:p-4 gap-0">
+        <DialogHeader className="flex-shrink-0 pb-2 sm:pb-3">
           <DialogTitle className="text-base sm:text-lg">Velg fil fra filbank</DialogTitle>
         </DialogHeader>
 
@@ -141,7 +141,7 @@ export function MediaPicker({
           onValueChange={(v) => setActiveTab(v as "library" | "upload")}
           className="flex-1 flex flex-col overflow-hidden min-h-0"
         >
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
             <TabsTrigger value="library" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
               <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Filbibliotek</span>
@@ -154,11 +154,11 @@ export function MediaPicker({
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="library" className="flex-1 flex flex-col overflow-hidden mt-2 sm:mt-3 data-[state=inactive]:hidden">
-            <div className="flex flex-col sm:flex-row gap-2 mb-2 sm:mb-3 flex-shrink-0">
+          <TabsContent value="library" className="flex-1 flex flex-col overflow-hidden mt-2 data-[state=inactive]:hidden">
+            <div className="flex flex-col sm:flex-row gap-2 mb-2 flex-shrink-0">
               {!fileType && (
                 <Select value={selectedType} onValueChange={setSelectedType}>
-                  <SelectTrigger className="w-full sm:w-40 h-9">
+                  <SelectTrigger className="w-full sm:w-36 h-8 text-xs sm:text-sm">
                     <SelectValue placeholder="Filtype" />
                   </SelectTrigger>
                   <SelectContent>
@@ -171,35 +171,35 @@ export function MediaPicker({
                 </Select>
               )}
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                 <Input
                   placeholder="Søk i filer..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 sm:pl-10 h-9"
+                  className="pl-8 h-8 text-xs sm:text-sm"
                 />
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto min-h-0">
               {isLoading ? (
-                <div className="flex items-center justify-center h-32 sm:h-40 text-muted-foreground text-sm">
+                <div className="flex items-center justify-center h-24 text-muted-foreground text-sm">
                   Laster filer...
                 </div>
               ) : media?.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-32 sm:h-40 text-muted-foreground">
-                  <ImageIcon className="w-10 h-10 sm:w-12 sm:h-12 mb-2 opacity-50" />
-                  <p className="text-sm">Ingen filer funnet</p>
+                <div className="flex flex-col items-center justify-center h-24 text-muted-foreground">
+                  <ImageIcon className="w-8 h-8 mb-1 opacity-50" />
+                  <p className="text-xs sm:text-sm">Ingen filer funnet</p>
                   <Button
                     variant="link"
                     onClick={() => setActiveTab("upload")}
-                    className="mt-2 text-sm"
+                    className="mt-1 text-xs sm:text-sm h-auto p-0"
                   >
                     Last opp din første fil
                   </Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 sm:gap-2">
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
                   {media?.map((item) => (
                     <button
                       key={item.id}
@@ -239,17 +239,17 @@ export function MediaPicker({
               )}
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 sm:pt-3 border-t border-border mt-2 sm:mt-3 flex-shrink-0">
-              <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto" size="sm">
+            <div className="flex gap-2 pt-2 border-t border-border mt-2 flex-shrink-0">
+              <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-none" size="sm">
                 Avbryt
               </Button>
-              <Button onClick={handleSelect} disabled={!selectedId} className="w-full sm:w-auto" size="sm">
+              <Button onClick={handleSelect} disabled={!selectedId} className="flex-1 sm:flex-none" size="sm">
                 Velg fil
               </Button>
             </div>
           </TabsContent>
 
-          <TabsContent value="upload" className="mt-2 sm:mt-3 overflow-y-auto data-[state=inactive]:hidden">
+          <TabsContent value="upload" className="flex-1 mt-2 overflow-y-auto data-[state=inactive]:hidden">
             <MediaUpload
               fileType={fileType}
               onUploadComplete={handleUploadComplete}
