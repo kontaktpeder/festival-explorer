@@ -4,7 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import giggenLogo from "@/assets/giggen-logo-full.png";
 
-export function StaticLogo() {
+interface StaticLogoProps {
+  /** If true, logo is always centered and larger (for homepage hero) */
+  heroMode?: boolean;
+}
+
+export function StaticLogo({ heroMode = false }: StaticLogoProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -46,12 +51,52 @@ export function StaticLogo() {
     }
   }, [location.pathname, navigate]);
 
+  // Hero mode: always centered, larger, positioned lower
+  if (heroMode) {
+    return (
+      <>
+        <Link
+          to="/"
+          onClick={handleClick}
+          className="fixed z-50 left-1/2 -translate-x-1/2 transition-all duration-500 ease-out"
+          style={{
+            top: isScrolled 
+              ? 'calc(var(--safe-top, 0px) + 12px)' 
+              : 'calc(var(--safe-top, 0px) + 40vh - 80px)'
+          }}
+        >
+          <img 
+            src={giggenLogo} 
+            alt="GIGGEN - festival for en kveld"
+            className={`transition-all duration-500 drop-shadow-2xl ${
+              isScrolled 
+                ? 'h-14 md:h-20' 
+                : 'h-28 md:h-40 lg:h-48'
+            }`}
+          />
+        </Link>
+
+        {/* BACKSTAGE link - top right */}
+        <Link
+          to={session ? "/dashboard" : "/admin/login"}
+          className="fixed z-50 right-4 transition-all duration-500 ease-out"
+          style={{
+            top: 'calc(var(--safe-top, 0px) + 20px)'
+          }}
+        >
+          <span className="font-medium text-foreground/80 hover:text-accent transition-colors uppercase tracking-wider text-sm">
+            BACKSTAGE
+          </span>
+        </Link>
+      </>
+    );
+  }
+
   const showCentered = isMobile && isScrolled;
 
   return (
     <>
-      
-      {/* Logo - Bold text with orange accent */}
+      {/* Logo */}
       <Link
         to="/"
         onClick={handleClick}
@@ -69,10 +114,10 @@ export function StaticLogo() {
         <img 
           src={giggenLogo} 
           alt="GIGGEN - festival for en kveld"
-          className={`transition-all duration-300 ${
+          className={`transition-all duration-300 drop-shadow-lg ${
             showCentered 
-              ? 'h-8' 
-              : 'h-10 md:h-12'
+              ? 'h-10' 
+              : 'h-12 md:h-16'
           }`}
         />
       </Link>
