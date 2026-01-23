@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, Check, ChevronsUpDown, Globe, Tag, Lock, ChevronDown, ChevronUp, HelpCircle,
   Sparkles, Palette, Users2, Star, Mic2, GraduationCap, BookOpen, Trophy, RefreshCw, Target, LucideIcon,
-  Building2, User, Users
+  Building2, User, Users, Lightbulb, Calendar, Music, Wrench, AlertCircle, RotateCw, Compass
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -59,76 +59,151 @@ const PHASES: {
   icon: LucideIcon; 
   defaultVisibility: TimelineVisibility;
   placeholders: string[];
+  forVenue?: boolean; // If true, only for venues
+  forArtist?: boolean; // If true, only for artists
 }[] = [
+  // Artist/Persona categories
   { 
     value: "start_identity", 
     label: "Start & identitet", 
     icon: Sparkles, 
     defaultVisibility: "public",
-    placeholders: ["Bandet fikk navnet sitt", "Første låt skrevet"]
+    placeholders: ["Bandet fikk navnet sitt", "Første låt skrevet"],
+    forArtist: true,
   },
   { 
     value: "artistic_development", 
     label: "Kunstnerisk utvikling", 
     icon: Palette, 
     defaultVisibility: "public",
-    placeholders: ["Ny sjanger", "Første studioinnspilling"]
+    placeholders: ["Ny sjanger", "Første studioinnspilling"],
+    forArtist: true,
   },
   { 
     value: "collaboration", 
     label: "Samarbeid", 
     icon: Users2, 
     defaultVisibility: "public",
-    placeholders: ["Samarbeid med annen artist", "Ny bandmedlem"]
+    placeholders: ["Samarbeid med annen artist", "Ny bandmedlem"],
   },
   { 
     value: "milestone", 
     label: "Milepæler", 
     icon: Star, 
     defaultVisibility: "public",
-    placeholders: ["Første singel sluppet", "10-årsjubileum"]
+    placeholders: ["Første singel sluppet", "10-årsjubileum"],
   },
   { 
     value: "live_performance", 
     label: "Live & opptreden", 
     icon: Mic2, 
     defaultVisibility: "public",
-    placeholders: ["Første konsert", "Festivalopptreden"]
+    placeholders: ["Første konsert", "Festivalopptreden"],
+    forArtist: true,
   },
   { 
     value: "education", 
     label: "Utdanning", 
     icon: GraduationCap, 
     defaultVisibility: "public",
-    placeholders: ["Musikkutdanning", "Masterclass"]
+    placeholders: ["Musikkutdanning", "Masterclass"],
+    forArtist: true,
   },
   { 
     value: "course_competence", 
     label: "Kurs & kompetanse", 
     icon: BookOpen, 
     defaultVisibility: "public",
-    placeholders: ["Produksjonskurs", "Sertifisering"]
+    placeholders: ["Produksjonskurs", "Sertifisering"],
+    forArtist: true,
   },
   { 
     value: "recognition", 
     label: "Anerkjennelse", 
     icon: Trophy, 
     defaultVisibility: "public",
-    placeholders: ["Første pris", "Nominasjon"]
+    placeholders: ["Første pris", "Nominasjon"],
   },
   { 
     value: "transitions_life", 
     label: "Overganger & liv", 
     icon: RefreshCw, 
     defaultVisibility: "public",
-    placeholders: ["Ny kunstnerisk retning", "Pause fra musikk"]
+    placeholders: ["Ny kunstnerisk retning", "Pause fra musikk"],
+    forArtist: true,
   },
   { 
     value: "present_direction", 
     label: "Nåtid & retning", 
     icon: Target, 
     defaultVisibility: "public",
-    placeholders: ["Nåværende prosjekt", "Fremtidsplaner"]
+    placeholders: ["Nåværende prosjekt", "Fremtidsplaner"],
+    forArtist: true,
+  },
+  // Venue categories
+  { 
+    value: "establishment", 
+    label: "Etablering & identitet", 
+    icon: Building2, 
+    defaultVisibility: "public",
+    placeholders: ["Åpnet dørene første gang", "Grunnlagt"],
+    forVenue: true,
+  },
+  { 
+    value: "concept", 
+    label: "Konsept & retning", 
+    icon: Lightbulb, 
+    defaultVisibility: "public",
+    placeholders: ["Ny profil", "Endret konsept"],
+    forVenue: true,
+  },
+  { 
+    value: "program", 
+    label: "Program & innhold", 
+    icon: Calendar, 
+    defaultVisibility: "public",
+    placeholders: ["Ny konsertserie", "Første festival"],
+    forVenue: true,
+  },
+  { 
+    value: "artists", 
+    label: "Kunstnere & øyeblikk", 
+    icon: Music, 
+    defaultVisibility: "public",
+    placeholders: ["Legendarisk konsert", "Første internasjonale artist"],
+    forVenue: true,
+  },
+  { 
+    value: "development", 
+    label: "Ombygging & utvikling", 
+    icon: Wrench, 
+    defaultVisibility: "public",
+    placeholders: ["Renovering", "Utvidet kapasitet"],
+    forVenue: true,
+  },
+  { 
+    value: "pause", 
+    label: "Utfordringer & pauser", 
+    icon: AlertCircle, 
+    defaultVisibility: "public",
+    placeholders: ["Stengt under pandemi", "Eierskifte"],
+    forVenue: true,
+  },
+  { 
+    value: "relaunch", 
+    label: "Gjenåpning & nye kapitler", 
+    icon: RotateCw, 
+    defaultVisibility: "public",
+    placeholders: ["Gjenåpning", "Ny start"],
+    forVenue: true,
+  },
+  { 
+    value: "focus_now", 
+    label: "Nåtid & fokus", 
+    icon: Compass, 
+    defaultVisibility: "public",
+    placeholders: ["Dagens profil", "Nåværende satsing"],
+    forVenue: true,
   },
 ];
 

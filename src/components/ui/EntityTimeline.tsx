@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { 
   MapPin, Sparkles, Palette, Users2, Star, Mic2, 
-  GraduationCap, BookOpen, Trophy, RefreshCw, Target, LucideIcon 
+  GraduationCap, BookOpen, Trophy, RefreshCw, Target, LucideIcon,
+  // Venue icons
+  Building2, Lightbulb, Calendar, Music, Wrench, AlertCircle, RotateCw, Compass
 } from "lucide-react";
 import { usePublicEntityTimelineEvents } from "@/hooks/useEntityTimeline";
 import { format } from "date-fns";
@@ -9,6 +11,7 @@ import { nb } from "date-fns/locale";
 import type { TimelineEventType } from "@/types/database";
 
 const EVENT_TYPE_CONFIG: Record<TimelineEventType, { icon: LucideIcon }> = {
+  // Persona/Artist categories
   start_identity: { icon: Sparkles },
   artistic_development: { icon: Palette },
   collaboration: { icon: Users2 },
@@ -19,6 +22,15 @@ const EVENT_TYPE_CONFIG: Record<TimelineEventType, { icon: LucideIcon }> = {
   recognition: { icon: Trophy },
   transitions_life: { icon: RefreshCw },
   present_direction: { icon: Target },
+  // Venue categories
+  establishment: { icon: Building2 },
+  concept: { icon: Lightbulb },
+  program: { icon: Calendar },
+  artists: { icon: Music },
+  development: { icon: Wrench },
+  pause: { icon: AlertCircle },
+  relaunch: { icon: RotateCw },
+  focus_now: { icon: Compass },
 };
 
 interface EntityTimelineProps {

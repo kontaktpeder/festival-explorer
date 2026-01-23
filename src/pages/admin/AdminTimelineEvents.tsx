@@ -22,6 +22,7 @@ import { nb } from "date-fns/locale";
 import type { TimelineVisibility, TimelineEventType, EntityType } from "@/types/database";
 
 const EVENT_TYPE_LABELS: Record<TimelineEventType, { label: string; icon: string }> = {
+  // Persona/Artist categories
   start_identity: { label: "Start & identitet", icon: "✨" },
   artistic_development: { label: "Kunstnerisk utvikling", icon: "🎨" },
   collaboration: { label: "Samarbeid", icon: "🤝" },
@@ -32,6 +33,15 @@ const EVENT_TYPE_LABELS: Record<TimelineEventType, { label: string; icon: string
   recognition: { label: "Anerkjennelse", icon: "🏆" },
   transitions_life: { label: "Overganger & liv", icon: "🔄" },
   present_direction: { label: "Nåtid & retning", icon: "🎯" },
+  // Venue categories
+  establishment: { label: "Etablering & identitet", icon: "🏛️" },
+  concept: { label: "Konsept & retning", icon: "💡" },
+  program: { label: "Program & innhold", icon: "📅" },
+  artists: { label: "Kunstnere & øyeblikk", icon: "🎵" },
+  development: { label: "Ombygging & utvikling", icon: "🔧" },
+  pause: { label: "Utfordringer & pauser", icon: "⚠️" },
+  relaunch: { label: "Gjenåpning & nye kapitler", icon: "🔁" },
+  focus_now: { label: "Nåtid & fokus", icon: "🧭" },
 };
 
 const VISIBILITY_LABELS: Record<TimelineVisibility, { label: string; variant: "default" | "secondary" | "outline" }> = {
