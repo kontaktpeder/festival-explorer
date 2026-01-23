@@ -1,14 +1,28 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { Plus, ExternalLink, Settings, Music, Users } from "lucide-react";
+import { Plus, ExternalLink, Settings, Music, Users, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function AdminEvents() {
   const queryClient = useQueryClient();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteTitle, setDeleteTitle] = useState<string>("");
 
   const { data: events, isLoading } = useQuery({
     queryKey: ["admin-events"],
@@ -27,6 +41,27 @@ export default function AdminEvents() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-events"] });
+    },
+  });
+
+  const deleteEvent = useMutation({
+    mutationFn: async (id: string) => {
+      // Delete related data first
+      await supabase.from("event_entities").delete().eq("event_id", id);
+      await supabase.from("event_projects").delete().eq("event_id", id);
+      await supabase.from("festival_events").delete().eq("event_id", id);
+      
+      const { error } = await supabase.from("events").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-events"] });
+      setDeleteId(null);
+      setDeleteTitle("");
+      toast.success("Event slettet");
+    },
+    onError: (error: Error) => {
+      toast.error("Kunne ikke slette: " + error.message);
     },
   });
 
@@ -91,6 +126,18 @@ export default function AdminEvents() {
                     Rediger
                   </Link>
                 </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="text-destructive hover:text-destructive border-destructive/30"
+                  onClick={() => {
+                    setDeleteId(event.id);
+                    setDeleteTitle(event.title);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Slett
+                </Button>
               </div>
 
               <div className="pt-3 border-t border-border">
@@ -118,6 +165,31 @@ export default function AdminEvents() {
           </div>
         )}
       </div>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Slett event?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Er du sikker på at du vil slette "{deleteTitle}"?
+              <br /><br />
+              Dette vil permanent slette eventet og all tilknyttet data (lineup, festival-koblinger).
+              <br /><br />
+              <strong>Handlingen kan ikke angres.</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteId && deleteEvent.mutate(deleteId)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Slett permanent
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

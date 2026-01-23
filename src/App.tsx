@@ -40,6 +40,7 @@ import AdminEventLineup from "./pages/admin/AdminEventLineup";
 import AdminEntities from "./pages/admin/AdminEntities";
 import AdminEntityEdit from "./pages/admin/AdminEntityEdit";
 import AdminAccessGenerator from "./pages/admin/AdminAccessGenerator";
+import AdminDeletionRequests from "./pages/admin/AdminDeletionRequests";
 // Legacy - kept for backwards compatibility
 import AdminProjects from "./pages/admin/AdminProjects";
 import AdminProjectEdit from "./pages/admin/AdminProjectEdit";
@@ -104,6 +105,7 @@ const App = () => (
             <Route path="entities" element={<AdminEntities />} />
             <Route path="entities/:id" element={<AdminEntityEdit />} />
             <Route path="access-generator" element={<AdminAccessGenerator />} />
+            <Route path="deletion-requests" element={<AdminDeletionRequests />} />
             {/* Legacy routes - redirect to entities in future */}
             <Route path="projects" element={<AdminProjects />} />
             <Route path="projects/:id" element={<AdminProjectEdit />} />
