@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { AlertCircle, CheckCircle, Calendar, Music, Users, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { QRCodeGenerator } from "@/components/admin/QRCodeGenerator";
 
 export default function AdminDashboard() {
   const { data: activeFestival } = useQuery({
@@ -69,6 +70,11 @@ export default function AdminDashboard() {
           </Button>
         </div>
       )}
+
+      {/* QR Code Generator */}
+      <QRCodeGenerator 
+        defaultUrl={activeFestival ? `${window.location.origin}/festival/${activeFestival.slug}` : undefined} 
+      />
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-3 md:gap-4">
