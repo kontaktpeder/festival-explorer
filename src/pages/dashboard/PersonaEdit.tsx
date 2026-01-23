@@ -114,12 +114,12 @@ export default function PersonaEdit() {
   if (isEditing && isLoadingPersona) return <LoadingState />;
 
   return (
-    <div className="container max-w-2xl py-8 space-y-6">
+    <div className="container max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-xl sm:text-2xl font-bold">
           {isEditing ? "Rediger profil" : "Lag din profil"}
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm sm:text-base text-muted-foreground">
           {isEditing 
             ? "Oppdater hvem du er – din personlige identitet på GIGGEN"
             : "Fortell hvem du er – musiker, fotograf, DJ eller arrangør"
@@ -130,24 +130,24 @@ export default function PersonaEdit() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Grunnleggende info</CardTitle>
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="text-base sm:text-lg">Grunnleggende info</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 px-4 sm:px-6">
             {/* Avatar Preview + InlineMediaPickerWithCrop */}
-            <div className="flex items-start gap-4">
-              <Avatar className="h-20 w-20">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+              <Avatar className="h-16 w-16 sm:h-20 sm:w-20">
                 <AvatarImage 
                   src={avatarUrl || undefined} 
                   style={getCroppedImageStyles(avatarImageSettings)}
                 />
-                <AvatarFallback className="text-xl">
+                <AvatarFallback className="text-lg sm:text-xl">
                   {name ? name.substring(0, 2).toUpperCase() : "?"}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 space-y-2">
+              <div className="flex-1 w-full space-y-2">
                 <Label>Profilbilde</Label>
                 <InlineMediaPickerWithCrop
                   value={avatarUrl}
@@ -188,19 +188,19 @@ export default function PersonaEdit() {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Kategorier</CardTitle>
-            <CardDescription>
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="text-base sm:text-lg">Kategorier</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
               Velg hva som beskriver deg best
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-wrap gap-2">
+          <CardContent className="space-y-4 px-4 sm:px-6">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {PERSONA_CATEGORIES.map((category) => (
                 <Badge
                   key={category}
                   variant={categoryTags.includes(category) ? "default" : "outline"}
-                  className="cursor-pointer capitalize"
+                  className="cursor-pointer capitalize text-xs sm:text-sm py-1 px-2 sm:py-1.5 sm:px-3"
                   onClick={() => toggleCategory(category)}
                 >
                   {category}
@@ -302,13 +302,13 @@ export default function PersonaEdit() {
           </Card>
         )}
 
-        <div className="flex gap-3">
-          <Button type="submit" disabled={isSubmitting}>
+        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
+          <Button type="button" variant="outline" asChild className="w-full sm:w-auto">
+            <Link to="/dashboard/personas">Avbryt</Link>
+          </Button>
+          <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
             {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {isEditing ? "Lagre endringer" : "Opprett profil"}
-          </Button>
-          <Button type="button" variant="outline" asChild>
-            <Link to="/dashboard/personas">Avbryt</Link>
           </Button>
         </div>
       </form>

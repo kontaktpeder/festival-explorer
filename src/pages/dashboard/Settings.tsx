@@ -97,15 +97,15 @@ export default function Settings() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <Link to="/dashboard" className="text-xl font-bold text-primary hover:opacity-80 transition-opacity">
+          <Link to="/dashboard" className="text-lg sm:text-xl font-bold text-primary hover:opacity-80 transition-opacity">
             GIGGEN
           </Link>
           <PersonaSelector />
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-2xl space-y-6">
-        <h1 className="text-2xl font-bold text-foreground">Innstillinger</h1>
+      <main className="container mx-auto px-4 py-6 sm:py-8 max-w-2xl space-y-4 sm:space-y-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Innstillinger</h1>
 
         {/* Profile Settings */}
         <Card>
@@ -118,20 +118,20 @@ export default function Settings() {
               Administrer din profilinformasjon. Dette brukes for å identifisere deg i team-medlemmer.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16">
+          <CardContent className="space-y-4 sm:space-y-6">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <Avatar className="h-12 w-12 sm:h-16 sm:w-16">
                 <AvatarImage 
                   src={avatarUrl || undefined} 
                   style={getCroppedImageStyles(avatarImageSettings)}
                 />
-                <AvatarFallback className="text-lg">
+                <AvatarFallback className="text-base sm:text-lg">
                   {(displayName || profile?.email || "U").charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <p className="font-medium text-foreground">{displayName || "Ingen navn"}</p>
-                <p className="text-sm text-muted-foreground">{profile?.email}</p>
+              <div className="min-w-0">
+                <p className="font-medium text-foreground truncate">{displayName || "Ingen navn"}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">{profile?.email}</p>
               </div>
             </div>
 
@@ -202,14 +202,14 @@ export default function Settings() {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Button asChild variant="outline">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button asChild variant="outline" size="sm" className="justify-start sm:justify-center">
                 <Link to="/dashboard/settings/change-password">
                   <Lock className="h-4 w-4 mr-2" />
                   Endre passord
                 </Link>
               </Button>
-              <Button asChild variant="outline">
+              <Button asChild variant="outline" size="sm" className="justify-start sm:justify-center">
                 <Link to="/dashboard/account">
                   <User className="h-4 w-4 mr-2" />
                   Kontosenter

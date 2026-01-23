@@ -213,33 +213,33 @@ export default function EntityEdit() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/dashboard" className="text-lg font-bold text-foreground">
+        <div className="max-w-2xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
+          <Link to="/dashboard" className="text-base sm:text-lg font-bold text-foreground">
             GIGGEN
           </Link>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
-        <div className="flex items-center gap-4">
+      <main className="max-w-2xl mx-auto px-4 py-6 sm:py-8 space-y-4 sm:space-y-6">
+        <div className="flex items-center gap-2 sm:gap-4">
           <Button asChild variant="ghost" size="sm">
             <Link to="/dashboard">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Tilbake
+              <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Tilbake</span>
             </Link>
           </Button>
         </div>
 
         {/* Entity header with badges */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
               {entityWithAccess.name}
             </h1>
-            <Badge variant="secondary">{TYPE_LABELS[entityWithAccess.type as EntityType]}</Badge>
-            <Badge variant="outline">{ACCESS_LABELS[userAccess]}</Badge>
+            <Badge variant="secondary" className="text-xs">{TYPE_LABELS[entityWithAccess.type as EntityType]}</Badge>
+            <Badge variant="outline" className="text-xs">{ACCESS_LABELS[userAccess]}</Badge>
             {!entityWithAccess.is_published && (
-              <Badge variant="outline" className="text-muted-foreground">Utkast</Badge>
+              <Badge variant="outline" className="text-xs text-muted-foreground">Utkast</Badge>
             )}
           </div>
           {isViewer && (
@@ -261,17 +261,18 @@ export default function EntityEdit() {
         {/* Action buttons */}
         <div className="flex gap-2 flex-wrap">
           {entityWithAccess.is_published && (
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline" size="sm" className="text-xs sm:text-sm">
               <Link to={`${typeConfig[entityWithAccess.type as EntityType].route}/${entityWithAccess.slug}`} target="_blank">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Se offentlig side
+                <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+                <span className="hidden sm:inline">Se offentlig side</span>
+                <span className="sm:hidden">Se side</span>
               </Link>
             </Button>
           )}
           {canInvite && (
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline" size="sm" className="text-xs sm:text-sm">
               <Link to={`/dashboard/entities/${entityWithAccess.id}/invite`}>
-                <UserPlus className="h-4 w-4 mr-2" />
+                <UserPlus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                 Inviter
               </Link>
             </Button>
@@ -399,7 +400,7 @@ export default function EntityEdit() {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-muted-foreground" />
-              <h2 className="font-semibold text-foreground">Team-medlemmer</h2>
+              <h2 className="font-semibold text-foreground text-sm sm:text-base">Team-medlemmer</h2>
             </div>
             <div className="space-y-2">
               {teamMembers.map((member) => {
@@ -411,24 +412,24 @@ export default function EntityEdit() {
                 const avatarUrl = persona?.avatar_url || profile?.avatar_url;
                 
                 return (
-                  <div key={member.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                    <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
+                  <div key={member.id} className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-muted/50 rounded-lg">
+                    <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
                       {avatarUrl ? (
                         <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
                       ) : (
-                        <span className="text-sm font-medium text-muted-foreground">
+                        <span className="text-xs sm:text-sm font-medium text-muted-foreground">
                           {displayName.charAt(0).toUpperCase()}
                         </span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground text-sm truncate">{displayName}</p>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline" className="text-xs">
+                      <p className="font-medium text-foreground text-xs sm:text-sm truncate">{displayName}</p>
+                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                        <Badge variant="outline" className="text-[10px] sm:text-xs">
                           {ACCESS_LABELS[member.access as AccessLevel]}
                         </Badge>
                         {member.role_labels && member.role_labels.length > 0 && (
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-[10px] sm:text-xs text-muted-foreground truncate">
                             {member.role_labels.join(", ")}
                           </span>
                         )}

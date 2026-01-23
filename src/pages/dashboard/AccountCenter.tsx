@@ -168,23 +168,24 @@ export default function AccountCenter() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <Link to="/dashboard" className="text-xl font-bold text-primary hover:opacity-80 transition-opacity">
-            GIGGEN <span className="text-muted-foreground font-normal">BACKSTAGE</span>
+          <Link to="/dashboard" className="text-lg sm:text-xl font-bold text-primary hover:opacity-80 transition-opacity">
+            GIGGEN <span className="text-muted-foreground font-normal text-xs sm:text-base">BACKSTAGE</span>
           </Link>
           <PersonaSelector />
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-2xl space-y-6">
-        <div className="flex items-center gap-3">
+      <main className="container mx-auto px-4 py-6 sm:py-8 max-w-2xl space-y-4 sm:space-y-6">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Button
             variant="ghost"
             size="icon"
+            className="h-8 w-8 sm:h-9 sm:w-9"
             onClick={() => navigate("/dashboard/settings")}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
-          <h1 className="text-2xl font-bold text-foreground">Kontosenter</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Kontosenter</h1>
         </div>
 
         {/* Account Info */}
@@ -331,14 +332,14 @@ export default function AccountCenter() {
 
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <AlertDialogContent>
+          <AlertDialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg">
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-5 w-5" />
                 Er du helt sikker?
               </AlertDialogTitle>
               <AlertDialogDescription className="space-y-4">
-                <p>
+                <p className="text-sm">
                   Dette vil permanent slette kontoen din og all tilknyttet data. 
                   Denne handlingen kan ikke angres.
                 </p>
@@ -355,13 +356,13 @@ export default function AccountCenter() {
                 </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setConfirmDeleteText("")}>
+            <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+              <AlertDialogCancel onClick={() => setConfirmDeleteText("")} className="w-full sm:w-auto">
                 Avbryt
               </AlertDialogCancel>
               <AlertDialogAction 
                 onClick={handleDeleteAccount}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 disabled={deleteAccountMutation.isPending}
               >
                 {deleteAccountMutation.isPending ? "Sletter..." : "Ja, slett kontoen min"}

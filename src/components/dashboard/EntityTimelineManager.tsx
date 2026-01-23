@@ -318,17 +318,17 @@ function TimelineEventDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-lg max-h-[calc(100vh-2rem)] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Rediger hendelse" : "Ny hendelse"}</DialogTitle>
+          <DialogTitle className="text-base sm:text-lg">{isEditing ? "Rediger hendelse" : "Ny hendelse"}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 pt-2">
+        <div className="space-y-3 sm:space-y-4 pt-2">
           {/* Category */}
-          <div className="space-y-2">
-            <Label>Kategori</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label className="text-xs sm:text-sm">Kategori</Label>
             <Select value={eventType} onValueChange={(v) => setEventType(v as TimelineEventType)}>
-              <SelectTrigger>
+              <SelectTrigger className="h-9 sm:h-10 text-xs sm:text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -337,8 +337,8 @@ function TimelineEventDialog({
                   return (
                     <SelectItem key={opt.value} value={opt.value}>
                       <span className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 text-muted-foreground" />
-                        {opt.label}
+                        <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
+                        <span className="text-xs sm:text-sm">{opt.label}</span>
                       </span>
                     </SelectItem>
                   );
@@ -348,19 +348,20 @@ function TimelineEventDialog({
           </div>
 
           {/* Title */}
-          <div className="space-y-2">
-            <Label htmlFor="timeline-title">Tittel *</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="timeline-title" className="text-xs sm:text-sm">Tittel *</Label>
             <Input
               id="timeline-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="F.eks. Første festivalopptreden"
+              className="h-9 sm:h-10 text-sm"
             />
           </div>
 
           {/* Year */}
-          <div className="space-y-2">
-            <Label htmlFor="timeline-year">År *</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="timeline-year" className="text-xs sm:text-sm">År *</Label>
             <Input
               id="timeline-year"
               type="number"
@@ -369,25 +370,25 @@ function TimelineEventDialog({
               placeholder="2024"
               min={1900}
               max={2100}
-              className="w-32"
+              className="w-28 sm:w-32 h-9 sm:h-10 text-sm"
             />
           </div>
 
           {/* Optional date + time */}
-          <div className="space-y-2">
-            <Label>Eksakt dato og klokkeslett (valgfritt)</Label>
-            <div className="flex gap-2">
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label className="text-xs sm:text-sm">Eksakt dato og klokkeslett (valgfritt)</Label>
+            <div className="flex flex-col sm:flex-row gap-2">
               <Input
                 type="date"
                 value={dateStr}
                 onChange={(e) => setDateStr(e.target.value)}
-                className="w-40"
+                className="w-full sm:w-40 h-9 sm:h-10 text-sm"
               />
               <Input
                 type="time"
                 value={timeStr}
                 onChange={(e) => setTimeStr(e.target.value)}
-                className="w-32"
+                className="w-full sm:w-32 h-9 sm:h-10 text-sm"
                 disabled={!dateStr}
                 placeholder="--:--"
               />
@@ -395,10 +396,10 @@ function TimelineEventDialog({
           </div>
 
           {/* Visibility */}
-          <div className="space-y-2">
-            <Label>Synlighet</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label className="text-xs sm:text-sm">Synlighet</Label>
             <Select value={visibility} onValueChange={(v) => setVisibility(v as TimelineVisibility)}>
-              <SelectTrigger>
+              <SelectTrigger className="h-9 sm:h-10 text-xs sm:text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -410,43 +411,45 @@ function TimelineEventDialog({
           </div>
 
           {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="timeline-description">Detaljer (valgfritt)</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="timeline-description" className="text-xs sm:text-sm">Detaljer (valgfritt)</Label>
             <Textarea
               id="timeline-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               placeholder="Fortell litt mer om hendelsen..."
+              className="text-sm"
             />
           </div>
 
           {/* Image (optional) */}
-          <div className="space-y-2">
-            <Label>Bilde (valgfritt)</Label>
-            <div className="flex gap-3 items-center">
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label className="text-xs sm:text-sm">Bilde (valgfritt)</Label>
+            <div className="flex gap-2 sm:gap-3 items-center">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => setMediaPickerOpen(true)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm h-8 sm:h-9"
               >
-                <ImageIcon className="w-4 h-4" />
-                Velg fra filbank
+                <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Velg fra filbank</span>
+                <span className="sm:hidden">Velg bilde</span>
               </Button>
               {mediaUrl && (
                 <div className="relative inline-block">
                   <img
                     src={mediaUrl}
                     alt="Preview"
-                    className="w-16 h-16 object-cover rounded-lg border border-border"
+                    className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg border border-border"
                   />
                   <Button
                     type="button"
                     variant="destructive"
                     size="icon"
-                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full"
+                    className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 h-5 w-5 rounded-full"
                     onClick={() => setMediaUrl("")}
                   >
                     <X className="h-3 w-3" />
@@ -456,11 +459,11 @@ function TimelineEventDialog({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending} className="w-full sm:w-auto" size="sm">
               Avbryt
             </Button>
-            <Button onClick={handleSave} disabled={isPending || !title.trim() || !year}>
+            <Button onClick={handleSave} disabled={isPending || !title.trim() || !year} className="w-full sm:w-auto" size="sm">
               {isPending ? "Lagrer..." : "Lagre"}
             </Button>
           </div>
