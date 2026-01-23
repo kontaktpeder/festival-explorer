@@ -243,8 +243,8 @@ export default function FestivalPage() {
 
   return (
     <PageLayout>
-      {/* Universal logo */}
-      <StaticLogo />
+      {/* Universal logo - heroMode for centered, larger logo */}
+      <StaticLogo heroMode />
 
       {/* SEKSJON 1: HERO - Fullskjerm, bg-fixed */}
       {/* Parse theme hero image settings for focal point */}
