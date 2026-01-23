@@ -131,15 +131,15 @@ export function MediaPicker({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-2rem)] max-w-3xl max-h-[calc(100vh-2rem)] sm:max-h-[80vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+      <DialogContent className="w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] max-w-3xl h-[calc(100vh-2rem)] sm:h-auto sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-base sm:text-lg">Velg fil fra filbank</DialogTitle>
         </DialogHeader>
 
         <Tabs
           value={activeTab}
           onValueChange={(v) => setActiveTab(v as "library" | "upload")}
-          className="flex-1 flex flex-col overflow-hidden"
+          className="flex-1 flex flex-col overflow-hidden min-h-0"
         >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="library" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
@@ -249,12 +249,14 @@ export function MediaPicker({
             </div>
           </TabsContent>
 
-          <TabsContent value="upload" className="flex-1 mt-3 sm:mt-4">
-            <MediaUpload
-              fileType={fileType}
-              onUploadComplete={handleUploadComplete}
-              showQualitySelection={showQualitySelection}
-            />
+          <TabsContent value="upload" className="flex-1 mt-3 sm:mt-4 overflow-y-auto">
+            <div className="pb-4">
+              <MediaUpload
+                fileType={fileType}
+                onUploadComplete={handleUploadComplete}
+                showQualitySelection={showQualitySelection}
+              />
+            </div>
           </TabsContent>
         </Tabs>
       </DialogContent>
