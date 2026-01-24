@@ -256,7 +256,7 @@
 
   .fullscreen-section-end {
     @apply min-h-screen relative flex flex-col justify-end;
-    @apply pb-16 px-4;
+    @apply pb-6 px-4;
   }
 
   /* Section overlays */

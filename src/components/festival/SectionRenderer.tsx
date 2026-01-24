@@ -313,7 +313,7 @@ export function SectionRenderer({
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <MobileFadeOverlay />
 
-          <div className="relative z-10 w-full max-w-md px-6 pb-8 md:px-10 md:pb-12">
+          <div className="relative z-10 w-full max-w-md px-6 pb-4 md:px-10 md:pb-6">
             {displayedVenue ? (
               <>
                 <p className="animate-slide-up text-mono text-xs text-accent mb-2 uppercase tracking-widest font-medium drop-shadow-md">
@@ -380,39 +380,39 @@ export function SectionRenderer({
 
     case "footer":
       return (
-        <footer className="fullscreen-section relative flex items-end">
+        <footer className="fullscreen-section-end relative">
           <SectionBackground section={section} />
-          {/* Weaker background overlay */}
-          <div className="absolute inset-0 bg-background/40 pointer-events-none z-[1]" />
+          {/* Stronger gradient overlay from bottom for text legibility */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent pointer-events-none z-[1]" />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
 
-          <div className="relative z-10 w-full max-w-md px-5 pb-8">
+          <div className="relative z-10 w-full max-w-md px-6 pb-6">
             {/* PNG logo */}
-            <div className="animate-slide-up mb-6">
+            <div className="animate-blur-in mb-6">
               <img 
                 src="/giggen-logo-full.png" 
                 alt="GIGGEN - festival for en kveld"
-                className="h-20 md:h-28 w-auto drop-shadow-lg"
+                className="h-16 md:h-24 w-auto drop-shadow-lg"
               />
             </div>
             
             {/* Tagline - clearer text */}
             {getText() ? (
               <div 
-                className="animate-slide-up delay-100 prose-rich-text text-foreground/70 text-base leading-relaxed mb-8 max-w-sm"
+                className="animate-slide-up delay-200 prose-rich-text text-foreground/80 text-base leading-relaxed mb-6 max-w-sm drop-shadow-md"
                 dangerouslySetInnerHTML={{ __html: getText() }}
               />
             ) : (
-              <p className="animate-slide-up delay-100 text-foreground/70 text-base leading-relaxed mb-8 max-w-sm">
+              <p className="animate-slide-up delay-200 text-foreground/80 text-base leading-relaxed mb-6 max-w-sm drop-shadow-md">
                 Et engasjement for å løfte frem dem som jobber med eksisterende musikkarenaer, og dem som ønsker å skape nye.
               </p>
             )}
             
             {/* Only backstage link */}
-            <div className="animate-slide-up delay-200">
+            <div className="animate-slide-up delay-400">
               <Link 
                 to="/admin/login" 
-                className="text-sm text-foreground/50 hover:text-accent transition-colors uppercase tracking-wider"
+                className="text-sm text-foreground/60 hover:text-accent transition-colors uppercase tracking-wider font-medium"
               >
                 Backstage →
               </Link>
