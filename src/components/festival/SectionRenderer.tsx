@@ -306,29 +306,31 @@ export function SectionRenderer({
         : venue;
 
       return (
-        <section className="fullscreen-section relative flex items-end">
+        <section className="fullscreen-section relative flex items-end justify-start">
           <SectionBackground section={section} venueImage={displayedVenue?.hero_image_url} />
+          {/* Stronger gradient overlay from bottom-left for text legibility */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-black/80 via-black/40 to-transparent pointer-events-none z-[1]" />
           <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
           <MobileFadeOverlay />
 
-          <div className="relative z-10 w-full max-w-md px-5 pb-12">
+          <div className="relative z-10 w-full max-w-md px-6 pb-8 md:px-10 md:pb-12">
             {displayedVenue ? (
               <>
-                <p className="animate-slide-up text-mono text-xs text-accent/70 mb-3 uppercase tracking-widest">
+                <p className="animate-slide-up text-mono text-xs text-accent mb-2 uppercase tracking-widest font-medium drop-shadow-md">
                   Venue
                 </p>
-                <h3 className="animate-slide-up delay-100 text-display text-section-title mb-4">
+                <h3 className="animate-slide-up delay-100 text-display text-3xl md:text-4xl text-foreground mb-3 drop-shadow-lg">
                   {displayedVenue.name}
                 </h3>
                 {displayedVenue.description && (
-                  <p className="animate-slide-up delay-200 text-foreground/50 text-base leading-relaxed mb-6 max-w-xs">
+                  <p className="animate-slide-up delay-200 text-foreground/80 text-base leading-relaxed mb-5 max-w-sm drop-shadow-md">
                     {displayedVenue.description}
                   </p>
                 )}
                 {displayedVenue.slug && (
                   <Link
                     to={`/venue/${displayedVenue.slug}`}
-                    className="animate-slide-up delay-300 inline-flex items-center gap-2 text-sm text-foreground/40 hover:text-accent transition-colors group"
+                    className="animate-slide-up delay-300 inline-flex items-center gap-2 text-sm text-foreground/70 hover:text-accent transition-colors group font-medium"
                   >
                     <span>Utforsk venue</span>
                     <span className="group-hover:translate-x-1 transition-transform">→</span>
@@ -336,7 +338,7 @@ export function SectionRenderer({
                 )}
               </>
             ) : (
-              <p className="text-foreground/40">
+              <p className="text-foreground/60">
                 Venue-informasjon kommer snart.
               </p>
             )}
