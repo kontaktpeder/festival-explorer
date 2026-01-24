@@ -306,7 +306,7 @@ export function SectionRenderer({
         : venue;
 
       return (
-        <section className="fullscreen-section relative flex items-end justify-start">
+        <section className="fullscreen-section-end relative flex items-start">
           <SectionBackground section={section} venueImage={displayedVenue?.hero_image_url} />
           {/* Stronger gradient overlay from bottom-left for text legibility */}
           <div className="absolute inset-0 bg-gradient-to-tr from-black/80 via-black/40 to-transparent pointer-events-none z-[1]" />
