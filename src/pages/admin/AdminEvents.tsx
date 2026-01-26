@@ -30,7 +30,7 @@ export default function AdminEvents() {
       const { data } = await supabase
         .from("events")
         .select("*, venue:venues(id, name)")
-        .order("start_at", { ascending: false });
+        .order("start_at", { ascending: true });
       return data || [];
     },
   });
