@@ -213,9 +213,14 @@ export default function AdminSections() {
           event_id,
           event:events(id, title, slug, start_at)
         `)
-        .eq("festival_id", id)
-        .order("sort_order");
-      return data?.map((fe: { event: unknown }) => fe.event).filter(Boolean) || [];
+        .eq("festival_id", id);
+      
+      // Sort chronologically by start_at (earliest first)
+      const events = data?.map((fe: { event: unknown }) => fe.event).filter(Boolean) || [];
+      return events.sort((a: { start_at?: string }, b: { start_at?: string }) => {
+        if (!a.start_at || !b.start_at) return 0;
+        return new Date(a.start_at).getTime() - new Date(b.start_at).getTime();
+      });
     },
     enabled: !!id,
   });

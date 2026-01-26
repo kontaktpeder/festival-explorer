@@ -2,12 +2,14 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
-import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff, Star } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Eye, EyeOff, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useState } from "react";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
 
 export default function AdminFestivalProgram() {
   const { id } = useParams<{ id: string }>();
@@ -35,9 +37,14 @@ export default function AdminFestivalProgram() {
       const { data } = await supabase
         .from("festival_events")
         .select("*, event:events(*)")
-        .eq("festival_id", id)
-        .order("sort_order", { ascending: true });
-      return data || [];
+        .eq("festival_id", id);
+      
+      // Sort chronologically by event start_at (earliest first)
+      const sorted = (data || []).sort((a, b) => {
+        if (!a.event?.start_at || !b.event?.start_at) return 0;
+        return new Date(a.event.start_at).getTime() - new Date(b.event.start_at).getTime();
+      });
+      return sorted;
     },
   });
 
@@ -124,34 +131,7 @@ export default function AdminFestivalProgram() {
     },
   });
 
-  // Move event mutation
-  const moveEvent = useMutation({
-    mutationFn: async ({ eventId, direction }: { eventId: string; direction: "up" | "down" }) => {
-      const currentItem = festivalEvents?.find((fe) => fe.event_id === eventId);
-      if (!currentItem || !festivalEvents) return;
-
-      const currentOrder = currentItem.sort_order;
-      const newOrder = direction === "up" ? currentOrder - 1 : currentOrder + 1;
-      const swapItem = festivalEvents.find((fe) => fe.sort_order === newOrder);
-
-      if (!swapItem) return;
-
-      await supabase
-        .from("festival_events")
-        .update({ sort_order: newOrder })
-        .eq("festival_id", id)
-        .eq("event_id", eventId);
-
-      await supabase
-        .from("festival_events")
-        .update({ sort_order: currentOrder })
-        .eq("festival_id", id)
-        .eq("event_id", swapItem.event_id);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-festival-events", id] });
-    },
-  });
+  // Note: Events are now sorted chronologically by start_at, manual reordering removed
 
   // Available events (not in festival)
   const availableEvents = allEvents?.filter(
@@ -215,9 +195,13 @@ export default function AdminFestivalProgram() {
             {/* Mobile layout */}
             <div className="flex flex-col gap-2 md:hidden">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-xs text-muted-foreground w-5 flex-shrink-0">{index + 1}</span>
+                <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm text-foreground truncate">{fe.event?.title}</p>
+                  {fe.event?.start_at && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {format(new Date(fe.event.start_at), "d. MMM HH:mm", { locale: nb })}
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
                   <Button
@@ -242,50 +226,31 @@ export default function AdminFestivalProgram() {
                   >
                     {fe.show_in_program ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
                   </Button>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex gap-1">
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7"
-                    onClick={() => moveEvent.mutate({ eventId: fe.event_id, direction: "up" })}
-                    disabled={index === 0}
+                    onClick={() => {
+                      if (confirm("Fjern fra festival?")) {
+                        removeEvent.mutate(fe.event_id);
+                      }
+                    }}
                   >
-                    <ArrowUp className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => moveEvent.mutate({ eventId: fe.event_id, direction: "down" })}
-                    disabled={index === festivalEvents.length - 1}
-                  >
-                    <ArrowDown className="h-3 w-3" />
+                    <Trash2 className="h-3 w-3 text-destructive" />
                   </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => {
-                    if (confirm("Fjern fra festival?")) {
-                      removeEvent.mutate(fe.event_id);
-                    }
-                  }}
-                >
-                  <Trash2 className="h-3 w-3 text-destructive" />
-                </Button>
               </div>
             </div>
 
             {/* Desktop layout */}
             <div className="hidden md:flex items-center gap-4">
-              <span className="text-muted-foreground w-8 text-center">{index + 1}</span>
-              
               <div className="flex-1">
                 <p className="font-medium text-foreground">{fe.event?.title}</p>
+                {fe.event?.start_at && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {format(new Date(fe.event.start_at), "EEEE d. MMM 'kl.' HH:mm", { locale: nb })}
+                  </p>
+                )}
               </div>
 
               <Button
@@ -311,25 +276,6 @@ export default function AdminFestivalProgram() {
               >
                 {fe.show_in_program ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
               </Button>
-
-              <div className="flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => moveEvent.mutate({ eventId: fe.event_id, direction: "up" })}
-                  disabled={index === 0}
-                >
-                  <ArrowUp className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => moveEvent.mutate({ eventId: fe.event_id, direction: "down" })}
-                  disabled={index === festivalEvents.length - 1}
-                >
-                  <ArrowDown className="h-4 w-4" />
-                </Button>
-              </div>
 
               <Button
                 variant="ghost"
