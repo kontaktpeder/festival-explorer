@@ -63,6 +63,16 @@ export function FestivalEventAccordion({ events }: FestivalEventAccordionProps) 
     return acc;
   }, {} as Record<string, typeof events>);
 
+  // Sort events within each day by start time (earliest first)
+  Object.keys(eventsByDay).forEach((day) => {
+    eventsByDay[day].sort((a, b) => {
+      if (!a.event || !b.event) return 0;
+      const timeA = new Date(a.event.start_at).getTime();
+      const timeB = new Date(b.event.start_at).getTime();
+      return timeA - timeB;
+    });
+  });
+
   return (
     <div className="space-y-10">
       {Object.entries(eventsByDay).map(([day, dayEvents], dayIndex) => (
