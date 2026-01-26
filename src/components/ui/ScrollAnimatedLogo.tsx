@@ -50,12 +50,12 @@ export function ScrollAnimatedLogo() {
   // Logo sizing based on route type
   const getLogoClasses = () => {
     if (isContentPage) {
-      // Very small logo on content pages (event, artist, venue)
-      return 'h-5 md:h-8';
+      // Tiny logo on content pages - almost same size as BACKSTAGE text
+      return 'h-3 md:h-4';
     }
     if (!isHomePage) {
       // Small logo on other pages
-      return 'h-6 md:h-10';
+      return 'h-4 md:h-5';
     }
     // Original sizes for homepage/festival
     return isScrolled ? 'h-14 md:h-20' : 'h-12 md:h-16';
