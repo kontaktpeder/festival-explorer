@@ -552,3 +552,26 @@
     overscroll-behavior: contain;
   }
 }
+
+/* Disable page animations on mobile for performance and cleaner UX */
+@media (max-width: 768px) {
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-slide-up-slow,
+  .animate-scale-in,
+  .animate-blur-in,
+  .animate-line-grow,
+  .text-reveal,
+  .scroll-animate {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
+  }
+  
+  .scroll-animate.visible {
+    opacity: 1;
+    transform: none;
+  }
+}

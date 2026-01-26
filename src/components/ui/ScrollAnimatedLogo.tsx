@@ -47,11 +47,11 @@ export function ScrollAnimatedLogo() {
     }
   }, [location.pathname, navigate]);
 
-  // Logo sizing based on route type
+  // Logo sizing based on route type - smaller on mobile for content pages
   const getLogoClasses = () => {
     if (isContentPage) {
-      // Tiny logo on content pages - almost same size as BACKSTAGE text
-      return 'h-3 md:h-4';
+      // Tiny logo on content pages - match BACKSTAGE text scale
+      return 'h-2.5 md:h-4';
     }
     if (!isHomePage) {
       // Small logo on other pages
