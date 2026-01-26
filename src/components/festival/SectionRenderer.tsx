@@ -395,9 +395,9 @@ export function SectionRenderer({
 
           <div className="relative z-10 w-full max-w-md px-6 pb-6">
             {/* PNG logo */}
-            <div className="animate-blur-in mb-6">
+          <div className="animate-blur-in mb-6">
               <img 
-                src="/giggen-logo-full.png" 
+                src="/giggen-logo-new-v2.png" 
                 alt="GIGGEN - festival for en kveld"
                 className="h-16 md:h-24 w-auto drop-shadow-lg"
               />
