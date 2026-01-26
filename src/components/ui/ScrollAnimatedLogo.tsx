@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import giggenLogo from "@/assets/giggen-logo-new-v2.png";
+import giggenLogo from "@/assets/giggen-logo-final.png";
 
 export function ScrollAnimatedLogo() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -8,8 +8,12 @@ export function ScrollAnimatedLogo() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Check if we're on homepage or festival page
+  // Check route type
   const isHomePage = location.pathname === "/" || location.pathname.startsWith("/festival/");
+  const isContentPage = location.pathname.startsWith("/project/") || 
+                        location.pathname.startsWith("/event/") || 
+                        location.pathname.startsWith("/venue/") ||
+                        location.pathname.startsWith("/p/");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -43,11 +47,15 @@ export function ScrollAnimatedLogo() {
     }
   }, [location.pathname, navigate]);
 
-  // Smaller logo on non-homepage routes
+  // Logo sizing based on route type
   const getLogoClasses = () => {
+    if (isContentPage) {
+      // Very small logo on content pages (event, artist, venue)
+      return 'h-5 md:h-8';
+    }
     if (!isHomePage) {
-      // Smaller logo on other pages
-      return isScrolled ? 'h-8 md:h-10' : 'h-8 md:h-10';
+      // Small logo on other pages
+      return 'h-6 md:h-10';
     }
     // Original sizes for homepage/festival
     return isScrolled ? 'h-14 md:h-20' : 'h-12 md:h-16';
