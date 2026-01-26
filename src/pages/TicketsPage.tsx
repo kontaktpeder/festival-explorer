@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Ticket } from "lucide-react";
 import { toast } from "sonner";
-
+import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
 export default function TicketsPage() {
   const [buyerName, setBuyerName] = useState("");
   const [buyerEmail, setBuyerEmail] = useState("");
@@ -27,6 +27,10 @@ export default function TicketsPage() {
   });
 
   const handlePurchase = async () => {
+    if (!TICKET_SALES_ENABLED) {
+      toast.error("Billettsalg er midlertidig stengt");
+      return;
+    }
     if (!selectedType || !buyerName || !buyerEmail) {
       toast.error("Fyll ut alle feltene");
       return;
@@ -73,11 +77,11 @@ export default function TicketsPage() {
           <Card>
             <CardHeader><CardTitle>Din informasjon</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <Input placeholder="Navn" value={buyerName} onChange={(e) => setBuyerName(e.target.value)} />
-              <Input type="email" placeholder="E-post" value={buyerEmail} onChange={(e) => setBuyerEmail(e.target.value)} />
-              <Button className="w-full" onClick={handlePurchase} disabled={isLoading}>
+              <Input placeholder="Navn" value={buyerName} onChange={(e) => setBuyerName(e.target.value)} disabled={!TICKET_SALES_ENABLED} />
+              <Input type="email" placeholder="E-post" value={buyerEmail} onChange={(e) => setBuyerEmail(e.target.value)} disabled={!TICKET_SALES_ENABLED} />
+              <Button className="w-full" onClick={handlePurchase} disabled={isLoading || !TICKET_SALES_ENABLED}>
                 {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
-                Gå til betaling
+                {TICKET_SALES_ENABLED ? "Gå til betaling" : "Billettsalg stengt"}
               </Button>
             </CardContent>
           </Card>

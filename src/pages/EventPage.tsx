@@ -10,6 +10,7 @@ import { HeroSection } from "@/components/ui/HeroSection";
 import { LineupItem } from "@/components/ui/LineupItem";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
+import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
 
 export default function EventPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -121,13 +122,14 @@ export default function EventPage() {
         <div className="flex flex-col items-center gap-4">
           <Link 
             to="/tickets"
-            className="inline-flex items-center justify-center gap-3 py-4 px-10 border-2 border-accent text-accent bg-transparent hover:bg-accent hover:text-background transition-all duration-300 font-medium text-lg tracking-wide"
+            className={`inline-flex items-center justify-center gap-3 py-4 px-10 border-2 border-accent text-accent bg-transparent hover:bg-accent hover:text-background transition-all duration-300 font-medium text-lg tracking-wide ${!TICKET_SALES_ENABLED ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+            onClick={(e) => { if (!TICKET_SALES_ENABLED) e.preventDefault(); }}
           >
             <Ticket className="w-5 h-5" />
             <span>Kjøp billett</span>
           </Link>
           <span className="text-sm text-muted-foreground/60">
-            Begrenset kapasitet
+            {TICKET_SALES_ENABLED ? "Begrenset kapasitet" : "Billettsalg stengt"}
           </span>
         </div>
       </section>
