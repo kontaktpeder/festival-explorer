@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import giggenLogo from "@/assets/giggen-logo-full.png";
+import giggenLogo from "@/assets/giggen-logo-new-v2.png";
 
 export function ScrollAnimatedLogo() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(typeof window !== "undefined" ? window.innerWidth < 768 : false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Check if we're on homepage or festival page
+  const isHomePage = location.pathname === "/" || location.pathname.startsWith("/festival/");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,6 +43,16 @@ export function ScrollAnimatedLogo() {
     }
   }, [location.pathname, navigate]);
 
+  // Smaller logo on non-homepage routes
+  const getLogoClasses = () => {
+    if (!isHomePage) {
+      // Smaller logo on other pages
+      return isScrolled ? 'h-8 md:h-10' : 'h-8 md:h-10';
+    }
+    // Original sizes for homepage/festival
+    return isScrolled ? 'h-14 md:h-20' : 'h-12 md:h-16';
+  };
+
   return (
     <Link
       to="/"
@@ -58,11 +71,7 @@ export function ScrollAnimatedLogo() {
       <img 
         src={giggenLogo} 
         alt="GIGGEN - festival for en kveld"
-        className={`transition-all duration-500 drop-shadow-lg ${
-          isScrolled 
-            ? 'h-14 md:h-20' 
-            : 'h-12 md:h-16'
-        }`}
+        className={`transition-all duration-500 drop-shadow-lg ${getLogoClasses()}`}
       />
     </Link>
   );
