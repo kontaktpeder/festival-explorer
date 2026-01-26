@@ -131,8 +131,15 @@ export function SectionRenderer({
 
   switch (section.type) {
     case "program": {
-      // Vis ALLE events fra festivalen
-      const programEvents = validEvents.filter((fe) => fe.event);
+      // Vis ALLE events fra festivalen, sortert kronologisk
+      const programEvents = validEvents
+        .filter((fe) => fe.event)
+        .sort((a, b) => {
+          if (!a.event || !b.event) return 0;
+          const dateA = new Date(a.event.start_at).getTime();
+          const dateB = new Date(b.event.start_at).getTime();
+          return dateA - dateB;
+        });
 
       return (
         <section className="fullscreen-section relative" id="program">

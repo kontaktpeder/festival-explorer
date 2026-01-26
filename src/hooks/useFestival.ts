@@ -61,6 +61,14 @@ export function useFestival(slug: string) {
         })
       );
 
+      // Sort events chronologically by start_at (earliest first)
+      const sortedEvents = eventsWithLineup.sort((a, b) => {
+        if (!a.event || !b.event) return 0;
+        const dateA = new Date(a.event.start_at).getTime();
+        const dateB = new Date(b.event.start_at).getTime();
+        return dateA - dateB;
+      });
+
       // Hent festival sections fra database
       const { data: sections, error: sectionsError } = await supabase
         .from("festival_sections")
@@ -99,7 +107,7 @@ export function useFestival(slug: string) {
 
       return {
         ...festival,
-        festivalEvents: eventsWithLineup,
+        festivalEvents: sortedEvents,
         sections: sections || [],
         sectionArtists,
         // Cast to include new fields that may not be in generated types yet
