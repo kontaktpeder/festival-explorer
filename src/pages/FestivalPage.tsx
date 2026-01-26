@@ -14,6 +14,7 @@ import { SectionRenderer } from "@/components/festival/SectionRenderer";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import giggenLogo from "@/assets/giggen-logo.png";
+import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
 
 export default function FestivalPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -413,7 +414,13 @@ export default function FestivalPage() {
             <p>Billetter: Kjøp på døren eller forhåndsbestill</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link to="/tickets" className="btn-accent text-center">Kjøp billett</Link>
+            <Link 
+              to="/tickets" 
+              className={`btn-accent text-center ${!TICKET_SALES_ENABLED ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+              onClick={(e) => { if (!TICKET_SALES_ENABLED) e.preventDefault(); }}
+            >
+              Kjøp billett
+            </Link>
             <button className="btn-ghost text-center">Følg festivalen</button>
           </div>
         </div>
