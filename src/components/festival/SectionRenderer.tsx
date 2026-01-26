@@ -340,7 +340,7 @@ export function SectionRenderer({
           <div className="relative z-10 w-full max-w-md px-6 pb-6">
             {/* PNG logo */}
           <div className="animate-blur-in mb-6">
-              <img src={giggenLogo} alt="GIGGEN - festival for en kveld" className="h-16 md:h-24 w-auto drop-shadow-lg" />
+              <img alt="GIGGEN - festival for en kveld" className="h-16 md:h-24 w-auto drop-shadow-lg" src="/lovable-uploads/a08e4ff2-16a2-4b3b-ba0e-7fd7ca6ac632.png" />
             </div>
             
             {/* Tagline - clearer text */}
