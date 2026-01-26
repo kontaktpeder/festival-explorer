@@ -33,20 +33,46 @@ export default function AdminMedia() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showUpload, setShowUpload] = useState(false);
 
-  // Admin media page - always show all files for admins
+  // Admin media page - show own files + files from entities user is member of
   const { data: media, isLoading } = useQuery({
     queryKey: ["admin-media", selectedType, search],
     queryFn: async () => {
-      // Verify admin status first
-      const { data: isAdmin } = await supabase.rpc("is_admin");
-      if (!isAdmin) {
-        return []; // Non-admins see nothing in admin media page
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        return [];
       }
 
+      // Check if admin - admins see all files
+      const { data: isAdmin } = await supabase.rpc("is_admin");
+      
       let query = supabase
         .from("media")
         .select("*")
         .order("created_at", { ascending: false });
+
+      // Non-admins: only see own files + files from entities they're members of
+      if (!isAdmin) {
+        // Get all entities where user is a team member
+        const { data: userEntities } = await supabase
+          .from("entity_team")
+          .select("entity_id, entity:entities(created_by)")
+          .eq("user_id", user.id)
+          .is("left_at", null);
+
+        // Collect all user IDs whose files the user should see
+        const allowedUserIds = new Set<string>([user.id]);
+        
+        if (userEntities) {
+          userEntities.forEach((ue: any) => {
+            if (ue.entity?.created_by) {
+              allowedUserIds.add(ue.entity.created_by);
+            }
+          });
+        }
+
+        query = query.in("created_by", Array.from(allowedUserIds));
+      }
 
       if (selectedType !== "all") {
         query = query.eq("file_type", selectedType);
