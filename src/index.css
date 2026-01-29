@@ -103,8 +103,22 @@
     min-height: 100svh;
     position: relative;
     background-color: hsl(258 35% 22%);
-    /* Prevent iOS overscroll showing white */
+    /* Prevent iOS overscroll showing white and enable smooth scrolling */
     overscroll-behavior: none;
+    /* Enable native smooth scrolling for better mobile experience */
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Smooth scroll behavior for all devices */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Disable smooth scroll for users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
   
   /* iOS safe-area aware elements */
