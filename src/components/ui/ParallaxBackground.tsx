@@ -7,9 +7,13 @@ interface ParallaxBackgroundProps {
   className?: string;
   containerRef?: RefObject<HTMLElement>;
   imageFitMode?: 'cover' | 'contain';
-  isAnimated?: boolean; // For GIFs and animated images
+  isAnimated?: boolean;
 }
 
+/**
+ * ParallaxBackground - GPU-optimized parallax effect
+ * Completely disabled on mobile for smoother scrolling (especially in Instagram/Chrome in-app browsers)
+ */
 export function ParallaxBackground({
   imageUrl,
   imageUrlMobile,
@@ -27,6 +31,13 @@ export function ParallaxBackground({
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
     checkMobile();
+
+    // Completely disable parallax on mobile for smooth scrolling
+    // Instagram and Chrome in-app browsers struggle with scroll-based transforms
+    if (window.innerWidth <= 768) {
+      window.addEventListener("resize", checkMobile, { passive: true });
+      return () => window.removeEventListener("resize", checkMobile);
+    }
 
     const handleScroll = () => {
       if (rafRef.current !== null) return;
@@ -46,11 +57,8 @@ export function ParallaxBackground({
         const distanceFromCenter = viewportCenter - sectionCenter;
         
         if (rect.bottom > 0 && rect.top < viewportHeight) {
-          // Reduce intensity on mobile for smoother performance
-          // Also reduce for animated images to prevent jitter
-          const mobileReduction = window.innerWidth <= 768 ? 0.5 : 1;
           const animatedReduction = isAnimated ? 0.7 : 1;
-          const effectiveIntensity = intensity * mobileReduction * animatedReduction;
+          const effectiveIntensity = intensity * animatedReduction;
           const maxOffset = rect.height * effectiveIntensity;
           const offset = Math.max(-maxOffset, Math.min(maxOffset, distanceFromCenter * effectiveIntensity));
           setParallaxY(offset);
@@ -60,18 +68,14 @@ export function ParallaxBackground({
       });
     };
 
-    const handleResize = () => {
-      checkMobile();
-    };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleResize, { passive: true });
+    window.addEventListener("resize", checkMobile, { passive: true });
     
     handleScroll();
     
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("resize", checkMobile);
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
       }
@@ -89,14 +93,22 @@ export function ParallaxBackground({
     <div 
       ref={internalContainerRef}
       className={`absolute inset-0 overflow-hidden ${className}`}
-      style={{ contain: 'layout style paint' }}
+      style={{ 
+        contain: 'layout style paint',
+        // Force GPU layer for smoother rendering
+        transform: 'translateZ(0)',
+      }}
     >
       <div
-        className={`absolute inset-0 flex ${imageFitMode === 'contain' ? 'items-start' : 'items-center'} justify-center`}
+        className="absolute inset-0 flex items-center justify-center"
         style={{
-          transform: `translate3d(0, ${parallaxY}px, 0)`,
-          willChange: "transform",
-          backfaceVisibility: "hidden",
+          // On mobile: no transform, just static image for smooth scrolling
+          // On desktop: apply parallax transform
+          transform: isMobile ? 'translate3d(0, 0, 0)' : `translate3d(0, ${parallaxY}px, 0)`,
+          // Only animate transform on desktop
+          willChange: isMobile ? 'auto' : 'transform',
+          backfaceVisibility: 'hidden',
+          WebkitBackfaceVisibility: 'hidden',
         }}
       >
         <img 
@@ -106,7 +118,6 @@ export function ParallaxBackground({
           style={{ 
             objectPosition: imageFitMode === 'contain' ? 'center top' : 'center center',
             transform: 'translateZ(0)',
-            // Ensure GIF animations are not paused
             imageRendering: isAnimated ? 'auto' : undefined,
           }}
         />
