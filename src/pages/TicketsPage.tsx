@@ -79,15 +79,15 @@ export default function TicketsPage() {
 
         {selectedType && (
           <Card>
-            <CardHeader><CardTitle>Din informasjon</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <Input placeholder="Navn" value={buyerName} onChange={(e) => setBuyerName(e.target.value)} disabled={!TICKET_SALES_ENABLED} />
-              <Input type="email" placeholder="E-post" value={buyerEmail} onChange={(e) => setBuyerEmail(e.target.value)} disabled={!TICKET_SALES_ENABLED} />
-              <Button className="w-full" onClick={handlePurchase} disabled={isLoading || !TICKET_SALES_ENABLED}>
+            <div className="p-4 space-y-3">
+              <p className="text-sm font-medium">Din informasjon</p>
+              <Input placeholder="Navn" value={buyerName} onChange={(e) => setBuyerName(e.target.value)} disabled={!TICKET_SALES_ENABLED} className="h-9" />
+              <Input type="email" placeholder="E-post" value={buyerEmail} onChange={(e) => setBuyerEmail(e.target.value)} disabled={!TICKET_SALES_ENABLED} className="h-9" />
+              <Button className="w-full h-9" onClick={handlePurchase} disabled={isLoading || !TICKET_SALES_ENABLED}>
                 {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
                 {TICKET_SALES_ENABLED ? "Gå til betaling" : "Billettsalg stengt"}
               </Button>
-            </CardContent>
+            </div>
           </Card>
         )}
       </div>
