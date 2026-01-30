@@ -3,13 +3,17 @@ import { useQuery } from "@tanstack/react-query";
 import { QRCodeSVG } from "qrcode.react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Calendar, MapPin, Download, Save } from "lucide-react";
-import { useRef } from "react";
+import { Loader2, Calendar, MapPin, Download, Save, Check } from "lucide-react";
+import { useRef, useState } from "react";
 import html2canvas from "html2canvas";
+import { useToast } from "@/hooks/use-toast";
+import ticketBg from "@/assets/ticket-bg.jpeg";
 
 export default function TicketViewPage() {
   const { ticketCode } = useParams<{ ticketCode: string }>();
   const ticketRef = useRef<HTMLDivElement>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const { toast } = useToast();
 
   const { data: ticket, isLoading, error } = useQuery({
     queryKey: ["ticket-public", ticketCode],
@@ -31,27 +35,78 @@ export default function TicketViewPage() {
         useCORS: true,
       });
       
-      canvas.toBlob((blob) => {
+      canvas.toBlob(async (blob) => {
         if (!blob) return;
         
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `giggen-billett-${ticket?.ticketCode || 'ticket'}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        // Try to use Share API on mobile (works on both Chrome and Safari)
+        if (navigator.share && navigator.canShare) {
+          try {
+            const file = new File([blob], `giggen-billett-${ticket?.ticketCode || 'ticket'}.png`, { type: 'image/png' });
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                files: [file],
+                title: 'GIGGEN Billett',
+                text: 'Min GIGGEN billett'
+              });
+              return;
+            }
+          } catch (shareError) {
+            console.log('Share failed, using download method');
+          }
+        }
+        
+        // Fallback: Open image in new window for manual save
+        const dataUrl = canvas.toDataURL('image/png');
+        const newWindow = window.open();
+        if (newWindow) {
+          newWindow.document.write(`
+            <html>
+              <head><title>GIGGEN Billett</title></head>
+              <body style="margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#1a1a2e;">
+                <img src="${dataUrl}" style="max-width:100%;height:auto;" />
+                <p style="color:white;margin-top:20px;font-family:sans-serif;">Trykk lenge på bildet for å lagre</p>
+              </body>
+            </html>
+          `);
+        } else {
+          // Last resort: try download link
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `giggen-billett-${ticket?.ticketCode || 'ticket'}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
       }, "image/png");
     } catch (error) {
       console.error("Error saving ticket:", error);
-      alert("Kunne ikke lagre billetten. Prøv igjen.");
+      toast({
+        title: "Feil",
+        description: "Kunne ikke lagre billetten. Prøv igjen.",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
     const ticketUrl = `${window.location.origin}/t/${ticket?.ticketCode}`;
-    navigator.clipboard.writeText(ticketUrl);
+    try {
+      await navigator.clipboard.writeText(ticketUrl);
+      setLinkCopied(true);
+      toast({
+        title: "Lenke kopiert",
+        description: "Billettlenken er kopiert til utklippstavlen",
+      });
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch (error) {
+      toast({
+        title: "Feil",
+        description: "Kunne ikke kopiere lenken. Prøv igjen.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>;
@@ -63,7 +118,10 @@ export default function TicketViewPage() {
   const venueName = "Josefines Vertshus";
 
   return (
-    <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+    <div 
+      className="min-h-screen p-4 flex items-center justify-center bg-cover bg-center"
+      style={{ backgroundImage: `url(${ticketBg})` }}
+    >
       <div className="max-w-sm w-full">
         <Card ref={ticketRef} className="bg-white">
           <CardHeader className="text-center pb-2">
@@ -91,7 +149,15 @@ export default function TicketViewPage() {
         
         <div className="flex gap-2 mt-4">
           <Button variant="outline" className="flex-1" onClick={handleCopyLink}>
-            <Download className="mr-2 w-4 h-4" />Kopier lenke
+            {linkCopied ? (
+              <>
+                <Check className="mr-2 w-4 h-4" />Lenke kopiert
+              </>
+            ) : (
+              <>
+                <Download className="mr-2 w-4 h-4" />Kopier lenke
+              </>
+            )}
           </Button>
           <Button variant="default" className="flex-1" onClick={handleSaveToGallery}>
             <Save className="mr-2 w-4 h-4" />Last ned billett
