@@ -4,14 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CheckCircle, XCircle, AlertCircle, LogIn } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, AlertCircle, LogIn, QrCode } from "lucide-react";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { Html5Qrcode } from "html5-qrcode";
 
 export default function ValidatorPage() {
   const { ticketCode } = useParams<{ ticketCode: string }>();
   const navigate = useNavigate();
   const [isStaff, setIsStaff] = useState<boolean | null>(null);
+  const [showScanner, setShowScanner] = useState(false);
+  const [scannerError, setScannerError] = useState<string | null>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -31,6 +35,61 @@ export default function ValidatorPage() {
     checkStaff();
   }, []);
 
+  // Start scanner when showScanner becomes true
+  useEffect(() => {
+    if (showScanner && isStaff) {
+      const startScanner = async () => {
+        try {
+          const html5QrCode = new Html5Qrcode("qr-reader");
+          scannerRef.current = html5QrCode;
+          
+          await html5QrCode.start(
+            { facingMode: "environment" },
+            {
+              fps: 10,
+              qrbox: { width: 250, height: 250 },
+            },
+            (decodedText) => {
+              // Extract ticket code from URL if it's a full URL
+              let code = decodedText;
+              if (decodedText.includes("/t/")) {
+                code = decodedText.split("/t/")[1]?.split("?")[0] || decodedText;
+              } else if (decodedText.includes("/v/")) {
+                code = decodedText.split("/v/")[1]?.split("?")[0] || decodedText;
+              }
+              
+              // Stop scanner and navigate
+              html5QrCode.stop().then(() => {
+                setShowScanner(false);
+                navigate(`/v/${code}`, { replace: true });
+              }).catch(() => {
+                setShowScanner(false);
+                navigate(`/v/${code}`, { replace: true });
+              });
+            },
+            () => {
+              // Ignore scanning errors (they happen continuously while scanning)
+            }
+          );
+        } catch (err) {
+          setScannerError("Kunne ikke starte kamera. Sjekk at du har gitt tillatelse.");
+          console.error("Scanner error:", err);
+        }
+      };
+      
+      startScanner();
+    }
+
+    // Cleanup scanner when component unmounts or showScanner becomes false
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.stop().catch(() => {});
+        scannerRef.current.clear();
+        scannerRef.current = null;
+      }
+    };
+  }, [showScanner, isStaff, navigate]);
+
   const { data: ticket, isLoading, error } = useQuery({
     queryKey: ["validate-ticket", ticketCode],
     queryFn: async () => {
@@ -48,7 +107,7 @@ export default function ValidatorPage() {
       }
       return response.json();
     },
-    enabled: !!ticketCode && isStaff === true,
+    enabled: !!ticketCode && isStaff === true && !showScanner,
   });
 
   const checkInMutation = useMutation({
@@ -104,6 +163,40 @@ export default function ValidatorPage() {
     );
   }
 
+  // Show scanner view
+  if (showScanner) {
+    return (
+      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+        <Card className="max-w-md w-full">
+          <CardHeader className="text-center">
+            <CardTitle>Scan QR-kode</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div id="qr-reader" className="w-full rounded-lg overflow-hidden" />
+            {scannerError && (
+              <p className="text-destructive text-center text-sm">{scannerError}</p>
+            )}
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                if (scannerRef.current) {
+                  scannerRef.current.stop().catch(() => {});
+                  scannerRef.current.clear();
+                  scannerRef.current = null;
+                }
+                setShowScanner(false);
+                setScannerError(null);
+              }}
+            >
+              Avbryt
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return <div className="flex justify-center items-center min-h-screen"><Loader2 className="animate-spin" /></div>;
   }
@@ -116,6 +209,13 @@ export default function ValidatorPage() {
             <XCircle className="w-16 h-16 mx-auto text-destructive" />
             <h2 className="text-xl font-bold">Billett ikke funnet</h2>
             <p className="text-muted-foreground">{(error as Error)?.message || "Kunne ikke hente billett"}</p>
+            <Button
+              onClick={() => setShowScanner(true)}
+              className="w-full"
+            >
+              <QrCode className="mr-2 w-4 h-4" />
+              Scan QR-kode
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -138,6 +238,15 @@ export default function ValidatorPage() {
           <p className="text-muted-foreground">{ticket.ticketType}</p>
         </CardHeader>
         <CardContent className="space-y-4">
+          <Button
+            onClick={() => setShowScanner(true)}
+            variant="outline"
+            className="w-full"
+          >
+            <QrCode className="mr-2 w-4 h-4" />
+            Scan QR-kode
+          </Button>
+
           <div className="text-center space-y-1">
             <p className="font-mono text-xl">{ticket.ticketCode}</p>
             <p className="font-medium">{ticket.buyerName}</p>
