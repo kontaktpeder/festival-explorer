@@ -170,6 +170,15 @@ export default function FestivalPage() {
                       {showDescription}
                     </p>
                   )}
+                  {/* CTA button at bottom of hero */}
+                  <div className="animate-slide-up delay-300 mt-8">
+                    <Link 
+                      to="/tickets" 
+                      className="btn-accent inline-block px-8 py-3"
+                    >
+                      Kjøp billett
+                    </Link>
+                  </div>
                 </div>
               </HeroSection>
             );
