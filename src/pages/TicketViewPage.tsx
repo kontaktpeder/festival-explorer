@@ -30,7 +30,7 @@ export default function TicketViewPage() {
     
     try {
       const canvas = await html2canvas(ticketRef.current, {
-        backgroundColor: "#ffffff",
+        backgroundColor: 'hsl(258, 35%, 22%)',
         scale: 2,
         useCORS: true,
       });
@@ -122,8 +122,8 @@ export default function TicketViewPage() {
       className="min-h-screen p-4 flex items-center justify-center bg-cover bg-center"
       style={{ backgroundImage: `url(${ticketBg})` }}
     >
-      <div className="max-w-sm w-full">
-        <Card ref={ticketRef} className="bg-white">
+      <div className="max-w-sm w-full space-y-4">
+        <Card ref={ticketRef} className="border-0" style={{ backgroundColor: 'hsl(258, 35%, 22%)' }}>
           <CardHeader className="text-center pb-2">
             <CardTitle className="text-xl text-foreground">{festivalName}</CardTitle>
             <p className="text-muted-foreground">{ticket.ticketType}</p>
@@ -147,7 +147,7 @@ export default function TicketViewPage() {
           </CardContent>
         </Card>
         
-        <div className="flex gap-2 mt-4">
+        <div className="flex gap-2">
           <Button variant="outline" className="flex-1" onClick={handleCopyLink}>
             {linkCopied ? (
               <>
