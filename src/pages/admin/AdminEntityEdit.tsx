@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Users } from "lucide-react";
+import { ArrowLeft, Save, Users, Plus } from "lucide-react";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
@@ -336,54 +336,74 @@ export default function AdminEntityEdit() {
       )}
 
       {/* Team section (only for existing entities) */}
-      {!isNew && team && team.length > 0 && (
+      {!isNew && (
         <div className="mt-8 pt-6 border-t border-border">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Team ({team.length})
-          </h2>
-          <div className="space-y-2">
-            {team.map((member) => (
-              <div
-                key={member.id}
-                className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
-                    {member.profile?.avatar_url ? (
-                      <img
-                        src={member.profile.avatar_url}
-                        alt=""
-                        className="w-full h-full rounded-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-xs font-bold text-muted-foreground">
-                        {(member.profile?.display_name || member.profile?.handle || "?").charAt(0)}
-                      </span>
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">
-                      {member.profile?.display_name || member.profile?.handle || "Ingen navn"}
-                    </p>
-                    {member.role_labels && member.role_labels.length > 0 && (
-                      <p className="text-xs text-muted-foreground">
-                        {member.role_labels.join(", ")}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant={member.access === 'owner' ? 'default' : 'secondary'}>
-                    {ACCESS_LABELS[member.access as AccessLevel] || member.access}
-                  </Badge>
-                  {member.is_public && (
-                    <Badge variant="outline" className="text-xs">Offentlig</Badge>
-                  )}
-                </div>
-              </div>
-            ))}
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Team {team && team.length > 0 && `(${team.length})`}
+            </h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(`/admin/access-generator?mode=entity&entityId=${id}`)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Inviter
+            </Button>
           </div>
+          {!team || team.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">
+              Ingen team-medlemmer ennå. Bruk "Inviter" for å legge til noen.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {team.map((member) => (
+                <div
+                  key={member.id}
+                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                      {member.profile?.avatar_url ? (
+                        <img
+                          src={member.profile.avatar_url}
+                          alt=""
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-xs font-bold text-muted-foreground">
+                          {(member.profile?.display_name || member.profile?.handle || "?").charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm">
+                        {member.profile?.display_name || member.profile?.handle || "Ukjent bruker"}
+                      </p>
+                      {member.role_labels && member.role_labels.length > 0 ? (
+                        <p className="text-xs text-muted-foreground">
+                          {member.role_labels.join(", ")}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground italic">
+                          Ingen rolle satt
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Badge variant={member.access === 'owner' ? 'default' : 'secondary'}>
+                      {ACCESS_LABELS[member.access as AccessLevel] || member.access}
+                    </Badge>
+                    {member.is_public && (
+                      <Badge variant="outline" className="text-xs">Offentlig</Badge>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
