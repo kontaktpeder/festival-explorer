@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { AlertCircle, CheckCircle, Calendar, Music, Users, MapPin } from "lucide-react";
+import { AlertCircle, CheckCircle, Calendar, Music, Users, MapPin, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QRCodeGenerator } from "@/components/admin/QRCodeGenerator";
 
@@ -87,6 +87,20 @@ export default function AdminDashboard() {
       <QRCodeGenerator 
         defaultUrl={activeFestival ? `${getPublicUrl()}/festival/${activeFestival.slug}` : undefined} 
       />
+
+      {/* Scan billetter card */}
+      <div className="bg-card border border-border rounded-lg p-4 md:p-6">
+        <div className="flex items-center gap-2 mb-3">
+          <QrCode className="h-5 w-5 text-accent" />
+          <h3 className="text-lg font-semibold text-foreground">Scan billetter</h3>
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">
+          Skriv inn billettkode eller scan QR-kode for å validere billetter.
+        </p>
+        <Button asChild>
+          <Link to="/crew/checkin">Åpne scanner</Link>
+        </Button>
+      </div>
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-3 md:gap-4">
