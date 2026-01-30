@@ -259,31 +259,21 @@ export function SectionRenderer({
             {/* Artist list - right aligned */}
             <div className="space-y-6">
               {featuredArtists.length > 0 ? featuredArtists.map((artist, i) => (
-                <div 
+                <Link 
                   key={artist.id} 
-                  className="animate-slide-up py-4 border-b border-foreground/10 last:border-0 text-right"
+                  to={`/project/${artist.slug}`} 
+                  className="animate-slide-up block group py-4 border-b border-foreground/10 last:border-0 text-right"
                   style={{ animationDelay: `${0.1 + i * 0.08}s` }}
                 >
-                  <Link 
-                    to={`/project/${artist.slug}`} 
-                    className="block group"
-                  >
-                    <h3 className="text-display text-2xl md:text-3xl text-foreground/90 group-hover:text-accent transition-colors duration-300">
-                      {artist.name}
-                    </h3>
-                    {artist.tagline && (
-                      <p className="text-foreground/40 text-sm mt-1 group-hover:text-foreground/60 transition-colors">
-                        {artist.tagline}
-                      </p>
-                    )}
-                  </Link>
-                  <Link 
-                    to="/tickets" 
-                    className="inline-block mt-2 text-xs text-accent hover:text-accent/80 transition-colors uppercase tracking-wider font-medium"
-                  >
-                    Kjøp billett →
-                  </Link>
-                </div>
+                  <h3 className="text-display text-2xl md:text-3xl text-foreground/90 group-hover:text-accent transition-colors duration-300">
+                    {artist.name}
+                  </h3>
+                  {artist.tagline && (
+                    <p className="text-foreground/40 text-sm mt-1 group-hover:text-foreground/60 transition-colors">
+                      {artist.tagline}
+                    </p>
+                  )}
+                </Link>
               )) : (
                 <p className="text-foreground/40 text-base text-right">
                   Lineup kommer snart.
