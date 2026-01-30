@@ -3,12 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import { QRCodeSVG } from "qrcode.react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Calendar, MapPin, Download } from "lucide-react";
-import { format } from "date-fns";
-import { nb } from "date-fns/locale";
+import { Loader2, Calendar, MapPin, Download, Save } from "lucide-react";
+import { useRef } from "react";
+import html2canvas from "html2canvas";
 
 export default function TicketViewPage() {
   const { ticketCode } = useParams<{ ticketCode: string }>();
+  const ticketRef = useRef<HTMLDivElement>(null);
 
   const { data: ticket, isLoading, error } = useQuery({
     queryKey: ["ticket-public", ticketCode],
@@ -20,33 +21,83 @@ export default function TicketViewPage() {
     enabled: !!ticketCode,
   });
 
+  const handleSaveToGallery = async () => {
+    if (!ticketRef.current) return;
+    
+    try {
+      const canvas = await html2canvas(ticketRef.current, {
+        backgroundColor: "#ffffff",
+        scale: 2,
+        useCORS: true,
+      });
+      
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `giggen-billett-${ticket?.ticketCode || 'ticket'}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, "image/png");
+    } catch (error) {
+      console.error("Error saving ticket:", error);
+      alert("Kunne ikke lagre billetten. Prøv igjen.");
+    }
+  };
+
+  const handleCopyLink = () => {
+    const ticketUrl = `${window.location.origin}/t/${ticket?.ticketCode}`;
+    navigator.clipboard.writeText(ticketUrl);
+  };
+
   if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>;
   if (error || !ticket) return <div className="p-8 text-center">Billett ikke funnet</div>;
 
-  const ticketUrl = `${window.location.origin}/t/${ticket.ticketCode}`;
+  // Hardcoded values
+  const festivalName = "GIGGEN - festival for en kveld 2026";
+  const eventDate = "14. mars 2026 kl 17";
+  const venueName = "Josefines Vertshus";
 
   return (
     <div className="min-h-screen bg-background p-4 flex items-center justify-center">
-      <Card className="max-w-sm w-full">
-        <CardHeader className="text-center pb-2">
-          <CardTitle className="text-xl">{ticket.eventName}</CardTitle>
-          <p className="text-muted-foreground">{ticket.ticketType}</p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="bg-white p-4 rounded-lg flex justify-center">
-            <QRCodeSVG value={ticketUrl} size={200} />
-          </div>
-          <p className="text-center font-mono text-lg">{ticket.ticketCode}</p>
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center gap-2"><Calendar className="w-4 h-4" />{ticket.startsAt && format(new Date(ticket.startsAt), "PPP 'kl' HH:mm", { locale: nb })}</div>
-            {ticket.venueName && <div className="flex items-center gap-2"><MapPin className="w-4 h-4" />{ticket.venueName}</div>}
-          </div>
-          <p className="text-center text-muted-foreground">{ticket.buyerName}</p>
-          <Button variant="outline" className="w-full" onClick={() => navigator.clipboard.writeText(ticketUrl)}>
+      <div className="max-w-sm w-full">
+        <Card ref={ticketRef} className="bg-white">
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="text-xl text-foreground">{festivalName}</CardTitle>
+            <p className="text-muted-foreground">{ticket.ticketType}</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-white p-4 rounded-lg flex justify-center">
+              <QRCodeSVG value={`${window.location.origin}/t/${ticket.ticketCode}`} size={200} />
+            </div>
+            <p className="text-center font-mono text-lg text-foreground">{ticket.ticketCode}</p>
+            <div className="space-y-2 text-sm text-foreground">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                {eventDate}
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                {venueName}
+              </div>
+            </div>
+            <p className="text-center text-muted-foreground">{ticket.buyerName}</p>
+          </CardContent>
+        </Card>
+        
+        <div className="flex gap-2 mt-4">
+          <Button variant="outline" className="flex-1" onClick={handleCopyLink}>
             <Download className="mr-2 w-4 h-4" />Kopier lenke
           </Button>
-        </CardContent>
-      </Card>
+          <Button variant="default" className="flex-1" onClick={handleSaveToGallery}>
+            <Save className="mr-2 w-4 h-4" />Last ned billett
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
