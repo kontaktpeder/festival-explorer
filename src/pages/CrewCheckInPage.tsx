@@ -374,7 +374,7 @@ export default function CrewCheckInPage() {
         className={`fixed inset-0 z-50 flex flex-col items-center justify-center p-6 ${
           checkInResult.success 
             ? 'bg-green-600' 
-            : 'bg-destructive'
+            : 'bg-red-600'
         }`}
         onClick={handleDismissResult}
       >
