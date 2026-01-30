@@ -1226,6 +1226,50 @@ export type Database = {
           },
         ]
       }
+      scan_logs: {
+        Row: {
+          checked_in_by: string | null
+          created_at: string | null
+          device_info: string | null
+          error_message: string | null
+          id: string
+          method: string | null
+          result: string
+          ticket_code: string
+          ticket_id: string | null
+        }
+        Insert: {
+          checked_in_by?: string | null
+          created_at?: string | null
+          device_info?: string | null
+          error_message?: string | null
+          id?: string
+          method?: string | null
+          result: string
+          ticket_code: string
+          ticket_id?: string | null
+        }
+        Update: {
+          checked_in_by?: string | null
+          created_at?: string | null
+          device_info?: string | null
+          error_message?: string | null
+          id?: string
+          method?: string | null
+          result?: string
+          ticket_code?: string
+          ticket_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scan_logs_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       social_assets: {
         Row: {
           caption_text: string | null
@@ -1330,6 +1374,8 @@ export type Database = {
       }
       ticket_events: {
         Row: {
+          attendance_count: number | null
+          boilerroom_attendance_count: number | null
           capacity: number | null
           created_at: string | null
           id: string
@@ -1339,6 +1385,8 @@ export type Database = {
           venue_name: string | null
         }
         Insert: {
+          attendance_count?: number | null
+          boilerroom_attendance_count?: number | null
           capacity?: number | null
           created_at?: string | null
           id?: string
@@ -1348,6 +1396,8 @@ export type Database = {
           venue_name?: string | null
         }
         Update: {
+          attendance_count?: number | null
+          boilerroom_attendance_count?: number | null
           capacity?: number | null
           created_at?: string | null
           id?: string
@@ -1421,11 +1471,13 @@ export type Database = {
         Row: {
           buyer_email: string
           buyer_name: string
+          chargeback_at: string | null
           checked_in_at: string | null
           checked_in_by: string | null
           created_at: string | null
           event_id: string
           id: string
+          refunded_at: string | null
           status: string
           stripe_payment_intent_id: string | null
           stripe_session_id: string
@@ -1435,11 +1487,13 @@ export type Database = {
         Insert: {
           buyer_email: string
           buyer_name: string
+          chargeback_at?: string | null
           checked_in_at?: string | null
           checked_in_by?: string | null
           created_at?: string | null
           event_id: string
           id?: string
+          refunded_at?: string | null
           status?: string
           stripe_payment_intent_id?: string | null
           stripe_session_id: string
@@ -1449,11 +1503,13 @@ export type Database = {
         Update: {
           buyer_email?: string
           buyer_name?: string
+          chargeback_at?: string | null
           checked_in_at?: string | null
           checked_in_by?: string | null
           created_at?: string | null
           event_id?: string
           id?: string
+          refunded_at?: string | null
           status?: string
           stripe_payment_intent_id?: string | null
           stripe_session_id?: string

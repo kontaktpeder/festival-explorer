@@ -48,6 +48,7 @@ serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
 
+  // Handle checkout.session.completed - create ticket
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     
@@ -120,10 +121,104 @@ serve(async (req) => {
     );
   }
 
+  // Handle refund
+  if (event.type === "charge.refunded") {
+    const charge = event.data.object as Stripe.Charge;
+    const paymentIntentId = charge.payment_intent as string;
+    
+    console.log("Processing refund for payment intent:", paymentIntentId);
+
+    if (paymentIntentId) {
+      // Find ticket(s) by payment intent
+      const { data: tickets, error: findError } = await supabaseAdmin
+        .from("tickets")
+        .select("id, ticket_code, status")
+        .eq("stripe_payment_intent_id", paymentIntentId);
+
+      if (findError) {
+        console.error("Error finding tickets for refund:", findError);
+      } else if (tickets && tickets.length > 0) {
+        for (const ticket of tickets) {
+          const { error: updateError } = await supabaseAdmin
+            .from("tickets")
+            .update({
+              refunded_at: new Date().toISOString(),
+              status: "CANCELLED",
+            })
+            .eq("id", ticket.id);
+
+          if (updateError) {
+            console.error(`Error updating ticket ${ticket.ticket_code} for refund:`, updateError);
+          } else {
+            console.log(`Ticket ${ticket.ticket_code} marked as refunded`);
+          }
+        }
+      } else {
+        console.log("No tickets found for payment intent:", paymentIntentId);
+      }
+    }
+
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // Handle chargeback/dispute created
+  if (event.type === "charge.dispute.created") {
+    const dispute = event.data.object as Stripe.Dispute;
+    const chargeId = dispute.charge as string;
+    
+    console.log("Processing dispute for charge:", chargeId);
+
+    // Get the charge to find the payment intent
+    try {
+      const charge = await stripe.charges.retrieve(chargeId);
+      const paymentIntentId = charge.payment_intent as string;
+
+      if (paymentIntentId) {
+        // Find ticket(s) by payment intent
+        const { data: tickets, error: findError } = await supabaseAdmin
+          .from("tickets")
+          .select("id, ticket_code, status")
+          .eq("stripe_payment_intent_id", paymentIntentId);
+
+        if (findError) {
+          console.error("Error finding tickets for dispute:", findError);
+        } else if (tickets && tickets.length > 0) {
+          for (const ticket of tickets) {
+            const { error: updateError } = await supabaseAdmin
+              .from("tickets")
+              .update({
+                chargeback_at: new Date().toISOString(),
+                status: "CANCELLED",
+              })
+              .eq("id", ticket.id);
+
+            if (updateError) {
+              console.error(`Error updating ticket ${ticket.ticket_code} for dispute:`, updateError);
+            } else {
+              console.log(`Ticket ${ticket.ticket_code} marked with chargeback`);
+            }
+          }
+        } else {
+          console.log("No tickets found for payment intent:", paymentIntentId);
+        }
+      }
+    } catch (chargeError) {
+      console.error("Error retrieving charge for dispute:", chargeError);
+    }
+
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   // Handle payment failed
   if (event.type === "payment_intent.payment_failed") {
     const paymentIntent = event.data.object as Stripe.PaymentIntent;
-    console.log("Payment failed:", paymentIntent.id);
+    console.log("Payment failed:", paymentIntent.id, paymentIntent.last_payment_error?.message);
   }
 
   return new Response(JSON.stringify({ received: true }), {

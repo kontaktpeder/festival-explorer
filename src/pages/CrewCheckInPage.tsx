@@ -1,16 +1,38 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, QrCode, Download, Loader2, AlertCircle, CheckCircle, Camera, X } from "lucide-react";
+import { Search, QrCode, Download, Loader2, AlertCircle, CheckCircle, Camera, X, User, Mail, Clock, PartyPopper } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { Html5Qrcode } from "html5-qrcode";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
 
-interface TicketResult {
+interface CheckInResult {
+  success: boolean;
+  result: 'success' | 'already_used' | 'invalid' | 'refunded' | 'wrong_event' | 'error';
+  ticketCode: string;
+  buyerName?: string;
+  buyerEmail?: string;
+  ticketType?: string;
+  ticketDescription?: string;
+  eventName?: string;
+  hasBoilerroomAccess?: boolean;
+  checkedInAt?: string;
+  checkedInBy?: string;
+  checkedInByName?: string;
+  attendanceCount?: number;
+  boilerroomAttendanceCount?: number;
+  refundedAt?: string;
+  chargebackAt?: string;
+  error?: string;
+}
+
+interface TicketSearchResult {
   ticketCode: string;
   status: string;
   buyerName: string;
@@ -22,12 +44,15 @@ interface TicketResult {
 export default function CrewCheckInPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [ticketCode, setTicketCode] = useState("");
-  const [searchResults, setSearchResults] = useState<TicketResult[]>([]);
+  const [searchResults, setSearchResults] = useState<TicketSearchResult[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState<boolean | null>(null);
   const [showScanner, setShowScanner] = useState(false);
   const [scannerError, setScannerError] = useState<string | null>(null);
+  const [checkInResult, setCheckInResult] = useState<CheckInResult | null>(null);
+  const [showResult, setShowResult] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const resultTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,8 +73,17 @@ export default function CrewCheckInPage() {
     checkRole();
   }, []);
 
+  // Clear timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (resultTimeoutRef.current) {
+        clearTimeout(resultTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Format ticket code automatically (add dashes if missing)
-  const formatTicketCode = (input: string): string => {
+  const formatTicketCode = useCallback((input: string): string => {
     let cleaned = input.replace(/[^A-Z0-9]/gi, '').toUpperCase();
     
     if (cleaned.startsWith('GIGG')) {
@@ -64,7 +98,24 @@ export default function CrewCheckInPage() {
       return `GIGG-${cleaned}`;
     }
     return cleaned;
-  };
+  }, []);
+
+  const showResultWithAutoReset = useCallback((result: CheckInResult) => {
+    setCheckInResult(result);
+    setShowResult(true);
+    
+    // Clear any existing timeout
+    if (resultTimeoutRef.current) {
+      clearTimeout(resultTimeoutRef.current);
+    }
+    
+    // Auto-reset after 5 seconds for success, 8 seconds for errors
+    const timeout = result.success ? 5000 : 8000;
+    resultTimeoutRef.current = setTimeout(() => {
+      setShowResult(false);
+      setCheckInResult(null);
+    }, timeout);
+  }, []);
 
   const checkInMutation = useMutation({
     mutationFn: async ({ code, method = "manual" }: { code: string; method?: string }) => {
@@ -83,14 +134,14 @@ export default function CrewCheckInPage() {
         }
       );
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to check in");
-      }
-      return response.json();
+      const data = await response.json();
+      return data as CheckInResult;
     },
-    onSuccess: () => {
-      toast.success("Billett sjekket inn!");
+    onSuccess: (data) => {
+      showResultWithAutoReset(data);
+      if (data.success) {
+        toast.success("Billett sjekket inn!");
+      }
       setTicketCode("");
       setSearchResults([]);
     },
@@ -158,7 +209,7 @@ export default function CrewCheckInPage() {
         scannerRef.current = null;
       }
     };
-  }, [showScanner, isStaff]);
+  }, [showScanner, isStaff, formatTicketCode]);
 
   const searchMutation = useMutation({
     mutationFn: async (query: string) => {
@@ -256,6 +307,14 @@ export default function CrewCheckInPage() {
     setScannerError(null);
   };
 
+  const handleDismissResult = () => {
+    if (resultTimeoutRef.current) {
+      clearTimeout(resultTimeoutRef.current);
+    }
+    setShowResult(false);
+    setCheckInResult(null);
+  };
+
   if (isStaff === null) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -303,6 +362,106 @@ export default function CrewCheckInPage() {
           <p className="text-white/70 text-sm mt-4">
             Hold QR-koden foran kameraet
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show result overlay
+  if (showResult && checkInResult) {
+    return (
+      <div 
+        className={`fixed inset-0 z-50 flex flex-col items-center justify-center p-6 ${
+          checkInResult.success 
+            ? 'bg-green-600' 
+            : 'bg-destructive'
+        }`}
+        onClick={handleDismissResult}
+      >
+        <div className="text-white text-center space-y-6 max-w-md w-full">
+          {checkInResult.success ? (
+            <>
+              <CheckCircle className="h-24 w-24 mx-auto animate-in zoom-in duration-300" />
+              <h1 className="text-4xl font-bold">Godkjent!</h1>
+              
+              <div className="bg-white/20 rounded-xl p-4 space-y-2">
+                <p className="text-xl font-semibold">{checkInResult.ticketType}</p>
+                {checkInResult.hasBoilerroomAccess && (
+                  <Badge className="bg-white/30 text-white border-white/50">
+                    <PartyPopper className="h-4 w-4 mr-1" />
+                    Gir tilgang til Boilerroom
+                  </Badge>
+                )}
+              </div>
+
+              <div className="space-y-2 text-left bg-white/10 rounded-lg p-4">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  <span>{checkInResult.buyerName}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  <span className="text-sm opacity-90">{checkInResult.buyerEmail}</span>
+                </div>
+              </div>
+
+              <div className="text-2xl font-bold bg-white/20 rounded-lg py-3 px-6 inline-block">
+                Inne nå: {checkInResult.attendanceCount}
+              </div>
+            </>
+          ) : (
+            <>
+              <AlertCircle className="h-24 w-24 mx-auto animate-in zoom-in duration-300" />
+              <h1 className="text-3xl font-bold">
+                {checkInResult.result === 'already_used' && 'Allerede brukt'}
+                {checkInResult.result === 'refunded' && 'Refundert'}
+                {checkInResult.result === 'invalid' && 'Ugyldig billett'}
+                {checkInResult.result === 'wrong_event' && 'Feil event'}
+                {checkInResult.result === 'error' && 'Feil'}
+              </h1>
+
+              <div className="bg-white/10 rounded-lg p-4 space-y-3 text-left">
+                <p className="font-mono text-lg">{checkInResult.ticketCode}</p>
+                
+                {checkInResult.buyerName && (
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span>{checkInResult.buyerName}</span>
+                  </div>
+                )}
+
+                {checkInResult.result === 'already_used' && checkInResult.checkedInAt && (
+                  <div className="space-y-2 pt-2 border-t border-white/20">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      <span>
+                        Sjekket inn: {format(new Date(checkInResult.checkedInAt), "dd.MM.yyyy 'kl.' HH:mm", { locale: nb })}
+                      </span>
+                    </div>
+                    {checkInResult.checkedInByName && (
+                      <p className="text-sm opacity-80">
+                        Av: {checkInResult.checkedInByName}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {checkInResult.result === 'refunded' && checkInResult.refundedAt && (
+                  <div className="pt-2 border-t border-white/20">
+                    <p className="text-sm">
+                      Refundert: {format(new Date(checkInResult.refundedAt), "dd.MM.yyyy 'kl.' HH:mm", { locale: nb })}
+                    </p>
+                  </div>
+                )}
+
+                {checkInResult.error && (
+                  <p className="text-sm opacity-80">{checkInResult.error}</p>
+                )}
+              </div>
+            </>
+          )}
+
+          <p className="text-sm opacity-70">Trykk hvor som helst for å fortsette</p>
         </div>
       </div>
     );
@@ -377,19 +536,6 @@ export default function CrewCheckInPage() {
             <p className="text-xs text-muted-foreground">
               Skriv inn billettkoden. Format legges til automatisk.
             </p>
-
-            {checkInMutation.isError && (
-              <p className="text-sm text-destructive flex items-center gap-2 p-3 bg-destructive/10 rounded-lg">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                {(checkInMutation.error as Error).message}
-              </p>
-            )}
-            {checkInMutation.isSuccess && (
-              <p className="text-sm text-accent flex items-center gap-2 p-3 bg-accent/10 rounded-lg">
-                <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                Billett sjekket inn!
-              </p>
-            )}
           </CardContent>
         </Card>
 
