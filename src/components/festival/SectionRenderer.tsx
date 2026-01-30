@@ -271,6 +271,16 @@ export function SectionRenderer({
                   Lineup kommer snart.
                 </p>}
             </div>
+            
+            {/* CTA button */}
+            <div className="animate-slide-up delay-500 mt-10 text-right">
+              <Link 
+                to="/tickets" 
+                className="btn-accent inline-block px-8 py-3"
+              >
+                Kjøp billett
+              </Link>
+            </div>
           </div>
         </section>;
       }
