@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, QrCode, Download, Loader2, AlertCircle, CheckCircle, Camera } from "lucide-react";
+import { Search, QrCode, Download, Loader2, AlertCircle, CheckCircle, Camera, X } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { Html5Qrcode } from "html5-qrcode";
 
 interface TicketResult {
   ticketCode: string;
@@ -24,6 +25,9 @@ export default function CrewCheckInPage() {
   const [searchResults, setSearchResults] = useState<TicketResult[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState<boolean | null>(null);
+  const [showScanner, setShowScanner] = useState(false);
+  const [scannerError, setScannerError] = useState<string | null>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,6 +47,24 @@ export default function CrewCheckInPage() {
     };
     checkRole();
   }, []);
+
+  // Format ticket code automatically (add dashes if missing)
+  const formatTicketCode = (input: string): string => {
+    let cleaned = input.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+    
+    if (cleaned.startsWith('GIGG')) {
+      cleaned = cleaned.substring(4);
+    }
+    
+    if (cleaned.length >= 8) {
+      return `GIGG-${cleaned.substring(0, 4)}-${cleaned.substring(4, 8)}`;
+    } else if (cleaned.length >= 4) {
+      return `GIGG-${cleaned.substring(0, 4)}-${cleaned.substring(4)}`;
+    } else if (cleaned.length > 0) {
+      return `GIGG-${cleaned}`;
+    }
+    return cleaned;
+  };
 
   const checkInMutation = useMutation({
     mutationFn: async ({ code, method = "manual" }: { code: string; method?: string }) => {
@@ -77,6 +99,67 @@ export default function CrewCheckInPage() {
     },
   });
 
+  // Start scanner when showScanner becomes true
+  useEffect(() => {
+    if (showScanner && isStaff) {
+      const startScanner = async () => {
+        try {
+          const html5QrCode = new Html5Qrcode("qr-reader");
+          scannerRef.current = html5QrCode;
+          
+          await html5QrCode.start(
+            { facingMode: "environment" },
+            {
+              fps: 10,
+              qrbox: { width: 250, height: 250 },
+            },
+            (decodedText) => {
+              // Extract ticket code from URL if it's a full URL
+              let code = decodedText;
+              if (decodedText.includes("/t/")) {
+                code = decodedText.split("/t/")[1]?.split("?")[0] || decodedText;
+              } else if (decodedText.includes("/v/")) {
+                code = decodedText.split("/v/")[1]?.split("?")[0] || decodedText;
+              }
+              
+              // Stop scanner and check in
+              html5QrCode.stop().then(() => {
+                setShowScanner(false);
+                setTicketCode(code);
+                // Auto-format and check in
+                const formattedCode = formatTicketCode(code);
+                if (formattedCode.match(/^GIGG-[A-Z0-9]{4}-[A-Z0-9]{4}$/)) {
+                  checkInMutation.mutate({ code: formattedCode, method: "qr" });
+                } else {
+                  toast.error("Ugyldig billettkode format");
+                }
+              }).catch(() => {
+                setShowScanner(false);
+              });
+            },
+            () => {
+              // Ignore scanning errors (they happen continuously while scanning)
+            }
+          );
+        } catch (err) {
+          setScannerError("Kunne ikke starte kamera. Sjekk at du har gitt tillatelse.");
+          console.error("Scanner error:", err);
+        }
+      };
+      
+      startScanner();
+    }
+
+    // Cleanup scanner when component unmounts or showScanner becomes false
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.stop().catch(() => {});
+        scannerRef.current.clear();
+        scannerRef.current = null;
+      }
+    };
+  }, [showScanner, isStaff]);
+
   const searchMutation = useMutation({
     mutationFn: async (query: string) => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -101,24 +184,6 @@ export default function CrewCheckInPage() {
       toast.error(error.message);
     },
   });
-
-  // Format ticket code automatically (add dashes if missing)
-  const formatTicketCode = (input: string): string => {
-    let cleaned = input.replace(/[^A-Z0-9]/gi, '').toUpperCase();
-    
-    if (cleaned.startsWith('GIGG')) {
-      cleaned = cleaned.substring(4);
-    }
-    
-    if (cleaned.length >= 8) {
-      return `GIGG-${cleaned.substring(0, 4)}-${cleaned.substring(4, 8)}`;
-    } else if (cleaned.length >= 4) {
-      return `GIGG-${cleaned.substring(0, 4)}-${cleaned.substring(4)}`;
-    } else if (cleaned.length > 0) {
-      return `GIGG-${cleaned}`;
-    }
-    return cleaned;
-  };
 
   const handleTicketCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTicketCode(e.target.value.toUpperCase());
@@ -181,6 +246,16 @@ export default function CrewCheckInPage() {
     }
   };
 
+  const handleCloseScanner = () => {
+    if (scannerRef.current) {
+      scannerRef.current.stop().catch(() => {});
+      scannerRef.current.clear();
+      scannerRef.current = null;
+    }
+    setShowScanner(false);
+    setScannerError(null);
+  };
+
   if (isStaff === null) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -200,6 +275,35 @@ export default function CrewCheckInPage() {
             <Button onClick={() => navigate("/admin/login")}>Logg inn</Button>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  // Show scanner view
+  if (showScanner) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black">
+        <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-10 bg-gradient-to-b from-black/80 to-transparent">
+          <h2 className="text-white text-lg font-semibold">Scan QR-kode</h2>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleCloseScanner}
+            className="text-white hover:bg-white/20"
+          >
+            <X className="w-6 h-6" />
+          </Button>
+        </div>
+        
+        <div className="flex flex-col items-center justify-center h-full">
+          <div id="qr-reader" className="w-full max-w-md" />
+          {scannerError && (
+            <p className="text-destructive text-center text-sm mt-4 px-4">{scannerError}</p>
+          )}
+          <p className="text-white/70 text-sm mt-4">
+            Hold QR-koden foran kameraet
+          </p>
+        </div>
       </div>
     );
   }
@@ -225,11 +329,25 @@ export default function CrewCheckInPage() {
       </div>
 
       <div className="p-4 space-y-4 max-w-lg mx-auto">
-        {/* Manual Entry - Primary on mobile without QR scanning library */}
+        {/* QR Scanner CTA */}
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="pt-4 pb-4">
+            <Button
+              onClick={() => setShowScanner(true)}
+              className="w-full h-14 text-base gap-3"
+              size="lg"
+            >
+              <Camera className="w-5 h-5" />
+              Åpne QR-scanner
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Manual Entry */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <QrCode className="w-4 h-4" /> Sjekk inn billett
+              <QrCode className="w-4 h-4" /> Manuell innsjekking
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
