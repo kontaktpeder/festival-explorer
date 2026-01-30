@@ -59,16 +59,20 @@ export default function TicketsPage() {
           <h1 className="text-3xl font-bold">Kjøp billetter</h1>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-2">
           {ticketTypes?.map((type) => (
-            <Card key={type.id} className={`cursor-pointer transition-all ${selectedType === type.id ? "ring-2 ring-primary" : ""}`} onClick={() => setSelectedType(type.id)}>
-              <CardHeader>
-                <CardTitle>{type.name}</CardTitle>
-                <CardDescription>{type.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">{(type.price_nok / 100).toFixed(0)} kr</p>
-              </CardContent>
+            <Card 
+              key={type.id} 
+              className={`cursor-pointer transition-all ${selectedType === type.id ? "ring-2 ring-primary" : ""}`} 
+              onClick={() => setSelectedType(type.id)}
+            >
+              <div className="flex items-center justify-between p-4">
+                <div className="space-y-0.5">
+                  <CardTitle className="text-base">{type.name}</CardTitle>
+                  <CardDescription className="text-xs">{type.description}</CardDescription>
+                </div>
+                <p className="text-lg font-bold whitespace-nowrap ml-4">{(type.price_nok / 100).toFixed(0)} kr</p>
+              </div>
             </Card>
           ))}
         </div>
