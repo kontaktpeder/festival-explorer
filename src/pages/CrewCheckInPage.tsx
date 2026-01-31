@@ -164,7 +164,7 @@ export default function CrewCheckInPage() {
               fps: 10,
               qrbox: { width: 250, height: 250 },
             },
-            (decodedText) => {
+            async (decodedText) => {
               // Extract ticket code from URL if it's a full URL
               let code = decodedText;
               if (decodedText.includes("/t/")) {
@@ -173,20 +173,27 @@ export default function CrewCheckInPage() {
                 code = decodedText.split("/v/")[1]?.split("?")[0] || decodedText;
               }
               
-              // Stop scanner and check in
-              html5QrCode.stop().then(() => {
-                setShowScanner(false);
-                setTicketCode(code);
-                // Auto-format and check in
-                const formattedCode = formatTicketCode(code);
-                if (formattedCode.match(/^GIGG-[A-Z0-9]{4}-[A-Z0-9]{4}$/)) {
-                  checkInMutation.mutate({ code: formattedCode, method: "qr" });
-                } else {
-                  toast.error("Ugyldig billettkode format");
-                }
-              }).catch(() => {
-                setShowScanner(false);
-              });
+              // Stop and cleanup scanner first
+              try {
+                await html5QrCode.stop();
+                html5QrCode.clear();
+                scannerRef.current = null;
+              } catch (stopError) {
+                console.error("Error stopping scanner:", stopError);
+              }
+              
+              // Close scanner view immediately to show main view
+              setShowScanner(false);
+              setScannerError(null);
+              setTicketCode(code);
+              
+              // Auto-format and check in
+              const formattedCode = formatTicketCode(code);
+              if (formattedCode.match(/^GIGG-[A-Z0-9]{4}-[A-Z0-9]{4}$/)) {
+                checkInMutation.mutate({ code: formattedCode, method: "qr" });
+              } else {
+                toast.error("Ugyldig billettkode format");
+              }
             },
             () => {
               // Ignore scanning errors (they happen continuously while scanning)
@@ -205,11 +212,15 @@ export default function CrewCheckInPage() {
     return () => {
       if (scannerRef.current) {
         scannerRef.current.stop().catch(() => {});
-        scannerRef.current.clear();
+        try {
+          scannerRef.current.clear();
+        } catch (e) {
+          // Ignore clear errors
+        }
         scannerRef.current = null;
       }
     };
-  }, [showScanner, isStaff, formatTicketCode]);
+  }, [showScanner, isStaff, formatTicketCode, checkInMutation]);
 
   const searchMutation = useMutation({
     mutationFn: async (query: string) => {
