@@ -49,6 +49,7 @@ import AdminVenueEdit from "./pages/admin/AdminVenueEdit";
 import AdminMedia from "./pages/admin/AdminMedia";
 import AdminTimelineEvents from "./pages/admin/AdminTimelineEvents";
 import AdminTimelineEventEdit from "./pages/admin/AdminTimelineEventEdit";
+import AdminTicketsDashboard from "./pages/admin/AdminTicketsDashboard";
 
 // Redirect component for legacy /venue/:slug routes
 function VenueRedirect() {
@@ -112,6 +113,7 @@ const App = () => (
             <Route path="venues" element={<AdminVenues />} />
             <Route path="venues/:id" element={<AdminVenueEdit />} />
             <Route path="media" element={<AdminMedia />} />
+            <Route path="tickets" element={<AdminTicketsDashboard />} />
             <Route path="timeline" element={<AdminTimelineEvents />} />
             <Route path="timeline/:id" element={<AdminTimelineEventEdit />} />
           </Route>
