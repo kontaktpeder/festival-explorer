@@ -376,135 +376,6 @@ export default function CrewCheckInPage() {
     );
   }
 
-  // Show scanner view
-  if (showScanner) {
-    return (
-      <div className="fixed inset-0 z-50 bg-black">
-        <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-10 bg-gradient-to-b from-black/80 to-transparent">
-          <h2 className="text-white text-lg font-semibold">Scan QR-kode</h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleCloseScanner}
-            className="text-white hover:bg-white/20"
-          >
-            <X className="w-6 h-6" />
-          </Button>
-        </div>
-        
-        <div className="flex flex-col items-center justify-center h-full">
-          <div id="qr-reader" className="w-full max-w-md" />
-          {scannerError && (
-            <p className="text-destructive text-center text-sm mt-4 px-4">{scannerError}</p>
-          )}
-          <p className="text-white/70 text-sm mt-4">
-            Hold QR-koden foran kameraet
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show result overlay
-  if (showResult && checkInResult) {
-    return (
-      <div 
-        className={`fixed inset-0 z-50 flex flex-col items-center justify-center p-6 ${
-          checkInResult.success 
-            ? 'bg-green-600' 
-            : 'bg-red-600'
-        }`}
-        onClick={handleDismissResult}
-      >
-        <div className="text-white text-center space-y-6 max-w-md w-full">
-          {checkInResult.success ? (
-            <>
-              <CheckCircle className="h-24 w-24 mx-auto animate-in zoom-in duration-300" />
-              <h1 className="text-4xl font-bold">Godkjent!</h1>
-              
-              <div className="bg-white/20 rounded-xl p-4 space-y-2">
-                <p className="text-xl font-semibold">{checkInResult.ticketType}</p>
-                {checkInResult.hasBoilerroomAccess && (
-                  <Badge className="bg-white/30 text-white border-white/50">
-                    <PartyPopper className="h-4 w-4 mr-1" />
-                    Gir tilgang til Boilerroom
-                  </Badge>
-                )}
-              </div>
-
-              <div className="space-y-2 text-left bg-white/10 rounded-lg p-4">
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  <span>{checkInResult.buyerName}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  <span className="text-sm opacity-90">{checkInResult.buyerEmail}</span>
-                </div>
-              </div>
-
-              <div className="text-2xl font-bold bg-white/20 rounded-lg py-3 px-6 inline-block">
-                Inne nå: {checkInResult.attendanceCount}
-              </div>
-            </>
-          ) : (
-            <>
-              <AlertCircle className="h-24 w-24 mx-auto animate-in zoom-in duration-300" />
-              <h1 className="text-3xl font-bold">
-                {checkInResult.result === 'already_used' && 'Allerede brukt'}
-                {checkInResult.result === 'refunded' && 'Refundert'}
-                {checkInResult.result === 'invalid' && 'Ugyldig billett'}
-                {checkInResult.result === 'wrong_event' && 'Feil event'}
-                {checkInResult.result === 'error' && 'Feil'}
-              </h1>
-
-              <div className="bg-white/10 rounded-lg p-4 space-y-3 text-left">
-                <p className="font-mono text-lg">{checkInResult.ticketCode}</p>
-                
-                {checkInResult.buyerName && (
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    <span>{checkInResult.buyerName}</span>
-                  </div>
-                )}
-
-                {checkInResult.result === 'already_used' && checkInResult.checkedInAt && (
-                  <div className="space-y-2 pt-2 border-t border-white/20">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
-                      <span>
-                        Sjekket inn: {format(new Date(checkInResult.checkedInAt), "dd.MM.yyyy 'kl.' HH:mm", { locale: nb })}
-                      </span>
-                    </div>
-                    {checkInResult.checkedInByName && (
-                      <p className="text-sm opacity-80">
-                        Av: {checkInResult.checkedInByName}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {checkInResult.result === 'refunded' && checkInResult.refundedAt && (
-                  <div className="pt-2 border-t border-white/20">
-                    <p className="text-sm">
-                      Refundert: {format(new Date(checkInResult.refundedAt), "dd.MM.yyyy 'kl.' HH:mm", { locale: nb })}
-                    </p>
-                  </div>
-                )}
-
-                {checkInResult.error && (
-                  <p className="text-sm opacity-80">{checkInResult.error}</p>
-                )}
-              </div>
-            </>
-          )}
-
-          <p className="text-sm opacity-70">Trykk hvor som helst for å fortsette</p>
-        </div>
-      </div>
-    );
-  }
-
   const statusColors: Record<string, string> = {
     VALID: "bg-accent",
     USED: "bg-destructive",
@@ -512,130 +383,259 @@ export default function CrewCheckInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-safe-bottom">
-      {/* Mobile-optimized header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3 safe-top">
-        <div className="flex justify-between items-center">
-          <h1 className="text-xl font-bold">Check-in</h1>
-          {isAdmin && (
-            <Button variant="ghost" size="sm" onClick={handleExportCSV}>
-              <Download className="w-4 h-4" />
-            </Button>
+    <>
+      {/* Main view - always rendered */}
+      <div className="min-h-screen bg-background pb-safe-bottom">
+        {/* Mobile-optimized header */}
+        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3 safe-top">
+          <div className="flex justify-between items-center">
+            <h1 className="text-xl font-bold">Check-in</h1>
+            {isAdmin && (
+              <Button variant="ghost" size="sm" onClick={handleExportCSV}>
+                <Download className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <div className="p-4 space-y-4 max-w-lg mx-auto">
+          {/* QR Scanner CTA */}
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="pt-4 pb-4">
+              <Button
+                onClick={() => setShowScanner(true)}
+                className="w-full h-14 text-base gap-3"
+                size="lg"
+                disabled={showScanner || isProcessingScan}
+              >
+                <Camera className="w-5 h-5" />
+                {showScanner ? "Scanner aktiv..." : "Åpne QR-scanner"}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Manual Entry */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <QrCode className="w-4 h-4" /> Manuell innsjekking
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="GIGG-XXXX-XXXX"
+                  value={ticketCode}
+                  onChange={handleTicketCodeChange}
+                  onBlur={handleTicketCodeBlur}
+                  onKeyDown={(e) => e.key === "Enter" && handleCheckIn()}
+                  className="font-mono text-base h-12"
+                />
+                <Button 
+                  onClick={handleCheckIn} 
+                  disabled={checkInMutation.isPending}
+                  size="lg"
+                  className="h-12 px-6"
+                >
+                  {checkInMutation.isPending ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <CheckCircle />
+                  )}
+                </Button>
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Skriv inn billettkoden. Format legges til automatisk.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Search */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Search className="w-4 h-4" /> Søk
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Navn, e-post eller kode"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  className="h-12 text-base"
+                />
+                <Button 
+                  onClick={handleSearch} 
+                  disabled={searchMutation.isPending}
+                  size="lg"
+                  className="h-12 px-6"
+                >
+                  {searchMutation.isPending ? <Loader2 className="animate-spin" /> : <Search />}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Search Results - Touch-friendly list */}
+          {searchResults.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">
+                  Resultater ({searchResults.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y divide-border">
+                  {searchResults.map((ticket) => (
+                    <div
+                      key={ticket.ticketCode}
+                      className="flex items-center justify-between p-4 active:bg-muted/50 cursor-pointer"
+                      onClick={() => navigate(`/v/${ticket.ticketCode}`)}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium truncate">{ticket.buyerName}</p>
+                        <p className="text-sm font-mono text-muted-foreground">{ticket.ticketCode}</p>
+                        <p className="text-xs text-muted-foreground">{ticket.ticketType}</p>
+                      </div>
+                      <Badge className={`${statusColors[ticket.status]} text-white ml-3 flex-shrink-0`}>
+                        {ticket.status}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>
 
-      <div className="p-4 space-y-4 max-w-lg mx-auto">
-        {/* QR Scanner CTA */}
-        <Card className="border-primary/20 bg-primary/5">
-          <CardContent className="pt-4 pb-4">
+      {/* Scanner overlay */}
+      {showScanner && (
+        <div className="fixed inset-0 z-50 bg-black">
+          <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-10 bg-gradient-to-b from-black/80 to-transparent">
+            <h2 className="text-white text-lg font-semibold">Scan QR-kode</h2>
             <Button
-              onClick={() => setShowScanner(true)}
-              className="w-full h-14 text-base gap-3"
-              size="lg"
+              variant="ghost"
+              size="icon"
+              onClick={handleCloseScanner}
+              className="text-white hover:bg-white/20"
             >
-              <Camera className="w-5 h-5" />
-              Åpne QR-scanner
+              <X className="w-6 h-6" />
             </Button>
-          </CardContent>
-        </Card>
-
-        {/* Manual Entry */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <QrCode className="w-4 h-4" /> Manuell innsjekking
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex gap-2">
-              <Input
-                placeholder="GIGG-XXXX-XXXX"
-                value={ticketCode}
-                onChange={handleTicketCodeChange}
-                onBlur={handleTicketCodeBlur}
-                onKeyDown={(e) => e.key === "Enter" && handleCheckIn()}
-                className="font-mono text-base h-12"
-              />
-              <Button 
-                onClick={handleCheckIn} 
-                disabled={checkInMutation.isPending}
-                size="lg"
-                className="h-12 px-6"
-              >
-                {checkInMutation.isPending ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <CheckCircle />
-                )}
-              </Button>
-            </div>
-
-            <p className="text-xs text-muted-foreground">
-              Skriv inn billettkoden. Format legges til automatisk.
+          </div>
+          
+          <div className="flex flex-col items-center justify-center h-full">
+            <div id="qr-reader" className="w-full max-w-md" />
+            {scannerError && (
+              <p className="text-destructive text-center text-sm mt-4 px-4">{scannerError}</p>
+            )}
+            <p className="text-white/70 text-sm mt-4">
+              Hold QR-koden foran kameraet
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      )}
 
-        {/* Search */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Search className="w-4 h-4" /> Søk
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Navn, e-post eller kode"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                className="h-12 text-base"
-              />
-              <Button 
-                onClick={handleSearch} 
-                disabled={searchMutation.isPending}
-                size="lg"
-                className="h-12 px-6"
-              >
-                {searchMutation.isPending ? <Loader2 className="animate-spin" /> : <Search />}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Search Results - Touch-friendly list */}
-        {searchResults.length > 0 && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">
-                Resultater ({searchResults.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="divide-y divide-border">
-                {searchResults.map((ticket) => (
-                  <div
-                    key={ticket.ticketCode}
-                    className="flex items-center justify-between p-4 active:bg-muted/50 cursor-pointer"
-                    onClick={() => navigate(`/v/${ticket.ticketCode}`)}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium truncate">{ticket.buyerName}</p>
-                      <p className="text-sm font-mono text-muted-foreground">{ticket.ticketCode}</p>
-                      <p className="text-xs text-muted-foreground">{ticket.ticketType}</p>
-                    </div>
-                    <Badge className={`${statusColors[ticket.status]} text-white ml-3 flex-shrink-0`}>
-                      {ticket.status}
+      {/* Result overlay - highest z-index */}
+      {showResult && checkInResult && (
+        <div 
+          className={`fixed inset-0 z-[100] flex flex-col items-center justify-center p-6 ${
+            checkInResult.success 
+              ? 'bg-green-600' 
+              : 'bg-red-600'
+          }`}
+          onClick={handleDismissResult}
+        >
+          <div className="text-white text-center space-y-6 max-w-md w-full">
+            {checkInResult.success ? (
+              <>
+                <CheckCircle className="h-24 w-24 mx-auto animate-in zoom-in duration-300" />
+                <h1 className="text-4xl font-bold">Godkjent!</h1>
+                
+                <div className="bg-white/20 rounded-xl p-4 space-y-2">
+                  <p className="text-xl font-semibold">{checkInResult.ticketType}</p>
+                  {checkInResult.hasBoilerroomAccess && (
+                    <Badge className="bg-white/30 text-white border-white/50">
+                      <PartyPopper className="h-4 w-4 mr-1" />
+                      Gir tilgang til Boilerroom
                     </Badge>
+                  )}
+                </div>
+
+                <div className="space-y-2 text-left bg-white/10 rounded-lg p-4">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span>{checkInResult.buyerName}</span>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-    </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    <span className="text-sm opacity-90">{checkInResult.buyerEmail}</span>
+                  </div>
+                </div>
+
+                <div className="text-2xl font-bold bg-white/20 rounded-lg py-3 px-6 inline-block">
+                  Inne nå: {checkInResult.attendanceCount}
+                </div>
+              </>
+            ) : (
+              <>
+                <AlertCircle className="h-24 w-24 mx-auto animate-in zoom-in duration-300" />
+                <h1 className="text-3xl font-bold">
+                  {checkInResult.result === 'already_used' && 'Allerede brukt'}
+                  {checkInResult.result === 'refunded' && 'Refundert'}
+                  {checkInResult.result === 'invalid' && 'Ugyldig billett'}
+                  {checkInResult.result === 'wrong_event' && 'Feil event'}
+                  {checkInResult.result === 'error' && 'Feil'}
+                </h1>
+
+                <div className="bg-white/10 rounded-lg p-4 space-y-3 text-left">
+                  <p className="font-mono text-lg">{checkInResult.ticketCode}</p>
+                  
+                  {checkInResult.buyerName && (
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      <span>{checkInResult.buyerName}</span>
+                    </div>
+                  )}
+
+                  {checkInResult.result === 'already_used' && checkInResult.checkedInAt && (
+                    <div className="space-y-2 pt-2 border-t border-white/20">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        <span>
+                          Sjekket inn: {format(new Date(checkInResult.checkedInAt), "dd.MM.yyyy 'kl.' HH:mm", { locale: nb })}
+                        </span>
+                      </div>
+                      {checkInResult.checkedInByName && (
+                        <p className="text-sm opacity-80">
+                          Av: {checkInResult.checkedInByName}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {checkInResult.result === 'refunded' && checkInResult.refundedAt && (
+                    <div className="pt-2 border-t border-white/20">
+                      <p className="text-sm">
+                        Refundert: {format(new Date(checkInResult.refundedAt), "dd.MM.yyyy 'kl.' HH:mm", { locale: nb })}
+                      </p>
+                    </div>
+                  )}
+
+                  {checkInResult.error && (
+                    <p className="text-sm opacity-80">{checkInResult.error}</p>
+                  )}
+                </div>
+              </>
+            )}
+
+            <p className="text-sm opacity-70">Trykk hvor som helst for å fortsette</p>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
