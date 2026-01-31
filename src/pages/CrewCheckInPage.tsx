@@ -102,7 +102,22 @@ export default function CrewCheckInPage() {
   }, []);
 
   const showResultWithAutoReset = useCallback((result: CheckInResult) => {
-    setCheckInResult(result);
+    // Ensure we always have a valid result
+    if (!result || typeof result !== 'object') {
+      console.error("Invalid result passed to showResultWithAutoReset:", result);
+      return;
+    }
+
+    // Ensure result has required fields
+    const validResult: CheckInResult = {
+      success: result.success ?? false,
+      result: result.result || 'error',
+      ticketCode: result.ticketCode || '',
+      error: result.error,
+      ...result,
+    };
+
+    setCheckInResult(validResult);
     setShowResult(true);
     
     // Clear any existing timeout
@@ -111,7 +126,7 @@ export default function CrewCheckInPage() {
     }
     
     // Auto-reset after 5 seconds for success, 8 seconds for errors
-    const timeout = result.success ? 5000 : 8000;
+    const timeout = validResult.success ? 5000 : 8000;
     resultTimeoutRef.current = setTimeout(() => {
       setShowResult(false);
       setCheckInResult(null);
@@ -123,25 +138,57 @@ export default function CrewCheckInPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not authenticated");
 
-      const response = await fetch(
-        `https://nxgotyhhjtwikdcjdxxn.supabase.co/functions/v1/checkin-ticket`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ ticketCode: code, method }),
-        }
-      );
+      let response: Response;
+      try {
+        response = await fetch(
+          `https://nxgotyhhjtwikdcjdxxn.supabase.co/functions/v1/checkin-ticket`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ ticketCode: code, method }),
+          }
+        );
+      } catch (networkError) {
+        // Network error - throw to be caught by onError
+        throw new Error("Nettverksfeil. Sjekk internettforbindelsen.");
+      }
 
-      // Always parse JSON - API returns CheckInResult for both success and error cases
-      const data = await response.json();
-      return data as CheckInResult;
+      // Always try to parse JSON, regardless of status code
+      let data: CheckInResult;
+      try {
+        const text = await response.text();
+        if (!text) {
+          throw new Error("Tom respons fra server");
+        }
+        data = JSON.parse(text);
+      } catch (parseError) {
+        // If JSON parsing fails, create a generic error result
+        throw new Error("Kunne ikke lese respons fra server");
+      }
+
+      // The API always returns a CheckInResult structure, even for errors (400, 404, etc.)
+      // We want to return this data so onSuccess can handle it and show the red screen
+      if (data && typeof data === 'object' && 'result' in data) {
+        return data as CheckInResult;
+      }
+
+      // If data doesn't have the expected structure, create an error result
+      return {
+        success: false,
+        result: "error",
+        ticketCode: code,
+        error: data?.error || "Uventet feil fra server",
+      } as CheckInResult;
     },
     onSuccess: (data) => {
-      // Always show result - success or failure (already_used, refunded, etc.)
+      // CRITICAL: Always show result - success or failure (already_used, refunded, etc.)
+      // This ensures the red screen is ALWAYS shown for already_used tickets
+      console.log("Check-in result:", data);
       showResultWithAutoReset(data);
+      
       if (data.success) {
         toast.success("Billett sjekket inn!");
       } else {
@@ -153,9 +200,10 @@ export default function CrewCheckInPage() {
       setIsProcessingScan(false);
     },
     onError: (error: Error) => {
+      console.error("Check-in error:", error);
       toast.error(error.message);
       setIsProcessingScan(false);
-      // Show error result overlay
+      // Show error result overlay - this should be red
       showResultWithAutoReset({
         success: false,
         result: "error",
