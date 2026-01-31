@@ -51,6 +51,7 @@ export default function CrewCheckInPage() {
   const [scannerError, setScannerError] = useState<string | null>(null);
   const [checkInResult, setCheckInResult] = useState<CheckInResult | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [isProcessingScan, setIsProcessingScan] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const resultTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
@@ -134,25 +135,39 @@ export default function CrewCheckInPage() {
         }
       );
 
+      // Always parse JSON - API returns CheckInResult for both success and error cases
       const data = await response.json();
       return data as CheckInResult;
     },
     onSuccess: (data) => {
+      // Always show result - success or failure (already_used, refunded, etc.)
       showResultWithAutoReset(data);
       if (data.success) {
         toast.success("Billett sjekket inn!");
+      } else {
+        // Show toast for non-success results
+        toast.error(data.error || "Kunne ikke sjekke inn billetten");
       }
       setTicketCode("");
       setSearchResults([]);
+      setIsProcessingScan(false);
     },
     onError: (error: Error) => {
       toast.error(error.message);
+      setIsProcessingScan(false);
+      // Show error result overlay
+      showResultWithAutoReset({
+        success: false,
+        result: "error",
+        ticketCode: ticketCode || "",
+        error: error.message,
+      });
     },
   });
 
   // Start scanner when showScanner becomes true
   useEffect(() => {
-    if (showScanner && isStaff) {
+    if (showScanner && isStaff && !isProcessingScan) {
       const startScanner = async () => {
         try {
           const html5QrCode = new Html5Qrcode("qr-reader");
@@ -165,6 +180,12 @@ export default function CrewCheckInPage() {
               qrbox: { width: 250, height: 250 },
             },
             async (decodedText) => {
+              // Prevent double-scanning while processing
+              if (isProcessingScan || checkInMutation.isPending) {
+                return;
+              }
+              setIsProcessingScan(true);
+              
               // Extract ticket code from URL if it's a full URL
               let code = decodedText;
               if (decodedText.includes("/t/")) {
@@ -185,7 +206,6 @@ export default function CrewCheckInPage() {
               // Close scanner view immediately to show main view
               setShowScanner(false);
               setScannerError(null);
-              setTicketCode(code);
               
               // Auto-format and check in
               const formattedCode = formatTicketCode(code);
@@ -193,6 +213,7 @@ export default function CrewCheckInPage() {
                 checkInMutation.mutate({ code: formattedCode, method: "qr" });
               } else {
                 toast.error("Ugyldig billettkode format");
+                setIsProcessingScan(false);
               }
             },
             () => {
@@ -202,6 +223,7 @@ export default function CrewCheckInPage() {
         } catch (err) {
           setScannerError("Kunne ikke starte kamera. Sjekk at du har gitt tillatelse.");
           console.error("Scanner error:", err);
+          setIsProcessingScan(false);
         }
       };
       
@@ -220,7 +242,7 @@ export default function CrewCheckInPage() {
         scannerRef.current = null;
       }
     };
-  }, [showScanner, isStaff, formatTicketCode, checkInMutation]);
+  }, [showScanner, isStaff, isProcessingScan, formatTicketCode, checkInMutation]);
 
   const searchMutation = useMutation({
     mutationFn: async (query: string) => {
@@ -311,11 +333,16 @@ export default function CrewCheckInPage() {
   const handleCloseScanner = () => {
     if (scannerRef.current) {
       scannerRef.current.stop().catch(() => {});
-      scannerRef.current.clear();
+      try {
+        scannerRef.current.clear();
+      } catch (e) {
+        // Ignore clear errors
+      }
       scannerRef.current = null;
     }
     setShowScanner(false);
     setScannerError(null);
+    setIsProcessingScan(false);
   };
 
   const handleDismissResult = () => {
