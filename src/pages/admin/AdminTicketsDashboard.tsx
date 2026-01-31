@@ -118,18 +118,18 @@ function useTicketStats() {
 
       const typedTickets = tickets as TicketWithRelations[] | null;
 
-      // Calculate statistics
-      const validTickets = typedTickets?.filter(
-        (t) => t.status === "VALID" && !t.refunded_at && !t.chargeback_at
+      // Calculate statistics - count all sold tickets (both VALID and USED, excluding CANCELLED/refunded)
+      const soldTickets = typedTickets?.filter(
+        (t) => t.status !== "CANCELLED" && !t.refunded_at && !t.chargeback_at
       ) || [];
 
-      const totalSold = validTickets.length;
-      const totalRevenue = validTickets.reduce((sum, ticket) => {
+      const totalSold = soldTickets.length;
+      const totalRevenue = soldTickets.reduce((sum, ticket) => {
         const price = ticket.ticket_types?.price_nok || 0;
         return sum + price;
       }, 0);
 
-      const totalFees = validTickets.reduce((sum, ticket) => {
+      const totalFees = soldTickets.reduce((sum, ticket) => {
         const price = ticket.ticket_types?.price_nok || 0;
         return sum + calculateStripeFee(price);
       }, 0);
@@ -138,10 +138,10 @@ function useTicketStats() {
 
       // Sales by ticket type
       const salesByType = ticketTypes?.map((type) => {
-        const sold = validTickets.filter(
+        const sold = soldTickets.filter(
           (t) => t.ticket_type_id === type.id
         ).length;
-        const revenue = validTickets
+        const revenue = soldTickets
           .filter((t) => t.ticket_type_id === type.id)
           .reduce((sum, t) => sum + (t.ticket_types?.price_nok || 0), 0);
 
@@ -155,7 +155,7 @@ function useTicketStats() {
       }) || [];
 
       // Recent purchases (last 10)
-      const recentPurchases = validTickets
+      const recentPurchases = soldTickets
         .slice(0, 10)
         .map((ticket) => ({
           id: ticket.id,
@@ -176,8 +176,8 @@ function useTicketStats() {
       ) || 0;
       const totalCapacityLeft = totalCapacity - totalSold;
 
-      // Check-ins
-      const checkedIn = validTickets.filter((t) => t.checked_in_at).length;
+      // Check-ins - count tickets with status USED or with checked_in_at timestamp
+      const checkedIn = soldTickets.filter((t) => t.status === "USED" || !!t.checked_in_at).length;
 
       return {
         totalSold,
@@ -294,6 +294,7 @@ function useCheckInStats() {
   return useQuery({
     queryKey: ["checkin-stats"],
     queryFn: async () => {
+      // Get all tickets that are not cancelled/refunded (both VALID and USED)
       const { data: tickets, error } = await supabase
         .from("tickets")
         .select(`
@@ -308,40 +309,48 @@ function useCheckInStats() {
             boilerroom_attendance_count
           )
         `)
-        .eq("status", "VALID")
+        .neq("status", "CANCELLED")
         .is("refunded_at", null)
         .is("chargeback_at", null);
 
       if (error) throw error;
 
       interface TicketWithTypes {
+        status: string;
         checked_in_at: string | null;
         ticket_types: { name: string; code: string } | null;
       }
 
-      const typedTickets = tickets as TicketWithTypes[] | null;
+      const typedTickets = (tickets || []) as TicketWithTypes[];
 
-      const checkedIn = typedTickets?.filter((t) => t.checked_in_at) || [];
-      const notCheckedIn = typedTickets?.filter((t) => !t.checked_in_at) || [];
+      // Count checked in tickets (status USED or has checked_in_at)
+      const checkedIn = typedTickets.filter(
+        (t) => t.status === "USED" || !!t.checked_in_at
+      ).length;
 
-      // Boilerroom access (tickets with BOILERROOM or festival passes that include boilerroom)
-      const boilerroomAccess = typedTickets?.filter((t) => {
-        const code = t.ticket_types?.code;
-        return code === "BOILERROOM" || code === "FEST_EARLYBIRD";
-      }) || [];
+      // Total valid tickets (not cancelled/refunded)
+      const totalValid = typedTickets.length;
+
+      // Not checked in
+      const notCheckedIn = totalValid - checkedIn;
+
+      // Boilerroom access (tickets with BOILERROOM code)
+      const boilerroomAccess = typedTickets.filter((t) => {
+        const code = t.ticket_types?.code?.toUpperCase() || "";
+        return code.includes("BOILERROOM") || code === "BOILERROOM";
+      });
 
       const boilerroomCheckedIn = boilerroomAccess.filter(
-        (t) => t.checked_in_at
+        (t) => t.status === "USED" || !!t.checked_in_at
       ).length;
 
       return {
-        totalValid: typedTickets?.length || 0,
-        checkedIn: checkedIn.length,
-        notCheckedIn: notCheckedIn.length,
+        totalValid,
+        checkedIn,
+        notCheckedIn,
         boilerroomAccess: boilerroomAccess.length,
         boilerroomCheckedIn,
-        boilerroomNotCheckedIn:
-          boilerroomAccess.length - boilerroomCheckedIn,
+        boilerroomNotCheckedIn: boilerroomAccess.length - boilerroomCheckedIn,
       };
     },
     refetchInterval: 10000, // Refresh every 10 seconds for live updates
