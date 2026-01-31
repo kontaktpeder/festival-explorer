@@ -33,9 +33,10 @@ import {
   AlertTriangle,
   RefreshCw,
   XCircle,
-  Activity,
   Ticket,
   Loader2,
+  TestTube,
+  Zap,
 } from "lucide-react";
 
 // Stripe fee calculation: 1.4% + 2.5 NOK per transaction (Norwegian cards)
@@ -347,6 +348,85 @@ function useCheckInStats() {
   });
 }
 
+// Hook for Stripe mode detection
+interface StripeModeData {
+  mode: "test" | "live";
+  is_test_mode: boolean;
+  stripe_key_prefix: string;
+  account_id: string | null;
+  account_type: string | null;
+}
+
+function useStripeMode() {
+  return useQuery({
+    queryKey: ["stripe-mode"],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const response = await fetch(
+        `https://nxgotyhhjtwikdcjdxxn.supabase.co/functions/v1/get-stripe-mode`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to get Stripe mode");
+      return response.json() as Promise<StripeModeData>;
+    },
+    staleTime: 60000, // Cache for 1 minute
+  });
+}
+
+// Hook for Stripe sync data
+interface MissingTicket {
+  session_id: string;
+  payment_intent_id: string | null;
+  customer_email: string;
+  amount: number;
+  currency: string;
+  created: string;
+  metadata: Record<string, string>;
+  status: string;
+}
+
+interface StripeSyncData {
+  stats: {
+    mode: string;
+    total_stripe_sessions: number;
+    total_db_tickets: number;
+    missing_tickets: number;
+    sync_percentage: string;
+  };
+  missing_tickets: MissingTicket[];
+  note: string;
+}
+
+function useStripeSync() {
+  return useQuery({
+    queryKey: ["stripe-sync"],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const response = await fetch(
+        `https://nxgotyhhjtwikdcjdxxn.supabase.co/functions/v1/sync-stripe-tickets`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to sync");
+      return response.json() as Promise<StripeSyncData>;
+    },
+    staleTime: 30000, // Cache for 30 seconds
+  });
+}
+
 export default function AdminTicketsDashboard() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
@@ -356,6 +436,8 @@ export default function AdminTicketsDashboard() {
   const { data: stats, isLoading: statsLoading } = useTicketStats();
   const { data: issues, isLoading: issuesLoading } = useTicketIssues();
   const { data: checkInStats, isLoading: checkInLoading } = useCheckInStats();
+  const { data: stripeMode } = useStripeMode();
+  const { data: syncData, isLoading: syncLoading, refetch: refetchSync } = useStripeSync();
 
   // Export CSV
   const exportCSV = useMutation({
@@ -506,8 +588,34 @@ export default function AdminTicketsDashboard() {
 
         {/* OVERVIEW TAB */}
         <TabsContent value="overview" className="space-y-4">
+          {/* Stripe Mode Indicator */}
+          {stripeMode && (
+            <Card className={stripeMode.is_test_mode ? "border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20" : "border-primary bg-primary/5"}>
+              <CardContent className="py-3">
+                <div className="flex items-center gap-2">
+                  {stripeMode.is_test_mode ? (
+                    <>
+                      <TestTube className="h-4 w-4 text-yellow-600" />
+                      <span className="font-medium text-yellow-700 dark:text-yellow-400">Sandkasse-modus (Test)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="h-4 w-4 text-primary" />
+                      <span className="font-medium text-primary">Live-modus (Produksjon)</span>
+                    </>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {stripeMode.is_test_mode 
+                    ? "Du ser nå data fra Stripe sandkasse. Når du bytter til live webhook og secret, vil live-data vises automatisk."
+                    : "Du ser nå live data fra Stripe produksjon. Alle endringer påvirker ekte betalinger."}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Status Indicator */}
-          <Card className={issues?.hasIssues ? "border-destructive" : "border-green-500"}>
+          <Card className={issues?.hasIssues ? "border-destructive" : "border-primary"}>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -518,19 +626,104 @@ export default function AdminTicketsDashboard() {
                     </>
                   ) : (
                     <>
-                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <CheckCircle className="h-5 w-5 text-primary" />
                       Status: ALT OK
                     </>
                   )}
                 </CardTitle>
-                {issues?.criticalIssues ? (
-                  <Badge variant="destructive">
-                    {issues.criticalIssues} kritiske problemer
-                  </Badge>
-                ) : null}
+                <div className="flex items-center gap-2">
+                  {stripeMode && (
+                    <Badge variant={stripeMode.is_test_mode ? "outline" : "default"} className={stripeMode.is_test_mode ? "border-yellow-500 text-yellow-600" : ""}>
+                      {stripeMode.is_test_mode ? "Sandkasse" : "Live"}
+                    </Badge>
+                  )}
+                  {issues?.criticalIssues ? (
+                    <Badge variant="destructive">
+                      {issues.criticalIssues} kritiske problemer
+                    </Badge>
+                  ) : null}
+                </div>
               </div>
             </CardHeader>
           </Card>
+
+          {/* Stripe Sync Status */}
+          {syncData && (
+            <Card className={syncData.stats.missing_tickets > 0 ? "border-yellow-500" : ""}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    {syncData.stats.missing_tickets > 0 ? (
+                      <>
+                        <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                        Stripe-synkronisering ({syncData.stats.mode === "test" ? "Sandkasse" : "Live"})
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4 text-primary" />
+                        Stripe-synkronisering ({syncData.stats.mode === "test" ? "Sandkasse" : "Live"})
+                      </>
+                    )}
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => refetchSync()}
+                    disabled={syncLoading}
+                  >
+                    <RefreshCw className={`h-4 w-4 ${syncLoading ? "animate-spin" : ""}`} />
+                    Oppdater
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Betalt i Stripe ({syncData.stats.mode}):</p>
+                    <p className="font-medium">{syncData.stats.total_stripe_sessions}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Billetter i database:</p>
+                    <p className="font-medium">{syncData.stats.total_db_tickets}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Mangler:</p>
+                    <p className={`font-medium ${syncData.stats.missing_tickets > 0 ? "text-yellow-600" : ""}`}>
+                      {syncData.stats.missing_tickets}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Synkronisert:</p>
+                    <p className="font-medium">{syncData.stats.sync_percentage}%</p>
+                  </div>
+                </div>
+                
+                {syncData.missing_tickets && syncData.missing_tickets.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    <p className="text-sm font-medium">Manglende billetter:</p>
+                    <div className="space-y-1">
+                      {syncData.missing_tickets.slice(0, 5).map((ticket, idx) => (
+                        <div key={idx} className="text-xs bg-muted p-2 rounded">
+                          <p className="font-mono">{ticket.session_id.substring(0, 20)}...</p>
+                          <p className="text-muted-foreground">
+                            {ticket.customer_email} • {ticket.amount} {ticket.currency}
+                          </p>
+                        </div>
+                      ))}
+                      {syncData.missing_tickets.length > 5 && (
+                        <p className="text-xs text-muted-foreground">
+                          +{syncData.missing_tickets.length - 5} flere...
+                        </p>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Dette kan skyldes manglende webhooks fra Stripe. Sjekk webhook-konfigurasjonen i Stripe Dashboard.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Key Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -825,7 +1018,7 @@ export default function AdminTicketsDashboard() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Activity className="h-4 w-4" />
+                  <Users className="h-4 w-4" />
                   Inne nå
                 </CardTitle>
               </CardHeader>
