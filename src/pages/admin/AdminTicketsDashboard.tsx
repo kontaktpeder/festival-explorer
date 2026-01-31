@@ -125,13 +125,13 @@ function useTicketStats() {
 
       const totalSold = soldTickets.length;
       const totalRevenue = soldTickets.reduce((sum, ticket) => {
-        const price = ticket.ticket_types?.price_nok || 0;
-        return sum + price;
+        const priceOre = ticket.ticket_types?.price_nok || 0;
+        return sum + (priceOre / 100); // Convert from øre to kroner
       }, 0);
 
       const totalFees = soldTickets.reduce((sum, ticket) => {
-        const price = ticket.ticket_types?.price_nok || 0;
-        return sum + calculateStripeFee(price);
+        const priceKroner = (ticket.ticket_types?.price_nok || 0) / 100; // Convert from øre to kroner
+        return sum + calculateStripeFee(priceKroner);
       }, 0);
 
       const netRevenue = totalRevenue - totalFees;
@@ -143,7 +143,7 @@ function useTicketStats() {
         ).length;
         const revenue = soldTickets
           .filter((t) => t.ticket_type_id === type.id)
-          .reduce((sum, t) => sum + (t.ticket_types?.price_nok || 0), 0);
+          .reduce((sum, t) => sum + ((t.ticket_types?.price_nok || 0) / 100), 0); // Convert from øre
 
         return {
           ...type,
@@ -163,7 +163,7 @@ function useTicketStats() {
           buyerName: ticket.buyer_name,
           buyerEmail: ticket.buyer_email,
           ticketType: ticket.ticket_types?.name || "Ukjent",
-          amount: ticket.ticket_types?.price_nok || 0,
+          amount: (ticket.ticket_types?.price_nok || 0) / 100, // Convert from øre to kroner
           status: ticket.status,
           createdAt: ticket.created_at,
           checkedIn: !!ticket.checked_in_at,
