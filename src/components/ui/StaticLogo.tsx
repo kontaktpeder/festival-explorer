@@ -51,10 +51,43 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
     }
   }, [location.pathname, navigate]);
 
+  // Header fade gradient - always visible
+  const HeaderFade = () => (
+    <div 
+      className="fixed inset-x-0 top-0 z-40 pointer-events-none"
+      style={{
+        height: 'calc(var(--safe-top, 0px) + 80px)',
+        background: `linear-gradient(
+          to bottom,
+          hsl(var(--background)) 0%,
+          hsl(var(--background) / 0.9) 30%,
+          hsl(var(--background) / 0.6) 60%,
+          transparent 100%
+        )`,
+      }}
+    />
+  );
+
+  // Festival CTA button
+  const FestivalCTA = ({ small = false }: { small?: boolean }) => (
+    <Link
+      to="/tickets"
+      className={`bg-accent hover:bg-accent/90 text-accent-foreground font-semibold rounded-full transition-all ${
+        small 
+          ? 'px-3 py-1 text-xs' 
+          : 'px-4 py-1.5 text-sm'
+      }`}
+    >
+      Kjøp billett
+    </Link>
+  );
+
   // Hero mode: centered, very large at top, shrinks on scroll
   if (heroMode) {
     return (
       <>
+        <HeaderFade />
+        
         <Link
           to="/"
           onClick={handleClick}
@@ -85,18 +118,22 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
           />
         </Link>
 
-        {/* BACKSTAGE link - top right, very small */}
-        <Link
-          to={session ? "/dashboard" : "/admin/login"}
-          className="fixed z-50 right-3 transition-all duration-300"
+        {/* Right side: CTA + BACKSTAGE */}
+        <div
+          className="fixed z-50 right-3 md:right-4 flex items-center gap-3 md:gap-4 transition-all duration-300"
           style={{
             top: 'calc(var(--safe-top, 0px) + 12px)'
           }}
         >
-          <span className="font-medium text-foreground/50 hover:text-accent transition-colors uppercase tracking-wider text-[9px] md:text-[10px]">
-            BACKSTAGE
-          </span>
-        </Link>
+          <FestivalCTA small={isMobile} />
+          <Link
+            to={session ? "/dashboard" : "/admin/login"}
+          >
+            <span className="font-semibold text-foreground/70 hover:text-accent transition-colors uppercase tracking-wider text-xs md:text-sm">
+              BACKSTAGE
+            </span>
+          </Link>
+        </div>
       </>
     );
   }
@@ -105,6 +142,8 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
 
   return (
     <>
+      <HeaderFade />
+      
       {/* Logo */}
       <Link
         to="/"
@@ -131,24 +170,28 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
         />
       </Link>
 
-      {/* BACKSTAGE link - top right, smaller when logo is centered */}
-      <Link
-        to={session ? "/dashboard" : "/admin/login"}
-        className={`fixed z-50 right-4 transition-all duration-500 ease-out ${
-          showCentered ? 'opacity-70' : 'opacity-100'
+      {/* Right side: CTA + BACKSTAGE */}
+      <div
+        className={`fixed z-50 right-4 flex items-center gap-3 md:gap-4 transition-all duration-500 ease-out ${
+          showCentered ? 'opacity-80' : 'opacity-100'
         }`}
         style={{
           top: showCentered 
-            ? 'calc(var(--safe-top, 0px) + 16px)' 
-            : 'calc(var(--safe-top, 0px) + 20px)'
+            ? 'calc(var(--safe-top, 0px) + 14px)' 
+            : 'calc(var(--safe-top, 0px) + 18px)'
         }}
       >
-        <span className={`font-medium text-foreground/80 hover:text-accent transition-colors uppercase tracking-wider ${
-          showCentered ? 'text-[10px]' : 'text-sm'
-        }`}>
-          BACKSTAGE
-        </span>
-      </Link>
+        <FestivalCTA small={showCentered} />
+        <Link
+          to={session ? "/dashboard" : "/admin/login"}
+        >
+          <span className={`font-semibold text-foreground/70 hover:text-accent transition-colors uppercase tracking-wider ${
+            showCentered ? 'text-[11px]' : 'text-xs md:text-sm'
+          }`}>
+            BACKSTAGE
+          </span>
+        </Link>
+      </div>
     </>
   );
 }
