@@ -30,7 +30,7 @@ export function FortsattNysgjerrigSection() {
             asChild
             className="bg-orange-500 hover:bg-orange-600 text-white border-0 px-8"
           >
-            <a href="mailto:hei@giggen.app">
+            <a href="mailto:giggen.main@gmail.com">
               <Mail className="w-4 h-4 mr-2" />
               Kontakt oss
             </a>

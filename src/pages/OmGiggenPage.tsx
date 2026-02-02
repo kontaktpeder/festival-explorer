@@ -267,7 +267,7 @@ export default function OmGiggenPage() {
             asChild
             className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-200 bg-orange-500 hover:bg-orange-600 text-white border-0 px-10 py-6 text-lg"
           >
-            <a href="mailto:hei@giggen.app">
+            <a href="mailto:giggen.main@gmail.com">
               <Mail className="w-5 h-5 mr-3" />
               Ta kontakt
             </a>
@@ -348,7 +348,7 @@ export default function OmGiggenPage() {
           {/* Links */}
           <div className="flex items-center justify-center gap-6 text-xs text-white/30">
             <a 
-              href="mailto:hei@giggen.app"
+              href="mailto:giggen.main@gmail.com"
               className="hover:text-white/60 transition-colors"
             >
               Kontakt
