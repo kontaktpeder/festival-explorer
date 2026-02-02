@@ -35,6 +35,11 @@ function useScrollReveal() {
 export default function OmGiggenPage() {
   const containerRef = useScrollReveal();
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div ref={containerRef} className="min-h-screen bg-black text-white">
       {/* Back button */}
@@ -166,12 +171,19 @@ export default function OmGiggenPage() {
               </Link>
               , hvor festivalen skal holdes på{" "}
               <Link 
-                to="/project/josefines-vertshus" 
+              to="/project/josefines-vertshus" 
                 className="text-orange-400 hover:text-orange-300 underline underline-offset-4 transition-colors"
               >
                 Josefines Vertshus
               </Link>
-              {" "}og kjøpe billett til festivalen.
+              {" "}og{" "}
+              <Link 
+                to="/tickets" 
+                className="text-orange-400 hover:text-orange-300 underline underline-offset-4 transition-colors"
+              >
+                kjøpe billett
+              </Link>
+              {" "}til festivalen.
             </p>
             
             <p 
