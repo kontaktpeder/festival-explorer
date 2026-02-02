@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Settings } from "lucide-react";
-import giggenLogo from "@/assets/giggen-logo.png";
+import giggenLogo from "@/assets/giggen-logo-outline.png";
 
 export function FestivalFooter() {
   return (
