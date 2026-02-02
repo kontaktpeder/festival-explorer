@@ -95,7 +95,7 @@ export function DualLineupSection({ artists }: DualLineupSectionProps) {
       <div className="relative bg-black">
         <LineupSectionHeader
           title="BOILER ROOM"
-          subtitle="DJ // etterfest // i kjelleren"
+          subtitle={"DJ\netterfest"}
           variant="boilerroom"
         />
         
