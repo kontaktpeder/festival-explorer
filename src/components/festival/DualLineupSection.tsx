@@ -1,9 +1,6 @@
 import { useMemo } from "react";
 import { ArtistPosterBlock } from "./ArtistPosterBlock";
 import { LineupSectionHeader } from "./LineupSectionHeader";
-import { PraktiskSection } from "./PraktiskSection";
-import { UtforskMerSection } from "./UtforskMerSection";
-import { SocialSection } from "./SocialSection";
 import { FestivalFooter } from "./FestivalFooter";
 
 interface Artist {
@@ -112,13 +109,7 @@ export function DualLineupSection({ artists }: DualLineupSectionProps) {
         </div>
       </div>
       
-      {/* ============================================ */}
-      {/* POST-LINEUP SECTIONS                        */}
-      {/* Praktisk, Utforsk, Community, Social        */}
-      {/* ============================================ */}
-      <PraktiskSection />
-      <UtforskMerSection />
-      <SocialSection />
+      {/* Footer */}
       <FestivalFooter />
     </>
   );
