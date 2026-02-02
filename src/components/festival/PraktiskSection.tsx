@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import praktiskBg from "@/assets/section-bg-praktisk-new.jpeg";
 import praktiskDesktopBg from "@/assets/section-bg-praktisk-desktop.jpg";
-
+import praktiskInfoBg from "@/assets/praktisk-info-bg.jpeg";
 interface InfoItem {
   icon: React.ReactNode;
   label: string;
@@ -68,8 +68,16 @@ export function PraktiskSection() {
       </section>
       
       {/* Info section - separate, dark background */}
-      <section className="px-6 py-16" style={{ background: 'linear-gradient(135deg, hsl(165 40% 88%) 0%, hsl(220 45% 82%) 35%, hsl(165 35% 85%) 65%, hsl(230 40% 78%) 100%)' }}>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 md:gap-10 max-w-4xl mx-auto">
+      <section className="relative px-6 py-16 overflow-hidden">
+        {/* Background image */}
+        <div className="absolute inset-0">
+          <img 
+            src={praktiskInfoBg} 
+            alt="" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="relative z-10 grid grid-cols-2 md:grid-cols-5 gap-8 md:gap-10 max-w-4xl mx-auto">
           {infoItems.map((item, index) => (
             <div 
               key={index}
