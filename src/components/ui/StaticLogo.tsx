@@ -85,7 +85,10 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
           <img 
             src={giggenLogo} 
             alt="GIGGEN - festival for en kveld"
-            className="relative drop-shadow-2xl h-32 md:h-44 lg:h-56"
+            className="relative h-32 md:h-44 lg:h-56"
+            style={{
+              filter: 'drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))'
+            }}
           />
         </Link>
 
