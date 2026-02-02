@@ -13,6 +13,7 @@ import { FestivalEventAccordion } from "@/components/ui/FestivalEventAccordion";
 import { SectionRenderer } from "@/components/festival/SectionRenderer";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
+import { DualLineupSection } from "@/components/festival/DualLineupSection";
 import giggenLogo from "@/assets/giggen-logo.png";
 import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
 
@@ -36,52 +37,8 @@ export default function FestivalPage() {
     enabled: !!festival?.venue_id,
   });
 
-  // Hent ALLE artister fra festivalen (ikke bare featured) - using entities
-  const { data: allArtists = [] } = useQuery({
-    queryKey: ["all-artists", festival?.id],
-    queryFn: async () => {
-      if (!festival?.id) return [];
-
-      // Hent alle festival events
-      const { data: festivalEvents } = await supabase
-        .from("festival_events")
-        .select("event_id")
-        .eq("festival_id", festival.id);
-
-      if (!festivalEvents || festivalEvents.length === 0) return [];
-
-      const eventIds = festivalEvents
-        .map((fe) => fe.event_id)
-        .filter(Boolean) as string[];
-
-      // Hent ALLE entities fra event_entities (NEW)
-      const { data: eventEntities } = await supabase
-        .from("event_entities")
-        .select("*, entity:entities(*)")
-        .in("event_id", eventIds)
-        .order("billing_order", { ascending: true });
-
-      if (!eventEntities) return [];
-
-      // Unike entities (kan være i flere events)
-      const uniqueEntities = eventEntities
-        .map((ee) => ee.entity)
-        .filter(
-          (entity, index, self) =>
-            entity && self.findIndex((e) => e?.id === entity.id) === index
-        )
-        .map((entity) => ({
-          id: entity!.id,
-          name: entity!.name,
-          slug: entity!.slug,
-          tagline: entity!.tagline,
-          type: entity!.type,
-        }));
-
-      return uniqueEntities;
-    },
-    enabled: !!festival?.id,
-  });
+  // Artists now come from useFestival hook with event_slug included
+  // allArtistsWithEventSlug is populated from festival events automatically
 
   // Signed URL for theme hero image - MUST be called before early returns
   const themeHeroUrl = useSignedMediaUrl(festival?.theme?.hero_image_url, 'public');
@@ -180,7 +137,7 @@ export default function FestivalPage() {
               key={section.id}
               section={section}
               validEvents={validEvents as any}
-              featuredArtists={allArtists}
+              featuredArtists={festival.allArtistsWithEventSlug || []}
               venue={venue}
               dateRange={showDateRange}
               festivalDescription={showDescription}
@@ -217,28 +174,32 @@ export default function FestivalPage() {
       "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1920",
   };
 
-  // Fallback artists (hvis ingen i database)
+  // Fallback artists (hvis ingen i database) - use festival data
+  const allArtistsFromFestival = festival?.allArtistsWithEventSlug || [];
   const fallbackArtists =
-    allArtists.length > 0
-      ? allArtists
+    allArtistsFromFestival.length > 0
+      ? allArtistsFromFestival
       : [
           {
             id: "1",
             name: "Lunar Echo",
             tagline: "Ambient soundscapes",
             slug: "lunar-echo",
+            event_slug: "festival",
           },
           {
             id: "2",
             name: "Erik Nordahl",
             tagline: "Electronic experiments",
             slug: "erik-nordahl",
+            event_slug: "festival",
           },
           {
             id: "3",
             name: "Neon Shapes",
             tagline: "Live eksperiment",
             slug: "neon-shapes",
+            event_slug: "festival",
           },
         ];
 
@@ -317,42 +278,8 @@ export default function FestivalPage() {
         </div>
       </section>
 
-      {/* SEKSJON 4: ARTISTER - Fullskjerm, bg-scroll */}
-      <section
-        className="fullscreen-section relative"
-        style={{
-          backgroundImage: `url(${sectionBackgrounds.artists})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-
-        <div className="relative z-10 max-w-4xl mx-auto w-full">
-          <h2 className="section-title">Artister</h2>
-          <div className="space-y-8">
-            {fallbackArtists.map((artist) => (
-              <Link
-                key={artist.id}
-                to={`/project/${artist.slug}`}
-                className="block group"
-              >
-                <h3 className="text-display text-3xl md:text-4xl group-hover:text-accent transition-colors">
-                  {artist.name}
-                </h3>
-                {artist.tagline && (
-                  <p className="text-muted-foreground text-lg mt-1">
-                    {artist.tagline}
-                  </p>
-                )}
-                <span className="text-sm text-muted-foreground/60 mt-2 inline-block group-hover:text-accent transition-colors">
-                  Les mer →
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* SEKSJON 4: ARTISTER - Dual lineup (Festival + Boiler Room) */}
+      <DualLineupSection artists={fallbackArtists} />
 
       {/* SEKSJON 5: VENUE-PLAKAT - Fullskjerm, bg-fixed */}
       <section

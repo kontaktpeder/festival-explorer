@@ -69,6 +69,34 @@ export function useFestival(slug: string) {
         return dateA - dateB;
       });
 
+      // Collect ALL artists with their event_slug for lineup sections
+      const allArtistsWithEventSlug: Array<{
+        id: string;
+        name: string;
+        slug: string;
+        tagline?: string | null;
+        hero_image_url?: string | null;
+        event_slug: string;
+      }> = [];
+      
+      sortedEvents.forEach((fe) => {
+        if (!fe.event) return;
+        const eventSlug = fe.event.slug;
+        const eventWithLineup = fe.event as { lineup?: any[] };
+        (eventWithLineup.lineup || []).forEach((lineupItem: any) => {
+          if (lineupItem.entity) {
+            allArtistsWithEventSlug.push({
+              id: lineupItem.entity.id,
+              name: lineupItem.entity.name,
+              slug: lineupItem.entity.slug,
+              tagline: lineupItem.entity.tagline,
+              hero_image_url: lineupItem.entity.hero_image_url,
+              event_slug: eventSlug,
+            });
+          }
+        });
+      });
+
       // Hent festival sections fra database
       const { data: sections, error: sectionsError } = await supabase
         .from("festival_sections")
@@ -110,6 +138,7 @@ export function useFestival(slug: string) {
         festivalEvents: sortedEvents,
         sections: sections || [],
         sectionArtists,
+        allArtistsWithEventSlug, // NEW: includes event_slug for dual-lineup sections
         // Cast to include new fields that may not be in generated types yet
         date_range_section_id: (festival as any).date_range_section_id as string | null,
         description_section_id: (festival as any).description_section_id as string | null,
