@@ -1,4 +1,6 @@
 import { Clock, MapPin, Users, Utensils, Ticket } from "lucide-react";
+import { cn } from "@/lib/utils";
+import praktiskBg from "@/assets/section-bg-praktisk-new.jpeg";
 
 interface InfoItem {
   icon: React.ReactNode;
@@ -16,39 +18,66 @@ const infoItems: InfoItem[] = [
 
 export function PraktiskSection() {
   return (
-    <section className="relative min-h-screen max-h-screen flex flex-col items-center justify-center px-6 py-12 bg-zinc-950 overflow-hidden">
-      {/* Grain texture overlay */}
-      <div className="absolute inset-0 opacity-30 pointer-events-none bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 256 256%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E')]" />
+    <section className="relative min-h-[30vh] md:min-h-[35vh] flex flex-col items-center justify-center px-6 py-12">
+      {/* Background image - same style as lineup headers */}
+      <div className="absolute inset-0">
+        <img 
+          src={praktiskBg} 
+          alt="" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/30" />
+      </div>
       
-      {/* Content */}
-      <div className="relative z-10 max-w-3xl mx-auto text-center">
-        {/* Section title - poster style */}
-        <h2 
-          className="text-5xl sm:text-6xl md:text-7xl font-bold text-white mb-16 tracking-tight uppercase"
-          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-        >
-          Praktisk
-        </h2>
-        
-        {/* Info grid - centered, poster-like */}
-        <div className="grid grid-cols-1 gap-8 md:gap-10">
-          {infoItems.map((item, index) => (
-            <div 
-              key={index}
-              className="flex flex-col items-center text-center"
-            >
-              <div className="text-orange-400 mb-3">
-                {item.icon}
-              </div>
-              <span className="text-xs md:text-sm uppercase tracking-[0.3em] text-white/50 mb-2">
-                {item.label}
-              </span>
-              <span className="text-xl md:text-2xl text-white font-medium">
-                {item.value}
-              </span>
+      {/* Decorative line above */}
+      <div className={cn(
+        "absolute top-0 left-1/2 -translate-x-1/2 w-px h-16 bg-gradient-to-b z-10",
+        "from-white/40 via-white/20 to-transparent"
+      )} />
+      
+      {/* Serif tagline */}
+      <p className={cn(
+        "relative z-10 text-center text-sm md:text-base italic font-light mb-4",
+        "animate-blur-in",
+        "text-white/80"
+      )} style={{ fontFamily: "'Crimson Pro', 'Source Serif 4', Georgia, serif" }}>
+        alt du trenger å vite
+      </p>
+      
+      {/* Main title - Space Grotesk */}
+      <h2 className={cn(
+        "relative z-10 text-4xl sm:text-5xl md:text-6xl tracking-tight text-center font-bold uppercase",
+        "animate-blur-in delay-100",
+        "text-white"
+      )} style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+        Praktisk
+      </h2>
+      
+      {/* Decorative line below */}
+      <div className={cn(
+        "relative z-10 mt-8 w-24 h-px bg-gradient-to-r",
+        "from-white/40 via-white/20 to-transparent",
+        "animate-line-grow delay-200"
+      )} />
+      
+      {/* Info grid - compact, centered */}
+      <div className="relative z-10 mt-10 grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-8 max-w-4xl">
+        {infoItems.map((item, index) => (
+          <div 
+            key={index}
+            className="flex flex-col items-center text-center"
+          >
+            <div className="text-cyan-300/80 mb-2">
+              {item.icon}
             </div>
-          ))}
-        </div>
+            <span className="text-[10px] md:text-xs uppercase tracking-[0.2em] text-white/50 mb-1">
+              {item.label}
+            </span>
+            <span className="text-sm md:text-base text-white font-medium">
+              {item.value}
+            </span>
+          </div>
+        ))}
       </div>
     </section>
   );
