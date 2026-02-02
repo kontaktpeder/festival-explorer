@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import lineupHeaderBg from "@/assets/lineup-header-bg.jpeg";
+import boilerroomHeaderBg from "@/assets/boilerroom-header-bg.jpeg";
 
 interface LineupSectionHeaderProps {
   title: string;
@@ -9,7 +10,7 @@ interface LineupSectionHeaderProps {
 /**
  * Compact section divider for lineup sections
  * Festival: uses uploaded orange gradient background
- * Boiler Room: cold black/purple tones
+ * Boiler Room: dark atmospheric background
  */
 export function LineupSectionHeader({ title, variant }: LineupSectionHeaderProps) {
   const variantStyles = {
@@ -19,30 +20,25 @@ export function LineupSectionHeader({ title, variant }: LineupSectionHeaderProps
       line: "from-white/40 via-white/20 to-transparent",
     },
     boilerroom: {
-      tagline: "text-purple-300/70",
+      tagline: "text-cyan-300/70",
       title: "text-white",
-      line: "from-purple-500/60 via-violet-400/40 to-transparent",
+      line: "from-cyan-500/60 via-teal-400/40 to-transparent",
     },
   };
   
   const styles = variantStyles[variant];
   
   return (
-    <section className={cn(
-      "relative min-h-[30vh] md:min-h-[35vh] flex flex-col items-center justify-center px-6 py-12",
-      variant === "boilerroom" && "bg-gradient-to-b from-black via-zinc-950/90 to-transparent"
-    )}>
-      {/* Background image for festival variant */}
-      {variant === "festival" && (
-        <div className="absolute inset-0">
-          <img 
-            src={lineupHeaderBg} 
-            alt="" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/20" />
-        </div>
-      )}
+    <section className="relative min-h-[30vh] md:min-h-[35vh] flex flex-col items-center justify-center px-6 py-12">
+      {/* Background image */}
+      <div className="absolute inset-0">
+        <img 
+          src={variant === "festival" ? lineupHeaderBg : boilerroomHeaderBg} 
+          alt="" 
+          className="w-full h-full object-cover"
+        />
+        {variant === "festival" && <div className="absolute inset-0 bg-black/20" />}
+      </div>
       
       {/* Decorative line above */}
       <div className={cn(
