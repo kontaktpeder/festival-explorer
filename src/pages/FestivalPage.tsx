@@ -2,8 +2,6 @@ import { useParams, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Calendar, Settings } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useFestival } from "@/hooks/useFestival";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { parseImageSettings } from "@/types/database";
@@ -13,6 +11,7 @@ import { FestivalEventAccordion } from "@/components/ui/FestivalEventAccordion";
 import { SectionRenderer } from "@/components/festival/SectionRenderer";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
+import { DualLineupSection } from "@/components/festival/DualLineupSection";
 import giggenLogo from "@/assets/giggen-logo.png";
 import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
 
