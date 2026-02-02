@@ -24,11 +24,16 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
     },
   });
 
+  const [isLargeDesktop, setIsLargeDesktop] = useState(false);
+
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    const checkBreakpoints = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsLargeDesktop(window.innerWidth >= 1024);
+    };
+    checkBreakpoints();
+    window.addEventListener('resize', checkBreakpoints);
+    return () => window.removeEventListener('resize', checkBreakpoints);
   }, []);
 
   useEffect(() => {
@@ -72,7 +77,9 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
           style={{
             top: isMobile 
               ? 'calc(var(--safe-top, 0px) + 24px)' 
-              : 'calc(var(--safe-top, 0px) + 16px)'
+              : isLargeDesktop
+                ? 'calc(var(--safe-top, 0px) + 8px)'
+                : 'calc(var(--safe-top, 0px) + 16px)'
           }}
         >
           <img 
