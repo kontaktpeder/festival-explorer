@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { Music, Ticket } from "lucide-react";
+import { Music } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { parseImageSettings } from "@/types/database";
 
@@ -97,17 +97,6 @@ export default function ProjectPage() {
             <p className="text-lg md:text-xl text-foreground/85 leading-relaxed whitespace-pre-line font-light">
               {entity.description}
             </p>
-          </div>
-          
-          {/* CTA – Buy ticket */}
-          <div className="mt-12 flex justify-center">
-            <Link
-              to="/tickets"
-              className="inline-flex items-center gap-3 px-8 py-4 border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground transition-colors duration-200 text-base font-medium tracking-wide"
-            >
-              <Ticket className="w-5 h-5" />
-              Kjøp billett
-            </Link>
           </div>
         </section>
       )}
