@@ -51,6 +51,15 @@ export default function TicketsPage() {
 
   if (typesLoading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>;
 
+  // Helper function to replace DJ/Afterparty with BOILER ROOM
+  const formatTicketText = (text: string | null) => {
+    if (!text) return "";
+    return text
+      .replace(/DJ/gi, "BOILER ROOM")
+      .replace(/Afterparty/gi, "BOILER ROOM")
+      .replace(/afterparty/gi, "BOILER ROOM");
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-2xl mx-auto space-y-6">
@@ -68,8 +77,8 @@ export default function TicketsPage() {
             >
               <div className="flex items-center justify-between p-4">
                 <div className="space-y-0.5">
-                  <CardTitle className="text-base">{type.name}</CardTitle>
-                  <CardDescription className="text-xs">{type.description}</CardDescription>
+                  <CardTitle className="text-base">{formatTicketText(type.name)}</CardTitle>
+                  <CardDescription className="text-xs">{formatTicketText(type.description)}</CardDescription>
                 </div>
                 <p className="text-lg font-bold whitespace-nowrap ml-4">{(type.price_nok / 100).toFixed(0)} kr</p>
               </div>
