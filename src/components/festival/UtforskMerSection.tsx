@@ -1,28 +1,23 @@
 import { Link } from "react-router-dom";
-import { Building2, Users, Sparkles } from "lucide-react";
+import { Users, Sparkles } from "lucide-react";
+import { VenuePosterBlock } from "./VenuePosterBlock";
 
-interface ExploreBlock {
+interface ExploreLink {
   icon: React.ReactNode;
   title: string;
   subtitle: string;
   to: string;
 }
 
-const exploreBlocks: ExploreBlock[] = [
+const exploreLinks: ExploreLink[] = [
   {
-    icon: <Building2 className="w-6 h-6" />,
-    title: "Utforsk venue",
-    subtitle: "Josefines Vertshus",
-    to: "/venue/josefines-vertshus",
-  },
-  {
-    icon: <Sparkles className="w-6 h-6" />,
+    icon: <Sparkles className="w-5 h-5" />,
     title: "Om GIGGEN",
     subtitle: "Historien bak",
     to: "/om-giggen",
   },
   {
-    icon: <Users className="w-6 h-6" />,
+    icon: <Users className="w-5 h-5" />,
     title: "Backstage",
     subtitle: "For artister, arrangører og crew",
     to: "/dashboard",
@@ -31,35 +26,33 @@ const exploreBlocks: ExploreBlock[] = [
 
 export function UtforskMerSection() {
   return (
-    <section className="relative py-12 md:py-16 px-6 bg-black">
-      {/* Content */}
-      <div className="relative z-10 max-w-2xl mx-auto text-center">
-        {/* Section title */}
-        <h2 
-          className="text-3xl sm:text-4xl font-bold text-white mb-10 tracking-tight"
-          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-        >
-          Utforsk mer
-        </h2>
-        
-        {/* Simple list - no cards */}
-        <div className="space-y-6">
-          {exploreBlocks.map((block, index) => (
+    <section className="relative bg-black">
+      {/* Venue poster block - same style as lineup */}
+      <VenuePosterBlock 
+        venue={{
+          name: "Josefines Vertshus",
+          slug: "josefines-vertshus",
+          tagline: "Josefines gate 16, Oslo",
+          hero_image_url: null, // Will use gradient fallback
+        }}
+      />
+      
+      {/* Additional links - compact */}
+      <div className="py-10 px-6 bg-zinc-950">
+        <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10">
+          {exploreLinks.map((link, index) => (
             <Link
               key={index}
-              to={block.to}
-              className="group flex items-center justify-center gap-4 text-white/60 hover:text-white transition-colors duration-300"
+              to={link.to}
+              className="group flex items-center gap-3 text-white/50 hover:text-white transition-colors duration-300"
             >
-              <span className="text-orange-400/60 group-hover:text-orange-400 transition-colors">
-                {block.icon}
+              <span className="text-orange-400/50 group-hover:text-orange-400 transition-colors">
+                {link.icon}
               </span>
-              <span className="text-lg md:text-xl font-medium">
-                {block.title}
+              <span className="text-base font-medium">
+                {link.title}
               </span>
-              <span className="text-sm text-white/40">
-                {block.subtitle}
-              </span>
-              <span className="text-orange-400/0 group-hover:text-orange-400 transition-colors">
+              <span className="text-orange-400/0 group-hover:text-orange-400 transition-colors text-sm">
                 →
               </span>
             </Link>
