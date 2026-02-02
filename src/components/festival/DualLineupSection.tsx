@@ -1,6 +1,11 @@
 import { useMemo } from "react";
 import { ArtistPosterBlock } from "./ArtistPosterBlock";
 import { LineupSectionHeader } from "./LineupSectionHeader";
+import { PraktiskSection } from "./PraktiskSection";
+import { UtforskMerSection } from "./UtforskMerSection";
+import { FortsattNysgjerrigSection } from "./FortsattNysgjerrigSection";
+import { SocialSection } from "./SocialSection";
+import { FestivalFooter } from "./FestivalFooter";
 
 interface Artist {
   id: string;
@@ -117,10 +122,17 @@ export function DualLineupSection({ artists }: DualLineupSectionProps) {
             </div>
           )}
         </div>
-        
-        {/* Bottom fade to next section */}
-        <div className="h-24 bg-gradient-to-b from-black to-transparent" />
       </div>
+      
+      {/* ============================================ */}
+      {/* POST-LINEUP SECTIONS                        */}
+      {/* Praktisk, Utforsk, Community, Social        */}
+      {/* ============================================ */}
+      <PraktiskSection />
+      <UtforskMerSection />
+      <FortsattNysgjerrigSection />
+      <SocialSection />
+      <FestivalFooter />
     </>
   );
 }
