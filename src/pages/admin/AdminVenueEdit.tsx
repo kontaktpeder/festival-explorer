@@ -16,6 +16,7 @@ import { getAuthenticatedUser } from "@/lib/admin-helpers";
 import { generateSlug } from "@/lib/utils";
 import type { ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
+import { cleanupSignedUrlCache } from "@/lib/media-helpers";
 
 export default function AdminVenueEdit() {
   const { id } = useParams<{ id: string }>();
@@ -106,10 +107,14 @@ export default function AdminVenueEdit() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["admin-venues"] });
       queryClient.invalidateQueries({ queryKey: ["admin-venue", id] });
-      // Invalidate the public venue cache as well
-      if (data?.slug) {
-        queryClient.invalidateQueries({ queryKey: ["venue", data.slug] });
-      }
+      // Invalidate all public venue caches (slug + id + any venue queries)
+      // This covers FestivalPage (querying by venue_id) and VenuePage (querying by slug).
+      if (data?.slug) queryClient.invalidateQueries({ queryKey: ["venue", data.slug] });
+      if (data?.id) queryClient.invalidateQueries({ queryKey: ["venue", data.id] });
+      queryClient.invalidateQueries({ queryKey: ["venue"] });
+
+      // Best-effort cleanup of signed URL cache
+      cleanupSignedUrlCache();
       toast({ title: isNew ? "Venue opprettet" : "Venue oppdatert" });
       if (isNew && data) {
         navigate(`/admin/venues/${data.id}`);
