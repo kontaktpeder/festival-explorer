@@ -103,7 +103,7 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
               className={cn(
                 "w-auto max-w-full h-auto max-h-32 md:max-h-48 object-contain drop-shadow-2xl",
                 "transition-all duration-500 group-hover:scale-105",
-                "brightness-0 invert",
+                artist.slug === "mast" && "brightness-0 invert",
                 isEven ? "" : "ml-auto"
               )}
             />
