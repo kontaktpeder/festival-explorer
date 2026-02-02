@@ -279,7 +279,31 @@ export function useVenue(slug: string) {
   return useQuery({
     queryKey: ["venue", slug],
     queryFn: async () => {
-      // Try entities first (NEW)
+      // Try venues table first (primary source for /admin/venues edits)
+      const { data: venue, error: venueError } = await supabase
+        .from("venues")
+        .select("*")
+        .eq("slug", slug)
+        .eq("is_published", true)
+        .maybeSingle();
+
+      if (!venueError && venue) {
+        // Get upcoming events at this venue
+        const { data: events } = await supabase
+          .from("events")
+          .select("*")
+          .eq("venue_id", venue.id)
+          .eq("status", "published")
+          .gte("start_at", new Date().toISOString())
+          .order("start_at", { ascending: true });
+
+        return {
+          ...venue,
+          upcomingEvents: events || [],
+        };
+      }
+
+      // Fallback to entities table (for venues created as entities)
       const { data: entity, error: entityError } = await supabase
         .from("entities")
         .select("*")
@@ -288,46 +312,20 @@ export function useVenue(slug: string) {
         .eq("type", "venue")
         .maybeSingle();
 
-      if (!entityError && entity) {
-        // Get upcoming events at this venue
-        const { data: events } = await supabase
-          .from("events")
-          .select("*")
-          .eq("venue_id", entity.id)
-          .eq("status", "published")
-          .gte("start_at", new Date().toISOString())
-          .order("start_at", { ascending: true });
+      if (entityError) throw entityError;
+      if (!entity) return null;
 
-        return {
-          ...entity,
-          upcomingEvents: events || [],
-        };
-      }
-
-      // Fallback to old venues table
-      const { data: venue, error } = await supabase
-        .from("venues")
-        .select("*")
-        .eq("slug", slug)
-        .eq("is_published", true)
-        .maybeSingle();
-
-      if (error) throw error;
-      if (!venue) return null;
-
-      // Get upcoming events at this venue
-      const { data: events, error: eventsError } = await supabase
+      // Get upcoming events at this entity venue
+      const { data: events } = await supabase
         .from("events")
         .select("*")
-        .eq("venue_id", venue.id)
+        .eq("venue_id", entity.id)
         .eq("status", "published")
         .gte("start_at", new Date().toISOString())
         .order("start_at", { ascending: true });
 
-      if (eventsError) throw eventsError;
-
       return {
-        ...venue,
+        ...entity,
         upcomingEvents: events || [],
       };
     },
