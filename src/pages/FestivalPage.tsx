@@ -36,52 +36,8 @@ export default function FestivalPage() {
     enabled: !!festival?.venue_id,
   });
 
-  // Hent ALLE artister fra festivalen (ikke bare featured) - using entities
-  const { data: allArtists = [] } = useQuery({
-    queryKey: ["all-artists", festival?.id],
-    queryFn: async () => {
-      if (!festival?.id) return [];
-
-      // Hent alle festival events
-      const { data: festivalEvents } = await supabase
-        .from("festival_events")
-        .select("event_id")
-        .eq("festival_id", festival.id);
-
-      if (!festivalEvents || festivalEvents.length === 0) return [];
-
-      const eventIds = festivalEvents
-        .map((fe) => fe.event_id)
-        .filter(Boolean) as string[];
-
-      // Hent ALLE entities fra event_entities (NEW)
-      const { data: eventEntities } = await supabase
-        .from("event_entities")
-        .select("*, entity:entities(*)")
-        .in("event_id", eventIds)
-        .order("billing_order", { ascending: true });
-
-      if (!eventEntities) return [];
-
-      // Unike entities (kan være i flere events)
-      const uniqueEntities = eventEntities
-        .map((ee) => ee.entity)
-        .filter(
-          (entity, index, self) =>
-            entity && self.findIndex((e) => e?.id === entity.id) === index
-        )
-        .map((entity) => ({
-          id: entity!.id,
-          name: entity!.name,
-          slug: entity!.slug,
-          tagline: entity!.tagline,
-          type: entity!.type,
-        }));
-
-      return uniqueEntities;
-    },
-    enabled: !!festival?.id,
-  });
+  // Artists now come from useFestival hook with event_slug included
+  // allArtistsWithEventSlug is populated from festival events automatically
 
   // Signed URL for theme hero image - MUST be called before early returns
   const themeHeroUrl = useSignedMediaUrl(festival?.theme?.hero_image_url, 'public');
@@ -180,7 +136,7 @@ export default function FestivalPage() {
               key={section.id}
               section={section}
               validEvents={validEvents as any}
-              featuredArtists={allArtists}
+              featuredArtists={festival.allArtistsWithEventSlug || []}
               venue={venue}
               dateRange={showDateRange}
               festivalDescription={showDescription}
