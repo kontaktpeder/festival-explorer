@@ -1,54 +1,51 @@
 import { Link } from "react-router-dom";
-import { Settings } from "lucide-react";
 import giggenLogo from "@/assets/giggen-logo-outline.png";
 
 export function FestivalFooter() {
   return (
-    <footer className="relative py-12 px-6 bg-black border-t border-white/5">
-      <div className="max-w-3xl mx-auto text-center">
+    <footer className="relative py-16 px-6 bg-black">
+      <div className="max-w-2xl mx-auto text-center">
         {/* Logo */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-8">
           <img
             src={giggenLogo}
             alt="Giggen"
-            className="h-12 md:h-14 w-auto opacity-70"
+            className="h-10 md:h-12 w-auto opacity-60"
           />
         </div>
         
         {/* Mission statement */}
-        <p className="text-white/40 text-sm md:text-base max-w-md mx-auto mb-8 leading-relaxed">
+        <p className="text-white/35 text-sm max-w-sm mx-auto mb-10 leading-relaxed">
           Et engasjement for å løfte frem dem som jobber med eksisterende musikkarenaer, 
           og dem som ønsker å skape nye.
         </p>
         
         {/* Links */}
-        <div className="flex items-center justify-center gap-6 text-xs text-white/30">
+        <div className="flex items-center justify-center gap-8 text-xs text-white/25">
           <a 
             href="mailto:giggen.main@gmail.com"
-            className="hover:text-white/60 transition-colors"
+            className="hover:text-white/50 transition-colors"
           >
             Kontakt
           </a>
           <Link 
             to="/personvern"
-            className="hover:text-white/60 transition-colors"
+            className="hover:text-white/50 transition-colors"
           >
             Personvern
           </Link>
           <Link 
             to="/vilkar"
-            className="hover:text-white/60 transition-colors"
+            className="hover:text-white/50 transition-colors"
           >
             Vilkår
           </Link>
-          <Link 
-            to="/admin" 
-            className="text-white/10 hover:text-white/30 transition-colors"
-            title="Admin"
-          >
-            <Settings className="w-3 h-3" />
-          </Link>
         </div>
+        
+        {/* Copyright */}
+        <p className="mt-10 text-[10px] text-white/15">
+          © 2025 GIGGEN
+        </p>
       </div>
     </footer>
   );
