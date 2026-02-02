@@ -138,6 +138,7 @@ export function useFestival(slug: string) {
         festivalEvents: sortedEvents,
         sections: sections || [],
         sectionArtists,
+        allArtistsWithEventSlug, // NEW: includes event_slug for dual-lineup sections
         // Cast to include new fields that may not be in generated types yet
         date_range_section_id: (festival as any).date_range_section_id as string | null,
         description_section_id: (festival as any).description_section_id as string | null,
