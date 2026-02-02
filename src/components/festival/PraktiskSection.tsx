@@ -1,9 +1,9 @@
 import { Clock, MapPin, Users, Utensils, Ticket } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import praktiskBg from "@/assets/section-bg-praktisk-new.jpeg";
-import praktiskDesktopBg from "@/assets/section-bg-praktisk-desktop.jpg";
+import praktiskHeaderBg from "@/assets/praktisk-header-bg.jpeg";
 import praktiskInfoBg from "@/assets/praktisk-info-bg.jpeg";
+
 interface InfoItem {
   icon: React.ReactNode;
   label: string;
@@ -28,7 +28,7 @@ export function PraktiskSection() {
         {/* Background image - same style as lineup headers */}
         <div className="absolute inset-0">
           <img 
-            src={isMobile ? praktiskBg : praktiskDesktopBg} 
+            src={praktiskHeaderBg}
             alt="" 
             className="w-full h-full object-cover"
           />
