@@ -59,7 +59,7 @@ export function DualLineupSection({ artists }: DualLineupSectionProps) {
         
         <LineupSectionHeader
           title="FESTIVAL"
-          subtitle="LIVE musikk // kunstutstilling // matservering"
+          subtitle="LIVE musikk  kunstutstilling  matservering"
           variant="festival"
         />
         
