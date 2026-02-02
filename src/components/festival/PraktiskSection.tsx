@@ -68,7 +68,7 @@ export function PraktiskSection() {
       </section>
       
       {/* Info section - separate, dark background */}
-      <section className="bg-zinc-950 px-6 py-16">
+      <section className="px-6 py-16" style={{ background: 'linear-gradient(180deg, hsl(35 60% 85%) 0%, hsl(30 50% 78%) 50%, hsl(25 45% 70%) 100%)' }}>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 md:gap-10 max-w-4xl mx-auto">
           {infoItems.map((item, index) => (
             <div 
