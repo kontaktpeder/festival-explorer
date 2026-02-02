@@ -2,6 +2,8 @@ import { useParams, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Calendar, Settings } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useFestival } from "@/hooks/useFestival";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { parseImageSettings } from "@/types/database";
