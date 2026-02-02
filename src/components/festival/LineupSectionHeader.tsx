@@ -51,7 +51,7 @@ export function LineupSectionHeader({ title, subtitle, variant }: LineupSectionH
       
       {/* Subtitle with separators */}
       <p className={cn(
-        "mt-6 text-sm md:text-base uppercase tracking-[0.3em] text-center",
+        "mt-6 text-sm md:text-base uppercase tracking-[0.3em] text-center whitespace-pre-line",
         "animate-slide-up delay-200",
         styles.subtitle
       )}>
