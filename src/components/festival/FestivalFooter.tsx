@@ -24,7 +24,7 @@ export function FestivalFooter() {
         {/* Links */}
         <div className="flex items-center justify-center gap-6 text-xs text-white/30">
           <a 
-            href="mailto:hei@giggen.app"
+            href="mailto:giggen.main@gmail.com"
             className="hover:text-white/60 transition-colors"
           >
             Kontakt
