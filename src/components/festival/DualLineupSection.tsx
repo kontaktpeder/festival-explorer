@@ -3,7 +3,6 @@ import { ArtistPosterBlock } from "./ArtistPosterBlock";
 import { LineupSectionHeader } from "./LineupSectionHeader";
 import { PraktiskSection } from "./PraktiskSection";
 import { UtforskMerSection } from "./UtforskMerSection";
-import { FortsattNysgjerrigSection } from "./FortsattNysgjerrigSection";
 import { SocialSection } from "./SocialSection";
 import { FestivalFooter } from "./FestivalFooter";
 
@@ -119,7 +118,6 @@ export function DualLineupSection({ artists }: DualLineupSectionProps) {
       {/* ============================================ */}
       <PraktiskSection />
       <UtforskMerSection />
-      <FortsattNysgjerrigSection />
       <SocialSection />
       <FestivalFooter />
     </>
