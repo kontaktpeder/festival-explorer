@@ -82,7 +82,8 @@ export function useFestival(slug: string) {
       sortedEvents.forEach((fe) => {
         if (!fe.event) return;
         const eventSlug = fe.event.slug;
-        (fe.event.lineup || []).forEach((lineupItem: any) => {
+        const eventWithLineup = fe.event as { lineup?: any[] };
+        (eventWithLineup.lineup || []).forEach((lineupItem: any) => {
           if (lineupItem.entity) {
             allArtistsWithEventSlug.push({
               id: lineupItem.entity.id,
