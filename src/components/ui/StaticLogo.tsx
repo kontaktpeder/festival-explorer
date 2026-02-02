@@ -92,6 +92,24 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
           />
         </Link>
 
+        {/* ========== HERO CTA: Bottom center (before scroll) ========== */}
+        {/* This CTA "transfers" to header when scrolling */}
+        <Link
+          to="/tickets"
+          className={`fixed z-50 left-1/2 -translate-x-1/2 transition-all duration-500 ease-out ${
+            isScrolled 
+              ? 'opacity-0 pointer-events-none translate-y-4 scale-90' 
+              : 'opacity-100 translate-y-0 scale-100'
+          }`}
+          style={{
+            bottom: isMobile ? 'calc(var(--safe-bottom, 0px) + 32px)' : 'calc(var(--safe-bottom, 0px) + 48px)'
+          }}
+        >
+          <span className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-6 py-3 text-sm md:px-8 md:py-3.5 md:text-base transition-all shadow-2xl inline-block">
+            Kjøp billett
+          </span>
+        </Link>
+
         {/* ========== STATE B: STICKY ACTION HEADER (after scroll) ========== */}
         {/* Solid bar with logo left, CTA center-right, backstage right */}
         <div
