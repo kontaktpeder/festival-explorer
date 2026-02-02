@@ -71,7 +71,7 @@ export function LineupSectionHeader({ title, variant }: LineupSectionHeaderProps
       
       {/* Main title - Space Grotesk */}
       <h2 className={cn(
-        "relative z-10 text-4xl sm:text-5xl md:text-6xl tracking-tight text-center font-bold",
+        "relative z-10 text-4xl sm:text-5xl md:text-6xl tracking-tight text-center font-bold uppercase",
         "animate-blur-in delay-100",
         styles.title
       )} style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
