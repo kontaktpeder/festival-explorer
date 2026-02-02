@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { Users, Sparkles } from "lucide-react";
+import { Users, Sparkles, Mail } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { VenuePosterBlock } from "./VenuePosterBlock";
+import { Button } from "@/components/ui/button";
 
 interface ExploreLink {
   icon: React.ReactNode;
@@ -55,8 +56,42 @@ export function UtforskMerSection() {
         }}
       />
       
+      {/* Lær mer om GIGGEN - community pitch */}
+      <div className="relative py-16 md:py-20 px-6 bg-zinc-950">
+        {/* Grain texture */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 256 256%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E')]" />
+        
+        <div className="relative z-10 max-w-2xl mx-auto text-center">
+          {/* Section title - serif for warmth */}
+          <h2 
+            className="text-3xl sm:text-4xl md:text-5xl text-white mb-6 tracking-tight"
+            style={{ fontFamily: "'Crimson Pro', 'Source Serif 4', Georgia, serif" }}
+          >
+            Lær mer om GIGGEN
+          </h2>
+          
+          {/* Description - concise */}
+          <p className="text-base md:text-lg text-white/60 leading-relaxed mb-8 max-w-xl mx-auto">
+            GIGGEN bygges som et fellesskap – ikke bare for band, men for alle som 
+            bygger scenen: musikere, arrangører, teknikere, fotografer, booking og crew.
+          </p>
+          
+          {/* Contact CTA - inverted style at bottom */}
+          <Button 
+            asChild
+            variant="outline"
+            className="border-white/30 text-white hover:bg-white hover:text-black transition-all px-8"
+          >
+            <a href="mailto:giggen.main@gmail.com">
+              <Mail className="w-4 h-4 mr-2" />
+              Kontakt oss
+            </a>
+          </Button>
+        </div>
+      </div>
+      
       {/* Additional links - compact */}
-      <div className="py-10 px-6 bg-zinc-950">
+      <div className="py-10 px-6 bg-zinc-950 border-t border-white/5">
         <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10">
           {exploreLinks.map((link, index) => (
             <Link
