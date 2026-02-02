@@ -23,7 +23,7 @@ export function LineupSectionHeader({ title, variant }: LineupSectionHeaderProps
     festival: {
       tagline: "text-accent",
       title: "text-white",
-      line: "from-white/40 via-white/20 to-transparent",
+      line: "from-accent/60 via-accent/30 to-transparent",
     },
     boilerroom: {
       tagline: "text-cyan-300/70",
