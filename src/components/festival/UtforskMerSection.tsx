@@ -55,7 +55,7 @@ export function UtforskMerSection() {
           <h2 className="text-3xl sm:text-4xl md:text-5xl text-white mb-6 tracking-tight" style={{
           fontFamily: "'Crimson Pro', 'Source Serif 4', Georgia, serif"
         }}>
-            Lær mer om GIGGEN
+            Fortsatt nysgjerrig? 
           </h2>
           
           {/* Description - concise */}
