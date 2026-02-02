@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import lineupHeaderBg from "@/assets/lineup-header-bg.jpeg";
+import lineupHeaderBg from "@/assets/lineup-header-bg-new.jpeg";
 import boilerroomHeaderBg from "@/assets/boilerroom-header-bg.jpeg";
-import lineupDesktopBg from "@/assets/section-bg-lineup-desktop.jpg";
+import lineupDesktopBg from "@/assets/lineup-header-bg-new.jpeg";
 import boilerroomDesktopBg from "@/assets/section-bg-boilerroom-desktop.jpg";
 
 interface LineupSectionHeaderProps {
