@@ -78,7 +78,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
             top: isMobile 
               ? 'calc(var(--safe-top, 0px) + 24px)' 
               : isLargeDesktop
-                ? 'var(--safe-top, 0px)'
+                ? 'calc(var(--safe-top, 0px) - 24px)'
                 : 'calc(var(--safe-top, 0px) + 16px)'
           }}
         >
