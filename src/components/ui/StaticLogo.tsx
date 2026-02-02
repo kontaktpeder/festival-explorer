@@ -110,7 +110,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
           />
           
           {/* Content */}
-          <div className="relative flex items-center justify-between px-4 py-3">
+          <div className="relative flex items-center justify-between px-3 py-2">
             {/* Left: Small logo */}
             <Link
               to="/"
@@ -120,16 +120,16 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
               <img 
                 src={giggenLogo} 
                 alt="GIGGEN"
-                className="h-8 md:h-10 drop-shadow-lg"
+                className="h-6 md:h-8 drop-shadow-lg"
               />
             </Link>
 
             {/* Right: Actions */}
-            <div className="flex items-center gap-3 md:gap-4">
+            <div className="flex items-center gap-2 md:gap-3">
               {/* Primary CTA */}
               <Link
                 to="/tickets"
-                className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-4 py-2 text-sm md:px-5 md:py-2 md:text-base transition-all shadow-lg"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-3 py-1 text-xs md:px-4 md:py-1.5 md:text-sm transition-all shadow-lg"
               >
                 Kjøp billett
               </Link>
@@ -137,7 +137,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
               {/* Secondary: Backstage */}
               <Link
                 to={session ? "/dashboard" : "/admin/login"}
-                className="text-foreground/60 hover:text-foreground font-medium text-xs md:text-sm uppercase tracking-wider transition-colors"
+                className="text-foreground/60 hover:text-foreground font-medium text-[10px] md:text-xs uppercase tracking-wider transition-colors"
               >
                 Backstage
               </Link>
