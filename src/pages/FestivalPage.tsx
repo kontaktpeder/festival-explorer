@@ -42,6 +42,9 @@ export default function FestivalPage() {
 
   // Signed URL for theme hero image - MUST be called before early returns
   const themeHeroUrl = useSignedMediaUrl(festival?.theme?.hero_image_url, 'public');
+  
+  // Signed URL for venue hero image
+  const venueHeroUrl = useSignedMediaUrl(venue?.hero_image_url, 'public');
 
   if (isLoading) {
     return (
@@ -285,7 +288,7 @@ export default function FestivalPage() {
       <section
         className="fullscreen-section-end relative"
         style={{
-          backgroundImage: `url(${venue?.hero_image_url || sectionBackgrounds.about})`,
+          backgroundImage: `url(${venueHeroUrl || sectionBackgrounds.about})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundAttachment: "fixed",

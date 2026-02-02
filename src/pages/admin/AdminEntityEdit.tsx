@@ -12,6 +12,7 @@ import { ArrowLeft, Save, Users, Plus } from "lucide-react";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
+import { cleanupSignedUrlCache } from "@/lib/media-helpers";
 import { generateSlug } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { EntityPersonaBindingsEditor } from "@/components/admin/EntityPersonaBindingsEditor";
@@ -148,6 +149,18 @@ export default function AdminEntityEdit() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["admin-entities"] });
       queryClient.invalidateQueries({ queryKey: ["admin-entity", id] });
+      // Hvis dette er en venue, invalider alle venue queries
+      if (data?.type === "venue") {
+        if (data.slug) {
+          queryClient.invalidateQueries({ queryKey: ["venue", data.slug] });
+        }
+        if (data.id) {
+          queryClient.invalidateQueries({ queryKey: ["venue", data.id] });
+        }
+        queryClient.invalidateQueries({ queryKey: ["venue"] });
+      }
+      // Rydd signed URL cache når bildet endres
+      cleanupSignedUrlCache(true);
       toast({ title: isNew ? "Entity opprettet" : "Entity oppdatert" });
       if (isNew && data) {
         navigate(`/admin/entities/${data.id}`);

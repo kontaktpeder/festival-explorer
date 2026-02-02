@@ -149,8 +149,14 @@ export function setCachedSignedUrl(
 
 /**
  * Rydder opp i expired cache entries
+ * Hvis clearAll er true, rydder ALLE entries (brukes når bilder oppdateres)
  */
-export function cleanupSignedUrlCache(): void {
+export function cleanupSignedUrlCache(clearAll: boolean = false): void {
+  if (clearAll) {
+    signedUrlCache.clear();
+    return;
+  }
+  
   const now = Date.now();
   for (const [path, cached] of signedUrlCache.entries()) {
     if (cached.expiresAt <= now) {
