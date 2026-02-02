@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import giggenLogo from "@/assets/giggen-logo-new-v2.png";
+import giggenLogo from "@/assets/giggen-festival-logo.png";
 import bgOrange from "@/assets/om-giggen-bg-orange.jpeg";
 import bgDark from "@/assets/om-giggen-bg-dark.jpeg";
 import bgWarm from "@/assets/om-giggen-bg-warm.jpeg";
@@ -76,8 +76,10 @@ export default function OmGiggenPage() {
             className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-200 text-lg md:text-xl lg:text-2xl leading-relaxed text-white/90"
             style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
           >
-            GIGGEN startet med et enkelt ønske om å spille mer musikk live. Med tiden 
-            oppdaget den beskjedne bassisten at det "enkle" ønsket innebar alt fra å 
+            <strong className="font-bold text-white">
+              GIGGEN startet med et enkelt ønske om å spille mer musikk live.
+            </strong>{" "}
+            Med tiden oppdaget den beskjedne bassisten at det "enkle" ønsket innebar alt fra å 
             mestre kaotiske sosiale medier, inneha et sosialt intellekt, og å bli sin 
             helt egne regnskapsfører. Overveldende, kort fortalt.
           </p>
