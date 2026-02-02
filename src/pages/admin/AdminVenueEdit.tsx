@@ -106,6 +106,10 @@ export default function AdminVenueEdit() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["admin-venues"] });
       queryClient.invalidateQueries({ queryKey: ["admin-venue", id] });
+      // Invalidate the public venue cache as well
+      if (data?.slug) {
+        queryClient.invalidateQueries({ queryKey: ["venue", data.slug] });
+      }
       toast({ title: isNew ? "Venue opprettet" : "Venue oppdatert" });
       if (isNew && data) {
         navigate(`/admin/venues/${data.id}`);
