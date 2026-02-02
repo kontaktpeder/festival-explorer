@@ -101,10 +101,10 @@ export default function CrewCheckInPage() {
     return cleaned;
   }, []);
 
-  const showResultWithAutoReset = useCallback((result: CheckInResult) => {
+  const showResultScreen = useCallback((result: CheckInResult) => {
     // Ensure we always have a valid result
     if (!result || typeof result !== 'object') {
-      console.error("Invalid result passed to showResultWithAutoReset:", result);
+      console.error("Invalid result passed to showResultScreen:", result);
       return;
     }
 
@@ -120,17 +120,11 @@ export default function CrewCheckInPage() {
     setCheckInResult(validResult);
     setShowResult(true);
     
-    // Clear any existing timeout
+    // Clear any existing timeout (no auto-reset - user must click to dismiss)
     if (resultTimeoutRef.current) {
       clearTimeout(resultTimeoutRef.current);
+      resultTimeoutRef.current = null;
     }
-    
-    // Auto-reset after 5 seconds for success, 8 seconds for errors
-    const timeout = validResult.success ? 5000 : 8000;
-    resultTimeoutRef.current = setTimeout(() => {
-      setShowResult(false);
-      setCheckInResult(null);
-    }, timeout);
   }, []);
 
   const checkInMutation = useMutation({
@@ -187,7 +181,7 @@ export default function CrewCheckInPage() {
       // CRITICAL: Always show result - success or failure (already_used, refunded, etc.)
       // This ensures the red screen is ALWAYS shown for already_used tickets
       console.log("Check-in result:", data);
-      showResultWithAutoReset(data);
+      showResultScreen(data);
       
       if (data.success) {
         toast.success("Billett sjekket inn!");
@@ -204,7 +198,7 @@ export default function CrewCheckInPage() {
       toast.error(error.message);
       setIsProcessingScan(false);
       // Show error result overlay - this should be red
-      showResultWithAutoReset({
+      showResultScreen({
         success: false,
         result: "error",
         ticketCode: ticketCode || "",
