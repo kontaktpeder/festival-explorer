@@ -1,5 +1,4 @@
 import { Clock, MapPin, Users, Utensils, Ticket } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface InfoItem {
   icon: React.ReactNode;
@@ -8,55 +7,49 @@ interface InfoItem {
 }
 
 const infoItems: InfoItem[] = [
-  { icon: <Clock className="w-5 h-5" />, label: "Tidspunkt", value: "17:00 – 01:30" },
-  { icon: <MapPin className="w-5 h-5" />, label: "Sted", value: "Josefines Vertshus, Josefines gate 16" },
-  { icon: <Users className="w-5 h-5" />, label: "Aldersgrense", value: "18 år" },
-  { icon: <Utensils className="w-5 h-5" />, label: "Mat", value: "Matservering hele kvelden" },
-  { icon: <Ticket className="w-5 h-5" />, label: "Inngang", value: "Gyldig billett" },
+  { icon: <Clock className="w-6 h-6 md:w-8 md:h-8" />, label: "TIDSPUNKT", value: "17:00 – 01:30" },
+  { icon: <MapPin className="w-6 h-6 md:w-8 md:h-8" />, label: "STED", value: "Josefines Vertshus, Josefines gate 16" },
+  { icon: <Users className="w-6 h-6 md:w-8 md:h-8" />, label: "ALDERSGRENSE", value: "18 år" },
+  { icon: <Utensils className="w-6 h-6 md:w-8 md:h-8" />, label: "MAT", value: "Matservering utover kvelden" },
+  { icon: <Ticket className="w-6 h-6 md:w-8 md:h-8" />, label: "INNGANG", value: "Gyldig billett" },
 ];
 
 export function PraktiskSection() {
   return (
-    <section className="relative min-h-[70vh] md:min-h-[80vh] flex flex-col items-center justify-center px-6 py-16 bg-zinc-950">
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-zinc-950 to-zinc-900 pointer-events-none" />
+    <section className="relative min-h-screen max-h-screen flex flex-col items-center justify-center px-6 py-12 bg-zinc-950 overflow-hidden">
+      {/* Grain texture overlay */}
+      <div className="absolute inset-0 opacity-30 pointer-events-none bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 256 256%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E')]" />
       
       {/* Content */}
-      <div className="relative z-10 max-w-2xl mx-auto text-center">
-        {/* Section title */}
+      <div className="relative z-10 max-w-3xl mx-auto text-center">
+        {/* Section title - poster style */}
         <h2 
-          className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-12 tracking-tight"
+          className="text-5xl sm:text-6xl md:text-7xl font-bold text-white mb-16 tracking-tight uppercase"
           style={{ fontFamily: "'Space Grotesk', sans-serif" }}
         >
           Praktisk
         </h2>
         
-        {/* Info grid */}
-        <div className="space-y-6 md:space-y-8">
+        {/* Info grid - centered, poster-like */}
+        <div className="grid grid-cols-1 gap-8 md:gap-10">
           {infoItems.map((item, index) => (
             <div 
               key={index}
-              className={cn(
-                "flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4",
-                "text-center sm:text-left"
-              )}
+              className="flex flex-col items-center text-center"
             >
-              <div className="flex items-center gap-3 text-orange-400/80">
+              <div className="text-orange-400 mb-3">
                 {item.icon}
-                <span className="text-sm uppercase tracking-widest text-muted-foreground">
-                  {item.label}
-                </span>
               </div>
-              <span className="text-lg md:text-xl text-white/90 font-medium">
+              <span className="text-xs md:text-sm uppercase tracking-[0.3em] text-white/50 mb-2">
+                {item.label}
+              </span>
+              <span className="text-xl md:text-2xl text-white font-medium">
                 {item.value}
               </span>
             </div>
           ))}
         </div>
       </div>
-      
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-zinc-900 to-transparent pointer-events-none" />
     </section>
   );
 }
