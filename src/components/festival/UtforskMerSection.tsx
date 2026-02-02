@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
-import { Users, Sparkles, Mail } from "lucide-react";
+import { Users, Mail } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { VenuePosterBlock } from "./VenuePosterBlock";
 import { Button } from "@/components/ui/button";
+import giggenGIcon from "@/assets/giggen-g-icon.png";
 interface ExploreLink {
   icon: React.ReactNode;
   title: string;
@@ -11,8 +12,8 @@ interface ExploreLink {
   to: string;
 }
 const exploreLinks: ExploreLink[] = [{
-  icon: <Sparkles className="w-5 h-5" />,
-  title: "Om GIGGEN",
+  icon: <img src={giggenGIcon} alt="" className="w-5 h-5 object-contain" />,
+  title: "Lær mer om GIGGEN",
   subtitle: "Historien bak",
   to: "/om-giggen"
 }, {
