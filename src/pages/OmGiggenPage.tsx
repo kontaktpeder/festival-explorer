@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Mail, Instagram, Youtube, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import giggenLogo from "@/assets/giggen-festival-logo.png";
+import giggenLogo from "@/assets/giggen-logo-outline.png";
 import bgOrange from "@/assets/om-giggen-bg-orange.jpeg";
 import bgDark from "@/assets/om-giggen-bg-dark.jpeg";
 import bgWarm from "@/assets/om-giggen-bg-warm.jpeg";
@@ -334,7 +334,7 @@ export default function OmGiggenPage() {
               <img
                 src={giggenLogo}
                 alt="Giggen"
-                className="h-12 md:h-14 w-auto opacity-70 hover:opacity-100 transition-opacity"
+                className="h-24 md:h-32 w-auto opacity-70 hover:opacity-100 transition-opacity"
               />
             </Link>
           </div>
