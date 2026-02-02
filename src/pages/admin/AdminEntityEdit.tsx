@@ -149,7 +149,13 @@ export default function AdminEntityEdit() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["admin-entities"] });
       queryClient.invalidateQueries({ queryKey: ["admin-entity", id] });
-      // Hvis dette er en venue, invalider alle venue queries
+      
+      // Invalider offentlig entity query (brukes av ProjectPage)
+      if (data?.slug) {
+        queryClient.invalidateQueries({ queryKey: ["entity", data.slug] });
+      }
+      
+      // Hvis dette er en venue, invalider også venue queries
       if (data?.type === "venue") {
         if (data.slug) {
           queryClient.invalidateQueries({ queryKey: ["venue", data.slug] });
@@ -159,6 +165,7 @@ export default function AdminEntityEdit() {
         }
         queryClient.invalidateQueries({ queryKey: ["venue"] });
       }
+      
       // Rydd signed URL cache når bildet endres
       cleanupSignedUrlCache(true);
       toast({ title: isNew ? "Entity opprettet" : "Entity oppdatert" });
