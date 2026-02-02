@@ -4,6 +4,7 @@ import { nb } from "date-fns/locale";
 import { EmptyState } from "@/components/ui/LoadingState";
 import { ParallaxBackground } from "@/components/ui/ParallaxBackground";
 import { MobileFadeOverlay } from "@/components/ui/MobileFadeOverlay";
+import { DualLineupSection } from "@/components/festival/DualLineupSection";
 import { useResponsiveImage } from "@/hooks/useResponsiveImage";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { getObjectPositionFromFocal } from "@/lib/image-crop-helpers";
@@ -53,6 +54,8 @@ interface SectionRendererProps {
     name: string;
     slug: string;
     tagline?: string | null;
+    hero_image_url?: string | null;
+    event_slug?: string;
   }>;
   venue?: {
     name: string;
