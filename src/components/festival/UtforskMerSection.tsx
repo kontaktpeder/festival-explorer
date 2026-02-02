@@ -76,11 +76,11 @@ export function UtforskMerSection() {
             bygger scenen: musikere, arrangører, teknikere, fotografer, booking og crew.
           </p>
           
-          {/* Contact CTA - inverted style at bottom */}
+          {/* Contact CTA - orange inverted style at bottom */}
           <Button 
             asChild
             variant="outline"
-            className="border-white/30 text-white hover:bg-white hover:text-black transition-all px-8"
+            className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black transition-all px-8"
           >
             <a href="mailto:giggen.main@gmail.com">
               <Mail className="w-4 h-4 mr-2" />
