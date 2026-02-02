@@ -144,7 +144,6 @@ export default function OmGiggenPage() {
           backgroundImage: `url(${bgWarm})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          backgroundAttachment: "fixed",
         }}
       >
         <div className="absolute inset-0 bg-black/70" />
