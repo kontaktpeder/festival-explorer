@@ -88,6 +88,17 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
       <>
         <HeaderFade />
         
+        {/* Left side: CTA */}
+        <div
+          className="fixed z-50 left-3 md:left-4 transition-all duration-300"
+          style={{
+            top: 'calc(var(--safe-top, 0px) + 12px)'
+          }}
+        >
+          <FestivalCTA small={isMobile && isScrolled} />
+        </div>
+        
+        {/* Center: Logo */}
         <Link
           to="/"
           onClick={handleClick}
@@ -118,22 +129,18 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
           />
         </Link>
 
-        {/* Right side: CTA + BACKSTAGE */}
-        <div
-          className="fixed z-50 right-3 md:right-4 flex items-center gap-3 md:gap-4 transition-all duration-300"
+        {/* Right side: BACKSTAGE */}
+        <Link
+          to={session ? "/dashboard" : "/admin/login"}
+          className="fixed z-50 right-3 md:right-4 transition-all duration-300"
           style={{
-            top: 'calc(var(--safe-top, 0px) + 12px)'
+            top: 'calc(var(--safe-top, 0px) + 14px)'
           }}
         >
-          <FestivalCTA small={isMobile} />
-          <Link
-            to={session ? "/dashboard" : "/admin/login"}
-          >
-            <span className="font-semibold text-foreground/70 hover:text-accent transition-colors uppercase tracking-wider text-xs md:text-sm">
-              BACKSTAGE
-            </span>
-          </Link>
-        </div>
+          <span className="font-semibold text-foreground/70 hover:text-accent transition-colors uppercase tracking-wider text-sm md:text-base">
+            BACKSTAGE
+          </span>
+        </Link>
       </>
     );
   }
@@ -144,6 +151,18 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
     <>
       <HeaderFade />
       
+      {/* Left side: CTA */}
+      <div
+        className={`fixed z-50 left-4 transition-all duration-500 ease-out ${
+          showCentered ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
+        style={{
+          top: 'calc(var(--safe-top, 0px) + 14px)'
+        }}
+      >
+        <FestivalCTA small={isMobile} />
+      </div>
+      
       {/* Logo */}
       <Link
         to="/"
@@ -151,7 +170,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
         className={`fixed z-50 transition-all duration-500 ease-out ${
           showCentered 
             ? 'left-1/2 -translate-x-1/2' 
-            : 'left-4 translate-x-0'
+            : 'left-1/2 -translate-x-1/2'
         }`}
         style={{
           top: showCentered 
@@ -170,9 +189,10 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
         />
       </Link>
 
-      {/* Right side: CTA + BACKSTAGE */}
-      <div
-        className={`fixed z-50 right-4 flex items-center gap-3 md:gap-4 transition-all duration-500 ease-out ${
+      {/* Right side: BACKSTAGE */}
+      <Link
+        to={session ? "/dashboard" : "/admin/login"}
+        className={`fixed z-50 right-4 transition-all duration-500 ease-out ${
           showCentered ? 'opacity-80' : 'opacity-100'
         }`}
         style={{
@@ -181,17 +201,12 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
             : 'calc(var(--safe-top, 0px) + 18px)'
         }}
       >
-        <FestivalCTA small={showCentered} />
-        <Link
-          to={session ? "/dashboard" : "/admin/login"}
-        >
-          <span className={`font-semibold text-foreground/70 hover:text-accent transition-colors uppercase tracking-wider ${
-            showCentered ? 'text-[11px]' : 'text-xs md:text-sm'
-          }`}>
-            BACKSTAGE
-          </span>
-        </Link>
-      </div>
+        <span className={`font-semibold text-foreground/70 hover:text-accent transition-colors uppercase tracking-wider ${
+          showCentered ? 'text-[11px]' : 'text-sm md:text-base'
+        }`}>
+          BACKSTAGE
+        </span>
+      </Link>
     </>
   );
 }

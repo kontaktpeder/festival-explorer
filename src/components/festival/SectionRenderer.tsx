@@ -332,16 +332,7 @@ export function SectionRenderer({
             __html: getText()
           }} />}
             
-            <div className="animate-slide-up delay-200 flex flex-col gap-3">
-              <Link 
-                to="/tickets" 
-                className={`btn-accent w-full text-center py-4 ${!TICKET_SALES_ENABLED ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
-                onClick={(e) => { if (!TICKET_SALES_ENABLED) e.preventDefault(); }}
-              >
-                Kjøp billett
-              </Link>
-              
-            </div>
+            {/* CTA removed - now in header */}
           </div>
         </section>;
     case "footer":
