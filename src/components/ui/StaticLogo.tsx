@@ -99,9 +99,9 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
             paddingTop: 'var(--safe-top, 0px)'
           }}
         >
-          {/* Background: solid with subtle blur */}
+          {/* Background: matching footer dark gradient */}
           <div 
-            className="absolute inset-0 bg-background/95 backdrop-blur-md border-b border-border/30"
+            className="absolute inset-0 bg-black/90 backdrop-blur-md border-b border-white/10"
           />
           
           {/* Content */}
@@ -156,15 +156,14 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
           paddingTop: 'var(--safe-top, 0px)'
         }}
       >
-        {/* Background with gradient fade */}
+        {/* Background: matching footer dark gradient */}
         <div 
           className="absolute inset-0 pointer-events-none"
           style={{
             background: `linear-gradient(
               to bottom,
-              hsl(var(--background)) 0%,
-              hsl(var(--background) / 0.9) 40%,
-              hsl(var(--background) / 0.5) 70%,
+              rgba(0, 0, 0, 0.9) 0%,
+              rgba(0, 0, 0, 0.7) 50%,
               transparent 100%
             )`,
             height: '120%'
