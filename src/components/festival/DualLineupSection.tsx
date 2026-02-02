@@ -1,0 +1,128 @@
+import { useMemo } from "react";
+import { ArtistPosterBlock } from "./ArtistPosterBlock";
+import { LineupSectionHeader } from "./LineupSectionHeader";
+
+interface Artist {
+  id: string;
+  name: string;
+  slug: string;
+  tagline?: string | null;
+  hero_image_url?: string | null;
+  event_slug?: string;
+}
+
+interface DualLineupSectionProps {
+  artists: Artist[];
+}
+
+/**
+ * Dual lineup section that splits artists into:
+ * 1. FESTIVAL - warm, organic, live music vibe
+ * 2. BOILER ROOM - dark, club/night vibe
+ * 
+ * Artists are separated based on their associated event:
+ * - "boiler-room" event slug → BOILER ROOM section
+ * - All others → FESTIVAL section
+ */
+export function DualLineupSection({ artists }: DualLineupSectionProps) {
+  // Split artists by section
+  const { festivalArtists, boilerRoomArtists } = useMemo(() => {
+    const festival: Artist[] = [];
+    const boilerRoom: Artist[] = [];
+    
+    // Track seen slugs to avoid duplicates
+    const seenSlugs = new Set<string>();
+    
+    artists.forEach((artist) => {
+      if (seenSlugs.has(artist.slug)) return;
+      seenSlugs.add(artist.slug);
+      
+      if (artist.event_slug === "boiler-room") {
+        boilerRoom.push(artist);
+      } else {
+        festival.push(artist);
+      }
+    });
+    
+    return { festivalArtists: festival, boilerRoomArtists: boilerRoom };
+  }, [artists]);
+
+  return (
+    <>
+      {/* ============================================ */}
+      {/* SECTION 1: FESTIVAL                         */}
+      {/* Warm colors, organic feel, live music       */}
+      {/* ============================================ */}
+      <div className="relative">
+        {/* Warm gradient background for entire section */}
+        <div className="absolute inset-0 bg-gradient-to-b from-amber-950/20 via-orange-950/10 to-zinc-950 pointer-events-none" />
+        
+        <LineupSectionHeader
+          title="FESTIVAL"
+          subtitle="LIVE musikk // kunstutstilling // matservering"
+          variant="festival"
+        />
+        
+        {/* Artist poster blocks */}
+        <div className="relative">
+          {festivalArtists.map((artist, index) => (
+            <ArtistPosterBlock
+              key={artist.id}
+              artist={artist}
+              index={index}
+              variant="festival"
+            />
+          ))}
+        </div>
+        
+        {/* Section divider - organic wave transition */}
+        <div className="relative h-32 md:h-48 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/50 to-black" />
+          <svg 
+            className="absolute bottom-0 w-full h-24 md:h-32 text-black fill-current"
+            viewBox="0 0 1440 100"
+            preserveAspectRatio="none"
+          >
+            <path d="M0,0 C320,80 720,80 1080,40 C1260,20 1380,20 1440,40 L1440,100 L0,100 Z" />
+          </svg>
+        </div>
+      </div>
+      
+      {/* ============================================ */}
+      {/* SECTION 2: BOILER ROOM                      */}
+      {/* Dark, hard contrast, club/night feeling     */}
+      {/* ============================================ */}
+      <div className="relative bg-black">
+        <LineupSectionHeader
+          title="BOILER ROOM"
+          subtitle="DJ // etterfest // i kjelleren"
+          variant="boilerroom"
+        />
+        
+        {/* Artist poster blocks */}
+        <div className="relative">
+          {boilerRoomArtists.map((artist, index) => (
+            <ArtistPosterBlock
+              key={artist.id}
+              artist={artist}
+              index={index}
+              variant="boilerroom"
+            />
+          ))}
+          
+          {/* If no boiler room artists, show placeholder */}
+          {boilerRoomArtists.length === 0 && (
+            <div className="min-h-[40vh] flex items-center justify-center">
+              <p className="text-purple-500/50 text-lg uppercase tracking-widest">
+                DJs kommer snart...
+              </p>
+            </div>
+          )}
+        </div>
+        
+        {/* Bottom fade to next section */}
+        <div className="h-24 bg-gradient-to-b from-black to-transparent" />
+      </div>
+    </>
+  );
+}
