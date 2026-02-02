@@ -80,9 +80,9 @@ export function UtforskMerSection() {
           <Button 
             asChild
             variant="outline"
-            className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black transition-all px-8"
+            className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black hover:!text-black transition-all px-8"
           >
-            <a href="mailto:giggen.main@gmail.com">
+            <a href="mailto:giggen.main@gmail.com" className="hover:text-black">
               <Mail className="w-4 h-4 mr-2" />
               Kontakt oss
             </a>
