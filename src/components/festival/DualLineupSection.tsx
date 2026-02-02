@@ -79,17 +79,6 @@ export function DualLineupSection({ artists }: DualLineupSectionProps) {
           ))}
         </div>
         
-        {/* Section divider - organic wave transition */}
-        <div className="relative h-32 md:h-48 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/50 to-black" />
-          <svg 
-            className="absolute bottom-0 w-full h-24 md:h-32 text-black fill-current"
-            viewBox="0 0 1440 100"
-            preserveAspectRatio="none"
-          >
-            <path d="M0,0 C320,80 720,80 1080,40 C1260,20 1380,20 1440,40 L1440,100 L0,100 Z" />
-          </svg>
-        </div>
       </div>
       
       {/* ============================================ */}
