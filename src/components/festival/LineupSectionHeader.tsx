@@ -1,6 +1,9 @@
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import lineupHeaderBg from "@/assets/lineup-header-bg.jpeg";
 import boilerroomHeaderBg from "@/assets/boilerroom-header-bg.jpeg";
+import lineupDesktopBg from "@/assets/section-bg-lineup-desktop.jpg";
+import boilerroomDesktopBg from "@/assets/section-bg-boilerroom-desktop.jpg";
 
 interface LineupSectionHeaderProps {
   title: string;
@@ -11,8 +14,11 @@ interface LineupSectionHeaderProps {
  * Compact section divider for lineup sections
  * Festival: uses uploaded orange gradient background
  * Boiler Room: dark atmospheric background
+ * Desktop uses new gradient backgrounds, mobile keeps original images
  */
 export function LineupSectionHeader({ title, variant }: LineupSectionHeaderProps) {
+  const isMobile = useIsMobile();
+  
   const variantStyles = {
     festival: {
       tagline: "text-white/80",
@@ -28,12 +34,20 @@ export function LineupSectionHeader({ title, variant }: LineupSectionHeaderProps
   
   const styles = variantStyles[variant];
   
+  // Desktop uses new backgrounds, mobile keeps originals
+  const getBgImage = () => {
+    if (variant === "festival") {
+      return isMobile ? lineupHeaderBg : lineupDesktopBg;
+    }
+    return isMobile ? boilerroomHeaderBg : boilerroomDesktopBg;
+  };
+  
   return (
     <section className="relative min-h-[30vh] md:min-h-[35vh] flex flex-col items-center justify-center px-6 py-12">
       {/* Background image */}
       <div className="absolute inset-0">
         <img 
-          src={variant === "festival" ? lineupHeaderBg : boilerroomHeaderBg} 
+          src={getBgImage()} 
           alt="" 
           className="w-full h-full object-cover"
         />
