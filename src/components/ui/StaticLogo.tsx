@@ -61,118 +61,179 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
   // HERO MODE: Two distinct states
   // ============================================
   if (heroMode) {
-    // STATE A: Hero header (identity, no actions)
-    // STATE B: Sticky action header (tools, navigation)
+    // DESKTOP: Always show fixed header with large centered logo
+    // MOBILE: Original scroll-based behavior
     
     return (
       <>
-        {/* ========== STATE A: HERO HEADER (before scroll) ========== */}
-        {/* Large centered logo - pure identity, no buttons, no fade */}
-        <Link
-          to="/"
-          onClick={handleClick}
-          className={`fixed z-50 left-1/2 -translate-x-1/2 transition-all duration-500 ease-out ${
-            isScrolled ? 'opacity-0 pointer-events-none scale-75' : 'opacity-100 scale-100'
-          }`}
-          style={{
-            top: isMobile 
-              ? 'calc(var(--safe-top, 0px) + 24px)' 
-              : isLargeDesktop
-                ? 'calc(var(--safe-top, 0px) - 24px)'
-                : 'calc(var(--safe-top, 0px) + 16px)'
-          }}
-        >
-          <img 
-            src={giggenLogo} 
-            alt="GIGGEN - festival for en kveld"
-            className="relative h-32 md:h-44 lg:h-56"
+        {/* ========== DESKTOP: FIXED HEADER WITH LARGE CENTERED LOGO ========== */}
+        {!isMobile && (
+          <div
+            className="fixed inset-x-0 top-0 z-50"
             style={{
-              filter: 'drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))'
+              paddingTop: 'var(--safe-top, 0px)'
             }}
-          />
-        </Link>
-
-        {/* ========== HERO CTA: Bottom center (before scroll) ========== */}
-        {/* This CTA "transfers" to header when scrolling */}
-        <Link
-          to="/tickets"
-          className={`fixed z-50 left-1/2 -translate-x-1/2 transition-all duration-500 ease-out ${
-            isScrolled 
-              ? 'opacity-0 pointer-events-none translate-y-4 scale-90' 
-              : 'opacity-100 translate-y-0 scale-100'
-          }`}
-          style={{
-            bottom: isMobile ? 'calc(var(--safe-bottom, 0px) + 32px)' : 'calc(var(--safe-bottom, 0px) + 48px)'
-          }}
-        >
-          <span className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-6 py-3 text-sm md:px-8 md:py-3.5 md:text-base transition-all shadow-2xl inline-block">
-            Kjøp billett
-          </span>
-        </Link>
-
-        {/* ========== STATE B: STICKY ACTION HEADER (after scroll) ========== */}
-        {/* Solid bar with logo left, CTA center-right, backstage right */}
-        <div
-          className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-out ${
-            isScrolled 
-              ? 'opacity-100 translate-y-0' 
-              : 'opacity-0 -translate-y-full pointer-events-none'
-          }`}
-          style={{
-            paddingTop: 'var(--safe-top, 0px)'
-          }}
-        >
-          {/* Background: subtle gradient fade from top */}
-          <div 
-            className="absolute inset-x-0 pointer-events-none"
-            style={{
-              top: 'calc(-1 * var(--safe-top, 0px))',
-              height: 'calc(100% + var(--safe-top, 0px) + 16px)',
-              background: `linear-gradient(
-                to bottom,
-                rgba(0, 0, 0, 0.85) 0%,
-                rgba(0, 0, 0, 0.6) 30%,
-                rgba(0, 0, 0, 0.25) 70%,
-                transparent 100%
-              )`
-            }}
-          />
-          
-          {/* Content */}
-          <div className="relative flex items-center justify-between px-3 py-2">
-            {/* Left: Small logo */}
-            <Link
-              to="/"
-              onClick={handleClick}
-              className="flex-shrink-0"
-            >
-              <img 
-                src={giggenLogo} 
-                alt="GIGGEN"
-                className="h-6 md:h-8 drop-shadow-lg"
-              />
-            </Link>
-
-            {/* Right: Actions */}
-            <div className="flex items-center gap-2 md:gap-3">
-              {/* Primary CTA */}
-              <Link
-                to="/tickets"
-                className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-3 py-1 text-xs md:px-4 md:py-1.5 md:text-sm transition-all shadow-lg"
-              >
-                Kjøp billett
-              </Link>
-              
-              {/* Secondary: Backstage */}
+          >
+            {/* Background: subtle gradient fade from top */}
+            <div 
+              className="absolute inset-x-0 pointer-events-none"
+              style={{
+                top: 'calc(-1 * var(--safe-top, 0px))',
+                height: 'calc(100% + var(--safe-top, 0px) + 40px)',
+                background: `linear-gradient(
+                  to bottom,
+                  rgba(0, 0, 0, 0.85) 0%,
+                  rgba(0, 0, 0, 0.5) 50%,
+                  transparent 100%
+                )`
+              }}
+            />
+            
+            {/* Content bar */}
+            <div className="relative flex items-start justify-between px-6 py-4">
+              {/* Left: Backstage link */}
               <Link
                 to={session ? "/dashboard" : "/admin/login"}
-                className="text-foreground/60 hover:text-foreground font-medium text-[10px] md:text-xs uppercase tracking-wider transition-colors"
+                className="text-foreground/60 hover:text-foreground font-medium text-xs uppercase tracking-wider transition-colors pt-2"
               >
                 Backstage
               </Link>
+
+              {/* Center: Large logo extending beyond header */}
+              <Link
+                to="/"
+                onClick={handleClick}
+                className="absolute left-1/2 -translate-x-1/2"
+                style={{
+                  top: isLargeDesktop ? '-8px' : '4px'
+                }}
+              >
+                <img 
+                  src={giggenLogo} 
+                  alt="GIGGEN - festival for en kveld"
+                  className="h-40 lg:h-52"
+                  style={{
+                    filter: 'drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))'
+                  }}
+                />
+              </Link>
+
+              {/* Right: CTA button */}
+              <Link
+                to="/tickets"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-5 py-2 text-sm transition-all shadow-lg"
+              >
+                Kjøp billett
+              </Link>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* ========== MOBILE: SCROLL-BASED BEHAVIOR ========== */}
+        {isMobile && (
+          <>
+            {/* STATE A: Hero header (before scroll) */}
+            <Link
+              to="/"
+              onClick={handleClick}
+              className={`fixed z-50 left-1/2 -translate-x-1/2 transition-all duration-500 ease-out ${
+                isScrolled ? 'opacity-0 pointer-events-none scale-75' : 'opacity-100 scale-100'
+              }`}
+              style={{
+                top: 'calc(var(--safe-top, 0px) + 24px)'
+              }}
+            >
+              <img 
+                src={giggenLogo} 
+                alt="GIGGEN - festival for en kveld"
+                className="h-32"
+                style={{
+                  filter: 'drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))'
+                }}
+              />
+            </Link>
+
+            {/* HERO CTA: Bottom center (before scroll) */}
+            <Link
+              to="/tickets"
+              className={`fixed z-50 left-1/2 -translate-x-1/2 transition-all duration-500 ease-out ${
+                isScrolled 
+                  ? 'opacity-0 pointer-events-none translate-y-4 scale-90' 
+                  : 'opacity-100 translate-y-0 scale-100'
+              }`}
+              style={{
+                bottom: 'calc(var(--safe-bottom, 0px) + 32px)'
+              }}
+            >
+              <span className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-6 py-3 text-sm transition-all shadow-2xl inline-block">
+                Kjøp billett
+              </span>
+            </Link>
+
+            {/* STATE B: STICKY ACTION HEADER (after scroll) */}
+            <div
+              className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-out ${
+                isScrolled 
+                  ? 'opacity-100 translate-y-0' 
+                  : 'opacity-0 -translate-y-full pointer-events-none'
+              }`}
+              style={{
+                paddingTop: 'var(--safe-top, 0px)'
+              }}
+            >
+              {/* Background: subtle gradient fade from top */}
+              <div 
+                className="absolute inset-x-0 pointer-events-none"
+                style={{
+                  top: 'calc(-1 * var(--safe-top, 0px))',
+                  height: 'calc(100% + var(--safe-top, 0px) + 16px)',
+                  background: `linear-gradient(
+                    to bottom,
+                    rgba(0, 0, 0, 0.85) 0%,
+                    rgba(0, 0, 0, 0.6) 30%,
+                    rgba(0, 0, 0, 0.25) 70%,
+                    transparent 100%
+                  )`
+                }}
+              />
+              
+              {/* Content */}
+              <div className="relative flex items-center justify-between px-3 py-2">
+                {/* Left: Small logo */}
+                <Link
+                  to="/"
+                  onClick={handleClick}
+                  className="flex-shrink-0"
+                >
+                  <img 
+                    src={giggenLogo} 
+                    alt="GIGGEN"
+                    className="h-6 drop-shadow-lg"
+                  />
+                </Link>
+
+                {/* Right: Actions */}
+                <div className="flex items-center gap-2">
+                  {/* Primary CTA */}
+                  <Link
+                    to="/tickets"
+                    className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-3 py-1 text-xs transition-all shadow-lg"
+                  >
+                    Kjøp billett
+                  </Link>
+                  
+                  {/* Secondary: Backstage */}
+                  <Link
+                    to={session ? "/dashboard" : "/admin/login"}
+                    className="text-foreground/60 hover:text-foreground font-medium text-[10px] uppercase tracking-wider transition-colors"
+                  >
+                    Backstage
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </>
     );
   }
