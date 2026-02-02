@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { getMediaUrl } from "@/lib/media-helpers";
+import { useState, useEffect, useRef } from "react";
+import { getMediaUrl, cleanupSignedUrlCache } from "@/lib/media-helpers";
 
 /**
  * Hook for å hente signed media URL for offentlig visning
@@ -12,17 +12,25 @@ export function useSignedMediaUrl(
   context: 'public' | 'private' = 'public'
 ): string {
   const [signedUrl, setSignedUrl] = useState<string>("");
+  const previousUrlRef = useRef<string | null | undefined>(null);
 
   useEffect(() => {
     if (!publicUrl) {
       setSignedUrl("");
+      previousUrlRef.current = publicUrl;
       return;
     }
 
     // For private context, bruk URL direkte
     if (context === 'private') {
       setSignedUrl(publicUrl);
+      previousUrlRef.current = publicUrl;
       return;
+    }
+
+    // Hvis URL har endret seg, rydd cache for å tvinge ny signed URL
+    if (previousUrlRef.current !== publicUrl && previousUrlRef.current !== null) {
+      cleanupSignedUrlCache(true);
     }
 
     // For public context, generer signed URL
@@ -32,12 +40,14 @@ export function useSignedMediaUrl(
       .then(url => {
         if (!cancelled) {
           setSignedUrl(url);
+          previousUrlRef.current = publicUrl;
         }
       })
       .catch(err => {
         console.error("Error getting signed media URL:", err);
         if (!cancelled) {
           setSignedUrl(publicUrl); // Fallback
+          previousUrlRef.current = publicUrl;
         }
       });
 
