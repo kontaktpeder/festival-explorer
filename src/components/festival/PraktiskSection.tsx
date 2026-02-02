@@ -76,6 +76,7 @@ export function PraktiskSection() {
             alt="" 
             className="w-full h-full object-cover"
           />
+          <div className="absolute inset-0 bg-black/40" />
         </div>
         <div className="relative z-10 grid grid-cols-2 md:grid-cols-5 gap-8 md:gap-10 max-w-4xl mx-auto">
           {infoItems.map((item, index) => (
