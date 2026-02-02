@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { Users, Sparkles } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { VenuePosterBlock } from "./VenuePosterBlock";
 
 interface ExploreLink {
@@ -25,15 +27,31 @@ const exploreLinks: ExploreLink[] = [
 ];
 
 export function UtforskMerSection() {
+  // Hent venue fra database for dynamisk oppdatering
+  const { data: venue } = useQuery({
+    queryKey: ["venue", "josefines-vertshus"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("venues")
+        .select("name, slug, address, hero_image_url")
+        .eq("slug", "josefines-vertshus")
+        .eq("is_published", true)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <section className="relative bg-black">
       {/* Venue poster block - same style as lineup */}
       <VenuePosterBlock 
         venue={{
-          name: "Josefines Vertshus",
-          slug: "josefines-vertshus",
-          tagline: "Josefines gate 16, Oslo",
-          hero_image_url: "https://nxgotyhhjtwikdcjdxxn.supabase.co/storage/v1/object/public/media/0fbaa0f9-8472-4c7d-8c15-4b80972747da/images/d244bf71-2a17-41f5-b52b-d82e7c7d115d.jpg",
+          name: venue?.name || "Josefines Vertshus",
+          slug: venue?.slug || "josefines-vertshus",
+          tagline: venue?.address || "Josefines gate 16, Oslo",
+          hero_image_url: venue?.hero_image_url || null,
         }}
       />
       
