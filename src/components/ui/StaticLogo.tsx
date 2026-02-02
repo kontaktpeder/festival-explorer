@@ -94,16 +94,17 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
             paddingTop: 'var(--safe-top, 0px)'
           }}
         >
-          {/* Background: gradient fade ending just below header content */}
+          {/* Background: gradient fade starting from absolute top */}
           <div 
-            className="absolute inset-x-0 top-0 pointer-events-none"
+            className="absolute inset-x-0 pointer-events-none"
             style={{
-              height: 'calc(100% + 20px)',
+              top: 'calc(-1 * var(--safe-top, 0px))',
+              height: 'calc(100% + var(--safe-top, 0px) + 24px)',
               background: `linear-gradient(
                 to bottom,
                 rgba(0, 0, 0, 0.95) 0%,
-                rgba(0, 0, 0, 0.85) 70%,
-                rgba(0, 0, 0, 0.4) 90%,
+                rgba(0, 0, 0, 0.9) 50%,
+                rgba(0, 0, 0, 0.5) 85%,
                 transparent 100%
               )`
             }}
