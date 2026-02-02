@@ -33,7 +33,7 @@ export function UtforskMerSection() {
           name: "Josefines Vertshus",
           slug: "josefines-vertshus",
           tagline: "Josefines gate 16, Oslo",
-          hero_image_url: null, // Will use gradient fallback
+          hero_image_url: "https://nxgotyhhjtwikdcjdxxn.supabase.co/storage/v1/object/public/media/0fbaa0f9-8472-4c7d-8c15-4b80972747da/images/d244bf71-2a17-41f5-b52b-d82e7c7d115d.jpg",
         }}
       />
       
