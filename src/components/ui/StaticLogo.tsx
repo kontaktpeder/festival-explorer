@@ -61,25 +61,8 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
     
     return (
       <>
-        {/* ========== HERO TOP FADE (always visible in hero mode) ========== */}
-        <div 
-          className={`fixed inset-x-0 top-0 z-40 pointer-events-none transition-opacity duration-500 ${
-            isScrolled ? 'opacity-0' : 'opacity-100'
-          }`}
-          style={{
-            height: 'calc(var(--safe-top, 0px) + 160px)',
-            background: `linear-gradient(
-              to bottom,
-              rgba(0, 0, 0, 0.8) 0%,
-              rgba(0, 0, 0, 0.5) 40%,
-              rgba(0, 0, 0, 0.2) 70%,
-              transparent 100%
-            )`
-          }}
-        />
-
         {/* ========== STATE A: HERO HEADER (before scroll) ========== */}
-        {/* Large centered logo - pure identity, no buttons */}
+        {/* Large centered logo - pure identity, no buttons, no fade */}
         <Link
           to="/"
           onClick={handleClick}
@@ -111,18 +94,18 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
             paddingTop: 'var(--safe-top, 0px)'
           }}
         >
-          {/* Background: gradient fade from top */}
+          {/* Background: gradient fade ending just below header content */}
           <div 
-            className="absolute inset-0 pointer-events-none"
+            className="absolute inset-x-0 top-0 pointer-events-none"
             style={{
+              height: 'calc(100% + 20px)',
               background: `linear-gradient(
                 to bottom,
                 rgba(0, 0, 0, 0.95) 0%,
-                rgba(0, 0, 0, 0.8) 60%,
-                rgba(0, 0, 0, 0.4) 85%,
+                rgba(0, 0, 0, 0.85) 70%,
+                rgba(0, 0, 0, 0.4) 90%,
                 transparent 100%
-              )`,
-              height: '140%'
+              )`
             }}
           />
           
