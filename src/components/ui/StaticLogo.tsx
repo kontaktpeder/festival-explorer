@@ -57,6 +57,23 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
     }
   }, [location.pathname, navigate]);
 
+  // Calculate logo offset based on scroll (desktop only)
+  const [logoOffset, setLogoOffset] = useState(0);
+  
+  useEffect(() => {
+    if (isMobile) return;
+    
+    const handleLogoScroll = () => {
+      // Move logo up as user scrolls, max 60px offset
+      const offset = Math.min(window.scrollY * 0.3, 60);
+      setLogoOffset(offset);
+    };
+    
+    window.addEventListener('scroll', handleLogoScroll, { passive: true });
+    handleLogoScroll();
+    return () => window.removeEventListener('scroll', handleLogoScroll);
+  }, [isMobile]);
+
   // ============================================
   // HERO MODE: Two distinct states
   // ============================================
@@ -99,13 +116,14 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
                 Backstage
               </Link>
 
-              {/* Center: Large logo extending beyond header */}
+              {/* Center: Large logo extending beyond header - moves up on scroll */}
               <Link
                 to="/"
                 onClick={handleClick}
-                className="absolute left-1/2 -translate-x-1/2"
+                className="absolute left-1/2 -translate-x-1/2 transition-transform duration-100 ease-out"
                 style={{
-                  top: isLargeDesktop ? '-8px' : '4px'
+                  top: isLargeDesktop ? -8 - logoOffset : 4 - logoOffset,
+                  transform: `translateX(-50%) scale(${1 - logoOffset * 0.002})`
                 }}
               >
                 <img 
