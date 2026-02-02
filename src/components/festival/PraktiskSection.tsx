@@ -3,6 +3,8 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import praktiskHeaderBg from "@/assets/praktisk-header-bg.jpeg";
 import praktiskInfoBg from "@/assets/praktisk-info-bg.jpeg";
+import praktiskHeaderDesktopBg from "@/assets/section-bg-praktisk-desktop.jpg";
+import praktiskInfoDesktopBg from "@/assets/section-bg-praktisk-info-desktop.jpg";
 
 interface InfoItem {
   icon: React.ReactNode;
@@ -28,7 +30,7 @@ export function PraktiskSection() {
         {/* Background image - same style as lineup headers */}
         <div className="absolute inset-0">
           <img 
-            src={praktiskHeaderBg}
+            src={isMobile ? praktiskHeaderBg : praktiskHeaderDesktopBg}
             alt="" 
             className="w-full h-full object-cover"
           />
@@ -72,7 +74,7 @@ export function PraktiskSection() {
         {/* Background image */}
         <div className="absolute inset-0">
           <img 
-            src={praktiskInfoBg} 
+            src={isMobile ? praktiskInfoBg : praktiskInfoDesktopBg} 
             alt="" 
             className="w-full h-full object-cover"
           />
