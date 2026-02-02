@@ -61,6 +61,23 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
     
     return (
       <>
+        {/* ========== HERO TOP FADE (always visible in hero mode) ========== */}
+        <div 
+          className={`fixed inset-x-0 top-0 z-40 pointer-events-none transition-opacity duration-500 ${
+            isScrolled ? 'opacity-0' : 'opacity-100'
+          }`}
+          style={{
+            height: 'calc(var(--safe-top, 0px) + 160px)',
+            background: `linear-gradient(
+              to bottom,
+              rgba(0, 0, 0, 0.8) 0%,
+              rgba(0, 0, 0, 0.5) 40%,
+              rgba(0, 0, 0, 0.2) 70%,
+              transparent 100%
+            )`
+          }}
+        />
+
         {/* ========== STATE A: HERO HEADER (before scroll) ========== */}
         {/* Large centered logo - pure identity, no buttons */}
         <Link
@@ -75,11 +92,6 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
               : 'calc(var(--safe-top, 0px) + 32px)'
           }}
         >
-          {/* Subtle glow behind hero logo */}
-          <div 
-            className="absolute inset-0 -inset-x-16 -inset-y-8 rounded-full blur-3xl opacity-40"
-            style={{ background: 'radial-gradient(ellipse, hsl(var(--background)) 0%, transparent 70%)' }}
-          />
           <img 
             src={giggenLogo} 
             alt="GIGGEN - festival for en kveld"
