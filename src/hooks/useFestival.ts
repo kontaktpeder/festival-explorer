@@ -51,11 +51,16 @@ export function useFestival(slug: string) {
             .eq("event_id", fe.event.id)
             .order("billing_order", { ascending: true });
 
+          // Filter out unpublished entities
+          const publishedLineup = (lineup || []).filter(
+            (item) => item.entity?.is_published === true
+          );
+
           return {
             ...fe,
             event: {
               ...fe.event,
-              lineup: lineup || [],
+              lineup: publishedLineup,
             },
           };
         })
@@ -84,7 +89,8 @@ export function useFestival(slug: string) {
         const eventSlug = fe.event.slug;
         const eventWithLineup = fe.event as { lineup?: any[] };
         (eventWithLineup.lineup || []).forEach((lineupItem: any) => {
-          if (lineupItem.entity) {
+          // Only include published entities
+          if (lineupItem.entity && lineupItem.entity.is_published === true) {
             allArtistsWithEventSlug.push({
               id: lineupItem.entity.id,
               name: lineupItem.entity.name,
@@ -122,7 +128,8 @@ export function useFestival(slug: string) {
         const { data: entities } = await supabase
           .from("entities")
           .select("id, name, slug, tagline, type")
-          .in("id", Array.from(allArtistIds));
+          .in("id", Array.from(allArtistIds))
+          .eq("is_published", true);
         
         sectionArtists = (entities || []).map((e) => ({
           id: e.id,
@@ -178,6 +185,11 @@ export function useEvent(slug: string) {
 
       if (lineupError) throw lineupError;
 
+      // Filter out unpublished entities
+      const publishedLineup = (lineup || []).filter(
+        (item) => item.entity?.is_published === true
+      );
+
       // Check if event belongs to a festival
       const { data: festivalEvent } = await supabase
         .from("festival_events")
@@ -189,7 +201,7 @@ export function useEvent(slug: string) {
 
       return {
         ...event,
-        lineup: lineup || [],
+        lineup: publishedLineup,
         festival: festivalEvent?.festival || null,
       };
     },
