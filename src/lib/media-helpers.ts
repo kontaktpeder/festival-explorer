@@ -147,6 +147,28 @@ export function setCachedSignedUrl(
   });
 }
 
+// Cache version for forcing re-fetch in useSignedMediaUrl
+let cacheVersion = 0;
+const cacheVersionSubscribers = new Set<() => void>();
+
+export function getCacheVersion(): number {
+  return cacheVersion;
+}
+
+export function subscribeToCacheVersion(callback: () => void): () => void {
+  cacheVersionSubscribers.add(callback);
+  return () => cacheVersionSubscribers.delete(callback);
+}
+
+function notifyCacheVersionChange(): void {
+  cacheVersionSubscribers.forEach(callback => callback());
+}
+
+export function incrementCacheVersion(): void {
+  cacheVersion++;
+  notifyCacheVersionChange();
+}
+
 /**
  * Rydder opp i expired cache entries
  * Hvis clearAll er true, rydder ALLE entries (brukes når bilder oppdateres)
@@ -154,6 +176,7 @@ export function setCachedSignedUrl(
 export function cleanupSignedUrlCache(clearAll: boolean = false): void {
   if (clearAll) {
     signedUrlCache.clear();
+    incrementCacheVersion(); // Increment version to force re-fetch in hooks
     return;
   }
   

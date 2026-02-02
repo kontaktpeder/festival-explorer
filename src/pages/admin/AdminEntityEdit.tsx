@@ -150,10 +150,16 @@ export default function AdminEntityEdit() {
       queryClient.invalidateQueries({ queryKey: ["admin-entities"] });
       queryClient.invalidateQueries({ queryKey: ["admin-entity", id] });
       
-      // Invalider offentlig entity query (brukes av ProjectPage)
+      // Invalider ALLE entity queries som kan referere til dette entity
       if (data?.slug) {
         queryClient.invalidateQueries({ queryKey: ["entity", data.slug] });
       }
+      if (data?.id) {
+        queryClient.invalidateQueries({ queryKey: ["entity-by-id", data.id] });
+        queryClient.invalidateQueries({ queryKey: ["entity-edit", data.id] });
+      }
+      // Invalider alle entity queries generelt (for å være sikker)
+      queryClient.invalidateQueries({ queryKey: ["entity"] });
       
       // Hvis dette er en venue, invalider også venue queries
       if (data?.type === "venue") {

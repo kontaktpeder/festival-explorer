@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { getMediaUrl, cleanupSignedUrlCache } from "@/lib/media-helpers";
+import { useState, useEffect, useRef, useSyncExternalStore } from "react";
+import { getMediaUrl, cleanupSignedUrlCache, getCacheVersion, subscribeToCacheVersion } from "@/lib/media-helpers";
 
 /**
  * Hook for å hente signed media URL for offentlig visning
@@ -13,6 +13,13 @@ export function useSignedMediaUrl(
 ): string {
   const previousUrlRef = useRef<string | null | undefined>(undefined);
   const [signedUrl, setSignedUrl] = useState<string>("");
+  
+  // Track cache version to force re-fetch when cache is cleared
+  const cacheVersion = useSyncExternalStore(
+    subscribeToCacheVersion,
+    getCacheVersion,
+    getCacheVersion
+  );
 
   useEffect(() => {
     if (!publicUrl) {
@@ -54,7 +61,7 @@ export function useSignedMediaUrl(
     return () => {
       cancelled = true;
     };
-  }, [publicUrl, context]);
+  }, [publicUrl, context, cacheVersion]); // Added cacheVersion dependency
 
   return signedUrl;
 }
