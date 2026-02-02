@@ -278,42 +278,8 @@ export default function FestivalPage() {
         </div>
       </section>
 
-      {/* SEKSJON 4: ARTISTER - Fullskjerm, bg-scroll */}
-      <section
-        className="fullscreen-section relative"
-        style={{
-          backgroundImage: `url(${sectionBackgrounds.artists})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-
-        <div className="relative z-10 max-w-4xl mx-auto w-full">
-          <h2 className="section-title">Artister</h2>
-          <div className="space-y-8">
-            {fallbackArtists.map((artist) => (
-              <Link
-                key={artist.id}
-                to={`/project/${artist.slug}`}
-                className="block group"
-              >
-                <h3 className="text-display text-3xl md:text-4xl group-hover:text-accent transition-colors">
-                  {artist.name}
-                </h3>
-                {artist.tagline && (
-                  <p className="text-muted-foreground text-lg mt-1">
-                    {artist.tagline}
-                  </p>
-                )}
-                <span className="text-sm text-muted-foreground/60 mt-2 inline-block group-hover:text-accent transition-colors">
-                  Les mer →
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* SEKSJON 4: ARTISTER - Dual lineup (Festival + Boiler Room) */}
+      <DualLineupSection artists={fallbackArtists} />
 
       {/* SEKSJON 5: VENUE-PLAKAT - Fullskjerm, bg-fixed */}
       <section
