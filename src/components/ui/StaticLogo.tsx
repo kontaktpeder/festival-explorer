@@ -111,9 +111,19 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
             paddingTop: 'var(--safe-top, 0px)'
           }}
         >
-          {/* Background: matching footer dark gradient */}
+          {/* Background: gradient fade from top */}
           <div 
-            className="absolute inset-0 bg-black/90 backdrop-blur-md border-b border-white/10"
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0.95) 0%,
+                rgba(0, 0, 0, 0.8) 60%,
+                rgba(0, 0, 0, 0.4) 85%,
+                transparent 100%
+              )`,
+              height: '140%'
+            }}
           />
           
           {/* Content */}
