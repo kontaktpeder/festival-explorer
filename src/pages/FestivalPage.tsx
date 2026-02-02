@@ -173,28 +173,32 @@ export default function FestivalPage() {
       "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1920",
   };
 
-  // Fallback artists (hvis ingen i database)
+  // Fallback artists (hvis ingen i database) - use festival data
+  const allArtistsFromFestival = festival?.allArtistsWithEventSlug || [];
   const fallbackArtists =
-    allArtists.length > 0
-      ? allArtists
+    allArtistsFromFestival.length > 0
+      ? allArtistsFromFestival
       : [
           {
             id: "1",
             name: "Lunar Echo",
             tagline: "Ambient soundscapes",
             slug: "lunar-echo",
+            event_slug: "festival",
           },
           {
             id: "2",
             name: "Erik Nordahl",
             tagline: "Electronic experiments",
             slug: "erik-nordahl",
+            event_slug: "festival",
           },
           {
             id: "3",
             name: "Neon Shapes",
             tagline: "Live eksperiment",
             slug: "neon-shapes",
+            event_slug: "festival",
           },
         ];
 
