@@ -58,8 +58,7 @@ export function DualLineupSection({ artists }: DualLineupSectionProps) {
         <div className="absolute inset-0 bg-gradient-to-b from-amber-950/20 via-orange-950/10 to-zinc-950 pointer-events-none" />
         
         <LineupSectionHeader
-          title="FESTIVAL"
-          subtitle="LIVE musikk  kunstutstilling  matservering"
+          title="LINEUP"
           variant="festival"
         />
         
@@ -95,7 +94,6 @@ export function DualLineupSection({ artists }: DualLineupSectionProps) {
       <div className="relative bg-black">
         <LineupSectionHeader
           title="BOILER ROOM"
-          subtitle={"DJ\netterfest"}
           variant="boilerroom"
         />
         
