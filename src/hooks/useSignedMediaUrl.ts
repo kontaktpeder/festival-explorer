@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { getMediaUrl, cleanupSignedUrlCache } from "@/lib/media-helpers";
 
 /**
@@ -11,8 +11,8 @@ export function useSignedMediaUrl(
   publicUrl: string | null | undefined,
   context: 'public' | 'private' = 'public'
 ): string {
+  const previousUrlRef = useRef<string | null | undefined>(undefined);
   const [signedUrl, setSignedUrl] = useState<string>("");
-  const previousUrlRef = useRef<string | null | undefined>(null);
 
   useEffect(() => {
     if (!publicUrl) {
@@ -29,7 +29,7 @@ export function useSignedMediaUrl(
     }
 
     // Hvis URL har endret seg, rydd cache for å tvinge ny signed URL
-    if (previousUrlRef.current !== publicUrl && previousUrlRef.current !== null) {
+    if (previousUrlRef.current !== undefined && previousUrlRef.current !== publicUrl) {
       cleanupSignedUrlCache(true);
     }
 
