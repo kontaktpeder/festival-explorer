@@ -85,9 +85,9 @@ export default function OmGiggenPage() {
             <strong className="font-bold text-white">
               GIGGEN startet med et enkelt ønske om å spille mer musikk live.
             </strong>{" "}
-            Med tiden oppdaget den beskjedne bassisten at det "enkle" ønsket innebar alt fra å 
-            mestre kaotiske sosiale medier, inneha et sosialt intellekt, og å bli sin 
-            helt egne regnskapsfører. Overveldende, kort fortalt.
+            Med tiden oppdaget den beskjedne bassisten at det "enkle" ønsket innebar mer enn bare å spille på scenen. Alt fra å 
+            mestre kaotiske sosiale medier, bygge et sosialt intellekt, og å bli sin 
+            helt egne regnskapsfører, var oppgaver som også måtte gjøres. Overveldende, kort fortalt.
           </p>
           
           <p 
