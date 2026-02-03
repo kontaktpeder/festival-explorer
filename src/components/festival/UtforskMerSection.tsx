@@ -59,10 +59,25 @@ export function UtforskMerSection() {
           </h2>
           
           {/* Description - concise */}
-          <p className="text-base md:text-lg text-white/60 leading-relaxed mb-8 max-w-xl mx-auto">
+          <p className="text-base md:text-lg text-white/60 leading-relaxed mb-6 max-w-xl mx-auto">
             GIGGEN bygges som et fellesskap – ikke bare for band, men for alle som 
             bygger scenen: musikere, arrangører, teknikere, fotografer, booking og crew.
           </p>
+          
+          {/* Navigation links - moved up under text */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10 mb-10">
+            {exploreLinks.map((link, index) => <Link key={index} to={link.to} className="group flex items-center gap-3 text-white/50 hover:text-white transition-colors duration-300">
+                <span className="text-orange-400/50 group-hover:text-orange-400 transition-colors">
+                  {link.icon}
+                </span>
+                <span className="text-base font-medium">
+                  {link.title}
+                </span>
+                <span className="text-orange-400/0 group-hover:text-orange-400 transition-colors text-sm">
+                  →
+                </span>
+              </Link>)}
+          </div>
           
           {/* Contact CTA - orange inverted style at bottom */}
           <Button asChild variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-black hover:!text-black transition-all px-8">
@@ -71,23 +86,6 @@ export function UtforskMerSection() {
               Kontakt oss
             </a>
           </Button>
-        </div>
-      </div>
-      
-      {/* Additional links - compact */}
-      <div className="py-10 px-6 bg-zinc-950 border-t border-white/5">
-        <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10">
-          {exploreLinks.map((link, index) => <Link key={index} to={link.to} className="group flex items-center gap-3 text-white/50 hover:text-white transition-colors duration-300">
-              <span className="text-orange-400/50 group-hover:text-orange-400 transition-colors">
-                {link.icon}
-              </span>
-              <span className="text-base font-medium">
-                {link.title}
-              </span>
-              <span className="text-orange-400/0 group-hover:text-orange-400 transition-colors text-sm">
-                →
-              </span>
-            </Link>)}
         </div>
       </div>
     </section>;
