@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { FestivalFooter } from "@/components/festival/FestivalFooter";
-import { ArrowLeft, Mail, Instagram, Youtube, Facebook } from "lucide-react";
+import { ArrowLeft, Mail, Instagram, Youtube, Facebook, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import giggenLogo from "@/assets/giggen-logo-outline.png";
 import bgOrange from "@/assets/om-giggen-bg-orange.jpeg";
@@ -35,10 +35,19 @@ function useScrollReveal() {
 
 export default function OmGiggenPage() {
   const containerRef = useScrollReveal();
+  const [scrollOffset, setScrollOffset] = useState(0);
 
-  // Scroll to top on mount
+  // Scroll to top on mount + track scroll for arrow animation
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    const handleScroll = () => {
+      const offset = Math.min(window.scrollY * 0.5, 100);
+      setScrollOffset(offset);
+    };
+    
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
@@ -99,11 +108,15 @@ export default function OmGiggenPage() {
           </p>
         </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center pt-2">
-            <div className="w-1.5 h-3 bg-white/50 rounded-full" />
-          </div>
+        {/* Scroll indicator - arrow that moves down on scroll */}
+        <div 
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 transition-all duration-300 ease-out"
+          style={{ 
+            transform: `translateX(-50%) translateY(${scrollOffset}px)`,
+            opacity: Math.max(0, 1 - scrollOffset / 60)
+          }}
+        >
+          <ChevronDown className="w-6 h-6 text-white/50 animate-bounce" />
         </div>
       </section>
 
