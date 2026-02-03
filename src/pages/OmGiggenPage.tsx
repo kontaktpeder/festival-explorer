@@ -7,6 +7,10 @@ import giggenLogo from "@/assets/giggen-logo-outline.png";
 import bgOrange from "@/assets/om-giggen-bg-orange.jpeg";
 import bgDark from "@/assets/om-giggen-bg-dark.jpeg";
 import bgWarm from "@/assets/om-giggen-bg-warm.jpeg";
+import bgOrangeDesktop from "@/assets/om-giggen-bg-orange-desktop.jpg";
+import bgDarkDesktop from "@/assets/om-giggen-bg-dark-desktop.jpg";
+import bgWarmDesktop from "@/assets/om-giggen-bg-warm-desktop.jpg";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Hook for scroll reveal animations
 function useScrollReveal() {
@@ -36,6 +40,12 @@ function useScrollReveal() {
 export default function OmGiggenPage() {
   const containerRef = useScrollReveal();
   const [scrollOffset, setScrollOffset] = useState(0);
+  const isMobile = useIsMobile();
+
+  // Select backgrounds based on device
+  const currentBgOrange = isMobile ? bgOrange : bgOrangeDesktop;
+  const currentBgDark = isMobile ? bgDark : bgDarkDesktop;
+  const currentBgWarm = isMobile ? bgWarm : bgWarmDesktop;
 
   // Scroll to top on mount + track scroll for arrow animation
   useEffect(() => {
@@ -67,7 +77,7 @@ export default function OmGiggenPage() {
       <section 
         className="relative min-h-screen flex items-center justify-center px-6"
         style={{
-          backgroundImage: `url(${bgOrange})`,
+        backgroundImage: `url(${currentBgOrange})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -124,7 +134,7 @@ export default function OmGiggenPage() {
       <section 
         className="relative min-h-screen flex items-center justify-center px-6"
         style={{
-          backgroundImage: `url(${bgDark})`,
+          backgroundImage: `url(${currentBgDark})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -154,7 +164,7 @@ export default function OmGiggenPage() {
       <section 
         className="relative py-24 md:py-32 px-6"
         style={{
-          backgroundImage: `url(${bgWarm})`,
+          backgroundImage: `url(${currentBgWarm})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -249,7 +259,7 @@ export default function OmGiggenPage() {
       <section 
         className="relative min-h-[70vh] flex items-center justify-center px-6"
         style={{
-          backgroundImage: `url(${bgOrange})`,
+          backgroundImage: `url(${currentBgOrange})`,
           backgroundSize: "cover",
           backgroundPosition: "bottom",
         }}
