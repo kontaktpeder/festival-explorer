@@ -217,11 +217,11 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
               />
             </div>
 
-            {/* ALWAYS VISIBLE: Fixed bottom CTA button - uses sticky to allow Safari UI to shrink */}
+            {/* ALWAYS VISIBLE: Fixed bottom CTA button - positioned above Safari UI zone */}
             <div
-              className="fixed inset-x-0 bottom-0 z-50 flex justify-center pointer-events-none"
+              className="fixed inset-x-0 z-50 flex justify-center pointer-events-none"
               style={{
-                paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)'
+                bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)'
               }}
             >
               <Link
@@ -300,12 +300,12 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
         </div>
       </div>
       
-      {/* Mobile: Fixed bottom CTA button */}
+      {/* Mobile: Fixed bottom CTA button - positioned above Safari UI zone */}
       {isMobile && (
         <div
-          className="fixed inset-x-0 bottom-0 z-50 flex justify-center pointer-events-none"
+          className="fixed inset-x-0 z-50 flex justify-center pointer-events-none"
           style={{
-            paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)'
+            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)'
           }}
         >
           <Link
