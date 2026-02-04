@@ -38,47 +38,15 @@ export default function TicketViewPage() {
       canvas.toBlob(async (blob) => {
         if (!blob) return;
         
-        // Try to use Share API on mobile (works on both Chrome and Safari)
-        if (navigator.share && navigator.canShare) {
-          try {
-            const file = new File([blob], `giggen-billett-${ticket?.ticketCode || 'ticket'}.png`, { type: 'image/png' });
-            if (navigator.canShare({ files: [file] })) {
-              await navigator.share({
-                files: [file],
-                title: 'GIGGEN Billett',
-                text: 'Min GIGGEN billett'
-              });
-              return;
-            }
-          } catch (shareError) {
-            console.log('Share failed, using download method');
-          }
-        }
-        
-        // Fallback: Open image in new window for manual save
-        const dataUrl = canvas.toDataURL('image/png');
-        const newWindow = window.open();
-        if (newWindow) {
-          newWindow.document.write(`
-            <html>
-              <head><title>GIGGEN Billett</title></head>
-              <body style="margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#1a1a2e;">
-                <img src="${dataUrl}" style="max-width:100%;height:auto;" />
-                <p style="color:white;margin-top:20px;font-family:sans-serif;">Trykk lenge på bildet for å lagre</p>
-              </body>
-            </html>
-          `);
-        } else {
-          // Last resort: try download link
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = `giggen-billett-${ticket?.ticketCode || 'ticket'}.png`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-        }
+        // Try direct download first
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `giggen-billett-${ticket?.ticketCode || 'ticket'}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
       }, "image/png");
     } catch (error) {
       console.error("Error saving ticket:", error);
