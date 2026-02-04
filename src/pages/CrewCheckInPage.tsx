@@ -54,6 +54,8 @@ export default function CrewCheckInPage() {
   const [isProcessingScan, setIsProcessingScan] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const resultTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Synchronous scan lock - prevents multiple requests per "scan round"
+  const scanLockRef = useRef(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -227,13 +229,17 @@ export default function CrewCheckInPage() {
               qrbox: { width: 250, height: 250 },
             },
             async (decodedText) => {
-              // Prevent double-scanning:
-              // - while waiting for server response (isProcessingScan)
-              // - while result screen is shown (showResult)
-              // - while mutation is pending
+              // HARD LOCK: prevents multiple requests per "scan round"
+              // This ref is synchronous - updated immediately before any async
+              if (scanLockRef.current) return;
+              
+              // Extra safety: also check React state
               if (isProcessingScan || checkInMutation.isPending || showResult) {
                 return;
               }
+              
+              // Lock immediately, before any async operations
+              scanLockRef.current = true;
               setIsProcessingScan(true);
               
               // Extract ticket code from URL if it's a full URL
@@ -253,6 +259,8 @@ export default function CrewCheckInPage() {
               } else {
                 toast.error("Ugyldig billettkode format");
                 setIsProcessingScan(false);
+                // Unlock since no request was sent
+                scanLockRef.current = false;
               }
             },
             () => {
@@ -295,6 +303,8 @@ export default function CrewCheckInPage() {
         }
         scannerRef.current = null;
       }
+      // Safety: release the lock if we leave the page
+      scanLockRef.current = false;
     };
     // Important: don't include checkInMutation in deps - only state that controls start/stop
   }, [showScanner, isStaff]);
@@ -406,8 +416,10 @@ export default function CrewCheckInPage() {
     }
     setShowResult(false);
     setCheckInResult(null);
-    // Unlock scanner for next ticket - camera is still running in background
     setIsProcessingScan(false);
+    // Now one "scan round" is finished - open for next
+    // This is the ONLY place where the lock is released after a successful/failed request
+    scanLockRef.current = false;
   };
 
   if (isStaff === null) {
