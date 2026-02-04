@@ -147,13 +147,28 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
           </div>
         )}
 
-        {/* ========== MOBILE: STICKY HEADER ONLY AFTER SCROLL ========== */}
+        {/* ========== MOBILE: TWO STATES ========== */}
         {isMobile && (
           <>
-
-            {/* STATE B: STICKY ACTION HEADER (after scroll) */}
+            {/* STATE A: Before scroll - Only CTA button fixed at bottom */}
             <div
-              className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-out ${
+              className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ${
+                isScrolled 
+                  ? 'opacity-0 translate-y-4 pointer-events-none' 
+                  : 'opacity-100 translate-y-0'
+              }`}
+            >
+              <Link
+                to="/tickets"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-6 py-3 text-sm transition-all shadow-xl"
+              >
+                Kjøp billett
+              </Link>
+            </div>
+
+            {/* STATE B: After scroll - Sticky header with logo (NO CTA) */}
+            <div
+              className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
                 isScrolled 
                   ? 'opacity-100 translate-y-0' 
                   : 'opacity-0 -translate-y-full pointer-events-none'
@@ -193,24 +208,13 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
                   />
                 </Link>
 
-                {/* Right: Actions */}
-                <div className="flex items-center gap-2">
-                  {/* Primary CTA */}
-                  <Link
-                    to="/tickets"
-                    className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-3 py-1 text-xs transition-all shadow-lg"
-                  >
-                    Kjøp billett
-                  </Link>
-                  
-                  {/* Secondary: Backstage */}
-                  <Link
-                    to={session ? "/dashboard" : "/admin/login"}
-                    className="text-foreground/60 hover:text-foreground font-medium text-[10px] uppercase tracking-wider transition-colors"
-                  >
-                    Backstage
-                  </Link>
-                </div>
+                {/* Right: Backstage only (no CTA) */}
+                <Link
+                  to={session ? "/dashboard" : "/admin/login"}
+                  className="text-foreground/60 hover:text-foreground font-medium text-[10px] uppercase tracking-wider transition-colors"
+                >
+                  Backstage
+                </Link>
               </div>
             </div>
           </>
