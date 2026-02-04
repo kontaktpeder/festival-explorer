@@ -94,7 +94,11 @@ export default function TicketsPage() {
               <Input placeholder="Navn" value={buyerName} onChange={(e) => setBuyerName(e.target.value)} disabled={!TICKET_SALES_ENABLED} className="h-9" />
               <Input type="email" placeholder="E-post" value={buyerEmail} onChange={(e) => setBuyerEmail(e.target.value)} disabled={!TICKET_SALES_ENABLED} className="h-9" />
               <p className="text-xs text-muted-foreground">
-                Ved å fortsette godtar du vår{" "}
+                Ved å fortsette godtar du våre{" "}
+                <Link to="/vilkar" className="underline hover:text-foreground transition-colors">
+                  vilkår
+                </Link>
+                {" "}og{" "}
                 <Link to="/personvern" className="underline hover:text-foreground transition-colors">
                   personvernerklæring
                 </Link>
