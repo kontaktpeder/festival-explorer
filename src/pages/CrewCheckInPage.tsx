@@ -207,9 +207,14 @@ export default function CrewCheckInPage() {
     },
   });
 
-  // Start scanner when showScanner becomes true
+  // Queue-optimized scanner: start once and run continuously
+  // Camera only stops when explicitly closing scanner or leaving page
   useEffect(() => {
-    if (showScanner && isStaff && !isProcessingScan) {
+    // Only start if:
+    // - showScanner is true
+    // - user is staff
+    // - we don't already have an active scanner
+    if (showScanner && isStaff && !scannerRef.current) {
       const startScanner = async () => {
         try {
           const html5QrCode = new Html5Qrcode("qr-reader");
@@ -222,8 +227,11 @@ export default function CrewCheckInPage() {
               qrbox: { width: 250, height: 250 },
             },
             async (decodedText) => {
-              // Prevent double-scanning while processing
-              if (isProcessingScan || checkInMutation.isPending) {
+              // Prevent double-scanning:
+              // - while waiting for server response (isProcessingScan)
+              // - while result screen is shown (showResult)
+              // - while mutation is pending
+              if (isProcessingScan || checkInMutation.isPending || showResult) {
                 return;
               }
               setIsProcessingScan(true);
@@ -236,20 +244,9 @@ export default function CrewCheckInPage() {
                 code = decodedText.split("/v/")[1]?.split("?")[0] || decodedText;
               }
               
-              // Stop and cleanup scanner first
-              try {
-                await html5QrCode.stop();
-                html5QrCode.clear();
-                scannerRef.current = null;
-              } catch (stopError) {
-                console.error("Error stopping scanner:", stopError);
-              }
+              // IMPORTANT: Don't stop/cancel scanner here - just send the code
+              // Camera keeps running in background
               
-              // Close scanner view immediately to show main view
-              setShowScanner(false);
-              setScannerError(null);
-              
-              // Auto-format and check in
               const formattedCode = formatTicketCode(code);
               if (formattedCode.match(/^GIGG-[A-Z0-9]{4}-[A-Z0-9]{4}$/)) {
                 checkInMutation.mutate({ code: formattedCode, method: "qr" });
@@ -263,28 +260,44 @@ export default function CrewCheckInPage() {
             }
           );
         } catch (err) {
-          setScannerError("Kunne ikke starte kamera. Sjekk at du har gitt tillatelse.");
           console.error("Scanner error:", err);
           setIsProcessingScan(false);
+          
+          // Cleanup on error
+          if (scannerRef.current) {
+            scannerRef.current.stop().catch(() => {});
+            try {
+              scannerRef.current.clear();
+            } catch {
+              // ignore
+            }
+            scannerRef.current = null;
+          }
+          setShowScanner(false);
+          setScannerError(null);
+          toast.error(
+            "Kunne ikke starte kamera. På iPhone må du gi kameratilgang i Safari-innstillinger. Bruk manuell kode om problemet fortsetter."
+          );
         }
       };
       
       startScanner();
     }
 
-    // Cleanup scanner when component unmounts or showScanner becomes false
+    // Cleanup: stop camera when leaving page or closing scanner
     return () => {
       if (scannerRef.current) {
         scannerRef.current.stop().catch(() => {});
         try {
           scannerRef.current.clear();
-        } catch (e) {
+        } catch {
           // Ignore clear errors
         }
         scannerRef.current = null;
       }
     };
-  }, [showScanner, isStaff, isProcessingScan, formatTicketCode, checkInMutation]);
+    // Important: don't include checkInMutation in deps - only state that controls start/stop
+  }, [showScanner, isStaff]);
 
   const searchMutation = useMutation({
     mutationFn: async (query: string) => {
@@ -393,6 +406,8 @@ export default function CrewCheckInPage() {
     }
     setShowResult(false);
     setCheckInResult(null);
+    // Unlock scanner for next ticket - camera is still running in background
+    setIsProcessingScan(false);
   };
 
   if (isStaff === null) {
@@ -448,7 +463,7 @@ export default function CrewCheckInPage() {
                 onClick={() => setShowScanner(true)}
                 className="w-full h-14 text-base gap-3"
                 size="lg"
-                disabled={showScanner || isProcessingScan}
+                disabled={showScanner}
               >
                 <Camera className="w-5 h-5" />
                 {showScanner ? "Scanner aktiv..." : "Åpne QR-scanner"}
