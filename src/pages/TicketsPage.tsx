@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -94,9 +95,9 @@ export default function TicketsPage() {
               <Input type="email" placeholder="E-post" value={buyerEmail} onChange={(e) => setBuyerEmail(e.target.value)} disabled={!TICKET_SALES_ENABLED} className="h-9" />
               <p className="text-xs text-muted-foreground">
                 Ved å fortsette godtar du vår{" "}
-                <a href="/personvern" target="_blank" className="underline hover:text-foreground transition-colors">
+                <Link to="/personvern" className="underline hover:text-foreground transition-colors">
                   personvernerklæring
-                </a>
+                </Link>
               </p>
               <Button className="w-full h-9" onClick={handlePurchase} disabled={isLoading || !TICKET_SALES_ENABLED}>
                 {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
