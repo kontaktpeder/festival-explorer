@@ -28,6 +28,7 @@ import TicketViewPage from "./pages/TicketViewPage";
 import ValidatorPage from "./pages/ValidatorPage";
 import CrewCheckInPage from "./pages/CrewCheckInPage";
 import PrivacyGuestPage from "./pages/PrivacyGuestPage";
+import TermsPage from "./pages/TermsPage";
 
 // Admin pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -83,6 +84,7 @@ const App = () => (
           <Route path="/v/:ticketCode" element={<ValidatorPage />} />
           <Route path="/crew/checkin" element={<CrewCheckInPage />} />
           <Route path="/personvern" element={<PrivacyGuestPage />} />
+          <Route path="/vilkar" element={<TermsPage />} />
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/entities/:id/edit" element={<EntityEdit />} />
