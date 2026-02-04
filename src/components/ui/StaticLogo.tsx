@@ -166,7 +166,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
               </Link>
             </div>
 
-            {/* STATE B: After scroll - Sticky header with logo (NO CTA) */}
+            {/* STATE B: After scroll - Sticky header with logo AND CTA */}
             <div
               className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
                 isScrolled 
@@ -208,13 +208,21 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
                   />
                 </Link>
 
-                {/* Right: Backstage only (no CTA) */}
-                <Link
-                  to={session ? "/dashboard" : "/admin/login"}
-                  className="text-foreground/60 hover:text-foreground font-medium text-[10px] uppercase tracking-wider transition-colors"
-                >
-                  Backstage
-                </Link>
+                {/* Right: CTA + Backstage */}
+                <div className="flex items-center gap-2">
+                  <Link
+                    to="/tickets"
+                    className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-3 py-1 text-xs transition-all shadow-lg"
+                  >
+                    Kjøp billett
+                  </Link>
+                  <Link
+                    to={session ? "/dashboard" : "/admin/login"}
+                    className="text-foreground/60 hover:text-foreground font-medium text-[10px] uppercase tracking-wider transition-colors"
+                  >
+                    Backstage
+                  </Link>
+                </div>
               </div>
             </div>
           </>
