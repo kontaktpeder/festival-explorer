@@ -217,19 +217,16 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
               />
             </div>
 
-            {/* ALWAYS VISIBLE: Fixed bottom CTA button */}
+            {/* ALWAYS VISIBLE: Fixed bottom CTA button - uses sticky to allow Safari UI to shrink */}
             <div
-              className="fixed inset-x-0 bottom-0 z-50 flex justify-center pb-6 pointer-events-none"
+              className="fixed inset-x-0 bottom-0 z-50 flex justify-center pointer-events-none"
               style={{
-                paddingBottom: 'calc(var(--safe-bottom, 0px) + 24px)'
+                paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)'
               }}
             >
               <Link
                 to="/tickets"
-                className="pointer-events-auto bg-accent text-accent-foreground font-bold rounded-full px-6 py-3 text-sm shadow-xl"
-                style={{
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4), 0 0 40px rgba(251, 146, 60, 0.3)'
-                }}
+                className="pointer-events-auto bg-accent text-accent-foreground font-bold rounded-full px-5 py-2.5 text-xs shadow-lg"
               >
                 Kjøp billett
               </Link>
@@ -306,17 +303,14 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
       {/* Mobile: Fixed bottom CTA button */}
       {isMobile && (
         <div
-          className="fixed inset-x-0 bottom-0 z-50 flex justify-center pb-6 pointer-events-none"
+          className="fixed inset-x-0 bottom-0 z-50 flex justify-center pointer-events-none"
           style={{
-            paddingBottom: 'calc(var(--safe-bottom, 0px) + 24px)'
+            paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)'
           }}
         >
           <Link
             to="/tickets"
-            className="pointer-events-auto bg-accent text-accent-foreground font-bold rounded-full px-6 py-3 text-sm shadow-xl"
-            style={{
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4), 0 0 40px rgba(251, 146, 60, 0.3)'
-            }}
+            className="pointer-events-auto bg-accent text-accent-foreground font-bold rounded-full px-5 py-2.5 text-xs shadow-lg"
           >
             Kjøp billett
           </Link>

@@ -68,7 +68,10 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
     <Link
       to={`/project/${artist.slug}`}
       className={cn(
-        "relative block w-full min-h-[70vh] md:min-h-[80vh] overflow-hidden group transition-all duration-700",
+        "relative block w-full overflow-hidden group transition-all duration-700",
+        // Mobile: fixed pixel height to prevent resize when browser UI changes
+        // Desktop: viewport-relative height
+        isMobile ? "h-[480px]" : "min-h-[80vh]",
         styles.container,
         !isMobile && styles.glow
       )}
