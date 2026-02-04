@@ -147,46 +147,9 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
           </div>
         )}
 
-        {/* ========== MOBILE: SCROLL-BASED BEHAVIOR ========== */}
+        {/* ========== MOBILE: STICKY HEADER ONLY AFTER SCROLL ========== */}
         {isMobile && (
           <>
-            {/* STATE A: Hero header (before scroll) */}
-            <Link
-              to="/"
-              onClick={handleClick}
-              className={`fixed z-50 left-1/2 -translate-x-1/2 transition-all duration-500 ease-out ${
-                isScrolled ? 'opacity-0 pointer-events-none scale-75' : 'opacity-100 scale-100'
-              }`}
-              style={{
-                top: 'calc(var(--safe-top, 0px) + 24px)'
-              }}
-            >
-              <img 
-                src={giggenLogo} 
-                alt="GIGGEN - festival for en kveld"
-                className="h-32"
-                style={{
-                  filter: 'drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))'
-                }}
-              />
-            </Link>
-
-            {/* HERO CTA: Bottom center (before scroll) */}
-            <Link
-              to="/tickets"
-              className={`fixed z-50 left-1/2 -translate-x-1/2 transition-all duration-500 ease-out ${
-                isScrolled 
-                  ? 'opacity-0 pointer-events-none translate-y-4 scale-90' 
-                  : 'opacity-100 translate-y-0 scale-100'
-              }`}
-              style={{
-                bottom: 'calc(var(--safe-bottom, 0px) + 32px)'
-              }}
-            >
-              <span className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-6 py-3 text-sm transition-all shadow-2xl inline-block">
-                Kjøp billett
-              </span>
-            </Link>
 
             {/* STATE B: STICKY ACTION HEADER (after scroll) */}
             <div
