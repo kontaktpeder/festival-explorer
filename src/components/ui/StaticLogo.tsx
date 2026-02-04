@@ -147,10 +147,10 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
           </div>
         )}
 
-        {/* ========== MOBILE: STICKY HEADER + LARGE FADING LOGO ========== */}
+        {/* ========== MOBILE: STICKY HEADER + LARGE FADING LOGO + BOTTOM CTA ========== */}
         {isMobile && (
           <>
-            {/* ALWAYS VISIBLE: Sticky header bar */}
+            {/* ALWAYS VISIBLE: Sticky header bar (no CTA - it's at bottom) */}
             <div
               className="fixed inset-x-0 top-0 z-50"
               style={{
@@ -188,21 +188,13 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
                   />
                 </Link>
 
-                {/* Right: CTA + Backstage */}
-                <div className="flex items-center gap-2">
-                  <Link
-                    to="/tickets"
-                    className="bg-accent text-accent-foreground font-bold rounded-full px-3 py-1 text-xs shadow-lg"
-                  >
-                    Kjøp billett
-                  </Link>
-                  <Link
-                    to={session ? "/dashboard" : "/admin/login"}
-                    className="text-foreground/60 font-medium text-[10px] uppercase tracking-wider"
-                  >
-                    Backstage
-                  </Link>
-                </div>
+                {/* Right: Only Backstage */}
+                <Link
+                  to={session ? "/dashboard" : "/admin/login"}
+                  className="text-foreground/60 font-medium text-[10px] uppercase tracking-wider"
+                >
+                  Backstage
+                </Link>
               </div>
             </div>
 
@@ -223,6 +215,24 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
                   filter: 'drop-shadow(0 4px 20px rgba(0, 0, 0, 0.6)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4))'
                 }}
               />
+            </div>
+
+            {/* ALWAYS VISIBLE: Fixed bottom CTA button */}
+            <div
+              className="fixed inset-x-0 bottom-0 z-50 flex justify-center pb-6 pointer-events-none"
+              style={{
+                paddingBottom: 'calc(var(--safe-bottom, 0px) + 24px)'
+              }}
+            >
+              <Link
+                to="/tickets"
+                className="pointer-events-auto bg-accent text-accent-foreground font-bold rounded-full px-6 py-3 text-sm shadow-xl"
+                style={{
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4), 0 0 40px rgba(251, 146, 60, 0.3)'
+                }}
+              >
+                Kjøp billett
+              </Link>
             </div>
           </>
         )}
@@ -272,12 +282,12 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
             />
           </Link>
 
-          {/* Right: Actions */}
+          {/* Right: Actions - CTA only on desktop, Backstage always */}
           <div className="flex items-center gap-3 md:gap-4">
-            {/* Primary CTA */}
+            {/* Primary CTA - desktop only */}
             <Link
               to="/tickets"
-              className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-3 py-1.5 text-xs md:px-4 md:py-2 md:text-sm transition-all"
+              className="hidden md:block bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-4 py-2 text-sm transition-all"
             >
               Kjøp billett
             </Link>
@@ -292,6 +302,26 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
           </div>
         </div>
       </div>
+      
+      {/* Mobile: Fixed bottom CTA button */}
+      {isMobile && (
+        <div
+          className="fixed inset-x-0 bottom-0 z-50 flex justify-center pb-6 pointer-events-none"
+          style={{
+            paddingBottom: 'calc(var(--safe-bottom, 0px) + 24px)'
+          }}
+        >
+          <Link
+            to="/tickets"
+            className="pointer-events-auto bg-accent text-accent-foreground font-bold rounded-full px-6 py-3 text-sm shadow-xl"
+            style={{
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4), 0 0 40px rgba(251, 146, 60, 0.3)'
+            }}
+          >
+            Kjøp billett
+          </Link>
+        </div>
+      )}
     </>
   );
 }
