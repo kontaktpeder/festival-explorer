@@ -147,62 +147,84 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
           </div>
         )}
 
-        {/* ========== MOBILE: ALWAYS STICKY HEADER ========== */}
+        {/* ========== MOBILE: STICKY HEADER + LARGE FADING LOGO ========== */}
         {isMobile && (
-          <div
-            className="fixed inset-x-0 top-0 z-50"
-            style={{
-              paddingTop: 'var(--safe-top, 0px)'
-            }}
-          >
-            {/* Background: subtle gradient fade from top */}
-            <div 
-              className="absolute inset-x-0 pointer-events-none"
+          <>
+            {/* ALWAYS VISIBLE: Sticky header bar */}
+            <div
+              className="fixed inset-x-0 top-0 z-50"
               style={{
-                top: 'calc(-1 * var(--safe-top, 0px))',
-                height: 'calc(100% + var(--safe-top, 0px) + 16px)',
-                background: `linear-gradient(
-                  to bottom,
-                  rgba(0, 0, 0, 0.85) 0%,
-                  rgba(0, 0, 0, 0.6) 30%,
-                  rgba(0, 0, 0, 0.25) 70%,
-                  transparent 100%
-                )`
+                paddingTop: 'var(--safe-top, 0px)'
               }}
-            />
-            
-            {/* Content */}
-            <div className="relative flex items-center justify-between px-3 py-2">
-              {/* Left: Logo */}
-              <Link
-                to="/"
-                onClick={handleClick}
-                className="flex-shrink-0"
-              >
-                <img 
-                  src={giggenLogo} 
-                  alt="GIGGEN"
-                  className="h-8 drop-shadow-lg"
-                />
-              </Link>
+            >
+              {/* Background: subtle gradient fade from top */}
+              <div 
+                className="absolute inset-x-0 pointer-events-none"
+                style={{
+                  top: 'calc(-1 * var(--safe-top, 0px))',
+                  height: 'calc(100% + var(--safe-top, 0px) + 16px)',
+                  background: `linear-gradient(
+                    to bottom,
+                    rgba(0, 0, 0, 0.85) 0%,
+                    rgba(0, 0, 0, 0.6) 30%,
+                    rgba(0, 0, 0, 0.25) 70%,
+                    transparent 100%
+                  )`
+                }}
+              />
+              
+              {/* Content */}
+              <div className="relative flex items-center justify-between px-3 py-2">
+                {/* Left: Small Logo (always visible) */}
+                <Link
+                  to="/"
+                  onClick={handleClick}
+                  className="flex-shrink-0"
+                >
+                  <img 
+                    src={giggenLogo} 
+                    alt="GIGGEN"
+                    className="h-6 drop-shadow-lg"
+                  />
+                </Link>
 
-              {/* Right: CTA + Backstage */}
-              <div className="flex items-center gap-2">
-                <Link
-                  to="/tickets"
-                  className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-3 py-1 text-xs transition-all shadow-lg"
-                >
-                  Kjøp billett
-                </Link>
-                <Link
-                  to={session ? "/dashboard" : "/admin/login"}
-                  className="text-foreground/60 hover:text-foreground font-medium text-[10px] uppercase tracking-wider transition-colors"
-                >
-                  Backstage
-                </Link>
+                {/* Right: CTA + Backstage */}
+                <div className="flex items-center gap-2">
+                  <Link
+                    to="/tickets"
+                    className="bg-accent text-accent-foreground font-bold rounded-full px-3 py-1 text-xs shadow-lg"
+                  >
+                    Kjøp billett
+                  </Link>
+                  <Link
+                    to={session ? "/dashboard" : "/admin/login"}
+                    className="text-foreground/60 font-medium text-[10px] uppercase tracking-wider"
+                  >
+                    Backstage
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
+
+            {/* FADING: Large centered logo that disappears on scroll */}
+            <div
+              className={`fixed inset-x-0 z-40 flex justify-center pointer-events-none transition-opacity duration-300 ${
+                isScrolled ? 'opacity-0' : 'opacity-100'
+              }`}
+              style={{
+                top: 'calc(var(--safe-top, 0px) + 60px)'
+              }}
+            >
+              <img 
+                src={giggenLogo} 
+                alt=""
+                className="h-28"
+                style={{
+                  filter: 'drop-shadow(0 4px 20px rgba(0, 0, 0, 0.6)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4))'
+                }}
+              />
+            </div>
+          </>
         )}
       </>
     );

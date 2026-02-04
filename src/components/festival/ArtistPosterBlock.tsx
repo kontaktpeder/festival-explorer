@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 // Static artist logo imports - map by slug
@@ -37,11 +38,13 @@ interface ArtistPosterBlockProps {
  * - 70vh height minimum
  * - Alternating left/right positioning
  * - Uses hero image as background with logo overlay
+ * - Mobile: No hover effects, static images
  */
 export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockProps) {
   const heroImageUrl = useSignedMediaUrl(artist.hero_image_url, 'public');
   const artistLogo = artistLogos[artist.slug];
   const isEven = index % 2 === 0;
+  const isMobile = useIsMobile();
   
   // Variant-specific styles
   const variantStyles = {
@@ -67,16 +70,19 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
       className={cn(
         "relative block w-full min-h-[70vh] md:min-h-[80vh] overflow-hidden group transition-all duration-700",
         styles.container,
-        styles.glow
+        !isMobile && styles.glow
       )}
     >
-      {/* Background hero image */}
+      {/* Background hero image - NO movement on mobile */}
       {heroImageUrl && (
         <div className="absolute inset-0">
           <img
             src={heroImageUrl}
             alt=""
-            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+            className={cn(
+              "w-full h-full object-cover",
+              !isMobile && "transition-transform duration-1000 group-hover:scale-105"
+            )}
           />
         </div>
       )}
@@ -91,10 +97,10 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
           isEven ? "items-start text-left" : "items-end text-right"
         )}
       >
-        {/* Artist logo/name typography */}
+        {/* Artist logo/name typography - NO movement on mobile */}
         <div className={cn(
-          "max-w-[85%] md:max-w-[70%] transition-all duration-500",
-          "group-hover:translate-y-[-10px]"
+          "max-w-[85%] md:max-w-[70%]",
+          !isMobile && "transition-all duration-500 group-hover:translate-y-[-10px]"
         )}>
           {artistLogo ? (
             <img
@@ -102,7 +108,7 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
               alt={artist.name}
               className={cn(
                 "w-auto max-w-full h-auto max-h-32 md:max-h-48 object-contain drop-shadow-2xl",
-                "transition-all duration-500 group-hover:scale-105",
+                !isMobile && "transition-all duration-500 group-hover:scale-105",
                 artist.slug === "mast" && "brightness-0 invert",
                 isEven ? "" : "ml-auto"
               )}
@@ -113,24 +119,29 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
             </h3>
           )}
           
-          {/* Tagline - visible on hover */}
-          {artist.tagline && (
-            <p className={cn(
-              "mt-4 text-base md:text-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500",
-              styles.accent
-            )}>
-              {artist.tagline}
+          {/* Mobile: Show "Utforsk", Desktop: Tagline on hover */}
+          {isMobile ? (
+            <p className="mt-4 text-sm text-white/50">
+              Utforsk →
             </p>
+          ) : (
+            artist.tagline && (
+              <p className={cn(
+                "mt-4 text-base md:text-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500",
+                styles.accent
+              )}>
+                {artist.tagline}
+              </p>
+            )
           )}
         </div>
         
-        {/* Explore indicator */}
-        <div className={cn(
-          "mt-6 text-xs md:text-sm uppercase tracking-[0.2em] opacity-0 group-hover:opacity-70 transition-all duration-500",
-          "text-foreground/60"
-        )}>
-          Utforsk →
-        </div>
+        {/* Explore indicator - desktop only */}
+        {!isMobile && (
+          <div className="mt-6 text-xs md:text-sm uppercase tracking-[0.2em] opacity-0 group-hover:opacity-70 transition-all duration-500 text-foreground/60">
+            Utforsk →
+          </div>
+        )}
       </div>
       
       {/* Subtle grain overlay for texture */}
