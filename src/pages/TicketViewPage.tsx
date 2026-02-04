@@ -1,9 +1,9 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { QRCodeSVG } from "qrcode.react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Calendar, MapPin, Download, Save, Check } from "lucide-react";
+import { Loader2, Calendar, MapPin, Download, Save, Check, ArrowLeft } from "lucide-react";
 import { useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import { useToast } from "@/hooks/use-toast";
@@ -163,6 +163,14 @@ export default function TicketViewPage() {
             <Save className="mr-2 w-4 h-4" />Last ned billett
           </Button>
         </div>
+        
+        <Link 
+          to="/" 
+          className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors pt-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Tilbake til forsiden
+        </Link>
       </div>
     </div>
   );
