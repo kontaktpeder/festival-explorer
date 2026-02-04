@@ -25,7 +25,10 @@ export function VenuePosterBlock({ venue }: VenuePosterBlockProps) {
     <Link
       to={`/venue/${venue.slug}`}
       className={cn(
-        "relative block w-full min-h-[50vh] md:min-h-[60vh] overflow-hidden group transition-all duration-700",
+        "relative block w-full overflow-hidden group transition-all duration-700",
+        // Mobile: fixed pixel height to prevent resize when browser UI changes
+        // Desktop: viewport-relative height
+        isMobile ? "h-[400px]" : "min-h-[60vh]",
         "bg-gradient-to-br from-amber-950/30 via-orange-900/20 to-rose-950/30",
         !isMobile && "group-hover:shadow-[0_0_80px_rgba(251,146,60,0.3)]"
       )}
