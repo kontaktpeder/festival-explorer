@@ -164,13 +164,12 @@ export default function TicketViewPage() {
           </Button>
         </div>
         
-        <Link 
-          to="/" 
-          className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors pt-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Tilbake til forsiden
-        </Link>
+        <Button variant="outline" className="w-full" asChild>
+          <Link to="/">
+            <ArrowLeft className="mr-2 w-4 h-4" />
+            Tilbake til forsiden
+          </Link>
+        </Button>
       </div>
     </div>
   );
