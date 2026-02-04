@@ -150,7 +150,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
         {/* ========== MOBILE: TWO STATES ========== */}
         {isMobile && (
           <>
-            {/* STATE A: Before scroll - Logo at top + CTA at bottom */}
+            {/* STATE A: Before scroll - Large logo + CTA at bottom */}
             <div
               className={`fixed inset-x-0 top-0 z-50 flex justify-center transition-all duration-300 ${
                 isScrolled 
@@ -166,11 +166,11 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
                 className="absolute inset-x-0 pointer-events-none"
                 style={{
                   top: 'calc(-1 * var(--safe-top, 0px))',
-                  height: 'calc(100% + var(--safe-top, 0px) + 60px)',
+                  height: 'calc(100% + var(--safe-top, 0px) + 80px)',
                   background: `linear-gradient(
                     to bottom,
                     rgba(0, 0, 0, 0.7) 0%,
-                    rgba(0, 0, 0, 0.3) 50%,
+                    rgba(0, 0, 0, 0.3) 60%,
                     transparent 100%
                   )`
                 }}
@@ -178,14 +178,14 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
               <Link
                 to="/"
                 onClick={handleClick}
-                className="relative pt-3"
+                className="relative pt-8"
               >
                 <img 
                   src={giggenLogo} 
                   alt="GIGGEN"
-                  className="h-16 drop-shadow-lg"
+                  className="h-32"
                   style={{
-                    filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4))'
+                    filter: 'drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))'
                   }}
                 />
               </Link>
