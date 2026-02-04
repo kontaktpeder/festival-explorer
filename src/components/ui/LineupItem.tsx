@@ -4,6 +4,7 @@ import { useEntityTypes } from "@/hooks/useEntityTypes";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { getEntityPublicRoute } from "@/lib/entity-types";
 import { getObjectPositionFromFocal } from "@/lib/image-crop-helpers";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Support both legacy EventProject and new EventEntity
 type LineupItemData = EventProject | EventEntity;
@@ -23,9 +24,11 @@ function isEventEntity(item: LineupItemData): item is EventEntity {
  * LineupItem - displays lineup artist/entity with hero image
  * Redesigned as "poster" style - large, breathing, not list-like
  * Uses hero_image_settings for focal point positioning when available
+ * Mobile: No hover effects, no tagline - only "Utforsk" indicator
  */
 export function LineupItem({ item, showBilling, isFirst }: LineupItemProps) {
   const { data: entityTypes } = useEntityTypes();
+  const isMobile = useIsMobile();
   
   // Handle both new entity format and legacy project format
   const entityData = isEventEntity(item) ? item.entity : item.project;
@@ -58,7 +61,7 @@ export function LineupItem({ item, showBilling, isFirst }: LineupItemProps) {
         <div className={`
           flex-shrink-0 rounded-lg overflow-hidden bg-secondary/50
           ${isHeadliner ? 'w-24 h-24 md:w-32 md:h-32' : 'w-16 h-16 md:w-20 md:h-20'}
-          transition-transform duration-300 group-hover:scale-105
+          transition-transform duration-300 ${!isMobile ? 'group-hover:scale-105' : ''}
         `}>
           {imageUrl ? (
             <img
@@ -83,24 +86,31 @@ export function LineupItem({ item, showBilling, isFirst }: LineupItemProps) {
         <div className="flex-1 min-w-0">
           <h3 className={`
             font-semibold tracking-tight 
-            group-hover:text-accent transition-colors duration-200
+            ${!isMobile ? 'group-hover:text-accent' : ''} transition-colors duration-200
             ${isHeadliner ? 'text-2xl md:text-3xl' : 'text-lg md:text-xl'}
           `}>
             {entityData.name}
           </h3>
           
-          {entityData.tagline && (
-            <p className={`
-              text-muted-foreground/70 mt-1
-              ${isHeadliner ? 'text-base md:text-lg' : 'text-sm md:text-base'}
-            `}>
-              {entityData.tagline}
+          {/* Mobile: show "Utforsk" instead of tagline */}
+          {isMobile ? (
+            <p className="text-muted-foreground/50 mt-1 text-sm">
+              Utforsk →
             </p>
+          ) : (
+            entityData.tagline && (
+              <p className={`
+                text-muted-foreground/70 mt-1
+                ${isHeadliner ? 'text-base md:text-lg' : 'text-sm md:text-base'}
+              `}>
+                {entityData.tagline}
+              </p>
+            )
           )}
         </div>
 
-        {/* Headliner badge - subtle, not flashy */}
-        {isHeadliner && (
+        {/* Headliner badge - subtle, not flashy (desktop only) */}
+        {isHeadliner && !isMobile && (
           <span className="text-accent/60 text-xs uppercase tracking-widest font-mono flex-shrink-0 hidden md:block">
             Headliner
           </span>

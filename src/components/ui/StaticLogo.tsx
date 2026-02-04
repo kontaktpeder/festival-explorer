@@ -147,126 +147,62 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
           </div>
         )}
 
-        {/* ========== MOBILE: TWO STATES ========== */}
+        {/* ========== MOBILE: ALWAYS STICKY HEADER ========== */}
         {isMobile && (
-          <>
-            {/* STATE A: Before scroll - Large logo + CTA at bottom */}
-            <div
-              className={`fixed inset-x-0 top-0 z-50 flex justify-center transition-all duration-300 ${
-                isScrolled 
-                  ? 'opacity-0 -translate-y-full pointer-events-none' 
-                  : 'opacity-100 translate-y-0'
-              }`}
+          <div
+            className="fixed inset-x-0 top-0 z-50"
+            style={{
+              paddingTop: 'var(--safe-top, 0px)'
+            }}
+          >
+            {/* Background: subtle gradient fade from top */}
+            <div 
+              className="absolute inset-x-0 pointer-events-none"
               style={{
-                paddingTop: 'var(--safe-top, 0px)'
+                top: 'calc(-1 * var(--safe-top, 0px))',
+                height: 'calc(100% + var(--safe-top, 0px) + 16px)',
+                background: `linear-gradient(
+                  to bottom,
+                  rgba(0, 0, 0, 0.85) 0%,
+                  rgba(0, 0, 0, 0.6) 30%,
+                  rgba(0, 0, 0, 0.25) 70%,
+                  transparent 100%
+                )`
               }}
-            >
-              {/* Background fade */}
-              <div 
-                className="absolute inset-x-0 pointer-events-none"
-                style={{
-                  top: 'calc(-1 * var(--safe-top, 0px))',
-                  height: 'calc(100% + var(--safe-top, 0px) + 80px)',
-                  background: `linear-gradient(
-                    to bottom,
-                    rgba(0, 0, 0, 0.7) 0%,
-                    rgba(0, 0, 0, 0.3) 60%,
-                    transparent 100%
-                  )`
-                }}
-              />
+            />
+            
+            {/* Content */}
+            <div className="relative flex items-center justify-between px-3 py-2">
+              {/* Left: Logo */}
               <Link
                 to="/"
                 onClick={handleClick}
-                className="relative pt-8"
+                className="flex-shrink-0"
               >
                 <img 
                   src={giggenLogo} 
                   alt="GIGGEN"
-                  className="h-32"
-                  style={{
-                    filter: 'drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))'
-                  }}
+                  className="h-8 drop-shadow-lg"
                 />
               </Link>
-            </div>
 
-            {/* CTA button at bottom (before scroll) */}
-            <div
-              className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ${
-                isScrolled 
-                  ? 'opacity-0 translate-y-4 pointer-events-none' 
-                  : 'opacity-100 translate-y-0'
-              }`}
-            >
-              <Link
-                to="/tickets"
-                className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-6 py-3 text-sm transition-all shadow-xl"
-              >
-                Kjøp billett
-              </Link>
-            </div>
-
-            {/* STATE B: After scroll - Sticky header with logo AND CTA */}
-            <div
-              className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-                isScrolled 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 -translate-y-full pointer-events-none'
-              }`}
-              style={{
-                paddingTop: 'var(--safe-top, 0px)'
-              }}
-            >
-              {/* Background: subtle gradient fade from top */}
-              <div 
-                className="absolute inset-x-0 pointer-events-none"
-                style={{
-                  top: 'calc(-1 * var(--safe-top, 0px))',
-                  height: 'calc(100% + var(--safe-top, 0px) + 16px)',
-                  background: `linear-gradient(
-                    to bottom,
-                    rgba(0, 0, 0, 0.85) 0%,
-                    rgba(0, 0, 0, 0.6) 30%,
-                    rgba(0, 0, 0, 0.25) 70%,
-                    transparent 100%
-                  )`
-                }}
-              />
-              
-              {/* Content */}
-              <div className="relative flex items-center justify-between px-3 py-2">
-                {/* Left: Small logo */}
+              {/* Right: CTA + Backstage */}
+              <div className="flex items-center gap-2">
                 <Link
-                  to="/"
-                  onClick={handleClick}
-                  className="flex-shrink-0"
+                  to="/tickets"
+                  className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-3 py-1 text-xs transition-all shadow-lg"
                 >
-                  <img 
-                    src={giggenLogo} 
-                    alt="GIGGEN"
-                    className="h-6 drop-shadow-lg"
-                  />
+                  Kjøp billett
                 </Link>
-
-                {/* Right: CTA + Backstage */}
-                <div className="flex items-center gap-2">
-                  <Link
-                    to="/tickets"
-                    className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-3 py-1 text-xs transition-all shadow-lg"
-                  >
-                    Kjøp billett
-                  </Link>
-                  <Link
-                    to={session ? "/dashboard" : "/admin/login"}
-                    className="text-foreground/60 hover:text-foreground font-medium text-[10px] uppercase tracking-wider transition-colors"
-                  >
-                    Backstage
-                  </Link>
-                </div>
+                <Link
+                  to={session ? "/dashboard" : "/admin/login"}
+                  className="text-foreground/60 hover:text-foreground font-medium text-[10px] uppercase tracking-wider transition-colors"
+                >
+                  Backstage
+                </Link>
               </div>
             </div>
-          </>
+          </div>
         )}
       </>
     );
