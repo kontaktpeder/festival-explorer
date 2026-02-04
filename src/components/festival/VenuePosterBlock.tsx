@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 interface VenuePosterBlockProps {
@@ -14,9 +15,11 @@ interface VenuePosterBlockProps {
 /**
  * Large visual poster block for venue
  * Same style as ArtistPosterBlock
+ * Mobile: No hover effects, no tagline - only "Utforsk" indicator
  */
 export function VenuePosterBlock({ venue }: VenuePosterBlockProps) {
   const heroImageUrl = useSignedMediaUrl(venue.hero_image_url, 'public');
+  const isMobile = useIsMobile();
 
   return (
     <Link
@@ -24,7 +27,7 @@ export function VenuePosterBlock({ venue }: VenuePosterBlockProps) {
       className={cn(
         "relative block w-full min-h-[50vh] md:min-h-[60vh] overflow-hidden group transition-all duration-700",
         "bg-gradient-to-br from-amber-950/30 via-orange-900/20 to-rose-950/30",
-        "group-hover:shadow-[0_0_80px_rgba(251,146,60,0.3)]"
+        !isMobile && "group-hover:shadow-[0_0_80px_rgba(251,146,60,0.3)]"
       )}
     >
       {/* Background hero image */}
@@ -33,7 +36,10 @@ export function VenuePosterBlock({ venue }: VenuePosterBlockProps) {
           <img
             src={heroImageUrl}
             alt=""
-            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+            className={cn(
+              "w-full h-full object-cover transition-transform duration-1000",
+              !isMobile && "group-hover:scale-105"
+            )}
           />
         </div>
       )}
@@ -43,7 +49,10 @@ export function VenuePosterBlock({ venue }: VenuePosterBlockProps) {
       
       {/* Content - bottom left */}
       <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 items-start text-left">
-        <div className="max-w-[85%] md:max-w-[70%] transition-all duration-500 group-hover:translate-y-[-10px]">
+        <div className={cn(
+          "max-w-[85%] md:max-w-[70%] transition-all duration-500",
+          !isMobile && "group-hover:translate-y-[-10px]"
+        )}>
           {/* Section label */}
           <span className="text-xs md:text-sm uppercase tracking-[0.3em] text-orange-400/70 mb-3 block">
             Venue
@@ -57,18 +66,26 @@ export function VenuePosterBlock({ venue }: VenuePosterBlockProps) {
             {venue.name}
           </h3>
           
-          {/* Tagline */}
-          {venue.tagline && (
-            <p className="mt-4 text-base md:text-lg text-orange-300 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-              {venue.tagline}
+          {/* Mobile: Always show "Utforsk", Desktop: Tagline on hover */}
+          {isMobile ? (
+            <p className="mt-4 text-sm text-white/50">
+              Utforsk →
             </p>
+          ) : (
+            venue.tagline && (
+              <p className="mt-4 text-base md:text-lg text-orange-300 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                {venue.tagline}
+              </p>
+            )
           )}
         </div>
         
-        {/* Explore indicator */}
-        <div className="mt-6 text-xs md:text-sm uppercase tracking-[0.2em] opacity-0 group-hover:opacity-70 transition-all duration-500 text-white/60">
-          Utforsk venue →
-        </div>
+        {/* Explore indicator - desktop only */}
+        {!isMobile && (
+          <div className="mt-6 text-xs md:text-sm uppercase tracking-[0.2em] opacity-0 group-hover:opacity-70 transition-all duration-500 text-white/60">
+            Utforsk venue →
+          </div>
+        )}
       </div>
       
       {/* Subtle grain overlay */}
