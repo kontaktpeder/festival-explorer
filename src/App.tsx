@@ -27,6 +27,7 @@ import SuccessPage from "./pages/SuccessPage";
 import TicketViewPage from "./pages/TicketViewPage";
 import ValidatorPage from "./pages/ValidatorPage";
 import CrewCheckInPage from "./pages/CrewCheckInPage";
+import PrivacyGuestPage from "./pages/PrivacyGuestPage";
 
 // Admin pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -81,6 +82,7 @@ const App = () => (
           <Route path="/t/:ticketCode" element={<TicketViewPage />} />
           <Route path="/v/:ticketCode" element={<ValidatorPage />} />
           <Route path="/crew/checkin" element={<CrewCheckInPage />} />
+          <Route path="/personvern" element={<PrivacyGuestPage />} />
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/entities/:id/edit" element={<EntityEdit />} />

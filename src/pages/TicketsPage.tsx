@@ -92,6 +92,12 @@ export default function TicketsPage() {
               <p className="text-sm font-medium">Din informasjon</p>
               <Input placeholder="Navn" value={buyerName} onChange={(e) => setBuyerName(e.target.value)} disabled={!TICKET_SALES_ENABLED} className="h-9" />
               <Input type="email" placeholder="E-post" value={buyerEmail} onChange={(e) => setBuyerEmail(e.target.value)} disabled={!TICKET_SALES_ENABLED} className="h-9" />
+              <p className="text-xs text-muted-foreground">
+                Ved å fortsette godtar du vår{" "}
+                <a href="/personvern" target="_blank" className="underline hover:text-foreground transition-colors">
+                  personvernerklæring
+                </a>
+              </p>
               <Button className="w-full h-9" onClick={handlePurchase} disabled={isLoading || !TICKET_SALES_ENABLED}>
                 {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
                 {TICKET_SALES_ENABLED ? "Gå til betaling" : "Billettsalg stengt"}
