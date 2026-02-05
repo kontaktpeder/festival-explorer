@@ -160,20 +160,30 @@ export function EntityPersonaBindingsEditor({
     return <div className="text-sm text-muted-foreground">Laster...</div>;
   }
 
+  // Quick "Add myself" if user has exactly one persona
+  const singlePersona = myPersonas && myPersonas.length === 1 ? myPersonas[0] : null;
+  const canAddSelf = singlePersona && !bindings?.some(b => b.persona_id === singlePersona.id);
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-        <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
-          <User className="h-4 w-4 sm:h-5 sm:w-5" />
-          Personer bak prosjektet
-        </h3>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1 w-full sm:w-auto">
-              <Plus className="h-4 w-4" />
-              Legg til profil
-            </Button>
-          </DialogTrigger>
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+          <div>
+            <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
+              <User className="h-4 w-4 sm:h-5 sm:w-5" />
+              Personer bak prosjektet
+            </h3>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+              Legg til deg selv eller andre som er med bak prosjektet.
+            </p>
+          </div>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1 w-full sm:w-auto">
+                <Plus className="h-4 w-4" />
+                Legg meg eller andre til
+              </Button>
+            </DialogTrigger>
           <DialogContent className="w-[calc(100vw-2rem)] max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-base sm:text-lg">Legg til profil</DialogTitle>
@@ -360,13 +370,39 @@ export function EntityPersonaBindingsEditor({
               </div>
             </div>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
+      {/* Quick "Add myself" button */}
+      {canAddSelf && (
+        <Button
+          variant="secondary"
+          size="sm"
+          className="w-full bg-accent/10 hover:bg-accent/20 text-accent border-accent/20"
+          onClick={async () => {
+            try {
+              await createBinding.mutateAsync({
+                entity_id: entityId,
+                persona_id: singlePersona!.id,
+                is_public: true,
+                role_label: undefined,
+              });
+              toast.success("Du er lagt til bak prosjektet");
+            } catch (error: any) {
+              toast.error(error.message || "Kunne ikke legge deg til");
+            }
+          }}
+          disabled={createBinding.isPending}
+        >
+          {createBinding.isPending ? "Legger til..." : "Legg meg til bak prosjektet"}
+        </Button>
+      )}
 
       {!bindings || bindings.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-4">
-          Ingen profiler er lagt til ennå. Legg til profiler som skal vises i "Bak prosjektet".
-        </p>
+        <div className="text-sm text-muted-foreground py-4 space-y-1">
+          <p>Ingen er lagt til bak prosjektet ennå.</p>
+          <p className="text-xs">Tips: Legg til deg selv først, så kan du invitere andre senere.</p>
+        </div>
       ) : (
         <div className="space-y-2">
           {bindings.map((binding) => (

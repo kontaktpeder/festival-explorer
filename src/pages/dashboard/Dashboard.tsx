@@ -256,6 +256,18 @@ export default function Dashboard() {
           </AlertDescription>
         </Alert>
 
+        {/* Hint-kort for å koble persona til prosjekter */}
+        {personas && personas.length > 0 && allEntities && allEntities.length > 0 && (
+          <Alert className="bg-secondary/50 border-border/30 rounded-lg">
+            <Info className="h-4 w-4 text-muted-foreground" />
+            <AlertDescription className="text-sm">
+              <span className="font-medium text-foreground">Koble deg selv til prosjektene dine.</span>{" "}
+              For at navnet ditt skal vises "bak prosjektet", må du legge til profilen din inne på prosjektet – 
+              bruk seksjonen <span className="font-mono text-accent">Personer bak prosjektet</span> for å legge deg til.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Filter indicator - softer */}
         {selectedPersonaId && (
           <div className="flex items-center gap-3 text-sm text-muted-foreground">

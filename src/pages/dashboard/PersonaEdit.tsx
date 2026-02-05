@@ -331,12 +331,15 @@ export default function PersonaEdit() {
             <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
               <div className="flex items-center gap-3">
                 <Users className="h-4 w-4 text-accent" />
-                <span className="font-medium">Prosjekter</span>
+                <span className="font-medium">Bruk denne profilen i et prosjekt</span>
                 {personaBindings && personaBindings.length > 0 && <span className="text-xs text-muted-foreground">({personaBindings.length})</span>}
               </div>
               <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${projectsOpen ? "rotate-180" : ""}`} />
             </CollapsibleTrigger>
             <CollapsibleContent className="py-5 space-y-4 border-b border-border/30">
+              <p className="text-sm text-muted-foreground">
+                Velg hvilke av prosjektene dine denne profilen skal stå bak.
+              </p>
               {(personaBindings && personaBindings.length > 0) ? (
                 <div className="space-y-2">
                   {personaBindings.map((binding) => (
