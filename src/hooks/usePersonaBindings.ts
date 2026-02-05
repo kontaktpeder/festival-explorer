@@ -21,6 +21,7 @@ export interface PersonaBinding {
     name: string;
     slug: string;
     type: string;
+    tagline: string | null;
     hero_image_url: string | null;
     is_published: boolean;
     visibility: string;
@@ -60,7 +61,7 @@ export function usePersonaEntityBindings(personaId: string | undefined) {
         .from("entity_persona_bindings")
         .select(`
           *,
-          entity:entities(id, name, slug, type, hero_image_url, is_published, visibility)
+          entity:entities(id, name, slug, type, tagline, hero_image_url, is_published, visibility)
         `)
         .eq("persona_id", personaId);
 

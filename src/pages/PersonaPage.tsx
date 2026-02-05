@@ -12,7 +12,9 @@ import { parseImageSettings } from "@/types/database";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { PersonaSocialLinks } from "@/components/ui/PersonaSocialLinks";
 import type { EntityType, Persona } from "@/types/database";
+import type { SocialLink } from "@/types/social";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -114,6 +116,9 @@ export default function PersonaPage() {
   const avatarImageSettings = parseImageSettings(persona?.avatar_image_settings);
   const avatarStyles = getCroppedImageStyles(avatarImageSettings);
 
+  // Get social links from persona (future-proofed - field may not exist yet)
+  const personaSocialLinks = ((persona as any)?.social_links || []) as SocialLink[] | undefined;
+
   if (isLoadingPersona) return <LoadingState />;
   
   if (error || !persona) {
@@ -185,6 +190,9 @@ export default function PersonaPage() {
               ))}
             </div>
           )}
+
+          {/* Social links */}
+          <PersonaSocialLinks links={personaSocialLinks} />
         </section>
 
         {/* Bio Section */}
@@ -276,6 +284,14 @@ export default function PersonaPage() {
                         <p className="text-xl md:text-2xl font-medium tracking-tight group-hover:text-primary transition-colors duration-300">
                           {entity.name}
                         </p>
+                        
+                        {/* Tagline as teaser */}
+                        {entity.tagline && (
+                          <p className="text-sm text-muted-foreground/70 mt-1 line-clamp-1">
+                            {entity.tagline}
+                          </p>
+                        )}
+
                         <div className="flex items-center gap-3 mt-1.5">
                           <span className="text-sm text-muted-foreground/60">
                             {TYPE_LABELS[entity.type as EntityType]}
