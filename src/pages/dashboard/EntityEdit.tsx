@@ -7,7 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   AlertDialog,
@@ -25,7 +27,6 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { EntityTimelineManager } from "@/components/dashboard/EntityTimelineManager";
 import { EntityPersonaBindingsEditor } from "@/components/admin/EntityPersonaBindingsEditor";
 import { 
-  Save, 
   UserPlus, 
   ExternalLink, 
   Users, 
@@ -33,26 +34,33 @@ import {
   Info, 
   Trash2,
   ChevronDown,
-  Image,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  Building2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
+import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 
-// Tydeligere prosjekt-type labels med ikoner
+// Tydeligere prosjekt-type labels
 const TYPE_LABELS: Record<EntityType, string> = {
-  venue: "🏛️ Scene",
-  solo: "🎤 Artistprosjekt",
-  band: "🎸 Band",
+  venue: "Scene",
+  solo: "Artistprosjekt",
+  band: "Band",
 };
 
-// Beskrivelser for hver prosjekt-type
-const TYPE_DESCRIPTIONS: Record<EntityType, string> = {
-  venue: "En scene eller venue hvor events arrangeres.",
-  solo: "Dette er det du opptrer som. Publikum ser dette navnet.",
-  band: "Et band eller kollektiv du er del av.",
+const TYPE_ICONS: Record<EntityType, string> = {
+  venue: "🏛️",
+  solo: "🎤",
+  band: "🎸",
+};
+
+// Beskrivelser for header
+const TYPE_SUBTITLES: Record<EntityType, string> = {
+  venue: "Din scene på GIGGEN",
+  solo: "Ditt artistprosjekt på GIGGEN",
+  band: "Ditt band på GIGGEN",
 };
 
 const ACCESS_LABELS: Record<AccessLevel, string> = {
@@ -78,7 +86,6 @@ export default function EntityEdit() {
 
   // Collapsible states
   const [basicOpen, setBasicOpen] = useState(true);
-  const [mediaOpen, setMediaOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [peopleOpen, setPeopleOpen] = useState(false);
   const [teamOpen, setTeamOpen] = useState(false);
@@ -224,6 +231,13 @@ export default function EntityEdit() {
     }
   }, [error, navigate, toast]);
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (canEdit) {
+      saveMutation.mutate();
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -249,84 +263,96 @@ export default function EntityEdit() {
     band: { route: "/project" },
   };
 
+  const heroStyles = getCroppedImageStyles(heroImageSettings);
+
   return (
     <div className="container max-w-2xl px-4 sm:px-6 py-6 sm:py-8">
-      {/* Header */}
+      {/* Header - matching PersonaEdit */}
       <div className="mb-6">
         <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
           GIGGEN BACKSTAGE
         </p>
-        <div className="flex items-center gap-2 flex-wrap mb-1">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-            {entityWithAccess.name}
-          </h1>
-          <Badge variant="secondary" className="text-xs">{TYPE_LABELS[entityWithAccess.type as EntityType]}</Badge>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="outline" className="text-xs">{ACCESS_LABELS[userAccess]}</Badge>
-          {!entityWithAccess.is_published && (
-            <Badge variant="outline" className="text-xs text-warning border-warning/30">Utkast</Badge>
-          )}
-        </div>
-        {isViewer && (
-          <p className="text-sm text-muted-foreground mt-2">
-            Du har lesetilgang til dette prosjektet.
-          </p>
-        )}
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+          Rediger prosjekt
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          {TYPE_SUBTITLES[entityWithAccess.type as EntityType]}
+        </p>
       </div>
 
-      {/* Quick actions */}
-      <div className="flex gap-2 flex-wrap mb-6">
-        {entityWithAccess.is_published && (
-          <Button asChild variant="outline" size="sm" className="text-xs">
-            <Link to={`${typeConfig[entityWithAccess.type as EntityType].route}/${entityWithAccess.slug}`} target="_blank">
-              <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-              Se offentlig side
-            </Link>
-          </Button>
-        )}
-        {canInvite && (
-          <Button asChild variant="outline" size="sm" className="text-xs">
-            <Link to={`/dashboard/entities/${entityWithAccess.id}/invite`}>
-              <UserPlus className="h-3.5 w-3.5 mr-1.5" />
-              Inviter
-            </Link>
-          </Button>
-        )}
-        {canEdit && (
-          <Button 
-            variant="default" 
-            size="sm" 
-            className="text-xs"
-            onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending}
-          >
-            <Save className="h-3.5 w-3.5 mr-1.5" />
-            {saveMutation.isPending ? "Lagrer..." : "Lagre"}
-          </Button>
-        )}
-      </div>
+      <form onSubmit={handleSubmit} className="space-y-0">
+        {/* Status row - similar to visibility toggle in PersonaEdit */}
+        <div className="flex items-center justify-between py-4 border-b border-accent/20">
+          <div>
+            <p className="font-medium flex items-center gap-2">
+              {TYPE_ICONS[entityWithAccess.type as EntityType]} {TYPE_LABELS[entityWithAccess.type as EntityType]}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {entityWithAccess.is_published ? "Publisert" : "Utkast"} · {ACCESS_LABELS[userAccess]}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {entityWithAccess.is_published && (
+              <Button asChild variant="ghost" size="sm" className="text-xs">
+                <Link to={`${typeConfig[entityWithAccess.type as EntityType].route}/${entityWithAccess.slug}`} target="_blank">
+                  <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                  Se side
+                </Link>
+              </Button>
+            )}
+            {canInvite && (
+              <Button asChild variant="ghost" size="sm" className="text-xs">
+                <Link to={`/dashboard/entities/${entityWithAccess.id}/invite`}>
+                  <UserPlus className="h-3.5 w-3.5 mr-1" />
+                  Inviter
+                </Link>
+              </Button>
+            )}
+          </div>
+        </div>
 
-      {/* Info alert */}
-      <Alert className="bg-accent/5 border-accent/20 mb-6">
-        <Info className="h-4 w-4 text-accent" />
-        <AlertDescription className="text-sm">
-          <strong className="text-foreground">{TYPE_LABELS[entityWithAccess.type as EntityType]}</strong>
-          <span className="text-muted-foreground"> – {TYPE_DESCRIPTIONS[entityWithAccess.type as EntityType]}</span>
-        </AlertDescription>
-      </Alert>
-
-      <div className="space-y-0">
-        {/* Grunnleggende */}
+        {/* Grunnleggende - with hero image inline like PersonaEdit avatar */}
         <Collapsible open={basicOpen} onOpenChange={setBasicOpen}>
           <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
             <div className="flex items-center gap-3">
-              <Sparkles className="h-4 w-4 text-accent" />
+              <Building2 className="h-4 w-4 text-accent" />
               <span className="font-medium">Grunnleggende</span>
             </div>
             <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${basicOpen ? "rotate-180" : ""}`} />
           </CollapsibleTrigger>
-          <CollapsibleContent className="py-5 space-y-4 border-b border-border/30">
+          <CollapsibleContent className="py-5 space-y-5 border-b border-border/30">
+            {/* Hero image section - inline like PersonaEdit avatar */}
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+              <Avatar className="h-20 w-20 border-2 border-accent/30 rounded-lg">
+                <AvatarImage 
+                  src={formData.hero_image_url || undefined} 
+                  style={heroStyles}
+                  className="object-cover"
+                />
+                <AvatarFallback className="text-xl bg-secondary rounded-lg">
+                  {formData.name ? formData.name.substring(0, 2).toUpperCase() : "?"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 w-full space-y-2">
+                <Label className="text-muted-foreground text-xs uppercase tracking-wide">Hero-bilde</Label>
+                {canEdit ? (
+                  <InlineMediaPickerWithCrop
+                    value={formData.hero_image_url}
+                    imageSettings={heroImageSettings}
+                    onChange={(url) => setFormData((prev) => ({ ...prev, hero_image_url: url }))}
+                    onSettingsChange={setHeroImageSettings}
+                    cropMode="hero"
+                    placeholder="Velg hero-bilde"
+                    useNaturalAspect
+                  />
+                ) : (
+                  formData.hero_image_url && (
+                    <p className="text-sm text-muted-foreground">Hero-bilde valgt</p>
+                  )
+                )}
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="name" className="text-muted-foreground text-xs uppercase tracking-wide">Navn *</Label>
               <Input
@@ -339,6 +365,7 @@ export default function EntityEdit() {
                 className="bg-transparent border-border/50 focus:border-accent"
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="tagline" className="text-muted-foreground text-xs uppercase tracking-wide">Tagline</Label>
               <Input
@@ -350,8 +377,9 @@ export default function EntityEdit() {
                 className="bg-transparent border-border/50 focus:border-accent"
               />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-muted-foreground text-xs uppercase tracking-wide">Beskrivelse</Label>
+              <Label htmlFor="description" className="text-muted-foreground text-xs uppercase tracking-wide">Bio</Label>
               <Textarea
                 id="description"
                 value={formData.description}
@@ -365,50 +393,12 @@ export default function EntityEdit() {
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Media / Hero-bilde */}
-        <Collapsible open={mediaOpen} onOpenChange={setMediaOpen}>
-          <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
-            <div className="flex items-center gap-3">
-              <Image className="h-4 w-4 text-accent" />
-              <span className="font-medium">Hero-bilde</span>
-              {formData.hero_image_url && <span className="text-xs text-muted-foreground">(valgt)</span>}
-            </div>
-            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${mediaOpen ? "rotate-180" : ""}`} />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="py-5 space-y-3 border-b border-border/30">
-            <p className="text-sm text-muted-foreground">
-              Velg bilde og juster fokuspunkt for beste visning.
-            </p>
-            {canEdit ? (
-              <InlineMediaPickerWithCrop
-                value={formData.hero_image_url}
-                imageSettings={heroImageSettings}
-                onChange={(url) => setFormData((prev) => ({ ...prev, hero_image_url: url }))}
-                onSettingsChange={setHeroImageSettings}
-                cropMode="hero"
-                placeholder="Velg hero-bilde"
-                useNaturalAspect
-              />
-            ) : (
-              formData.hero_image_url && (
-                <div className="rounded-lg overflow-hidden border border-border">
-                  <img 
-                    src={formData.hero_image_url} 
-                    alt="Hero preview" 
-                    className="w-full h-40 object-cover"
-                  />
-                </div>
-              )
-            )}
-          </CollapsibleContent>
-        </Collapsible>
-
         {/* Historien / Timeline */}
         <Collapsible open={timelineOpen} onOpenChange={setTimelineOpen}>
           <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
             <div className="flex items-center gap-3">
               <Clock className="h-4 w-4 text-accent" />
-              <span className="font-medium">{isVenue ? "Historien" : "Milepæler"}</span>
+              <span className="font-medium">{isVenue ? "Historien" : "Min reise"}</span>
             </div>
             <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${timelineOpen ? "rotate-180" : ""}`} />
           </CollapsibleTrigger>
@@ -428,7 +418,7 @@ export default function EntityEdit() {
           <Collapsible open={peopleOpen} onOpenChange={setPeopleOpen}>
             <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
               <div className="flex items-center gap-3">
-                <Sparkles className="h-4 w-4 text-accent" />
+                <Users className="h-4 w-4 text-accent" />
                 <span className="font-medium">Personer bak prosjektet</span>
               </div>
               <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${peopleOpen ? "rotate-180" : ""}`} />
@@ -447,8 +437,8 @@ export default function EntityEdit() {
           <Collapsible open={teamOpen} onOpenChange={setTeamOpen}>
             <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
               <div className="flex items-center gap-3">
-                <Users className="h-4 w-4 text-accent" />
-                <span className="font-medium">Team-medlemmer</span>
+                <Sparkles className="h-4 w-4 text-accent" />
+                <span className="font-medium">Team</span>
                 <span className="text-xs text-muted-foreground">({teamMembers.length})</span>
               </div>
               <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${teamOpen ? "rotate-180" : ""}`} />
@@ -535,29 +525,39 @@ export default function EntityEdit() {
             </CollapsibleContent>
           </Collapsible>
         )}
-      </div>
 
-      {/* Publishing info at bottom */}
-      <div className="mt-8">
-        {!entityWithAccess.is_published ? (
-          <Alert className="bg-muted/50 border-border/30">
-            <Info className="h-4 w-4 text-muted-foreground" />
-            <AlertDescription className="text-sm text-muted-foreground">
-              <strong>Utkast:</strong> Dette prosjektet er ikke publisert ennå. 
-              Kontakt en administrator for å få det publisert.
-            </AlertDescription>
-          </Alert>
-        ) : (
-          <Alert className="bg-accent/5 border-accent/20">
-            <Info className="h-4 w-4 text-accent" />
-            <AlertDescription className="text-sm text-muted-foreground">
-              Dette prosjektet kan bli lagt til events av festivalen.
-              Du trenger kun å holde prosjektet oppdatert med riktig informasjon, 
-              bilder og beskrivelse.
-            </AlertDescription>
-          </Alert>
+        {/* Bottom buttons - matching PersonaEdit exactly */}
+        {canEdit && (
+          <div className="flex flex-col-reverse sm:flex-row gap-3 pt-8">
+            <Button
+              type="submit"
+              disabled={saveMutation.isPending}
+              className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground"
+            >
+              {saveMutation.isPending ? "Lagrer..." : "Lagre endringer"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate("/dashboard")}
+              className="sm:w-auto"
+            >
+              Avbryt
+            </Button>
+          </div>
         )}
-      </div>
+      </form>
+
+      {/* Info alert at bottom */}
+      {!entityWithAccess.is_published && (
+        <Alert className="mt-8 bg-muted/50 border-border/30">
+          <Info className="h-4 w-4 text-muted-foreground" />
+          <AlertDescription className="text-sm text-muted-foreground">
+            <strong>Utkast:</strong> Dette prosjektet er ikke publisert ennå. 
+            Kontakt en administrator for å få det publisert.
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }
