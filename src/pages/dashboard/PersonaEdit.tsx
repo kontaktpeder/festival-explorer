@@ -141,7 +141,7 @@ export default function PersonaEdit() {
           avatar_image_settings: avatarImageSettings,
           category_tags: categoryTags,
           is_public: isPublic,
-          social_links: socialLinks.length > 0 ? socialLinks : null,
+          social_links: socialLinks,
         } as any);
         toast.success("Profil oppdatert");
       } else {

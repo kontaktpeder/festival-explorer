@@ -192,7 +192,7 @@ export default function EntityEdit() {
           description: formData.description || null,
           hero_image_url: formData.hero_image_url || null,
           hero_image_settings: heroImageSettings,
-          social_links: socialLinks.length > 0 ? socialLinks : null,
+          social_links: socialLinks,
         } as Record<string, unknown>)
         .eq("id", id);
       
