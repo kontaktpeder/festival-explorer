@@ -151,9 +151,13 @@ export default function ProjectPage() {
                     <div className="text-xl md:text-2xl font-medium text-foreground group-hover:text-primary transition-colors">
                       {persona.name}
                     </div>
-                    {binding.role_label && (
+                    {(persona.category_tags && persona.category_tags.length > 0
+                      ? persona.category_tags[0]
+                      : binding.role_label) && (
                       <div className="text-sm md:text-base text-muted-foreground/70 font-light">
-                        {binding.role_label}
+                        {persona.category_tags && persona.category_tags.length > 0
+                          ? persona.category_tags[0]
+                          : binding.role_label}
                       </div>
                     )}
                   </div>
