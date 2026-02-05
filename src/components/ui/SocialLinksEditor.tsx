@@ -38,12 +38,25 @@ export function SocialLinksEditor({ links, onChange, disabled = false }: SocialL
     label: "",
   });
 
+  const normalizeUrl = (url: string) => {
+    const trimmed = url.trim();
+    if (!trimmed) return "";
+
+    // If user omits scheme (e.g. "www.instagram.com/..."), make it a valid absolute URL.
+    if (!/^https?:\/\//i.test(trimmed)) {
+      return `https://${trimmed.replace(/^\/\//, "")}`;
+    }
+
+    return trimmed;
+  };
+
   const addLink = () => {
-    if (!newLink.url.trim()) return;
+    const normalizedUrl = normalizeUrl(newLink.url);
+    if (!normalizedUrl) return;
 
     const link: SocialLink = {
       type: newLink.type,
-      url: newLink.url.trim(),
+      url: normalizedUrl,
       label: newLink.label.trim() || undefined,
     };
 
