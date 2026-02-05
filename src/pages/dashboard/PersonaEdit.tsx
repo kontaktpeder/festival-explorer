@@ -5,11 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, X, Info, Clock, Users, Trash2 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Loader2, X, ChevronDown, Users, Trash2, User, Sparkles, Clock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   usePersonaById, 
@@ -42,6 +41,12 @@ export default function PersonaEdit() {
   const [categoryTags, setCategoryTags] = useState<string[]>([]);
   const [isPublic, setIsPublic] = useState(true);
   const [customTag, setCustomTag] = useState("");
+
+  // Collapsible states
+  const [basicOpen, setBasicOpen] = useState(true);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [timelineOpen, setTimelineOpen] = useState(false);
+  const [projectsOpen, setProjectsOpen] = useState(false);
 
   // Project bindings state
   const { data: personaBindings } = usePersonaEntityBindings(id);
@@ -175,41 +180,49 @@ export default function PersonaEdit() {
   if (isEditing && isLoadingPersona) return <LoadingState />;
 
   return (
-    <div className="container max-w-2xl px-4 sm:px-6 py-6 sm:py-8 space-y-4 sm:space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold">
+    <div className="container max-w-2xl px-4 sm:px-6 py-6 sm:py-8">
+      {/* Header */}
+      <div className="mb-6">
+        <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+          GIGGEN BACKSTAGE
+        </p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
           {isEditing ? "Rediger profil" : "Lag din profil"}
         </h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          {isEditing 
-            ? "Oppdater hvem du er – din personlige identitet på GIGGEN"
-            : "Fortell hvem du er – musiker, fotograf, DJ eller arrangør"
-          }
-        </p>
-        <p className="text-xs text-muted-foreground/70 mt-2">
-          Profilen din er forskjellig fra prosjekter. Profilen er deg – prosjekter er det du lager og opptrer med.
+        <p className="text-muted-foreground mt-1">
+          Din personlige identitet på GIGGEN
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-        <Card>
-          <CardHeader className="px-4 sm:px-6">
-            <CardTitle className="text-base sm:text-lg">Grunnleggende info</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 px-4 sm:px-6">
-            {/* Avatar Preview + InlineMediaPickerWithCrop */}
+      <form onSubmit={handleSubmit} className="space-y-0">
+        {/* Visibility Toggle - Always visible at top */}
+        <div className="flex items-center justify-between py-4 border-b border-accent/20">
+          <div>
+            <p className="font-medium">Offentlig profil</p>
+            <p className="text-sm text-muted-foreground">
+              {isPublic ? "Alle kan se" : "Kun du"}
+            </p>
+          </div>
+          <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+        </div>
+
+        {/* Grunnleggende */}
+        <Collapsible open={basicOpen} onOpenChange={setBasicOpen}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
+            <div className="flex items-center gap-3">
+              <User className="h-4 w-4 text-accent" />
+              <span className="font-medium">Grunnleggende</span>
+            </div>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${basicOpen ? "rotate-180" : ""}`} />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="py-5 space-y-5 border-b border-border/30">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-              <Avatar className="h-16 w-16 sm:h-20 sm:w-20">
-                <AvatarImage 
-                  src={avatarUrl || undefined} 
-                  style={getCroppedImageStyles(avatarImageSettings)}
-                />
-                <AvatarFallback className="text-lg sm:text-xl">
-                  {name ? name.substring(0, 2).toUpperCase() : "?"}
-                </AvatarFallback>
+              <Avatar className="h-20 w-20 border-2 border-accent/30">
+                <AvatarImage src={avatarUrl || undefined} style={getCroppedImageStyles(avatarImageSettings)} />
+                <AvatarFallback className="text-xl bg-secondary">{name ? name.substring(0, 2).toUpperCase() : "?"}</AvatarFallback>
               </Avatar>
               <div className="flex-1 w-full space-y-2">
-                <Label>Profilbilde</Label>
+                <Label className="text-muted-foreground text-xs uppercase tracking-wide">Profilbilde</Label>
                 <InlineMediaPickerWithCrop
                   value={avatarUrl}
                   imageSettings={avatarImageSettings}
@@ -218,276 +231,169 @@ export default function PersonaEdit() {
                   cropMode="avatar"
                   placeholder="Velg profilbilde"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Velg bilde og juster fokuspunkt for best resultat.
-                </p>
               </div>
             </div>
-
-            <div>
-              <Label htmlFor="name">Navn *</Label>
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-muted-foreground text-xs uppercase tracking-wide">Navn *</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ditt artistnavn eller fullt navn"
                 required
+                className="bg-transparent border-border/50 focus:border-accent"
               />
             </div>
-
-            <div>
-              <Label htmlFor="bio">Bio</Label>
+            <div className="space-y-2">
+              <Label htmlFor="bio" className="text-muted-foreground text-xs uppercase tracking-wide">Bio</Label>
               <Textarea
                 id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder="Fortell litt om deg selv..."
                 rows={4}
+                className="bg-transparent border-border/50 focus:border-accent resize-none"
               />
             </div>
-          </CardContent>
-        </Card>
+          </CollapsibleContent>
+        </Collapsible>
 
-        <Card>
-          <CardHeader className="px-4 sm:px-6">
-            <CardTitle className="text-base sm:text-lg">Kategorier</CardTitle>
-            <CardDescription className="text-xs sm:text-sm">
-              Velg hva som beskriver deg best
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 px-4 sm:px-6">
-            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+        {/* Kategorier */}
+        <Collapsible open={categoriesOpen} onOpenChange={setCategoriesOpen}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
+            <div className="flex items-center gap-3">
+              <Sparkles className="h-4 w-4 text-accent" />
+              <span className="font-medium">Hva er du?</span>
+              {categoryTags.length > 0 && <span className="text-xs text-muted-foreground">({categoryTags.length})</span>}
+            </div>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${categoriesOpen ? "rotate-180" : ""}`} />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="py-5 space-y-4 border-b border-border/30">
+            <div className="flex flex-wrap gap-2">
               {PERSONA_CATEGORIES.map((category) => (
                 <Badge
                   key={category}
                   variant={categoryTags.includes(category) ? "default" : "outline"}
-                  className="cursor-pointer capitalize text-xs sm:text-sm py-1 px-2 sm:py-1.5 sm:px-3"
+                  className={`cursor-pointer capitalize text-sm py-1.5 px-3 transition-colors ${
+                    categoryTags.includes(category) ? "bg-accent text-accent-foreground border-accent" : "border-accent/30 hover:border-accent/60"
+                  }`}
                   onClick={() => toggleCategory(category)}
                 >
                   {category}
                 </Badge>
               ))}
             </div>
-
-            {/* Selected tags (including custom) */}
             {categoryTags.length > 0 && (
-              <div className="pt-2 border-t">
-                <Label className="text-sm text-muted-foreground">Valgte:</Label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {categoryTags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="capitalize">
-                      {tag}
-                      <button
-                        type="button"
-                        onClick={() => removeTag(tag)}
-                        className="ml-1 hover:text-destructive"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
+              <div className="flex flex-wrap gap-2 pt-3 border-t border-border/20">
+                {categoryTags.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="capitalize bg-secondary/50">
+                    {tag}
+                    <button type="button" onClick={() => removeTag(tag)} className="ml-1.5 hover:text-accent">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
               </div>
             )}
-
-            {/* Custom tag input */}
             <div className="flex gap-2">
               <Input
                 value={customTag}
                 onChange={(e) => setCustomTag(e.target.value)}
-                placeholder="Legg til egen kategori..."
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addCustomTag();
-                  }
-                }}
+                placeholder="Egen kategori..."
+                className="bg-transparent border-border/50 focus:border-accent"
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomTag(); } }}
               />
-              <Button type="button" variant="outline" onClick={addCustomTag}>
-                Legg til
-              </Button>
+              <Button type="button" variant="outline" onClick={addCustomTag} className="border-accent/30 hover:border-accent">+</Button>
             </div>
-          </CardContent>
-        </Card>
+          </CollapsibleContent>
+        </Collapsible>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Synlighet</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label htmlFor="public">Offentlig profil</Label>
-                <p className="text-sm text-muted-foreground">
-                  {isPublic 
-                    ? "Alle kan se denne profilen"
-                    : "Bare du kan se denne profilen"
-                  }
-                </p>
-              </div>
-              <Switch
-                id="public"
-                checked={isPublic}
-                onCheckedChange={setIsPublic}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Min reise (tidslinje) - vises kun ved redigering */}
+        {/* Min reise */}
         {isEditing && id && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Min reise
-              </CardTitle>
-              <CardDescription>
-                Legg til milepæler i din karriere – første låt, første gig, samarbeid, vendepunkter
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Alert className="bg-accent/5 border-accent/20">
-                <Info className="h-4 w-4 text-accent" />
-                <AlertDescription className="text-sm text-muted-foreground">
-                  Tidslinje viser din personlige reise som musiker, fotograf eller arrangør. 
-                  Dette er forskjellig fra prosjekt-tidslinjer som viser prosjektets historie.
-                </AlertDescription>
-              </Alert>
-              
-              <PersonaTimelineManager 
-                personaId={id} 
-                canEdit={true} 
-              />
-            </CardContent>
-          </Card>
+          <Collapsible open={timelineOpen} onOpenChange={setTimelineOpen}>
+            <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
+              <div className="flex items-center gap-3">
+                <Clock className="h-4 w-4 text-accent" />
+                <span className="font-medium">Min reise</span>
+              </div>
+              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${timelineOpen ? "rotate-180" : ""}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="py-5 border-b border-border/30">
+              <p className="text-sm text-muted-foreground mb-4">Milepæler i din karriere</p>
+              <PersonaTimelineManager personaId={id} canEdit={true} />
+            </CollapsibleContent>
+          </Collapsible>
         )}
 
-        {/* Prosjekter denne profilen er med i */}
+        {/* Prosjekter */}
         {isEditing && id && (
-          <Card>
-            <CardHeader className="px-4 sm:px-6">
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <Users className="h-4 w-4" />
-                Prosjekter denne profilen er med i
-              </CardTitle>
-              <CardDescription className="text-xs sm:text-sm">
-                Koble profilen din direkte til prosjekter du er en del av
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 px-4 sm:px-6">
-              {/* Existing bindings */}
+          <Collapsible open={projectsOpen} onOpenChange={setProjectsOpen}>
+            <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
+              <div className="flex items-center gap-3">
+                <Users className="h-4 w-4 text-accent" />
+                <span className="font-medium">Prosjekter</span>
+                {personaBindings && personaBindings.length > 0 && <span className="text-xs text-muted-foreground">({personaBindings.length})</span>}
+              </div>
+              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${projectsOpen ? "rotate-180" : ""}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="py-5 space-y-4 border-b border-border/30">
               {(personaBindings && personaBindings.length > 0) ? (
                 <div className="space-y-2">
                   {personaBindings.map((binding) => (
-                    <div key={binding.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 border border-border/30">
+                    <div key={binding.id} className="flex items-center justify-between py-2 border-b border-border/20 last:border-0">
                       <div className="space-y-0.5">
-                        <p className="font-medium text-sm">{binding.entity?.name}</p>
-                        {binding.role_label && (
-                          <p className="text-xs text-muted-foreground">
-                            Rolle: {binding.role_label}
-                          </p>
-                        )}
-                        <Badge variant={binding.is_public ? "default" : "secondary"} className="text-xs mt-1">
-                          {binding.is_public ? "Offentlig" : "Skjult"}
-                        </Badge>
+                        <p className="font-medium">{binding.entity?.name}</p>
+                        {binding.role_label && <p className="text-xs text-muted-foreground">{binding.role_label}</p>}
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveFromProject(binding.id, binding.entity_id)}
-                        className="text-muted-foreground hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs ${binding.is_public ? "text-accent" : "text-muted-foreground"}`}>
+                          {binding.is_public ? "Offentlig" : "Skjult"}
+                        </span>
+                        <Button variant="ghost" size="icon" onClick={() => handleRemoveFromProject(binding.id, binding.entity_id)} className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  Denne profilen er ikke lagt til i noen prosjekter ennå.
-                </p>
+                <p className="text-sm text-muted-foreground py-2">Ikke koblet til noen prosjekter ennå.</p>
               )}
-
-              {/* Info: viewer-only access */}
-              {viewerOnlyEntities.length > 0 && editableEntities.length === 0 && (
-                <Alert className="bg-muted/50 border-border/50">
-                  <Info className="h-4 w-4" />
-                  <AlertDescription className="text-sm">
-                    Du har kun lesetilgang til noen prosjekter. Du kan se dem, men bare
-                    eiere/administratorer kan legge til personer bak prosjektet.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {/* Add to project - only where user has editor/admin/owner */}
-              {availableEntitiesForBinding.length > 0 ? (
-                <div className="space-y-3 pt-3 border-t border-border/30">
-                  <Label className="text-sm font-medium">Legg til i prosjekt</Label>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Select value={selectedEntityId} onValueChange={setSelectedEntityId}>
-                      <SelectTrigger className="w-full sm:flex-1">
-                        <SelectValue placeholder="Velg prosjekt..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableEntitiesForBinding.map((entity) => (
-                          <SelectItem key={entity.id} value={entity.id}>
-                            {entity.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Input
-                      placeholder="Rolle (valgfritt)"
-                      value={bindingRoleLabel}
-                      onChange={(e) => setBindingRoleLabel(e.target.value)}
-                      className="w-full sm:flex-1"
-                    />
+              {availableEntitiesForBinding.length > 0 && (
+                <div className="space-y-3 pt-4">
+                  <Label className="text-muted-foreground text-xs uppercase tracking-wide">Legg til i prosjekt</Label>
+                  <Select value={selectedEntityId} onValueChange={setSelectedEntityId}>
+                    <SelectTrigger className="w-full bg-transparent border-border/50">
+                      <SelectValue placeholder="Velg prosjekt..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableEntitiesForBinding.map((entity) => (
+                        <SelectItem key={entity.id} value={entity.id}>{entity.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input placeholder="Rolle (valgfritt)" value={bindingRoleLabel} onChange={(e) => setBindingRoleLabel(e.target.value)} className="bg-transparent border-border/50 focus:border-accent" />
+                  <div className="flex items-center justify-between py-2">
+                    <span className="text-sm text-muted-foreground">Synlig på prosjektsiden</span>
+                    <Switch checked={bindingIsPublic} onCheckedChange={setBindingIsPublic} />
                   </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="binding-public" className="text-sm">Synlig offentlig</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Vises som "bak prosjektet" på prosjektsiden
-                      </p>
-                    </div>
-                    <Switch
-                      id="binding-public"
-                      checked={bindingIsPublic}
-                      onCheckedChange={setBindingIsPublic}
-                    />
-                  </div>
-
-                  <Button
-                    type="button"
-                    onClick={handleAddToProject}
-                    disabled={!selectedEntityId || createPersonaBinding.isPending}
-                    className="w-full sm:w-auto"
-                  >
+                  <Button type="button" variant="outline" onClick={handleAddToProject} disabled={!selectedEntityId || createPersonaBinding.isPending} className="w-full border-accent/30 hover:border-accent hover:bg-accent/10">
                     {createPersonaBinding.isPending ? "Legger til..." : "Legg til i prosjekt"}
                   </Button>
                 </div>
-              ) : editableEntities.length > 0 ? (
-                <p className="text-sm text-muted-foreground pt-3 border-t border-border/30">
-                  Alle dine prosjekter er allerede koblet til denne profilen.
-                </p>
-              ) : (
-                <p className="text-sm text-muted-foreground pt-3 border-t border-border/30">
-                  Du har ingen prosjekter med redigeringstilgang som denne profilen kan legges til i.
-                </p>
               )}
-            </CardContent>
-          </Card>
+            </CollapsibleContent>
+          </Collapsible>
         )}
 
-        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
-          <Button type="button" variant="outline" asChild className="w-full sm:w-auto">
-            <Link to="/dashboard/personas">Avbryt</Link>
-          </Button>
-          <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row gap-3 pt-8">
+          <Button type="submit" disabled={isSubmitting} className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground">
             {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {isEditing ? "Lagre endringer" : "Opprett profil"}
+          </Button>
+          <Button type="button" variant="outline" asChild className="border-border/50 hover:border-accent/50">
+            <Link to="/dashboard/personas">Avbryt</Link>
           </Button>
         </div>
       </form>
