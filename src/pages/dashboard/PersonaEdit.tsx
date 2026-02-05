@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Loader2, X, ChevronDown, Users, Trash2, User, Sparkles, Clock } from "lucide-react";
+import { Loader2, X, ChevronDown, Users, Trash2, User, Sparkles, Clock, Link2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   usePersonaById, 
@@ -21,8 +21,10 @@ import { usePersonaEntityBindings, useCreatePersonaBinding, useDeletePersonaBind
 import { LoadingState } from "@/components/ui/LoadingState";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { PersonaTimelineManager } from "@/components/dashboard/PersonaTimelineManager";
+import { SocialLinksEditor } from "@/components/ui/SocialLinksEditor";
 import { parseImageSettings, type ImageSettings, type AccessLevel } from "@/types/database";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
+import type { SocialLink } from "@/types/social";
 import { toast } from "sonner";
 
 export default function PersonaEdit() {
@@ -41,10 +43,12 @@ export default function PersonaEdit() {
   const [categoryTags, setCategoryTags] = useState<string[]>([]);
   const [isPublic, setIsPublic] = useState(true);
   const [customTag, setCustomTag] = useState("");
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
 
   // Collapsible states
   const [basicOpen, setBasicOpen] = useState(true);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [socialOpen, setSocialOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [projectsOpen, setProjectsOpen] = useState(false);
 
@@ -115,6 +119,7 @@ export default function PersonaEdit() {
       setAvatarImageSettings(parseImageSettings(existingPersona.avatar_image_settings) || null);
       setCategoryTags(existingPersona.category_tags || []);
       setIsPublic(existingPersona.is_public);
+      setSocialLinks(((existingPersona as any).social_links || []) as SocialLink[]);
     }
   }, [existingPersona]);
 
@@ -136,7 +141,8 @@ export default function PersonaEdit() {
           avatar_image_settings: avatarImageSettings,
           category_tags: categoryTags,
           is_public: isPublic,
-        });
+          social_links: socialLinks.length > 0 ? socialLinks : null,
+        } as any);
         toast.success("Profil oppdatert");
       } else {
         await createPersona.mutateAsync({
@@ -146,7 +152,8 @@ export default function PersonaEdit() {
           avatar_image_settings: avatarImageSettings,
           category_tags: categoryTags,
           is_public: isPublic,
-        });
+          social_links: socialLinks.length > 0 ? socialLinks : undefined,
+        } as any);
         toast.success("Profil opprettet");
       }
       navigate("/dashboard/personas");
@@ -305,6 +312,21 @@ export default function PersonaEdit() {
               />
               <Button type="button" variant="outline" onClick={addCustomTag} className="border-accent/30 hover:border-accent">+</Button>
             </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Sosiale lenker */}
+        <Collapsible open={socialOpen} onOpenChange={setSocialOpen}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
+            <div className="flex items-center gap-3">
+              <Link2 className="h-4 w-4 text-accent" />
+              <span className="font-medium">Sosiale lenker</span>
+              {socialLinks.length > 0 && <span className="text-xs text-muted-foreground">({socialLinks.length})</span>}
+            </div>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${socialOpen ? "rotate-180" : ""}`} />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="py-5 border-b border-border/30">
+            <SocialLinksEditor links={socialLinks} onChange={setSocialLinks} />
           </CollapsibleContent>
         </Collapsible>
 
