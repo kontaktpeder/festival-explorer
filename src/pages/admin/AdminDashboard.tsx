@@ -4,18 +4,7 @@ import { Link } from "react-router-dom";
 import { AlertCircle, CheckCircle, Calendar, Music, Users, MapPin, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QRCodeGenerator } from "@/components/admin/QRCodeGenerator";
-
-// Hent public URL fra environment variable, eller fallback til window.location.origin
-const getPublicUrl = () => {
-  const publicUrl = import.meta.env.VITE_PUBLIC_URL;
-  if (publicUrl) {
-    return publicUrl;
-  }
-  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    return window.location.origin;
-  }
-  return window.location.origin;
-};
+import { getPublicUrl } from "@/lib/utils";
 
 export default function AdminDashboard() {
   const { data: activeFestival } = useQuery({

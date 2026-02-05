@@ -14,3 +14,18 @@ export function generateSlug(text: string): string {
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
 }
+
+/**
+ * Get the public URL for the app (production URL).
+ * Uses VITE_PUBLIC_URL if set, otherwise falls back to window.location.origin.
+ */
+export function getPublicUrl(): string {
+  const publicUrl = import.meta.env.VITE_PUBLIC_URL;
+  if (publicUrl) {
+    return publicUrl;
+  }
+  if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+    return window.location.origin;
+  }
+  return "https://giggn.lovable.app";
+}
