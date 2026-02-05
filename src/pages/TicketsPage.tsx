@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardDescription, CardTitle } from "@/components/ui/card";
 import { Loader2, Ticket } from "lucide-react";
 import { toast } from "sonner";
 import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
@@ -62,37 +62,37 @@ export default function TicketsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
+    <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="text-center space-y-2">
-          <Ticket className="w-12 h-12 mx-auto text-primary" />
-          <h1 className="text-3xl font-bold">Kjøp billetter</h1>
+          <Ticket className="w-10 h-10 mx-auto text-accent opacity-80" />
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Kjøp billetter</h1>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           {ticketTypes?.map((type) => (
-            <Card 
+            <div 
               key={type.id} 
-              className={`cursor-pointer transition-all ${selectedType === type.id ? "ring-2 ring-primary" : ""}`} 
+              className={`ticket-card rounded-lg cursor-pointer ${selectedType === type.id ? "selected" : ""}`} 
               onClick={() => setSelectedType(type.id)}
             >
               <div className="flex items-center justify-between p-4">
                 <div className="space-y-0.5">
-                  <CardTitle className="text-base">{formatTicketText(type.name)}</CardTitle>
-                  <CardDescription className="text-xs">{formatTicketText(type.description)}</CardDescription>
+                  <p className="text-base font-semibold text-foreground">{formatTicketText(type.name)}</p>
+                  <p className="text-xs text-muted-foreground">{formatTicketText(type.description)}</p>
                 </div>
-                <p className="text-lg font-bold whitespace-nowrap ml-4">{(type.price_nok / 100).toFixed(0)} kr</p>
+                <p className="text-lg font-bold whitespace-nowrap ml-4 text-accent">{(type.price_nok / 100).toFixed(0)} kr</p>
               </div>
-            </Card>
+            </div>
           ))}
         </div>
 
         {selectedType && (
-          <Card>
+          <div className="ticket-card rounded-lg">
             <div className="p-4 space-y-3">
               <p className="text-sm font-medium">Din informasjon</p>
-              <Input placeholder="Navn" value={buyerName} onChange={(e) => setBuyerName(e.target.value)} disabled={!TICKET_SALES_ENABLED} className="h-9" />
-              <Input type="email" placeholder="E-post" value={buyerEmail} onChange={(e) => setBuyerEmail(e.target.value)} disabled={!TICKET_SALES_ENABLED} className="h-9" />
+              <Input placeholder="Navn" value={buyerName} onChange={(e) => setBuyerName(e.target.value)} disabled={!TICKET_SALES_ENABLED} className="h-9 bg-background/50 border-border/50" />
+              <Input type="email" placeholder="E-post" value={buyerEmail} onChange={(e) => setBuyerEmail(e.target.value)} disabled={!TICKET_SALES_ENABLED} className="h-9 bg-background/50 border-border/50" />
               <p className="text-xs text-muted-foreground">
                 Ved å fortsette godtar du våre{" "}
                 <Link to="/vilkar" className="underline hover:text-foreground transition-colors">
@@ -103,12 +103,12 @@ export default function TicketsPage() {
                   personvernerklæring
                 </Link>
               </p>
-              <Button className="w-full h-9" onClick={handlePurchase} disabled={isLoading || !TICKET_SALES_ENABLED}>
+              <Button className="w-full h-10 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold" onClick={handlePurchase} disabled={isLoading || !TICKET_SALES_ENABLED}>
                 {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
                 {TICKET_SALES_ENABLED ? "Gå til betaling" : "Billettsalg stengt"}
               </Button>
             </div>
-          </Card>
+          </div>
         )}
       </div>
     </div>

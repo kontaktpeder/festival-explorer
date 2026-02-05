@@ -45,6 +45,7 @@ export default {
           mint: "hsl(var(--accent-mint))",
           pink: "hsl(var(--accent-pink))",
         },
+        warning: "hsl(var(--warning))",
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",

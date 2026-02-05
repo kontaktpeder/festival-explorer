@@ -3,9 +3,9 @@ import { ArrowLeft } from "lucide-react";
 
 export default function PrivacyGuestPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border/50">
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border/30">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
           <Link 
             to="/" 
@@ -13,14 +13,14 @@ export default function PrivacyGuestPage() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-lg font-semibold">Personvern</h1>
+          <h1 className="text-lg font-semibold text-foreground">Personvern</h1>
         </div>
       </div>
 
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-8">
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Personvern for uregistrerte brukere</h2>
+          <h2 className="text-2xl font-bold text-foreground">Personvern for uregistrerte brukere</h2>
           <p className="text-muted-foreground leading-relaxed">
             Når du kjøper billett via GIGGEN uten å opprette brukerkonto, behandler vi kun 
             personopplysninger som er nødvendige for å gjennomføre kjøpet og gi deg tilgang 
@@ -29,7 +29,7 @@ export default function PrivacyGuestPage() {
         </div>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold">Hvilke opplysninger samles inn</h3>
+          <h3 className="text-lg font-semibold text-foreground">Hvilke opplysninger samles inn</h3>
           <ul className="list-disc list-inside text-muted-foreground space-y-1">
             <li>Navn</li>
             <li>E-postadresse</li>
@@ -40,7 +40,7 @@ export default function PrivacyGuestPage() {
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold">Hva opplysningene brukes til</h3>
+          <h3 className="text-lg font-semibold text-foreground">Hva opplysningene brukes til</h3>
           <ul className="list-disc list-inside text-muted-foreground space-y-1">
             <li>Fullføre billettkjøp og betaling</li>
             <li>Sende billett og kvittering på e-post</li>
@@ -50,7 +50,7 @@ export default function PrivacyGuestPage() {
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold">Hva vi ikke gjør</h3>
+          <h3 className="text-lg font-semibold text-foreground">Hva vi ikke gjør</h3>
           <ul className="list-disc list-inside text-muted-foreground space-y-1">
             <li>Vi oppretter <strong className="text-foreground">ingen brukerkonto</strong></li>
             <li>Vi profilerer deg ikke</li>
@@ -59,7 +59,7 @@ export default function PrivacyGuestPage() {
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold">Lagring og sletting</h3>
+          <h3 className="text-lg font-semibold text-foreground">Lagring og sletting</h3>
           <ul className="list-disc list-inside text-muted-foreground space-y-1">
             <li>Personopplysninger knyttet til billettkjøp lagres kun så lenge det er nødvendig for gjennomføring og oppgjør</li>
             <li>Data anonymiseres eller slettes automatisk etter arrangementet, senest innen <strong className="text-foreground">90 dager</strong></li>
@@ -67,7 +67,7 @@ export default function PrivacyGuestPage() {
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold">Betaling</h3>
+          <h3 className="text-lg font-semibold text-foreground">Betaling</h3>
           <ul className="list-disc list-inside text-muted-foreground space-y-1">
             <li>All betaling håndteres sikkert av Stripe</li>
             <li>GIGGEN lagrer ikke kortinformasjon</li>
@@ -75,13 +75,13 @@ export default function PrivacyGuestPage() {
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold">Dine rettigheter</h3>
+          <h3 className="text-lg font-semibold text-foreground">Dine rettigheter</h3>
           <p className="text-muted-foreground leading-relaxed">
             Du har rett til innsyn, retting og sletting av opplysninger.
             Kontakt oss på{" "}
             <a 
               href="mailto:giggen.main@gmail.com" 
-              className="text-primary hover:underline"
+              className="text-accent hover:underline"
             >
               giggen.main@gmail.com
             </a>
@@ -90,7 +90,7 @@ export default function PrivacyGuestPage() {
         </section>
 
         {/* Back link */}
-        <div className="pt-4 border-t border-border/50">
+        <div className="pt-4 border-t border-border/30">
           <Link 
             to="/" 
             className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2"

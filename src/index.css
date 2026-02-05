@@ -11,63 +11,66 @@
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     
-    /* Retro Poster Palette - Kaytranada inspired */
-    /* Deep purple base */
-    --background: 258 35% 22%;
-    --foreground: 45 30% 90%;
+    /* Night + Grain + Warm Traces Palette */
+    /* Deep charcoal/warm black base */
+    --background: 20 15% 6%;
+    --foreground: 40 20% 88%;
     
-    /* Surface layers - purple tones */
-    --card: 258 30% 26%;
-    --card-foreground: 45 30% 90%;
-    --popover: 258 35% 20%;
-    --popover-foreground: 45 30% 90%;
+    /* Surface layers - warm dark tones */
+    --card: 25 12% 10%;
+    --card-foreground: 40 20% 88%;
+    --popover: 20 15% 8%;
+    --popover-foreground: 40 20% 88%;
     
     /* Primary - cream/off-white */
-    --primary: 45 30% 90%;
-    --primary-foreground: 258 35% 22%;
+    --primary: 40 20% 88%;
+    --primary-foreground: 20 15% 6%;
     
-    /* Secondary - muted purple */
-    --secondary: 258 25% 30%;
-    --secondary-foreground: 45 25% 85%;
+    /* Secondary - warm dark brown */
+    --secondary: 25 15% 14%;
+    --secondary-foreground: 40 15% 75%;
     
     /* Muted surfaces */
-    --muted: 258 20% 28%;
-    --muted-foreground: 45 15% 60%;
+    --muted: 25 12% 12%;
+    --muted-foreground: 35 10% 55%;
     
     /* Accent - WARM ORANGE */
     --accent: 24 100% 55%;
-    --accent-foreground: 258 35% 12%;
+    --accent-foreground: 20 15% 6%;
     
     /* Secondary accent - hot pink (for subtle touches) */
     --accent-warm: 330 100% 60%;
     
-    /* Mint/sage border accent */
-    --accent-mint: 162 40% 70%;
+    /* Warm amber border accent */
+    --accent-mint: 30 60% 50%;
     
     /* Destructive */
     --destructive: 0 72% 51%;
-    --destructive-foreground: 45 30% 90%;
+    --destructive-foreground: 40 20% 88%;
     
-    /* Borders & inputs - mint-tinted */
-    --border: 162 20% 35%;
-    --input: 258 20% 28%;
+    /* Borders & inputs - warm tinted */
+    --border: 30 15% 20%;
+    --input: 25 12% 12%;
     --ring: 24 100% 55%;
     
     /* Pink accent for subtle touches */
     --accent-pink: 330 100% 60%;
+    
+    /* Warning color */
+    --warning: 45 93% 47%;
 
     --radius: 0.25rem;
     
-    /* Retro grain texture - darker and grittier */
+    /* Grain texture */
     --cosmic-grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    --cosmic-overlay: linear-gradient(180deg, hsl(258 35% 22% / 0.3) 0%, hsl(258 35% 22% / 0.9) 100%);
+    --cosmic-overlay: linear-gradient(180deg, hsl(20 15% 6% / 0.3) 0%, hsl(20 15% 6% / 0.9) 100%);
     --cosmic-glow: 0 0 60px hsl(24 100% 55% / 0.25);
-    --cosmic-border: 2px solid hsl(162 40% 70% / 0.3);
+    --cosmic-border: 2px solid hsl(30 60% 50% / 0.3);
 
-    /* Shadow system - purple tinted */
-    --shadow-sm: 0 2px 8px hsl(258 40% 10% / 0.4);
-    --shadow-md: 0 4px 16px hsl(258 40% 10% / 0.5);
-    --shadow-lg: 0 8px 32px hsl(258 40% 10% / 0.6);
+    /* Shadow system - warm tinted */
+    --shadow-sm: 0 2px 8px hsl(20 30% 3% / 0.5);
+    --shadow-md: 0 4px 16px hsl(20 30% 3% / 0.6);
+    --shadow-lg: 0 8px 32px hsl(20 30% 3% / 0.7);
     --shadow-glow: 0 0 40px hsl(24 100% 55% / 0.3);
     
     /* Typography - retro condensed feel */
@@ -75,13 +78,13 @@
     --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
     
     /* Sidebar (keeping for shadcn compatibility) */
-    --sidebar-background: 258 30% 20%;
-    --sidebar-foreground: 45 30% 90%;
+    --sidebar-background: 20 15% 8%;
+    --sidebar-foreground: 40 20% 88%;
     --sidebar-primary: 24 100% 55%;
-    --sidebar-primary-foreground: 258 35% 12%;
-    --sidebar-accent: 258 25% 30%;
-    --sidebar-accent-foreground: 45 30% 90%;
-    --sidebar-border: 162 20% 35%;
+    --sidebar-primary-foreground: 20 15% 6%;
+    --sidebar-accent: 25 15% 14%;
+    --sidebar-accent-foreground: 40 20% 88%;
+    --sidebar-border: 30 15% 20%;
     --sidebar-ring: 24 100% 55%;
   }
 }
@@ -95,18 +98,34 @@
     font-family: var(--font-display);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: hsl(258 35% 22%);
+    background-color: hsl(20 15% 6%);
   }
   
   body {
     @apply bg-background text-foreground;
     min-height: 100svh;
     position: relative;
-    background-color: hsl(258 35% 22%);
+    background: linear-gradient(
+      180deg,
+      hsl(20 15% 5%) 0%,
+      hsl(25 12% 8%) 50%,
+      hsl(20 15% 5%) 100%
+    );
     /* Prevent iOS overscroll showing white and enable smooth scrolling */
     overscroll-behavior: none;
     /* Enable native smooth scrolling for better mobile experience */
     -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Grain overlay on body */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: var(--cosmic-grain);
+    opacity: 0.06;
+    pointer-events: none;
+    z-index: 1000;
   }
   
   /* Smooth scroll behavior for all devices */
@@ -136,7 +155,7 @@
     background: linear-gradient(
       180deg,
       hsl(var(--background)) 0%,
-      hsl(258 40% 28%) 50%,
+      hsl(25 12% 10%) 50%,
       hsl(var(--background)) 100%
     );
   }
@@ -154,7 +173,7 @@
   /* Card variants - retro poster style */
   .cosmic-card {
     @apply bg-card rounded-sm;
-    border: 2px solid hsl(var(--accent-mint) / 0.2);
+    border: 1px solid hsl(30 40% 40% / 0.25);
     box-shadow: var(--shadow-md);
     backdrop-filter: blur(8px);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -162,7 +181,7 @@
   
   .cosmic-card:hover {
     box-shadow: var(--shadow-lg), var(--shadow-glow);
-    border-color: hsl(var(--accent) / 0.5);
+    border-color: hsl(30 50% 50% / 0.4);
     transform: translateY(-2px);
   }
   
@@ -211,13 +230,13 @@
   .btn-ghost {
     @apply text-foreground/80 font-medium uppercase tracking-wide;
     @apply px-4 py-2 rounded-sm;
-    @apply border-2 border-[hsl(162_40%_70%_/_0.4)];
+    @apply border-2 border-[hsl(30_50%_50%_/_0.4)];
     @apply transition-all duration-200;
   }
   
   .btn-ghost:hover {
     @apply bg-secondary text-foreground;
-    @apply border-[hsl(162_40%_70%_/_0.7)];
+    @apply border-[hsl(30_50%_50%_/_0.7)];
   }
   
   /* Bottom navigation */
@@ -280,7 +299,7 @@
   }
 
   .section-vignette {
-    background: radial-gradient(ellipse at center, transparent 0%, hsl(258 35% 22% / 0.5) 100%);
+    background: radial-gradient(ellipse at center, transparent 0%, hsl(20 15% 6% / 0.5) 100%);
   }
 
   .section-gradient {
@@ -288,24 +307,23 @@
   }
 
   .section-bg-about {
-    background: hsl(258 30% 26%);
+    background: hsl(25 12% 10%);
   }
 
   .section-bg-artists {
-    background: hsl(258 25% 30%);
+    background: hsl(25 15% 12%);
   }
 
   .section-bg-venue {
-    background: hsl(258 35% 24%);
-    background-attachment: fixed;
+    background: hsl(25 12% 9%);
   }
 
   .section-bg-practical {
-    background: hsl(258 32% 28%);
+    background: hsl(25 10% 11%);
   }
 
   .section-bg-footer {
-    background: hsl(258 35% 18%);
+    background: hsl(20 15% 5%);
   }
 }
 
@@ -376,6 +394,24 @@
     clip-path: inset(0 100% 0 0);
     animation: textReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
+}
+
+/* Ticket card style - semi-transparent with warm border */
+.ticket-card {
+  background: hsl(30 10% 12% / 0.6);
+  border: 1px solid hsl(30 40% 40% / 0.25);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ticket-card:hover {
+  background: hsl(30 10% 14% / 0.7);
+  border-color: hsl(30 50% 50% / 0.4);
+}
+
+.ticket-card.selected {
+  border-color: hsl(var(--accent));
+  box-shadow: 0 0 20px hsl(24 100% 55% / 0.2);
 }
 
 @keyframes fadeIn {

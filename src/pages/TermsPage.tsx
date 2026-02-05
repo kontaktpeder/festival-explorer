@@ -3,9 +3,9 @@ import { ArrowLeft } from "lucide-react";
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border/50">
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border/30">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-3">
           <Link 
             to="/" 
@@ -13,14 +13,14 @@ export default function TermsPage() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-lg font-semibold">Vilkår</h1>
+          <h1 className="text-lg font-semibold text-foreground">Vilkår</h1>
         </div>
       </div>
 
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-8">
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Vilkår for billettkjøp (uregistrerte brukere)</h2>
+          <h2 className="text-2xl font-bold text-foreground">Vilkår for billettkjøp (uregistrerte brukere)</h2>
           <p className="text-muted-foreground leading-relaxed">
             Disse vilkårene gjelder for kjøp av billetter via GIGGEN uten opprettelse av brukerkonto.
           </p>
@@ -30,14 +30,14 @@ export default function TermsPage() {
         </div>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold">1. Om tjenesten</h3>
+          <h3 className="text-lg font-semibold text-foreground">1. Om tjenesten</h3>
           <p className="text-muted-foreground leading-relaxed">
             GIGGEN tilbyr billettsalg til konserter og arrangementer. Kjøp kan gjennomføres uten registrering av brukerkonto.
           </p>
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold">2. Billettkjøp</h3>
+          <h3 className="text-lg font-semibold text-foreground">2. Billettkjøp</h3>
           <ul className="list-disc list-inside text-muted-foreground space-y-1">
             <li>Et billettkjøp er bindende når betaling er gjennomført</li>
             <li>Billetten leveres digitalt via e-post</li>
@@ -49,7 +49,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold">3. Betaling</h3>
+          <h3 className="text-lg font-semibold text-foreground">3. Betaling</h3>
           <ul className="list-disc list-inside text-muted-foreground space-y-1">
             <li>Betaling håndteres av tredjepart (Stripe)</li>
             <li>GIGGEN lagrer ikke kort- eller betalingsinformasjon</li>
@@ -57,7 +57,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold">4. Bruk av billett</h3>
+          <h3 className="text-lg font-semibold text-foreground">4. Bruk av billett</h3>
           <ul className="list-disc list-inside text-muted-foreground space-y-1">
             <li>QR-koden kan kun brukes én gang, med mindre annet er spesifisert</li>
             <li>Billetten gir kun adgang i henhold til valgt billettype</li>
@@ -66,7 +66,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold">5. Avlysning og endringer</h3>
+          <h3 className="text-lg font-semibold text-foreground">5. Avlysning og endringer</h3>
           <ul className="list-disc list-inside text-muted-foreground space-y-1">
             <li>Ved <strong className="text-foreground">avlyst arrangement</strong> refunderes kjøpesummen</li>
             <li><strong className="text-foreground">Endringer i program, tidspunkt eller rekkefølge på artister gir ikke rett til refusjon</strong></li>
@@ -74,7 +74,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold">6. Innsjekk og adgang</h3>
+          <h3 className="text-lg font-semibold text-foreground">6. Innsjekk og adgang</h3>
           <ul className="list-disc list-inside text-muted-foreground space-y-1">
             <li>Billetten scannes ved inngang for å bekrefte gyldig adgang</li>
             <li>Arrangør forbeholder seg retten til å <strong className="text-foreground">nekte eller bortvise personer ved upassende oppførsel</strong>, brudd på regler, eller i henhold til krav fra <strong className="text-foreground">Josefines Vertshus</strong></li>
@@ -85,7 +85,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold">7. Ansvar og arrangørforhold</h3>
+          <h3 className="text-lg font-semibold text-foreground">7. Ansvar og arrangørforhold</h3>
           <ul className="list-disc list-inside text-muted-foreground space-y-1">
             <li>GIGGEN fungerer som teknisk plattform for billettsalg</li>
             <li>Arrangementet eies og gjennomføres i samarbeid med <strong className="text-foreground">Josefines Vertshus</strong>, som står som arrangør og har ansvar for forsikring og gjennomføring</li>
@@ -94,7 +94,7 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold">8. Personopplysninger</h3>
+          <h3 className="text-lg font-semibold text-foreground">8. Personopplysninger</h3>
           <ul className="list-disc list-inside text-muted-foreground space-y-1">
             <li>Personopplysninger behandles i henhold til gjeldende personvernerklæring</li>
             <li>For uregistrerte brukere behandles kun opplysninger som er nødvendige for billettkjøp og adgang</li>
@@ -102,19 +102,19 @@ export default function TermsPage() {
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold">9. Endringer i vilkår</h3>
+          <h3 className="text-lg font-semibold text-foreground">9. Endringer i vilkår</h3>
           <p className="text-muted-foreground leading-relaxed">
             GIGGEN forbeholder seg retten til å oppdatere disse vilkårene. Gjeldende vilkår er de som er publisert på kjøpstidspunktet.
           </p>
         </section>
 
         <section className="space-y-3">
-          <h3 className="text-lg font-semibold">10. Kontakt</h3>
+          <h3 className="text-lg font-semibold text-foreground">10. Kontakt</h3>
           <p className="text-muted-foreground leading-relaxed">
             Spørsmål knyttet til billettkjøp eller vilkår kan rettes til:{" "}
             <a 
               href="mailto:giggen.main@gmail.com" 
-              className="text-primary hover:underline"
+              className="text-accent hover:underline"
             >
               giggen.main@gmail.com
             </a>
@@ -122,7 +122,7 @@ export default function TermsPage() {
         </section>
 
         {/* Back link */}
-        <div className="pt-4 border-t border-border/50">
+        <div className="pt-4 border-t border-border/30">
           <Link 
             to="/" 
             className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2"
