@@ -9,6 +9,8 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
+import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
+import { formatEntityLocationDisplay, type LocationType } from "@/types/location";
 
 export default function VenuePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -38,6 +40,11 @@ export default function VenuePage() {
   const heroImageUrl = useSignedMediaUrl(venue.hero_image_url, 'public');
   const heroImageSettings = parseImageSettings(venue.hero_image_settings);
 
+  // Get location data (may come from entity system in the future)
+  const locationName = (venue as any).location_name as string | null;
+  const locationType = (venue as any).location_type as LocationType | null;
+  const locationDisplay = formatEntityLocationDisplay(locationName, locationType);
+
   return (
     <PageLayout>
       {/* Static logo */}
@@ -59,10 +66,11 @@ export default function VenuePage() {
       <div className="section space-y-4">
         {/* Meta info */}
         <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-          {venue.address && (
+          {/* Show location display if available, otherwise fall back to address */}
+          {(locationDisplay || venue.address) && (
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-accent" />
-              <span>{venue.address}</span>
+              <span>{locationDisplay || venue.address}</span>
             </div>
           )}
         </div>
@@ -123,6 +131,9 @@ export default function VenuePage() {
           />
         </section>
       )}
+
+      {/* What is GIGGEN footer */}
+      <WhatIsGiggenFooter />
     </PageLayout>
   );
 }

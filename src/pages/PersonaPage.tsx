@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Building2, User, Users, ExternalLink, ArrowLeft } from "lucide-react";
+import { Building2, User, Users, ExternalLink, ArrowLeft, MapPin } from "lucide-react";
 import { EntityTimeline } from "@/components/ui/EntityTimeline";
 import { usePublicEntityTimelineEvents } from "@/hooks/useEntityTimeline";
 import { usePersona } from "@/hooks/usePersona";
@@ -13,10 +13,13 @@ import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { PersonaSocialLinks } from "@/components/ui/PersonaSocialLinks";
+import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
 import type { EntityType, Persona } from "@/types/database";
 import type { SocialLink } from "@/types/social";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { getAvailableForLabel, type AvailableForKey } from "@/types/availability";
+import { formatLocationDisplay, type LocationType } from "@/types/location";
 
 const TYPE_ICONS: Record<EntityType, typeof User> = {
   venue: Building2,
@@ -118,6 +121,12 @@ export default function PersonaPage() {
 
   // Get social links from persona (future-proofed - field may not exist yet)
   const personaSocialLinks = ((persona as any)?.social_links || []) as SocialLink[] | undefined;
+  
+  // Get availability and location
+  const availableFor = ((persona as any)?.available_for || []) as AvailableForKey[];
+  const locationName = (persona as any)?.location_name as string | null;
+  const locationType = (persona as any)?.location_type as LocationType | null;
+  const locationDisplay = formatLocationDisplay(locationName, locationType);
 
   if (isLoadingPersona) return <LoadingState />;
   
@@ -179,7 +188,7 @@ export default function PersonaPage() {
           
           {/* Tags - subtle badges */}
           {persona.category_tags && persona.category_tags.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-3 mb-8">
+            <div className="flex flex-wrap justify-center gap-3 mb-6">
               {persona.category_tags.map((tag) => (
                 <span 
                   key={tag} 
@@ -188,6 +197,28 @@ export default function PersonaPage() {
                   {tag}
                 </span>
               ))}
+            </div>
+          )}
+
+          {/* Available for - only show if populated */}
+          {availableFor.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
+              {availableFor.map((key) => (
+                <span 
+                  key={key} 
+                  className="px-3 py-1 rounded-full bg-secondary/50 text-secondary-foreground/70 text-xs"
+                >
+                  {getAvailableForLabel(key)}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Location - only show if populated */}
+          {locationDisplay && (
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground/60 mb-8">
+              <MapPin className="w-3.5 h-3.5" />
+              <span>{locationDisplay}</span>
             </div>
           )}
 
@@ -347,8 +378,11 @@ export default function PersonaPage() {
           </section>
         )}
 
+        {/* What is GIGGEN footer */}
+        <WhatIsGiggenFooter />
+
         {/* Spacer at bottom */}
-        <div className="h-16 md:h-24" />
+        <div className="h-8 md:h-12" />
       </div>
     </PageLayout>
   );

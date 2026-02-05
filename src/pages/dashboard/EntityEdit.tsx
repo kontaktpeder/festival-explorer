@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { EntityTimelineManager } from "@/components/dashboard/EntityTimelineManager";
@@ -38,7 +39,8 @@ import {
   Clock,
   AlertTriangle,
   Building2,
-  Link2
+  Link2,
+  MapPin
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
@@ -46,6 +48,7 @@ import { parseImageSettings } from "@/types/database";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import { getPublicUrl } from "@/lib/utils";
 import type { SocialLink } from "@/types/social";
+import { LOCATION_TYPE_OPTIONS, type LocationType } from "@/types/location";
 
 // Tydeligere prosjekt-type labels
 const TYPE_LABELS: Record<EntityType, string> = {
@@ -88,9 +91,14 @@ export default function EntityEdit() {
   });
   const [heroImageSettings, setHeroImageSettings] = useState<ImageSettings | null>(null);
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
+  
+  // Location fields
+  const [locationName, setLocationName] = useState("");
+  const [locationType, setLocationType] = useState<LocationType | "">("");
 
   // Collapsible states
   const [basicOpen, setBasicOpen] = useState(true);
+  const [locationOpen, setLocationOpen] = useState(false);
   const [socialOpen, setSocialOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [peopleOpen, setPeopleOpen] = useState(false);
@@ -179,12 +187,26 @@ export default function EntityEdit() {
       });
       setHeroImageSettings(parseImageSettings(entityWithAccess.hero_image_settings) || null);
       setSocialLinks(((entityWithAccess as any).social_links || []) as SocialLink[]);
+      // Location fields
+      setLocationName((entityWithAccess as any).location_name || "");
+      setLocationType((entityWithAccess as any).location_type || "");
     }
   }, [entityWithAccess]);
 
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
+      // Prepare location data
+      const locationData = locationName.trim()
+        ? {
+            location_name: locationName.trim(),
+            location_type: locationType || null,
+          }
+        : {
+            location_name: null,
+            location_type: null,
+          };
+
       const { error } = await supabase
         .from("entities")
         .update({
@@ -194,6 +216,7 @@ export default function EntityEdit() {
           hero_image_url: formData.hero_image_url || null,
           hero_image_settings: heroImageSettings,
           social_links: socialLinks,
+          ...locationData,
         } as Record<string, unknown>)
         .eq("id", id);
       
@@ -397,6 +420,49 @@ export default function EntityEdit() {
                 disabled={!canEdit}
                 className="bg-transparent border-border/50 focus:border-accent resize-none"
               />
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Lokasjon */}
+        <Collapsible open={locationOpen} onOpenChange={setLocationOpen}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
+            <div className="flex items-center gap-3">
+              <MapPin className="h-4 w-4 text-accent" />
+              <span className="font-medium">Lokasjon</span>
+              {locationName && <span className="text-xs text-muted-foreground">({locationName})</span>}
+            </div>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${locationOpen ? "rotate-180" : ""}`} />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="py-5 space-y-4 border-b border-border/30">
+            <p className="text-sm text-muted-foreground">
+              {isVenue ? "Hvor ligger scenen?" : "Hvor er prosjektet basert?"}
+            </p>
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label className="text-muted-foreground text-xs uppercase tracking-wide">Sted</Label>
+                <Input
+                  value={locationName}
+                  onChange={(e) => setLocationName(e.target.value)}
+                  placeholder="F.eks. Oslo, Norge eller Josefines gate 16"
+                  disabled={!canEdit}
+                  className="bg-transparent border-border/50 focus:border-accent"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-muted-foreground text-xs uppercase tracking-wide">Type (valgfritt)</Label>
+                <Select value={locationType} onValueChange={(val) => setLocationType(val as LocationType | "")} disabled={!canEdit}>
+                  <SelectTrigger className="w-full bg-transparent border-border/50">
+                    <SelectValue placeholder="Velg type..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Ikke valgt</SelectItem>
+                    {LOCATION_TYPE_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CollapsibleContent>
         </Collapsible>

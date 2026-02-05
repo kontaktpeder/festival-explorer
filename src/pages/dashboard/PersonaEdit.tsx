@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Loader2, X, ChevronDown, Users, Trash2, User, Sparkles, Clock, Link2 } from "lucide-react";
+import { Loader2, X, ChevronDown, Users, Trash2, User, Sparkles, Clock, Link2, MapPin, Briefcase } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   usePersonaById, 
@@ -26,6 +26,8 @@ import { parseImageSettings, type ImageSettings, type AccessLevel } from "@/type
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import type { SocialLink } from "@/types/social";
 import { toast } from "sonner";
+import { AVAILABLE_FOR_OPTIONS, type AvailableForKey } from "@/types/availability";
+import { LOCATION_TYPE_OPTIONS, type LocationType } from "@/types/location";
 
 export default function PersonaEdit() {
   const { id } = useParams();
@@ -44,10 +46,17 @@ export default function PersonaEdit() {
   const [isPublic, setIsPublic] = useState(true);
   const [customTag, setCustomTag] = useState("");
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
+  
+  // New fields: available_for and location
+  const [availableFor, setAvailableFor] = useState<AvailableForKey[]>([]);
+  const [locationName, setLocationName] = useState("");
+  const [locationType, setLocationType] = useState<LocationType | "">("");
 
   // Collapsible states
   const [basicOpen, setBasicOpen] = useState(true);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [availabilityOpen, setAvailabilityOpen] = useState(false);
+  const [locationOpen, setLocationOpen] = useState(false);
   const [socialOpen, setSocialOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [projectsOpen, setProjectsOpen] = useState(false);
@@ -120,6 +129,10 @@ export default function PersonaEdit() {
       setCategoryTags(existingPersona.category_tags || []);
       setIsPublic(existingPersona.is_public);
       setSocialLinks(((existingPersona as any).social_links || []) as SocialLink[]);
+      // New fields
+      setAvailableFor(((existingPersona as any).available_for || []) as AvailableForKey[]);
+      setLocationName((existingPersona as any).location_name || "");
+      setLocationType((existingPersona as any).location_type || "");
     }
   }, [existingPersona]);
 
@@ -130,6 +143,17 @@ export default function PersonaEdit() {
       toast.error("Navn er påkrevd");
       return;
     }
+
+    // Prepare location fields
+    const locationData = locationName.trim() 
+      ? {
+          location_name: locationName.trim(),
+          location_type: locationType || null,
+        }
+      : {
+          location_name: null,
+          location_type: null,
+        };
 
     try {
       if (isEditing && id) {
@@ -142,6 +166,8 @@ export default function PersonaEdit() {
           category_tags: categoryTags,
           is_public: isPublic,
           social_links: socialLinks,
+          available_for: availableFor,
+          ...locationData,
         } as any);
         toast.success("Profil oppdatert");
       } else {
@@ -153,6 +179,8 @@ export default function PersonaEdit() {
           category_tags: categoryTags,
           is_public: isPublic,
           social_links: socialLinks.length > 0 ? socialLinks : undefined,
+          available_for: availableFor,
+          ...locationData,
         } as any);
         toast.success("Profil opprettet");
       }
@@ -160,6 +188,15 @@ export default function PersonaEdit() {
     } catch (err: any) {
       toast.error(err.message || "Noe gikk galt");
     }
+  };
+
+  // Toggle available_for
+  const toggleAvailableFor = (key: AvailableForKey) => {
+    setAvailableFor(prev => 
+      prev.includes(key)
+        ? prev.filter(k => k !== key)
+        : [...prev, key]
+    );
   };
 
   const toggleCategory = (category: string) => {
@@ -311,6 +348,81 @@ export default function PersonaEdit() {
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomTag(); } }}
               />
               <Button type="button" variant="outline" onClick={addCustomTag} className="border-accent/30 hover:border-accent">+</Button>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Tilgjengelig for */}
+        <Collapsible open={availabilityOpen} onOpenChange={setAvailabilityOpen}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
+            <div className="flex items-center gap-3">
+              <Briefcase className="h-4 w-4 text-accent" />
+              <span className="font-medium">Tilgjengelig for</span>
+              {availableFor.length > 0 && <span className="text-xs text-muted-foreground">({availableFor.length})</span>}
+            </div>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${availabilityOpen ? "rotate-180" : ""}`} />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="py-5 space-y-4 border-b border-border/30">
+            <p className="text-sm text-muted-foreground">
+              Et signal, ikke et løfte. Velg hva du generelt er åpen for.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {AVAILABLE_FOR_OPTIONS.map((option) => (
+                <Badge
+                  key={option.key}
+                  variant={availableFor.includes(option.key) ? "default" : "outline"}
+                  className={`cursor-pointer text-sm py-1.5 px-3 transition-colors ${
+                    availableFor.includes(option.key) 
+                      ? "bg-secondary text-secondary-foreground border-secondary" 
+                      : "border-border/50 hover:border-border text-muted-foreground"
+                  }`}
+                  onClick={() => toggleAvailableFor(option.key)}
+                >
+                  {option.label}
+                </Badge>
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Lokasjon */}
+        <Collapsible open={locationOpen} onOpenChange={setLocationOpen}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
+            <div className="flex items-center gap-3">
+              <MapPin className="h-4 w-4 text-accent" />
+              <span className="font-medium">Lokasjon</span>
+              {locationName && <span className="text-xs text-muted-foreground">({locationName})</span>}
+            </div>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${locationOpen ? "rotate-180" : ""}`} />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="py-5 space-y-4 border-b border-border/30">
+            <p className="text-sm text-muted-foreground">
+              Hvor er du basert? Dette vises på profilen din.
+            </p>
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label className="text-muted-foreground text-xs uppercase tracking-wide">Sted</Label>
+                <Input
+                  value={locationName}
+                  onChange={(e) => setLocationName(e.target.value)}
+                  placeholder="F.eks. Oslo, Norge eller Josefines gate 16"
+                  className="bg-transparent border-border/50 focus:border-accent"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-muted-foreground text-xs uppercase tracking-wide">Type (valgfritt)</Label>
+                <Select value={locationType} onValueChange={(val) => setLocationType(val as LocationType | "")}>
+                  <SelectTrigger className="w-full bg-transparent border-border/50">
+                    <SelectValue placeholder="Velg type..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Ikke valgt</SelectItem>
+                    {LOCATION_TYPE_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CollapsibleContent>
         </Collapsible>
