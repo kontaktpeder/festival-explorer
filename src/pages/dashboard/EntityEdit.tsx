@@ -6,12 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, UserPlus, ExternalLink, Users, Sparkles, Info, Trash2 } from "lucide-react";
-import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
-import { LoadingState } from "@/components/ui/LoadingState";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,8 +20,24 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
+import { LoadingState } from "@/components/ui/LoadingState";
 import { EntityTimelineManager } from "@/components/dashboard/EntityTimelineManager";
 import { EntityPersonaBindingsEditor } from "@/components/admin/EntityPersonaBindingsEditor";
+import { 
+  Save, 
+  UserPlus, 
+  ExternalLink, 
+  Users, 
+  Sparkles, 
+  Info, 
+  Trash2,
+  ChevronDown,
+  Image,
+  Clock,
+  AlertTriangle
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
 
@@ -63,11 +76,18 @@ export default function EntityEdit() {
   });
   const [heroImageSettings, setHeroImageSettings] = useState<ImageSettings | null>(null);
 
+  // Collapsible states
+  const [basicOpen, setBasicOpen] = useState(true);
+  const [mediaOpen, setMediaOpen] = useState(false);
+  const [timelineOpen, setTimelineOpen] = useState(false);
+  const [peopleOpen, setPeopleOpen] = useState(false);
+  const [teamOpen, setTeamOpen] = useState(false);
+  const [dangerOpen, setDangerOpen] = useState(false);
+
   // Fetch entity with user's access level
   const { data: entityWithAccess, isLoading, error } = useQuery({
     queryKey: ["dashboard-entity", id],
     queryFn: async () => {
-      // First get the entity
       const { data: entity, error: entityError } = await supabase
         .from("entities")
         .select("*")
@@ -77,7 +97,6 @@ export default function EntityEdit() {
       if (entityError) throw entityError;
       if (!entity) return null;
 
-      // Then get user's access level from entity_team
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
@@ -91,7 +110,6 @@ export default function EntityEdit() {
 
       if (teamError) throw teamError;
       
-      // If user is creator (owner) but not in entity_team, they're still the owner
       const isCreator = entity.created_by === user.id;
       const access = teamMember?.access || (isCreator ? "owner" : null);
 
@@ -121,7 +139,6 @@ export default function EntityEdit() {
       
       if (error) throw error;
       
-      // Fetch personas for each team member
       const userIds = teamData?.map(m => m.user_id) || [];
       if (userIds.length === 0) return [];
       
@@ -130,7 +147,6 @@ export default function EntityEdit() {
         .select("id, user_id, name, avatar_url, slug")
         .in("user_id", userIds);
       
-      // Map personas to team members
       return (teamData || []).map(member => ({
         ...member,
         persona: personasData?.find(p => p.user_id === member.user_id) || null
@@ -148,12 +164,11 @@ export default function EntityEdit() {
         description: entityWithAccess.description || "",
         hero_image_url: entityWithAccess.hero_image_url || "",
       });
-      // Parse hero_image_settings from JSONB
       setHeroImageSettings(parseImageSettings(entityWithAccess.hero_image_settings) || null);
     }
   }, [entityWithAccess]);
 
-  // Save mutation - includes hero_image_settings JSONB
+  // Save mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
@@ -226,15 +241,7 @@ export default function EntityEdit() {
   const canEdit = ["editor", "admin", "owner"].includes(userAccess);
   const canInvite = ["admin", "owner"].includes(userAccess);
   const canManagePersonas = ["admin", "owner"].includes(userAccess);
-  const isReadOnly = !canEdit;
   const isViewer = userAccess === "viewer";
-
-  // Viewers see limited fields - they're team members but not editors
-  const viewerFields = ["name", "tagline", "description", "hero_image_url"];
-  const showField = (fieldName: string) => {
-    if (canEdit) return true;
-    return viewerFields.includes(fieldName);
-  };
 
   const typeConfig = {
     venue: { route: "/project" },
@@ -243,292 +250,314 @@ export default function EntityEdit() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="container max-w-2xl px-4 sm:px-6 py-6 sm:py-8">
       {/* Header */}
-      <header className="border-b border-border">
-        <div className="max-w-2xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
-          <Link to="/dashboard" className="text-base sm:text-lg font-bold text-foreground">
-            GIGGEN
-          </Link>
+      <div className="mb-6">
+        <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+          GIGGEN BACKSTAGE
+        </p>
+        <div className="flex items-center gap-2 flex-wrap mb-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            {entityWithAccess.name}
+          </h1>
+          <Badge variant="secondary" className="text-xs">{TYPE_LABELS[entityWithAccess.type as EntityType]}</Badge>
         </div>
-      </header>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge variant="outline" className="text-xs">{ACCESS_LABELS[userAccess]}</Badge>
+          {!entityWithAccess.is_published && (
+            <Badge variant="outline" className="text-xs text-warning border-warning/30">Utkast</Badge>
+          )}
+        </div>
+        {isViewer && (
+          <p className="text-sm text-muted-foreground mt-2">
+            Du har lesetilgang til dette prosjektet.
+          </p>
+        )}
+      </div>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 sm:py-8 space-y-4 sm:space-y-6">
-        <div className="flex items-center gap-2 sm:gap-4">
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/dashboard">
-              <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Tilbake</span>
+      {/* Quick actions */}
+      <div className="flex gap-2 flex-wrap mb-6">
+        {entityWithAccess.is_published && (
+          <Button asChild variant="outline" size="sm" className="text-xs">
+            <Link to={`${typeConfig[entityWithAccess.type as EntityType].route}/${entityWithAccess.slug}`} target="_blank">
+              <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+              Se offentlig side
             </Link>
           </Button>
-        </div>
-
-        {/* Entity header with badges */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
-              {entityWithAccess.name}
-            </h1>
-            <Badge variant="secondary" className="text-xs">{TYPE_LABELS[entityWithAccess.type as EntityType]}</Badge>
-            <Badge variant="outline" className="text-xs">{ACCESS_LABELS[userAccess]}</Badge>
-            {!entityWithAccess.is_published && (
-              <Badge variant="outline" className="text-xs text-muted-foreground">Utkast</Badge>
-            )}
-          </div>
-          {isViewer && (
-            <p className="text-sm text-muted-foreground">
-              Du har lesetilgang til dette prosjektet.
-            </p>
-          )}
-        </div>
-
-        {/* Info-boks om prosjekt-typen */}
-        <Alert className="bg-accent/5 border-accent/20">
-          <Info className="h-4 w-4 text-accent" />
-          <AlertDescription className="text-sm">
-            <strong className="text-foreground">{TYPE_LABELS[entityWithAccess.type as EntityType]}</strong>
-            <span className="text-muted-foreground"> – {TYPE_DESCRIPTIONS[entityWithAccess.type as EntityType]}</span>
-          </AlertDescription>
-        </Alert>
-
-        {/* Action buttons */}
-        <div className="flex gap-2 flex-wrap">
-          {entityWithAccess.is_published && (
-            <Button asChild variant="outline" size="sm" className="text-xs sm:text-sm">
-              <Link to={`${typeConfig[entityWithAccess.type as EntityType].route}/${entityWithAccess.slug}`} target="_blank">
-                <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                <span className="hidden sm:inline">Se offentlig side</span>
-                <span className="sm:hidden">Se side</span>
-              </Link>
-            </Button>
-          )}
-          {canInvite && (
-            <Button asChild variant="outline" size="sm" className="text-xs sm:text-sm">
-              <Link to={`/dashboard/entities/${entityWithAccess.id}/invite`}>
-                <UserPlus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                Inviter
-              </Link>
-            </Button>
-          )}
-        </div>
-
-        {/* Edit form */}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (canEdit) {
-              saveMutation.mutate();
-            }
-          }}
-          className="space-y-6"
-        >
-          <div className="space-y-4">
-            {showField("name") && (
-              <div className="space-y-2">
-                <Label htmlFor="name">Navn</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                  placeholder={isVenue ? "Venue navn" : "Artist/band navn"}
-                  disabled={isReadOnly}
-                  required={canEdit}
-                />
-              </div>
-            )}
-
-            {showField("tagline") && (
-              <div className="space-y-2">
-                <Label htmlFor="tagline">Tagline</Label>
-                <Input
-                  id="tagline"
-                  value={formData.tagline}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, tagline: e.target.value }))}
-                  placeholder="Kort beskrivelse (én linje)"
-                  disabled={isReadOnly}
-                />
-              </div>
-            )}
-
-            {showField("description") && (
-              <div className="space-y-2">
-                <Label htmlFor="description">Beskrivelse</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                  placeholder="Full beskrivelse..."
-                  rows={4}
-                  disabled={isReadOnly}
-                />
-              </div>
-            )}
-
-            {showField("hero_image_url") && (
-              <div className="space-y-2">
-                <Label>Hero-bilde</Label>
-                {canEdit ? (
-                  <InlineMediaPickerWithCrop
-                    value={formData.hero_image_url}
-                    imageSettings={heroImageSettings}
-                    onChange={(url) => setFormData((prev) => ({ ...prev, hero_image_url: url }))}
-                    onSettingsChange={setHeroImageSettings}
-                    cropMode="hero"
-                    placeholder="Velg hero-bilde"
-                    useNaturalAspect
-                  />
-                ) : (
-                  formData.hero_image_url && (
-                    <div className="rounded-lg overflow-hidden border border-border">
-                      <img 
-                        src={formData.hero_image_url} 
-                        alt="Hero preview" 
-                        className="w-full h-40 object-cover"
-                      />
-                    </div>
-                  )
-                )}
-                <p className="text-xs text-muted-foreground">
-                  Velg bilde og juster fokuspunkt for beste visning
-                </p>
-              </div>
-            )}
-          </div>
-
-          {canEdit && (
-            <div className="flex gap-3 pt-4 border-t border-border">
-              <Button type="submit" disabled={saveMutation.isPending}>
-                <Save className="h-4 w-4 mr-2" />
-                {saveMutation.isPending ? "Lagrer..." : "Lagre endringer"}
-              </Button>
-            </div>
-          )}
-        </form>
-
-        {/* Timeline section - for editors, admins, owners */}
-        <EntityTimelineManager
-          entityId={entityWithAccess.id}
-          canEdit={canEdit}
-        />
-
-        {/* Personer bak prosjektet – admin/owner only */}
-        {canManagePersonas && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-muted-foreground" />
-              <h2 className="font-semibold text-foreground">Personer bak prosjektet</h2>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Velg hvilke profiler som skal vises offentlig på prosjektsiden.
-            </p>
-            <EntityPersonaBindingsEditor
-              entityId={entityWithAccess.id}
-              entityName={entityWithAccess.name}
-            />
-          </div>
         )}
+        {canInvite && (
+          <Button asChild variant="outline" size="sm" className="text-xs">
+            <Link to={`/dashboard/entities/${entityWithAccess.id}/invite`}>
+              <UserPlus className="h-3.5 w-3.5 mr-1.5" />
+              Inviter
+            </Link>
+          </Button>
+        )}
+        {canEdit && (
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="text-xs"
+            onClick={() => saveMutation.mutate()}
+            disabled={saveMutation.isPending}
+          >
+            <Save className="h-3.5 w-3.5 mr-1.5" />
+            {saveMutation.isPending ? "Lagrer..." : "Lagre"}
+          </Button>
+        )}
+      </div>
 
-        {/* Team members section */}
-        {teamMembers && teamMembers.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <h2 className="font-semibold text-foreground text-sm sm:text-base">Team-medlemmer</h2>
+      {/* Info alert */}
+      <Alert className="bg-accent/5 border-accent/20 mb-6">
+        <Info className="h-4 w-4 text-accent" />
+        <AlertDescription className="text-sm">
+          <strong className="text-foreground">{TYPE_LABELS[entityWithAccess.type as EntityType]}</strong>
+          <span className="text-muted-foreground"> – {TYPE_DESCRIPTIONS[entityWithAccess.type as EntityType]}</span>
+        </AlertDescription>
+      </Alert>
+
+      <div className="space-y-0">
+        {/* Grunnleggende */}
+        <Collapsible open={basicOpen} onOpenChange={setBasicOpen}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
+            <div className="flex items-center gap-3">
+              <Sparkles className="h-4 w-4 text-accent" />
+              <span className="font-medium">Grunnleggende</span>
+            </div>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${basicOpen ? "rotate-180" : ""}`} />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="py-5 space-y-4 border-b border-border/30">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-muted-foreground text-xs uppercase tracking-wide">Navn *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                placeholder={isVenue ? "Venue navn" : "Artist/band navn"}
+                disabled={!canEdit}
+                required={canEdit}
+                className="bg-transparent border-border/50 focus:border-accent"
+              />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="tagline" className="text-muted-foreground text-xs uppercase tracking-wide">Tagline</Label>
+              <Input
+                id="tagline"
+                value={formData.tagline}
+                onChange={(e) => setFormData((prev) => ({ ...prev, tagline: e.target.value }))}
+                placeholder="Kort beskrivelse (én linje)"
+                disabled={!canEdit}
+                className="bg-transparent border-border/50 focus:border-accent"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-muted-foreground text-xs uppercase tracking-wide">Beskrivelse</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                placeholder="Full beskrivelse..."
+                rows={4}
+                disabled={!canEdit}
+                className="bg-transparent border-border/50 focus:border-accent resize-none"
+              />
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Media / Hero-bilde */}
+        <Collapsible open={mediaOpen} onOpenChange={setMediaOpen}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
+            <div className="flex items-center gap-3">
+              <Image className="h-4 w-4 text-accent" />
+              <span className="font-medium">Hero-bilde</span>
+              {formData.hero_image_url && <span className="text-xs text-muted-foreground">(valgt)</span>}
+            </div>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${mediaOpen ? "rotate-180" : ""}`} />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="py-5 space-y-3 border-b border-border/30">
+            <p className="text-sm text-muted-foreground">
+              Velg bilde og juster fokuspunkt for beste visning.
+            </p>
+            {canEdit ? (
+              <InlineMediaPickerWithCrop
+                value={formData.hero_image_url}
+                imageSettings={heroImageSettings}
+                onChange={(url) => setFormData((prev) => ({ ...prev, hero_image_url: url }))}
+                onSettingsChange={setHeroImageSettings}
+                cropMode="hero"
+                placeholder="Velg hero-bilde"
+                useNaturalAspect
+              />
+            ) : (
+              formData.hero_image_url && (
+                <div className="rounded-lg overflow-hidden border border-border">
+                  <img 
+                    src={formData.hero_image_url} 
+                    alt="Hero preview" 
+                    className="w-full h-40 object-cover"
+                  />
+                </div>
+              )
+            )}
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Historien / Timeline */}
+        <Collapsible open={timelineOpen} onOpenChange={setTimelineOpen}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
+            <div className="flex items-center gap-3">
+              <Clock className="h-4 w-4 text-accent" />
+              <span className="font-medium">{isVenue ? "Historien" : "Milepæler"}</span>
+            </div>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${timelineOpen ? "rotate-180" : ""}`} />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="py-5 border-b border-border/30">
+            <p className="text-sm text-muted-foreground mb-4">
+              {isVenue ? "Viktige hendelser i scenens historie" : "Viktige øyeblikk i prosjektets reise"}
+            </p>
+            <EntityTimelineManager
+              entityId={entityWithAccess.id}
+              canEdit={canEdit}
+            />
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Personer bak prosjektet */}
+        {canManagePersonas && (
+          <Collapsible open={peopleOpen} onOpenChange={setPeopleOpen}>
+            <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
+              <div className="flex items-center gap-3">
+                <Sparkles className="h-4 w-4 text-accent" />
+                <span className="font-medium">Personer bak prosjektet</span>
+              </div>
+              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${peopleOpen ? "rotate-180" : ""}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="py-5 border-b border-border/30">
+              <EntityPersonaBindingsEditor
+                entityId={entityWithAccess.id}
+                entityName={entityWithAccess.name}
+              />
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+
+        {/* Team-medlemmer */}
+        {teamMembers && teamMembers.length > 0 && (
+          <Collapsible open={teamOpen} onOpenChange={setTeamOpen}>
+            <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
+              <div className="flex items-center gap-3">
+                <Users className="h-4 w-4 text-accent" />
+                <span className="font-medium">Team-medlemmer</span>
+                <span className="text-xs text-muted-foreground">({teamMembers.length})</span>
+              </div>
+              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${teamOpen ? "rotate-180" : ""}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="py-5 space-y-2 border-b border-border/30">
               {teamMembers.map((member) => {
                 const profile = member.profile as { id: string; display_name?: string; handle?: string; avatar_url?: string } | null;
                 const persona = member.persona as { id: string; name: string; avatar_url?: string; slug?: string } | null;
                 
-                // Prioritize persona name, fallback to profile, then "Ingen navn"
                 const displayName = persona?.name || profile?.display_name || profile?.handle || "Ingen navn";
                 const avatarUrl = persona?.avatar_url || profile?.avatar_url;
                 
                 return (
-                  <div key={member.id} className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-muted/50 rounded-lg">
-                    <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {avatarUrl ? (
-                        <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
-                      ) : (
-                        <span className="text-xs sm:text-sm font-medium text-muted-foreground">
-                          {displayName.charAt(0).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground text-xs sm:text-sm truncate">{displayName}</p>
-                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                        <Badge variant="outline" className="text-[10px] sm:text-xs">
-                          {ACCESS_LABELS[member.access as AccessLevel]}
-                        </Badge>
-                        {member.role_labels && member.role_labels.length > 0 && (
-                          <span className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                            {member.role_labels.join(", ")}
+                  <div key={member.id} className="flex items-center justify-between py-2 border-b border-border/20 last:border-0">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {avatarUrl ? (
+                          <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
+                        ) : (
+                          <span className="text-xs font-medium text-muted-foreground">
+                            {displayName.charAt(0).toUpperCase()}
                           </span>
                         )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{displayName}</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">{ACCESS_LABELS[member.access as AccessLevel]}</span>
+                          {member.role_labels && member.role_labels.length > 0 && (
+                            <span className="text-xs text-accent">{member.role_labels.join(", ")}</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
                 );
               })}
-            </div>
-          </div>
+            </CollapsibleContent>
+          </Collapsible>
         )}
 
-        {/* Info about publishing */}
+        {/* Farlig sone */}
+        {canEdit && (
+          <Collapsible open={dangerOpen} onOpenChange={setDangerOpen}>
+            <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-destructive transition-colors">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="h-4 w-4 text-destructive/70" />
+                <span className="font-medium text-destructive/70">Farlig sone</span>
+              </div>
+              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${dangerOpen ? "rotate-180" : ""}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="py-5 border-b border-border/30">
+              <p className="text-sm text-muted-foreground mb-4">
+                Handlinger her kan ikke angres uten hjelp fra administrator.
+              </p>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="border-destructive/50 text-destructive hover:bg-destructive/10">
+                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                    Be om sletting av prosjekt
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Be om sletting?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Dette vil sende en forespørsel til admin om å slette prosjektet "{formData.name}".
+                      <br /><br />
+                      Admin vil vurdere forespørselen og du vil få beskjed når den er behandlet.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => requestDeletion.mutate()}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      disabled={requestDeletion.isPending}
+                    >
+                      {requestDeletion.isPending ? "Sender..." : "Send forespørsel"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+      </div>
+
+      {/* Publishing info at bottom */}
+      <div className="mt-8">
         {!entityWithAccess.is_published ? (
-          <div className="p-4 bg-muted/50 rounded-lg">
-            <p className="text-sm text-muted-foreground">
+          <Alert className="bg-muted/50 border-border/30">
+            <Info className="h-4 w-4 text-muted-foreground" />
+            <AlertDescription className="text-sm text-muted-foreground">
               <strong>Utkast:</strong> Dette prosjektet er ikke publisert ennå. 
               Kontakt en administrator for å få det publisert.
-            </p>
-          </div>
+            </AlertDescription>
+          </Alert>
         ) : (
           <Alert className="bg-accent/5 border-accent/20">
             <Info className="h-4 w-4 text-accent" />
             <AlertDescription className="text-sm text-muted-foreground">
               Dette prosjektet kan bli lagt til events av festivalen.
               Du trenger kun å holde prosjektet oppdatert med riktig informasjon, 
-              bilder og beskrivelse. Festivalen setter sammen programmet.
+              bilder og beskrivelse.
             </AlertDescription>
           </Alert>
         )}
-
-        {/* Danger zone - request deletion */}
-        {canEdit && (
-          <div className="pt-6 border-t border-border space-y-3">
-            <h2 className="font-semibold text-foreground text-destructive">Farlig sone</h2>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" className="border-destructive/50 text-destructive hover:bg-destructive/10">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Be om sletting av prosjekt
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Be om sletting?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Dette vil sende en forespørsel til admin om å slette prosjektet "{formData.name}".
-                    <br /><br />
-                    Admin vil vurdere forespørselen og du vil få beskjed når den er behandlet.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Avbryt</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => requestDeletion.mutate()}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    disabled={requestDeletion.isPending}
-                  >
-                    {requestDeletion.isPending ? "Sender..." : "Send forespørsel"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        )}
-      </main>
+      </div>
     </div>
   );
 }
