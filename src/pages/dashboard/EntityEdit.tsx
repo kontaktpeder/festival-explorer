@@ -451,12 +451,12 @@ export default function EntityEdit() {
               </div>
               <div className="space-y-2">
                 <Label className="text-muted-foreground text-xs uppercase tracking-wide">Type (valgfritt)</Label>
-                <Select value={locationType} onValueChange={(val) => setLocationType(val as LocationType | "")} disabled={!canEdit}>
+                <Select value={locationType || "none"} onValueChange={(val) => setLocationType(val === "none" ? "" : val as LocationType)} disabled={!canEdit}>
                   <SelectTrigger className="w-full bg-transparent border-border/50">
                     <SelectValue placeholder="Velg type..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Ikke valgt</SelectItem>
+                    <SelectItem value="none">Ikke valgt</SelectItem>
                     {LOCATION_TYPE_OPTIONS.map((opt) => (
                       <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                     ))}
