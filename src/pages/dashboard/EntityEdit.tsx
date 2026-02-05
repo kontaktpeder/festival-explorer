@@ -44,6 +44,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
+import { getPublicUrl } from "@/lib/utils";
 import type { SocialLink } from "@/types/social";
 
 // Tydeligere prosjekt-type labels
@@ -301,10 +302,10 @@ export default function EntityEdit() {
           <div className="flex items-center gap-2">
             {entityWithAccess.is_published && (
               <Button asChild variant="ghost" size="sm" className="text-xs">
-                <Link to={`${typeConfig[entityWithAccess.type as EntityType].route}/${entityWithAccess.slug}`} target="_blank">
+                <a href={`${getPublicUrl()}${typeConfig[entityWithAccess.type as EntityType].route}/${entityWithAccess.slug}`} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-3.5 w-3.5 mr-1" />
                   Se side
-                </Link>
+                </a>
               </Button>
             )}
             {canInvite && (
