@@ -37,7 +37,7 @@ export function SocialSection() {
         
         {/* Social icons - small, round */}
         <div className="flex items-center justify-center gap-4">
-          {socialLinks.map((link, index) => <a key={index} href={link.href} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-11 h-11 rounded-full border border-white/10 text-white/40 hover:text-orange-400 hover:border-orange-400/40 transition-all duration-300" aria-label={link.label}>
+          {socialLinks.map((link, index) => <a key={index} href={link.href} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" className="flex items-center justify-center w-11 h-11 rounded-full border border-white/10 text-white/40 hover:text-orange-400 hover:border-orange-400/40 transition-all duration-300" aria-label={link.label}>
               {link.icon}
             </a>)}
         </div>

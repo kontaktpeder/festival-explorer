@@ -64,6 +64,7 @@ export function PersonaSocialLinks({ links }: PersonaSocialLinksProps) {
           href={link.url}
           target="_blank"
           rel="noopener noreferrer"
+          referrerPolicy="no-referrer"
           className="group inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border/30 text-muted-foreground hover:text-accent hover:border-accent/40 transition-all duration-300"
         >
           {getIcon(link.type)}
