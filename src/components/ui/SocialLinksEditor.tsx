@@ -38,20 +38,66 @@ export function SocialLinksEditor({ links, onChange, disabled = false }: SocialL
     label: "",
   });
 
-  const normalizeUrl = (url: string) => {
+  const normalizeUrl = (url: string, type: SocialLinkType): string => {
     const trimmed = url.trim();
     if (!trimmed) return "";
 
-    // If user omits scheme (e.g. "www.instagram.com/..."), make it a valid absolute URL.
-    if (!/^https?:\/\//i.test(trimmed)) {
-      return `https://${trimmed.replace(/^\/\//, "")}`;
+    // Already a full URL
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+      return trimmed;
     }
 
-    return trimmed;
+    // Many users will type just username or @username for social media
+    const handle = trimmed.startsWith("@") ? trimmed.slice(1) : trimmed;
+
+    // Check if it looks like a domain/path (contains dots or slashes)
+    const looksLikePath = handle.includes(".") || handle.includes("/");
+
+    if (type === "instagram") {
+      return looksLikePath 
+        ? `https://${handle.replace(/^www\./, "www.")}` 
+        : `https://www.instagram.com/${handle}`;
+    }
+    if (type === "tiktok") {
+      return looksLikePath 
+        ? `https://${handle}` 
+        : `https://www.tiktok.com/@${handle}`;
+    }
+    if (type === "facebook") {
+      return looksLikePath 
+        ? `https://${handle}` 
+        : `https://www.facebook.com/${handle}`;
+    }
+    if (type === "spotify") {
+      if (handle.startsWith("spotify:")) {
+        return `https://open.spotify.com/${handle.replace(/^spotify:/, "").replace(/:/g, "/")}`;
+      }
+      return looksLikePath 
+        ? `https://${handle}` 
+        : `https://open.spotify.com/artist/${handle}`;
+    }
+    if (type === "soundcloud") {
+      return looksLikePath 
+        ? `https://${handle}` 
+        : `https://soundcloud.com/${handle}`;
+    }
+    if (type === "youtube") {
+      if (looksLikePath) {
+        return `https://${handle}`;
+      }
+      // If it's just a video ID or channel handle
+      if (handle.length === 11 && /^[a-zA-Z0-9_-]+$/.test(handle)) {
+        return `https://www.youtube.com/watch?v=${handle}`;
+      }
+      return `https://www.youtube.com/@${handle}`;
+    }
+
+    // Fallback for website/other: assume it's a domain or path
+    return `https://${handle}`;
   };
 
   const addLink = () => {
-    const normalizedUrl = normalizeUrl(newLink.url);
+    const normalizedUrl = normalizeUrl(newLink.url, newLink.type);
     if (!normalizedUrl) return;
 
     const link: SocialLink = {
