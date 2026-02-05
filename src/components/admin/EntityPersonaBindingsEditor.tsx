@@ -1,9 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Plus, Trash2, Eye, EyeOff, User, Check, ChevronsUpDown, UserPlus, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -51,7 +49,7 @@ export function EntityPersonaBindingsEditor({
   const navigate = useNavigate();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedPersonaId, setSelectedPersonaId] = useState<string>("");
-  const [roleLabel, setRoleLabel] = useState("");
+  
   const [isPublic, setIsPublic] = useState(true);
   const [personaPopoverOpen, setPersonaPopoverOpen] = useState(false);
 
@@ -66,47 +64,13 @@ export function EntityPersonaBindingsEditor({
     (persona) => !bindings?.some((b) => b.persona_id === persona.id)
   );
 
-  // Auto-fill role when persona is selected
-  useEffect(() => {
-    if (!selectedPersonaId || !entityId) {
-      return;
-    }
-
-    const fetchExistingRole = async () => {
-      // 1. Check if user is a team member with role_labels
-      const selectedPersona = myPersonas?.find((p) => p.id === selectedPersonaId);
-      if (selectedPersona?.user_id) {
-        const { data: teamMember } = await supabase
-          .from("entity_team")
-          .select("role_labels")
-          .eq("entity_id", entityId)
-          .eq("user_id", selectedPersona.user_id)
-          .is("left_at", null)
-          .maybeSingle();
-
-        if (teamMember?.role_labels && teamMember.role_labels.length > 0) {
-          setRoleLabel(teamMember.role_labels[0]);
-          return;
-        }
-      }
-
-      // 2. Check if persona has a binding to another entity with a role
-      const { data: otherBinding } = await supabase
-        .from("entity_persona_bindings")
-        .select("role_label")
-        .eq("persona_id", selectedPersonaId)
-        .not("role_label", "is", null)
-        .limit(1)
-        .maybeSingle();
-
-      if (otherBinding?.role_label) {
-        setRoleLabel(otherBinding.role_label);
-        return;
-      }
-    };
-
-    fetchExistingRole();
-  }, [selectedPersonaId, entityId, myPersonas]);
+  // Get role from selected persona's category_tags
+  const getPersonaRole = (personaId: string): string | undefined => {
+    const persona = myPersonas?.find((p) => p.id === personaId);
+    return persona?.category_tags && persona.category_tags.length > 0
+      ? persona.category_tags[0]
+      : undefined;
+  };
 
   const handleAdd = async () => {
     if (!selectedPersonaId) {
@@ -114,17 +78,19 @@ export function EntityPersonaBindingsEditor({
       return;
     }
 
+    // Get role from persona's category_tags
+    const roleFromPersona = getPersonaRole(selectedPersonaId);
+
     try {
       await createBinding.mutateAsync({
         entity_id: entityId,
         persona_id: selectedPersonaId,
         is_public: isPublic,
-        role_label: roleLabel || undefined,
+        role_label: roleFromPersona,
       });
       toast.success("Profil lagt til");
       setIsAddDialogOpen(false);
       setSelectedPersonaId("");
-      setRoleLabel("");
       setIsPublic(true);
     } catch (error: any) {
       toast.error(error.message || "Kunne ikke legge til profil");
@@ -258,12 +224,6 @@ export function EntityPersonaBindingsEditor({
                                 value={persona.name}
                                 onSelect={() => {
                                   setSelectedPersonaId(persona.id);
-                                  // Auto-fill role from persona category_tags
-                                  setRoleLabel(
-                                    persona.category_tags && persona.category_tags.length > 0
-                                      ? persona.category_tags[0]
-                                      : ""
-                                  );
                                   setPersonaPopoverOpen(false);
                                 }}
                               >
@@ -332,15 +292,24 @@ export function EntityPersonaBindingsEditor({
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="roleLabel">Rolle (valgfritt)</Label>
-                <Input
-                  id="roleLabel"
-                  value={roleLabel}
-                  onChange={(e) => setRoleLabel(e.target.value)}
-                  placeholder="F.eks. Bassist, Fotograf, Manager..."
-                />
-              </div>
+              {/* Role info - auto-filled from persona category_tags */}
+              {selectedPersonaId && (() => {
+                const roleFromPersona = getPersonaRole(selectedPersonaId);
+                return (
+                  <div className="space-y-2">
+                    <Label>Rolle</Label>
+                    {roleFromPersona ? (
+                      <p className="text-sm text-muted-foreground">
+                        Hentes automatisk fra profil: <span className="font-medium capitalize">{roleFromPersona}</span>
+                      </p>
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">
+                        Ingen rolle – profilen har ingen kategori satt
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
 
               <div className="flex items-center justify-between">
                 <div>
@@ -381,11 +350,15 @@ export function EntityPersonaBindingsEditor({
           className="w-full bg-accent/10 hover:bg-accent/20 text-accent border-accent/20"
           onClick={async () => {
             try {
+              // Get role from persona's category_tags
+              const roleFromPersona = singlePersona?.category_tags && singlePersona.category_tags.length > 0
+                ? singlePersona.category_tags[0]
+                : undefined;
               await createBinding.mutateAsync({
                 entity_id: entityId,
                 persona_id: singlePersona!.id,
                 is_public: true,
-                role_label: undefined,
+                role_label: roleFromPersona,
               });
               toast.success("Du er lagt til bak prosjektet");
             } catch (error: any) {
