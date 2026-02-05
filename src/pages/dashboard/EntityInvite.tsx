@@ -53,7 +53,7 @@ export default function EntityInvite() {
 
   const [email, setEmail] = useState("");
   const [accessLevel, setAccessLevel] = useState<Exclude<AccessLevel, "owner">>("editor");
-  const [roleLabels, setRoleLabels] = useState("");
+  
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [prefillEmail, setPrefillEmail] = useState<string | null>(null);
@@ -150,16 +150,12 @@ export default function EntityInvite() {
     }
 
     try {
-      const roles = roleLabels
-        .split(",")
-        .map((r) => r.trim())
-        .filter(Boolean);
-
+      // Rolle hentes automatisk fra personaens category_tags når de oppretter persona
       const created = await createInvitation.mutateAsync({
         entityId: id,
         email: emailToUse,
         access: accessLevel,
-        roleLabels: roles,
+        roleLabels: [],
         invitedBy: currentUser.id,
       });
 
@@ -229,7 +225,6 @@ export default function EntityInvite() {
 
   const resetForm = () => {
     setEmail("");
-    setRoleLabels("");
     setGeneratedLink(null);
     setCopied(false);
     setPrefillEmail(null);
@@ -437,19 +432,6 @@ export default function EntityInvite() {
               </Select>
             </div>
 
-            {/* Role labels */}
-            <div className="space-y-2">
-              <Label htmlFor="roles">Roller (valgfritt)</Label>
-              <Input
-                id="roles"
-                value={roleLabels}
-                onChange={(e) => setRoleLabels(e.target.value)}
-                placeholder="bassist, fotograf, booking (komma-separert)"
-              />
-              <p className="text-xs text-muted-foreground">
-                Valgfrie roller som vises på team-listen
-              </p>
-            </div>
 
             {/* Generate button */}
             <Button

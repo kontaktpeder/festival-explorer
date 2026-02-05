@@ -42,7 +42,6 @@ export default function AdminAccessGenerator() {
   const [selectedEntityId, setSelectedEntityId] = useState<string>(initialEntityId || "");
   const [accessLevel, setAccessLevel] = useState<Exclude<AccessLevel, 'owner'>>("admin");
   const [email, setEmail] = useState("");
-  const [roleLabels, setRoleLabels] = useState("");
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [initialEntityLoaded, setInitialEntityLoaded] = useState(!initialEntityId);
@@ -138,21 +137,18 @@ export default function AdminAccessGenerator() {
 
     try {
       const user = await getAuthenticatedUser();
-      const roles = roleLabels
-        .split(",")
-        .map((r) => r.trim())
-        .filter(Boolean);
 
       // Get entity ID - either selected or platform
       const entityIdToUse = inviteMode === "platform" 
         ? platformEntity!.id 
         : selectedEntityId;
 
+      // Rolle hentes automatisk fra personaens category_tags når de oppretter persona
       const created = await createInvitation.mutateAsync({
         entityId: entityIdToUse,
         email,
         access: accessLevel,
-        roleLabels: roles,
+        roleLabels: [],
         invitedBy: user.id,
       });
 
@@ -196,7 +192,6 @@ export default function AdminAccessGenerator() {
   const resetForm = () => {
     setSelectedEntityId("");
     setEmail("");
-    setRoleLabels("");
     setGeneratedLink(null);
     setCopied(false);
   };
@@ -380,19 +375,6 @@ export default function AdminAccessGenerator() {
             </Select>
           </div>
 
-          {/* Role labels */}
-          <div className="space-y-2">
-            <Label htmlFor="roles">Roller (valgfritt)</Label>
-            <Input
-              id="roles"
-              value={roleLabels}
-              onChange={(e) => setRoleLabels(e.target.value)}
-              placeholder="bassist, fotograf, booking (komma-separert)"
-            />
-            <p className="text-xs text-muted-foreground">
-              Valgfrie roller som vises på team-listen
-            </p>
-          </div>
 
           {/* Email */}
           <div className="space-y-2">
