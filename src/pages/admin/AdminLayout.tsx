@@ -70,7 +70,7 @@ export default function AdminLayout() {
 
   const NavContent = () => (
     <>
-      <div className="p-4 md:p-6 border-b border-border">
+      <div className="p-4 md:p-6 border-b border-border/30">
         <Link to="/admin" className="text-lg md:text-xl font-bold text-foreground" onClick={() => setSidebarOpen(false)}>
           GIGGEN <span className="text-muted-foreground font-normal text-sm">Backstage</span>
         </Link>
@@ -87,9 +87,9 @@ export default function AdminLayout() {
               key={to}
               to={to}
               onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-3 md:px-4 py-3 rounded-lg transition-colors ${
+              className={`flex items-center gap-3 px-3 md:px-4 py-3 rounded-md transition-colors ${
                 isActive
-                  ? "bg-accent text-accent-foreground"
+                  ? "bg-accent/15 text-accent"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
@@ -100,7 +100,7 @@ export default function AdminLayout() {
         })}
       </nav>
 
-      <div className="p-3 md:p-4 border-t border-border space-y-2">
+      <div className="p-3 md:p-4 border-t border-border/30 space-y-2">
         <Link 
           to="/dashboard" 
           onClick={() => setSidebarOpen(false)}
@@ -121,10 +121,10 @@ export default function AdminLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-background flex flex-col md:flex-row">
+    <div className="min-h-screen flex flex-col md:flex-row">
       {/* Mobile header */}
       {isMobile && (
-        <header className="sticky top-0 z-50 bg-card border-b border-border p-3 flex items-center justify-between">
+        <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-sm border-b border-border/30 p-3 flex items-center justify-between">
           <Link to="/admin" className="text-lg font-bold text-foreground">
             GIGGEN <span className="text-muted-foreground font-normal text-sm">Backstage</span>
           </Link>
@@ -143,7 +143,7 @@ export default function AdminLayout() {
 
       {/* Desktop Sidebar */}
       {!isMobile && (
-        <aside className="w-64 bg-card border-r border-border flex flex-col shrink-0">
+        <aside className="w-64 bg-card/50 border-r border-border/30 flex flex-col shrink-0">
           <NavContent />
         </aside>
       )}

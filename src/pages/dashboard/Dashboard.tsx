@@ -207,9 +207,9 @@ export default function Dashboard() {
   const canEdit = (access: AccessLevel) => ["editor", "admin", "owner"].includes(access);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Header - cleaner, less admin-like */}
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-border/30 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <Link to="/" className="text-base sm:text-lg font-bold text-foreground tracking-tight">
             GIGGEN <span className="text-muted-foreground/70 font-normal text-xs sm:text-base">BACKSTAGE</span>
@@ -248,7 +248,7 @@ export default function Dashboard() {
         </div>
 
         {/* Viktig info-boks om hvordan festivalen fungerer */}
-        <Alert className="bg-accent/5 border-accent/20">
+        <Alert className="bg-accent/5 border-accent/20 rounded-lg">
           <Info className="h-4 w-4 text-accent" />
           <AlertDescription className="text-sm text-muted-foreground">
             <strong className="text-foreground">Du trenger ikke lage events.</strong>{" "}
@@ -275,7 +275,7 @@ export default function Dashboard() {
             {onboardingChoices.map((choice) => (
               <button
                 key={choice.id}
-                className={`text-left p-6 rounded-2xl bg-card/50 hover:bg-card border border-border/50 hover:border-border transition-all group ${
+                className={`text-left p-6 rounded-xl bg-card/50 hover:bg-card border border-border/30 hover:border-border/50 transition-all group ${
                   choice.disabled ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 onClick={() => {
@@ -336,7 +336,7 @@ export default function Dashboard() {
                 <Link
                   key={persona.id}
                   to={`/dashboard/personas/${persona.id}`}
-                  className="group flex items-center gap-4 p-4 rounded-xl bg-card hover:bg-card/80 border border-border/50 hover:border-border transition-all"
+                  className="group flex items-center gap-4 p-4 rounded-lg bg-card/60 hover:bg-card/80 border border-border/30 hover:border-border/50 transition-all"
                 >
                   <Avatar className="h-14 w-14 ring-2 ring-border/50 flex-shrink-0">
                     <AvatarImage src={persona.avatar_url || undefined} className="object-cover" />
@@ -369,7 +369,7 @@ export default function Dashboard() {
               ))}
               <Link
                 to="/dashboard/personas/new"
-                className="flex items-center gap-4 p-4 rounded-xl border-2 border-dashed border-border/30 hover:border-accent/50 text-muted-foreground hover:text-accent transition-all"
+                className="flex items-center gap-4 p-4 rounded-lg border-2 border-dashed border-border/20 hover:border-accent/40 text-muted-foreground hover:text-accent transition-all"
               >
                 <div className="h-14 w-14 rounded-full border-2 border-dashed border-current flex items-center justify-center flex-shrink-0">
                   <Plus className="h-5 w-5" />
@@ -383,7 +383,7 @@ export default function Dashboard() {
           ) : !isLoadingPersonas ? (
             <Link
               to="/dashboard/personas/new"
-              className="block p-5 rounded-xl bg-card hover:bg-card/80 border border-border/50 hover:border-border transition-all group"
+              className="block p-5 rounded-lg bg-card/60 hover:bg-card/80 border border-border/30 hover:border-border/50 transition-all group"
             >
               <div className="flex items-center gap-4">
                 <Avatar className="h-14 w-14 ring-2 ring-accent/20 flex-shrink-0">
@@ -425,7 +425,7 @@ export default function Dashboard() {
                 return (
                   <div
                     key={entity.id}
-                    className="group rounded-xl bg-card hover:bg-card/80 border border-border/50 hover:border-border transition-all overflow-hidden"
+                    className="group rounded-lg bg-card/60 hover:bg-card/80 border border-border/30 hover:border-border/50 transition-all overflow-hidden"
                   >
                     <div className="flex">
                       {/* Hero image */}
@@ -509,7 +509,7 @@ export default function Dashboard() {
               })}
             </div>
           ) : (
-            <div className="p-6 rounded-xl bg-card border border-border/50 text-center space-y-3">
+            <div className="p-6 rounded-lg bg-card/60 border border-border/30 text-center space-y-3">
               {selectedPersonaId ? (
                 <>
                   <p className="text-muted-foreground">
@@ -546,9 +546,9 @@ export default function Dashboard() {
         {(isAdmin || isStaff) && (
           <Collapsible open={adminSectionOpen} onOpenChange={setAdminSectionOpen}>
             <CollapsibleTrigger className="w-full">
-              <div className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover:bg-muted/50 border border-border/30 transition-all">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-card/40 hover:bg-card/60 border border-border/20 transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-muted">
+                  <div className="p-2 rounded-md bg-muted/50">
                     <Shield className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="text-left">
@@ -568,10 +568,10 @@ export default function Dashboard() {
                 {isAdmin && (
                   <Link
                     to="/admin"
-                    className="flex items-center gap-4 p-4 rounded-xl bg-card hover:bg-card/80 border border-border/50 hover:border-border transition-all group"
+                    className="flex items-center gap-4 p-4 rounded-lg bg-card/60 hover:bg-card/80 border border-border/30 hover:border-border/50 transition-all group"
                   >
-                    <div className="p-2.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                      <Settings className="h-4 w-4 text-primary" />
+                    <div className="p-2.5 rounded-md bg-accent/10 group-hover:bg-accent/20 transition-colors">
+                      <Settings className="h-4 w-4 text-accent" />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-foreground">Admin Panel</p>
@@ -585,9 +585,9 @@ export default function Dashboard() {
                 {isStaff && (
                   <Link
                     to="/crew/checkin"
-                    className="flex items-center gap-4 p-4 rounded-xl bg-card hover:bg-card/80 border border-border/50 hover:border-border transition-all group"
+                    className="flex items-center gap-4 p-4 rounded-lg bg-card/60 hover:bg-card/80 border border-border/30 hover:border-border/50 transition-all group"
                   >
-                    <div className="p-2.5 rounded-lg bg-accent/10 group-hover:bg-accent/20 transition-colors">
+                    <div className="p-2.5 rounded-md bg-accent/10 group-hover:bg-accent/20 transition-colors">
                       <QrCode className="h-4 w-4 text-accent" />
                     </div>
                     <div className="flex-1">
