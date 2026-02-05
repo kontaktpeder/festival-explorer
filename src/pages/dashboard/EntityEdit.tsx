@@ -26,6 +26,7 @@ import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerW
 import { LoadingState } from "@/components/ui/LoadingState";
 import { EntityTimelineManager } from "@/components/dashboard/EntityTimelineManager";
 import { EntityPersonaBindingsEditor } from "@/components/admin/EntityPersonaBindingsEditor";
+import { SocialLinksEditor } from "@/components/ui/SocialLinksEditor";
 import { 
   UserPlus, 
   ExternalLink, 
@@ -36,12 +37,14 @@ import {
   ChevronDown,
   Clock,
   AlertTriangle,
-  Building2
+  Building2,
+  Link2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
+import type { SocialLink } from "@/types/social";
 
 // Tydeligere prosjekt-type labels
 const TYPE_LABELS: Record<EntityType, string> = {
@@ -83,9 +86,11 @@ export default function EntityEdit() {
     hero_image_url: "",
   });
   const [heroImageSettings, setHeroImageSettings] = useState<ImageSettings | null>(null);
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
 
   // Collapsible states
   const [basicOpen, setBasicOpen] = useState(true);
+  const [socialOpen, setSocialOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [peopleOpen, setPeopleOpen] = useState(false);
   const [teamOpen, setTeamOpen] = useState(false);
@@ -172,6 +177,7 @@ export default function EntityEdit() {
         hero_image_url: entityWithAccess.hero_image_url || "",
       });
       setHeroImageSettings(parseImageSettings(entityWithAccess.hero_image_settings) || null);
+      setSocialLinks(((entityWithAccess as any).social_links || []) as SocialLink[]);
     }
   }, [entityWithAccess]);
 
@@ -186,6 +192,7 @@ export default function EntityEdit() {
           description: formData.description || null,
           hero_image_url: formData.hero_image_url || null,
           hero_image_settings: heroImageSettings,
+          social_links: socialLinks.length > 0 ? socialLinks : null,
         } as Record<string, unknown>)
         .eq("id", id);
       
@@ -390,6 +397,21 @@ export default function EntityEdit() {
                 className="bg-transparent border-border/50 focus:border-accent resize-none"
               />
             </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Sosiale lenker */}
+        <Collapsible open={socialOpen} onOpenChange={setSocialOpen}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
+            <div className="flex items-center gap-3">
+              <Link2 className="h-4 w-4 text-accent" />
+              <span className="font-medium">Sosiale lenker</span>
+              {socialLinks.length > 0 && <span className="text-xs text-muted-foreground">({socialLinks.length})</span>}
+            </div>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${socialOpen ? "rotate-180" : ""}`} />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="py-5 border-b border-border/30">
+            <SocialLinksEditor links={socialLinks} onChange={setSocialLinks} disabled={!canEdit} />
           </CollapsibleContent>
         </Collapsible>
 
