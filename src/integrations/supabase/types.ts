@@ -203,6 +203,7 @@ export type Database = {
           is_system: boolean
           name: string
           slug: string
+          social_links: Json | null
           tagline: string | null
           type: Database["public"]["Enums"]["entity_type"]
           updated_at: string
@@ -221,6 +222,7 @@ export type Database = {
           is_system?: boolean
           name: string
           slug: string
+          social_links?: Json | null
           tagline?: string | null
           type: Database["public"]["Enums"]["entity_type"]
           updated_at?: string
@@ -239,6 +241,7 @@ export type Database = {
           is_system?: boolean
           name?: string
           slug?: string
+          social_links?: Json | null
           tagline?: string | null
           type?: Database["public"]["Enums"]["entity_type"]
           updated_at?: string
@@ -952,6 +955,7 @@ export type Database = {
           is_public: boolean
           name: string
           slug: string
+          social_links: Json | null
           updated_at: string
           user_id: string
         }
@@ -965,6 +969,7 @@ export type Database = {
           is_public?: boolean
           name: string
           slug: string
+          social_links?: Json | null
           updated_at?: string
           user_id: string
         }
@@ -978,6 +983,7 @@ export type Database = {
           is_public?: boolean
           name?: string
           slug?: string
+          social_links?: Json | null
           updated_at?: string
           user_id?: string
         }
