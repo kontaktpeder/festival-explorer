@@ -201,6 +201,10 @@ export type Database = {
           id: string
           is_published: boolean
           is_system: boolean
+          location_lat: number | null
+          location_lng: number | null
+          location_name: string | null
+          location_type: Database["public"]["Enums"]["location_type"] | null
           name: string
           slug: string
           social_links: Json | null
@@ -220,6 +224,10 @@ export type Database = {
           id?: string
           is_published?: boolean
           is_system?: boolean
+          location_lat?: number | null
+          location_lng?: number | null
+          location_name?: string | null
+          location_type?: Database["public"]["Enums"]["location_type"] | null
           name: string
           slug: string
           social_links?: Json | null
@@ -239,6 +247,10 @@ export type Database = {
           id?: string
           is_published?: boolean
           is_system?: boolean
+          location_lat?: number | null
+          location_lng?: number | null
+          location_name?: string | null
+          location_type?: Database["public"]["Enums"]["location_type"] | null
           name?: string
           slug?: string
           social_links?: Json | null
@@ -946,6 +958,7 @@ export type Database = {
       }
       personas: {
         Row: {
+          available_for: string[]
           avatar_image_settings: Json | null
           avatar_url: string | null
           bio: string | null
@@ -953,6 +966,10 @@ export type Database = {
           created_at: string
           id: string
           is_public: boolean
+          location_lat: number | null
+          location_lng: number | null
+          location_name: string | null
+          location_type: Database["public"]["Enums"]["location_type"] | null
           name: string
           slug: string
           social_links: Json | null
@@ -960,6 +977,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          available_for?: string[]
           avatar_image_settings?: Json | null
           avatar_url?: string | null
           bio?: string | null
@@ -967,6 +985,10 @@ export type Database = {
           created_at?: string
           id?: string
           is_public?: boolean
+          location_lat?: number | null
+          location_lng?: number | null
+          location_name?: string | null
+          location_type?: Database["public"]["Enums"]["location_type"] | null
           name: string
           slug: string
           social_links?: Json | null
@@ -974,6 +996,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          available_for?: string[]
           avatar_image_settings?: Json | null
           avatar_url?: string | null
           bio?: string | null
@@ -981,6 +1004,10 @@ export type Database = {
           created_at?: string
           id?: string
           is_public?: boolean
+          location_lat?: number | null
+          location_lng?: number | null
+          location_name?: string | null
+          location_type?: Database["public"]["Enums"]["location_type"] | null
           name?: string
           slug?: string
           social_links?: Json | null
@@ -1719,6 +1746,7 @@ export type Database = {
       app_role: "admin" | "moderator" | "user"
       entity_type: "venue" | "solo" | "band"
       entity_visibility: "public" | "unlisted" | "private"
+      location_type: "city" | "region" | "country" | "address"
       project_type: "solo" | "band"
       publish_status: "draft" | "submitted" | "published"
       social_entity_type: "project" | "event" | "festival" | "venue"
@@ -1856,6 +1884,7 @@ export const Constants = {
       app_role: ["admin", "moderator", "user"],
       entity_type: ["venue", "solo", "band"],
       entity_visibility: ["public", "unlisted", "private"],
+      location_type: ["city", "region", "country", "address"],
       project_type: ["solo", "band"],
       publish_status: ["draft", "submitted", "published"],
       social_entity_type: ["project", "event", "festival", "venue"],
