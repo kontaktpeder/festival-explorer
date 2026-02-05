@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { parseImageSettings, type ImageSettings } from "@/types/database";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
   Users, 
   Building2, 
@@ -25,10 +26,12 @@ import {
   X,
   Plus,
   ChevronRight,
+  ChevronDown,
   QrCode,
   Info,
   MapPin,
-  Settings
+  Settings,
+  Shield
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CroppedImage } from "@/components/ui/CroppedImage";
@@ -98,6 +101,7 @@ export default function Dashboard() {
   const [hasExplored, setHasExplored] = useState(false);
   const [isStaff, setIsStaff] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [adminSectionOpen, setAdminSectionOpen] = useState(false);
 
   // Fetch personas
   const { data: personas, isLoading: isLoadingPersonas } = useMyPersonas();
@@ -252,58 +256,6 @@ export default function Dashboard() {
           </AlertDescription>
         </Alert>
 
-        {/* Admin Section - Show if user is global admin */}
-        {isAdmin && (
-          <section className="space-y-4">
-            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Admin
-            </h2>
-            <Link
-              to="/admin"
-              className="block p-6 rounded-2xl bg-primary/5 hover:bg-primary/10 border border-primary/20 hover:border-primary/30 transition-all group"
-            >
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                  <Settings className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">Admin Panel</p>
-                  <p className="text-sm text-muted-foreground">
-                    Administrer festival, artister og innhold
-                  </p>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground/50 group-hover:text-primary/70 transition-colors" />
-              </div>
-            </Link>
-          </section>
-        )}
-
-        {/* Staff Check-in Section - Show if user has crew/admin role */}
-        {isStaff && (
-          <section className="space-y-4">
-            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Crew
-            </h2>
-            <Link
-              to="/crew/checkin"
-              className="block p-6 rounded-2xl bg-accent/5 hover:bg-accent/10 border border-accent/20 hover:border-accent/30 transition-all group"
-            >
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-full bg-accent/10 group-hover:bg-accent/20 transition-colors">
-                  <QrCode className="h-5 w-5 text-accent" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">Check-in billetter</p>
-                  <p className="text-sm text-muted-foreground">
-                    Scan QR-kode eller søk etter billetter
-                  </p>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground/50 group-hover:text-accent/70 transition-colors" />
-              </div>
-            </Link>
-          </section>
-        )}
-
         {/* Filter indicator - softer */}
         {selectedPersonaId && (
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -360,103 +312,112 @@ export default function Dashboard() {
         {/* Persona section - identity-focused with card styling */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg sm:text-xl font-semibold text-foreground">
-              👤 Din profil
-            </h2>
+            <div>
+              <h2 className="text-lg sm:text-xl font-semibold text-foreground">
+                Din profil
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                Hvem du er som musiker, fotograf eller arrangør
+              </p>
+            </div>
             {personas && personas.length > 0 && (
               <Link 
                 to="/dashboard/personas"
-                className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
               >
                 Se alle →
               </Link>
             )}
           </div>
-          
-          <p className="text-xs sm:text-sm text-muted-foreground -mt-2">
-            Hvem du er som musiker, fotograf eller arrangør
-          </p>
 
           {!isLoadingPersonas && personas && personas.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-3">
               {personas.map((persona) => (
                 <Link
                   key={persona.id}
                   to={`/dashboard/personas/${persona.id}`}
-                  className="group flex items-center gap-3 p-3 sm:p-4 rounded-xl bg-card hover:bg-card/80 border border-border/50 hover:border-border transition-all"
+                  className="group flex items-center gap-4 p-4 rounded-xl bg-card hover:bg-card/80 border border-border/50 hover:border-border transition-all"
                 >
-                  <Avatar className="h-12 w-12 sm:h-14 sm:w-14 ring-2 ring-accent/20">
+                  <Avatar className="h-14 w-14 ring-2 ring-border/50 flex-shrink-0">
                     <AvatarImage src={persona.avatar_url || undefined} className="object-cover" />
-                    <AvatarFallback className="text-sm bg-accent/10 text-accent font-medium">
+                    <AvatarFallback className="text-base bg-muted text-muted-foreground font-medium">
                       {persona.name.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm sm:text-base font-semibold text-foreground group-hover:text-accent transition-colors truncate">
+                    <p className="text-base font-semibold text-foreground group-hover:text-accent transition-colors truncate">
                       {persona.name}
                     </p>
-                    <div className="flex items-center gap-2 mt-0.5">
+                    <div className="flex items-center gap-2 mt-1">
                       {persona.is_public ? (
-                        <span className="text-xs text-muted-foreground">Offentlig profil</span>
+                        <Badge variant="secondary" className="text-xs font-normal">
+                          Offentlig
+                        </Badge>
                       ) : (
-                        <span className="text-xs text-warning bg-warning/10 px-1.5 py-0.5 rounded">Privat</span>
+                        <Badge variant="outline" className="text-xs font-normal text-warning border-warning/30">
+                          Privat
+                        </Badge>
                       )}
                     </div>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-accent transition-colors flex-shrink-0" />
+                  <Button variant="ghost" size="sm" className="h-8 px-3 text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Pencil className="h-3 w-3 mr-1" />
+                    Rediger
+                  </Button>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors flex-shrink-0" />
                 </Link>
               ))}
               <Link
                 to="/dashboard/personas/new"
-                className="flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-border/50 hover:border-accent/50 text-sm text-muted-foreground hover:text-accent transition-all"
+                className="flex items-center gap-4 p-4 rounded-xl border-2 border-dashed border-border/30 hover:border-accent/50 text-muted-foreground hover:text-accent transition-all"
               >
-                <Plus className="h-4 w-4" />
-                Ny profil
+                <div className="h-14 w-14 rounded-full border-2 border-dashed border-current flex items-center justify-center flex-shrink-0">
+                  <Plus className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Legg til ny profil</p>
+                  <p className="text-xs text-muted-foreground">For en annen rolle eller alias</p>
+                </div>
               </Link>
             </div>
           ) : !isLoadingPersonas ? (
             <Link
               to="/dashboard/personas/new"
-              className="block p-5 sm:p-6 rounded-2xl bg-accent/5 hover:bg-accent/10 border border-accent/20 hover:border-accent/30 transition-all group"
+              className="block p-5 rounded-xl bg-card hover:bg-card/80 border border-border/50 hover:border-border transition-all group"
             >
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-full bg-accent/10 group-hover:bg-accent/20 transition-colors">
-                  <Sparkles className="h-5 w-5 text-accent" />
-                </div>
+                <Avatar className="h-14 w-14 ring-2 ring-accent/20 flex-shrink-0">
+                  <AvatarFallback className="bg-accent/10 text-accent">
+                    <Sparkles className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
                 <div className="flex-1">
                   <p className="font-semibold text-foreground">Lag din profil</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     Vis deg frem som musiker, fotograf eller DJ
                   </p>
                 </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground/50 group-hover:text-accent/70 transition-colors" />
+                <ChevronRight className="h-5 w-5 text-muted-foreground/30 group-hover:text-accent transition-colors" />
               </div>
             </Link>
           ) : null}
         </section>
 
-        {/* Projects section - the main focus, larger and more prominent */}
-        <section className="space-y-6">
-          <div>
-            <h2 className="text-xl font-semibold text-foreground">
-              {selectedPersonaId ? "Prosjekter" : "Dine prosjekter"}
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Det du viser publikum – artistprosjekt, band, eller scene
-            </p>
+        {/* Projects section - same styling as personas */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg sm:text-xl font-semibold text-foreground">
+                {selectedPersonaId ? "Prosjekter" : "Dine prosjekter"}
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                Det du viser publikum – artistprosjekt, band, eller scene
+              </p>
+            </div>
           </div>
-          
-          {/* Info om prosjekt-typer */}
-          <Alert className="bg-muted/30 border-border/50">
-            <Info className="h-4 w-4 text-muted-foreground" />
-            <AlertDescription className="text-xs text-muted-foreground">
-              <strong>Prosjekt-typer:</strong> Artistprosjekt (det du opptrer som), 
-              Band, eller Scene/venue. Festivalen bruker disse prosjektene når de setter sammen programmet.
-            </AlertDescription>
-          </Alert>
 
           {entities && entities.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {entities.map((entity) => {
                 const typeConfig = TYPE_CONFIG[entity.type as EntityType];
                 const userCanEdit = canEdit(entity.access);
@@ -464,11 +425,11 @@ export default function Dashboard() {
                 return (
                   <div
                     key={entity.id}
-                    className="group rounded-2xl bg-card hover:bg-card/80 border border-border/50 hover:border-border transition-all overflow-hidden"
+                    className="group rounded-xl bg-card hover:bg-card/80 border border-border/50 hover:border-border transition-all overflow-hidden"
                   >
-                    <div className="flex flex-col sm:flex-row">
+                    <div className="flex">
                       {/* Hero image */}
-                      <div className="relative h-32 sm:h-auto sm:w-32 md:w-40 flex-shrink-0 bg-secondary">
+                      <div className="relative w-20 sm:w-28 flex-shrink-0 bg-secondary">
                         {entity.hero_image_url ? (
                           <EntityHeroImage 
                             imageUrl={entity.hero_image_url} 
@@ -477,7 +438,7 @@ export default function Dashboard() {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <span className="text-3xl sm:text-4xl font-bold text-muted-foreground/20">
+                            <span className="text-2xl font-bold text-muted-foreground/20">
                               {entity.name.charAt(0).toUpperCase()}
                             </span>
                           </div>
@@ -485,70 +446,62 @@ export default function Dashboard() {
                       </div>
                       
                       {/* Content */}
-                      <div className="flex-1 min-w-0 p-4 sm:p-5 flex flex-col justify-between">
-                        <div className="space-y-2">
-                          <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0 p-4 flex flex-col justify-center">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
                             <div className="min-w-0 flex-1">
-                              <h3 className="text-base sm:text-lg font-semibold text-foreground truncate">
+                              <h3 className="text-base font-semibold text-foreground truncate group-hover:text-accent transition-colors">
                                 {entity.name}
                               </h3>
-                              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                <span className="text-xs sm:text-sm text-muted-foreground">
-                                  {typeConfig.label}
-                                </span>
-                                {entity.city && (
-                                  <span className="flex items-center gap-1 text-xs text-muted-foreground/70">
-                                    <MapPin className="h-3 w-3" />
-                                    {entity.city}
-                                  </span>
-                                )}
-                                {!entity.is_published && (
-                                  <span className="text-xs text-warning bg-warning/10 px-2 py-0.5 rounded-full">
-                                    Utkast
-                                  </span>
-                                )}
-                              </div>
                             </div>
                           </div>
-                          
-                          {entity.tagline && (
-                            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
-                              {entity.tagline}
-                            </p>
-                          )}
-                        </div>
-                        
-                        {/* Footer with role and actions */}
-                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/30">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge variant="secondary" className="text-xs font-normal">
+                              {typeConfig.label}
+                            </Badge>
+                            {entity.city && (
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground/70">
+                                <MapPin className="h-3 w-3" />
+                                {entity.city}
+                              </span>
+                            )}
+                            {!entity.is_published && (
+                              <Badge variant="outline" className="text-xs font-normal text-warning border-warning/30">
+                                Utkast
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-xs text-muted-foreground/70">
                             {ACCESS_DESCRIPTIONS[entity.access]}
                           </p>
-                          
-                          <div className="flex gap-1">
-                            <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs">
-                              <Link to={`/dashboard/entities/${entity.id}/edit`}>
-                                {userCanEdit ? (
-                                  <>
-                                    <Pencil className="h-3 w-3 mr-1" />
-                                    Rediger
-                                  </>
-                                ) : (
-                                  <>
-                                    <Eye className="h-3 w-3 mr-1" />
-                                    Se
-                                  </>
-                                )}
-                              </Link>
-                            </Button>
-                            {entity.is_published && (
-                              <Button asChild variant="ghost" size="icon" className="h-7 w-7">
-                                <Link to={`${typeConfig.route}/${entity.slug}`} target="_blank">
-                                  <ExternalLink className="h-3 w-3" />
-                                </Link>
-                              </Button>
-                            )}
-                          </div>
                         </div>
+                      </div>
+                      
+                      {/* Actions */}
+                      <div className="flex items-center gap-1 pr-3">
+                        <Button asChild variant="ghost" size="sm" className="h-8 px-3 text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Link to={`/dashboard/entities/${entity.id}/edit`}>
+                            {userCanEdit ? (
+                              <>
+                                <Pencil className="h-3 w-3 mr-1" />
+                                Rediger
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="h-3 w-3 mr-1" />
+                                Se
+                              </>
+                            )}
+                          </Link>
+                        </Button>
+                        {entity.is_published && (
+                          <Button asChild variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Link to={`${typeConfig.route}/${entity.slug}`} target="_blank">
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </Link>
+                          </Button>
+                        )}
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors ml-1" />
                       </div>
                     </div>
                   </div>
@@ -556,7 +509,7 @@ export default function Dashboard() {
               })}
             </div>
           ) : (
-            <div className="py-12 text-center space-y-3">
+            <div className="p-6 rounded-xl bg-card border border-border/50 text-center space-y-3">
               {selectedPersonaId ? (
                 <>
                   <p className="text-muted-foreground">
@@ -574,14 +527,7 @@ export default function Dashboard() {
                   <p className="text-muted-foreground">
                     Du er ikke med i noen prosjekter ennå.
                   </p>
-                  <Alert className="mt-4 bg-accent/5 border-accent/20 max-w-md mx-auto">
-                    <Info className="h-4 w-4 text-accent" />
-                    <AlertDescription className="text-sm text-muted-foreground">
-                      Du trenger ikke lage events. Hold prosjektet ditt oppdatert, 
-                      så bruker festivalen det når de setter sammen programmet.
-                    </AlertDescription>
-                  </Alert>
-                  <p className="text-sm text-muted-foreground mt-4">
+                  <p className="text-sm text-muted-foreground">
                     Vil du starte noe?{" "}
                     <a 
                       href="mailto:hei@giggen.no" 
@@ -596,9 +542,71 @@ export default function Dashboard() {
           )}
         </section>
 
+        {/* Admin/Crew Section - Collapsible */}
+        {(isAdmin || isStaff) && (
+          <Collapsible open={adminSectionOpen} onOpenChange={setAdminSectionOpen}>
+            <CollapsibleTrigger className="w-full">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover:bg-muted/50 border border-border/30 transition-all">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-muted">
+                    <Shield className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-foreground">
+                      {isAdmin ? "Admin & Crew" : "Crew-verktøy"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {isAdmin ? "Administrasjon og billettskanning" : "Scan billetter på event"}
+                    </p>
+                  </div>
+                </div>
+                <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${adminSectionOpen ? "rotate-180" : ""}`} />
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-3 space-y-2">
+                {isAdmin && (
+                  <Link
+                    to="/admin"
+                    className="flex items-center gap-4 p-4 rounded-xl bg-card hover:bg-card/80 border border-border/50 hover:border-border transition-all group"
+                  >
+                    <div className="p-2.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                      <Settings className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground">Admin Panel</p>
+                      <p className="text-xs text-muted-foreground">
+                        Administrer festival, artister og innhold
+                      </p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary transition-colors" />
+                  </Link>
+                )}
+                {isStaff && (
+                  <Link
+                    to="/crew/checkin"
+                    className="flex items-center gap-4 p-4 rounded-xl bg-card hover:bg-card/80 border border-border/50 hover:border-border transition-all group"
+                  >
+                    <div className="p-2.5 rounded-lg bg-accent/10 group-hover:bg-accent/20 transition-colors">
+                      <QrCode className="h-4 w-4 text-accent" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground">Check-in billetter</p>
+                      <p className="text-xs text-muted-foreground">
+                        Scan QR-kode eller søk etter billetter
+                      </p>
+                        </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors" />
+                  </Link>
+                )}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+
         {/* Passive CTA - softer, less prominent */}
         {entities && entities.length > 0 && (
-          <div className="text-center pt-6">
+          <div className="text-center pt-2">
             <p className="text-sm text-muted-foreground/70">
               Vil du starte noe nytt?{" "}
               <a 
@@ -611,6 +619,6 @@ export default function Dashboard() {
           </div>
         )}
       </main>
-    </div>
+                    </div>
   );
 }
