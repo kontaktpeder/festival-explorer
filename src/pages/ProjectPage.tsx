@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { Music } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { parseImageSettings } from "@/types/database";
+import type { SocialLink } from "@/types/social";
 
 import { usePublicEntityTimelineEvents } from "@/hooks/useEntityTimeline";
 
@@ -27,6 +28,7 @@ import { HeroSection } from "@/components/ui/HeroSection";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { EntityTimeline } from "@/components/ui/EntityTimeline";
+import { EntitySocialLinks } from "@/components/ui/EntitySocialLinks";
 
 export default function ProjectPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -65,6 +67,9 @@ export default function ProjectPage() {
   // Parse hero image settings for focal point positioning
   const heroImageSettings = parseImageSettings(entity.hero_image_settings);
 
+  // Get social links from entity (future-proofed - field may not exist yet)
+  const entitySocialLinks = ((entity as any).social_links || []) as SocialLink[] | undefined;
+
   return (
     <PageLayout>
       {/* Static logo in header */}
@@ -91,12 +96,17 @@ export default function ProjectPage() {
       </HeroSection>
 
       {/* OM PROSJEKTET – The voice */}
-      {entity.description && (
+      {(entity.description || (entitySocialLinks && entitySocialLinks.length > 0)) && (
         <section className="py-20 md:py-32 px-6 md:px-12">
           <div className="max-w-2xl">
-            <p className="text-lg md:text-xl text-foreground/85 leading-relaxed whitespace-pre-line font-light">
-              {entity.description}
-            </p>
+            {entity.description && (
+              <p className="text-lg md:text-xl text-foreground/85 leading-relaxed whitespace-pre-line font-light">
+                {entity.description}
+              </p>
+            )}
+
+            {/* Social links for project/venue */}
+            <EntitySocialLinks links={entitySocialLinks} />
           </div>
         </section>
       )}
