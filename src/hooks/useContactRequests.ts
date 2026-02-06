@@ -21,7 +21,7 @@ export function useContactRequests(filters?: {
       if (filters?.search) {
         const s = `%${filters.search}%`;
         query = query.or(
-          `recipient_name.ilike.${s},sender_email.ilike.${s},sender_name.ilike.${s},subject.ilike.${s}`
+          `recipient_name.ilike.${s},sender_email.ilike.${s},sender_name.ilike.${s},subject.ilike.${s},message.ilike.${s}`
         );
       }
 
