@@ -7,7 +7,7 @@ export default function Index() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    navigate("/festival/giggen-sessions", { replace: true });
+    navigate("/festival", { replace: true });
   }, [navigate]);
 
   return <LoadingState message="Velkommen til universet..." />;
