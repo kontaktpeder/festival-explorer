@@ -83,19 +83,20 @@ export default function Dashboard() {
   const isLoading = selectedPersonaId ? isLoadingFiltered : isLoadingAll;
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { navigate("/admin/login"); return; }
+    let isMounted = true;
 
+    const loadUserData = async (userId: string, email: string) => {
       const { data: profile } = await supabase
         .from("profiles")
         .select("display_name, avatar_url, avatar_image_settings")
-        .eq("id", session.user.id)
+        .eq("id", userId)
         .single();
 
+      if (!isMounted) return;
+
       setCurrentUser({
-        id: session.user.id,
-        email: session.user.email || "",
+        id: userId,
+        email,
         displayName: profile?.display_name || undefined,
         avatarUrl: profile?.avatar_url || undefined,
         avatarImageSettings: parseImageSettings(profile?.avatar_image_settings),
@@ -104,14 +105,51 @@ export default function Dashboard() {
       const { data: staffRole } = await supabase
         .from("staff_roles")
         .select("role")
-        .eq("user_id", session.user.id)
+        .eq("user_id", userId)
         .single();
+      if (!isMounted) return;
       setIsStaff(!!staffRole);
 
       const { data: adminCheck } = await supabase.rpc("is_admin");
+      if (!isMounted) return;
       setIsAdmin(!!adminCheck);
     };
-    checkAuth();
+
+    // Listen for auth changes FIRST (handles login/logout while on page)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!isMounted) return;
+        if (!session) {
+          setCurrentUser(null);
+          navigate("/admin/login");
+          return;
+        }
+        // Defer data fetch to avoid Supabase deadlock
+        setTimeout(() => {
+          if (isMounted) {
+            loadUserData(session.user.id, session.user.email || "");
+          }
+        }, 0);
+      }
+    );
+
+    // THEN check for existing session (initial load)
+    const initAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!isMounted) return;
+      if (!session) {
+        navigate("/admin/login");
+        return;
+      }
+      await loadUserData(session.user.id, session.user.email || "");
+    };
+
+    initAuth();
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   useEffect(() => {
