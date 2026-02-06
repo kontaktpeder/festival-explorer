@@ -27,9 +27,17 @@ export default function RequestAccess() {
   const [roleType, setRoleType] = useState("");
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  // Honeypot anti-spam field
+  const [website, setWebsite] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Honeypot: if filled, silently "succeed"
+    if (website) {
+      setSubmitted(true);
+      return;
+    }
 
     if (!name.trim() || !email.trim() || !roleType) {
       toast({
@@ -114,6 +122,7 @@ export default function RequestAccess() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ditt fulle navn"
+                  maxLength={100}
                   required
                 />
               </div>
@@ -126,6 +135,7 @@ export default function RequestAccess() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="din@epost.no"
+                  maxLength={255}
                   required
                 />
               </div>
@@ -154,9 +164,22 @@ export default function RequestAccess() {
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Hvem er du, og hvorfor vil du være med? (2-4 linjer)"
                   rows={4}
+                  maxLength={1000}
                   className="resize-none"
                 />
               </div>
+
+              {/* Honeypot anti-spam – invisible to humans */}
+              <input
+                type="text"
+                name="website"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                style={{ position: "absolute", left: "-9999px", opacity: 0, pointerEvents: "none" }}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+              />
 
               <Button
                 type="submit"

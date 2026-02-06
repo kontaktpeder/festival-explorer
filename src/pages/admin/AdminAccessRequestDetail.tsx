@@ -6,6 +6,7 @@ import { usePlatformEntity } from "@/hooks/useEntityTypes";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { getPublicUrl } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -20,7 +21,6 @@ import type { AccessRequestStatus } from "@/types/access-request";
 
 const STATUS_VARIANT: Record<AccessRequestStatus, "default" | "secondary" | "destructive" | "outline"> = {
   new: "default",
-  reviewed: "secondary",
   approved: "outline",
   rejected: "destructive",
 };
@@ -68,7 +68,7 @@ export default function AdminAccessRequestDetail() {
         invitedBy: user.id,
       });
 
-      const publishedUrl = "https://giggn.lovable.app";
+      const publishedUrl = getPublicUrl();
       const token = (created as { token?: string | null })?.token;
       const link = token
         ? `${publishedUrl}/accept-invitation?token=${encodeURIComponent(token)}`

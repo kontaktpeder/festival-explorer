@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Search, Mail, Calendar, ChevronRight } from "lucide-react";
 import { STATUS_LABELS, ROLE_TYPE_OPTIONS } from "@/types/access-request";
@@ -19,7 +19,6 @@ import type { AccessRequestStatus } from "@/types/access-request";
 
 const STATUS_VARIANT: Record<AccessRequestStatus, "default" | "secondary" | "destructive" | "outline"> = {
   new: "default",
-  reviewed: "secondary",
   approved: "outline",
   rejected: "destructive",
 };
@@ -29,6 +28,7 @@ export default function AdminAccessRequests() {
   const { data: requests, isLoading } = useAccessRequests();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState<"all" | "30days">("30days");
 
   const filteredRequests = requests?.filter((req) => {
     const matchesSearch =
@@ -39,7 +39,11 @@ export default function AdminAccessRequests() {
     const matchesStatus =
       statusFilter === "all" || req.status === statusFilter;
 
-    return matchesSearch && matchesStatus;
+    const matchesDate =
+      dateFilter === "all" ||
+      new Date(req.created_at) >= subDays(new Date(), 30);
+
+    return matchesSearch && matchesStatus && matchesDate;
   });
 
   if (isLoading) return <LoadingState message="Laster forespørsler..." />;
@@ -74,15 +78,23 @@ export default function AdminAccessRequests() {
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-[160px]">
+          <SelectTrigger className="w-full sm:w-[140px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Alle</SelectItem>
             <SelectItem value="new">Ny ({newCount})</SelectItem>
-            <SelectItem value="reviewed">Vurdert</SelectItem>
             <SelectItem value="approved">Godkjent</SelectItem>
             <SelectItem value="rejected">Avslått</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={dateFilter} onValueChange={(v) => setDateFilter(v as "all" | "30days")}>
+          <SelectTrigger className="w-full sm:w-[160px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="30days">Siste 30 dager</SelectItem>
+            <SelectItem value="all">Alle</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -111,10 +123,10 @@ export default function AdminAccessRequests() {
                       {req.name}
                     </span>
                     <Badge
-                      variant={STATUS_VARIANT[req.status as AccessRequestStatus]}
+                      variant={STATUS_VARIANT[req.status as AccessRequestStatus] ?? "secondary"}
                       className="text-[10px] shrink-0"
                     >
-                      {STATUS_LABELS[req.status as AccessRequestStatus]}
+                      {STATUS_LABELS[req.status as AccessRequestStatus] ?? req.status}
                     </Badge>
                     <span className="text-[10px] text-muted-foreground">
                       {roleLabel}
