@@ -12,13 +12,11 @@ import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { parseImageSettings, type ImageSettings } from "@/types/database";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Users, Building2, Compass, Pencil, ExternalLink, User, ArrowRight, Eye, Sparkles, Plus, ChevronRight, ChevronDown, QrCode, Info, MapPin, Settings, Shield } from "lucide-react";
+import { Users, Building2, Pencil, ExternalLink, User, ArrowRight, Eye, Sparkles, Plus, ChevronRight, ChevronDown, QrCode, Info, MapPin, Settings, Shield } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CroppedImage } from "@/components/ui/CroppedImage";
 import type { EntityType, AccessLevel } from "@/types/database";
 import type { Json } from "@/integrations/supabase/types";
-import { Camera } from "lucide-react";
-
 // Helper component for entity hero image with signed URL
 function EntityHeroImage({
   imageUrl,
@@ -51,16 +49,6 @@ const ACCESS_DESCRIPTIONS: Record<AccessLevel, string> = {
   viewer: "Kan se",
 };
 
-interface OnboardingChoice {
-  id: string;
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  link?: string;
-  action?: () => void;
-  disabled?: boolean;
-}
-
 export default function Dashboard() {
   const navigate = useNavigate();
   const selectedPersonaId = useSelectedPersonaId();
@@ -71,7 +59,6 @@ export default function Dashboard() {
     avatarUrl?: string;
     avatarImageSettings?: ImageSettings | null;
   } | null>(null);
-  const [hasExplored, setHasExplored] = useState(false);
   const [isStaff, setIsStaff] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [adminSectionOpen, setAdminSectionOpen] = useState(false);
@@ -152,31 +139,14 @@ export default function Dashboard() {
     };
   }, [navigate]);
 
-  useEffect(() => {
-    const explored = localStorage.getItem("onboarding_explored");
-    setHasExplored(explored === "true");
-  }, []);
-
-  const handleExplore = () => {
-    localStorage.setItem("onboarding_explored", "true");
-    setHasExplored(true);
-    navigate("/");
-  };
-
   const clearPersonaFilter = () => {
     localStorage.removeItem("selectedPersonaId");
     window.dispatchEvent(new Event("personaChanged"));
   };
 
-  const showOnboarding = !isLoading && allEntities?.length === 0 && !hasExplored;
   const userName = currentUser?.displayName || currentUser?.email?.split("@")[0] || "der";
   const profileAvatarUrl = useSignedMediaUrl(currentUser?.avatarUrl || null, "private");
   const profileAvatarStyles = getCroppedImageStyles(currentUser?.avatarImageSettings);
-
-  const onboardingChoices: OnboardingChoice[] = [
-    { id: "profile", icon: <Camera className="h-5 w-5 sm:h-6 sm:w-6" />, title: "Lag en profil", description: "Vis deg frem på GIGGEN", link: "/dashboard/personas/new" },
-    { id: "explore", icon: <Compass className="h-5 w-5 sm:h-6 sm:w-6" />, title: "Utforsk", description: "Se hva som skjer", action: handleExplore },
-  ];
 
   if (isLoading || !currentUser) {
     return (
@@ -213,11 +183,7 @@ export default function Dashboard() {
             <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-foreground tracking-tight truncate">
               Hei, {userName}
             </h1>
-            {showOnboarding ? (
-              <p className="text-sm sm:text-lg text-muted-foreground">Velkommen backstage.</p>
-            ) : (
-              <p className="text-xs sm:text-base text-muted-foreground">Ditt rom før scenen.</p>
-            )}
+            <p className="text-xs sm:text-base text-muted-foreground">Ditt rom før scenen.</p>
           </div>
         </div>
 
@@ -248,34 +214,6 @@ export default function Dashboard() {
             <button onClick={clearPersonaFilter} className="text-foreground/70 hover:text-foreground transition-colors underline underline-offset-2">
               Vis alt
             </button>
-          </div>
-        )}
-
-        {/* Onboarding */}
-        {showOnboarding && (
-          <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-6">
-            {onboardingChoices.map((choice) => (
-              <button
-                key={choice.id}
-                className={`text-left p-4 sm:p-6 rounded-xl bg-card/50 hover:bg-card active:bg-card border border-border/30 hover:border-border/50 transition-all group ${choice.disabled ? "opacity-50 cursor-not-allowed" : ""}`}
-                onClick={() => {
-                  if (choice.disabled) return;
-                  if (choice.action) choice.action();
-                  else if (choice.link) navigate(choice.link);
-                }}
-                disabled={choice.disabled}
-              >
-                <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
-                  <div className="p-2.5 sm:p-3 rounded-xl bg-accent/10 text-accent">
-                    {choice.icon}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-foreground text-sm sm:text-lg">{choice.title}</h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">{choice.description}</p>
-                  </div>
-                </div>
-              </button>
-            ))}
           </div>
         )}
 
