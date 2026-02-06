@@ -106,6 +106,62 @@ export type Database = {
           },
         ]
       }
+      contact_requests: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          mode: string
+          recipient_email: string
+          recipient_name: string
+          recipient_persona_id: string
+          sender_email: string
+          sender_name: string
+          sender_phone: string | null
+          status: string
+          subject: string | null
+          template_payload: Json | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          mode: string
+          recipient_email: string
+          recipient_name: string
+          recipient_persona_id: string
+          sender_email: string
+          sender_name: string
+          sender_phone?: string | null
+          status: string
+          subject?: string | null
+          template_payload?: Json | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          mode?: string
+          recipient_email?: string
+          recipient_name?: string
+          recipient_persona_id?: string
+          sender_email?: string
+          sender_name?: string
+          sender_phone?: string | null
+          status?: string
+          subject?: string | null
+          template_payload?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_requests_recipient_persona_id_fkey"
+            columns: ["recipient_persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deletion_requests: {
         Row: {
           created_at: string | null
@@ -971,6 +1027,8 @@ export type Database = {
           location_name: string | null
           location_type: Database["public"]["Enums"]["location_type"] | null
           name: string
+          public_email: string | null
+          show_email: boolean
           slug: string
           social_links: Json | null
           updated_at: string
@@ -990,6 +1048,8 @@ export type Database = {
           location_name?: string | null
           location_type?: Database["public"]["Enums"]["location_type"] | null
           name: string
+          public_email?: string | null
+          show_email?: boolean
           slug: string
           social_links?: Json | null
           updated_at?: string
@@ -1009,6 +1069,8 @@ export type Database = {
           location_name?: string | null
           location_type?: Database["public"]["Enums"]["location_type"] | null
           name?: string
+          public_email?: string | null
+          show_email?: boolean
           slug?: string
           social_links?: Json | null
           updated_at?: string
@@ -1565,6 +1627,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_contact_info: {
+        Row: {
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          updated_at: string
+          use_as_default: boolean
+          user_id: string
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          updated_at?: string
+          use_as_default?: boolean
+          user_id: string
+        }
+        Update: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          updated_at?: string
+          use_as_default?: boolean
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
