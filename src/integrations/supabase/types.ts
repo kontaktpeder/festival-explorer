@@ -76,6 +76,7 @@ export type Database = {
           admin_notes: string | null
           created_at: string | null
           email: string
+          email_verified: boolean | null
           id: string
           message: string | null
           name: string
@@ -83,11 +84,14 @@ export type Database = {
           reviewed_by: string | null
           role_type: string
           status: string | null
+          verification_sent_at: string | null
+          verification_token: string | null
         }
         Insert: {
           admin_notes?: string | null
           created_at?: string | null
           email: string
+          email_verified?: boolean | null
           id?: string
           message?: string | null
           name: string
@@ -95,11 +99,14 @@ export type Database = {
           reviewed_by?: string | null
           role_type: string
           status?: string | null
+          verification_sent_at?: string | null
+          verification_token?: string | null
         }
         Update: {
           admin_notes?: string | null
           created_at?: string | null
           email?: string
+          email_verified?: boolean | null
           id?: string
           message?: string | null
           name?: string
@@ -107,6 +114,8 @@ export type Database = {
           reviewed_by?: string | null
           role_type?: string
           status?: string | null
+          verification_sent_at?: string | null
+          verification_token?: string | null
         }
         Relationships: [
           {

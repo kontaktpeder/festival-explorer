@@ -15,7 +15,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { ArrowLeft, Check, X, Copy } from "lucide-react";
+import { ArrowLeft, Check, X, Copy, ShieldCheck, ShieldAlert } from "lucide-react";
 import { ROLE_TYPE_OPTIONS, STATUS_LABELS } from "@/types/access-request";
 import type { AccessRequestStatus } from "@/types/access-request";
 
@@ -178,6 +178,15 @@ export default function AdminAccessRequestDetail() {
             <a href={`mailto:${request.email}`} className="text-accent hover:underline">
               {request.email}
             </a>
+            {request.email_verified ? (
+              <span className="inline-flex items-center gap-1 ml-2 text-[11px] text-green-500">
+                <ShieldCheck className="h-3 w-3" /> Bekreftet
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 ml-2 text-[11px] text-yellow-500">
+                <ShieldAlert className="h-3 w-3" /> Ikke bekreftet
+              </span>
+            )}
           </div>
           <div>
             <span className="text-muted-foreground">Rolle: </span>

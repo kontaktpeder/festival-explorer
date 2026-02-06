@@ -22,6 +22,9 @@ export interface AccessRequest {
   reviewed_at: string | null;
   reviewed_by: string | null;
   admin_notes: string | null;
+  email_verified: boolean;
+  verification_token: string | null;
+  verification_sent_at: string | null;
 }
 
 export const ROLE_TYPE_OPTIONS: Array<{

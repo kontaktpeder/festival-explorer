@@ -13,7 +13,7 @@ import {
 import { LoadingState } from "@/components/ui/LoadingState";
 import { format, subDays } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Search, Mail, Calendar, ChevronRight } from "lucide-react";
+import { Search, Mail, Calendar, ChevronRight, ShieldCheck, ShieldAlert } from "lucide-react";
 import { STATUS_LABELS, ROLE_TYPE_OPTIONS } from "@/types/access-request";
 import type { AccessRequestStatus } from "@/types/access-request";
 
@@ -131,6 +131,11 @@ export default function AdminAccessRequests() {
                     <span className="text-[10px] text-muted-foreground">
                       {roleLabel}
                     </span>
+                    {req.email_verified ? (
+                      <span title="E-post bekreftet"><ShieldCheck className="h-3 w-3 text-green-500 shrink-0" /></span>
+                    ) : (
+                      <span title="E-post ikke bekreftet"><ShieldAlert className="h-3 w-3 text-yellow-500 shrink-0" /></span>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
