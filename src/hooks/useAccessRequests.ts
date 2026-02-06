@@ -42,14 +42,37 @@ export function useCreateAccessRequest() {
       role_type: string;
       message?: string | null;
     }) => {
+      const verificationToken = crypto.randomUUID();
+
+      const insertPayload = {
+        ...request,
+        verification_token: verificationToken,
+        verification_sent_at: new Date().toISOString(),
+      };
+
       const { data, error } = await supabase
         .from("access_requests")
-        .insert([request])
+        .insert([insertPayload])
         .select()
         .single();
 
       if (error) throw error;
       return data as AccessRequest;
+    },
+  });
+}
+
+export function useVerifyAccessEmail() {
+  return useMutation({
+    mutationFn: async (token: string) => {
+      const { data, error } = await supabase.functions.invoke(
+        "verify-access-email",
+        { body: { token } }
+      );
+
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Verifisering feilet");
+      return data as { success: true; name: string };
     },
   });
 }
