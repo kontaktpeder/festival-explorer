@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -178,7 +177,7 @@ export default function AccountCenter() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 sm:py-8 max-w-2xl space-y-4 sm:space-y-6">
+      <main className="container mx-auto px-4 py-6 sm:py-8 max-w-md space-y-4 sm:space-y-6">
         <div className="flex items-center gap-2 sm:gap-3">
           <Button
             variant="ghost"
@@ -191,147 +190,60 @@ export default function AccountCenter() {
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">Kontosenter</h1>
         </div>
 
-        {/* Account Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Kontoinformasjon</CardTitle>
-            <CardDescription>
-              Administrer kontoen din
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">E-post</p>
+        {/* Account & Actions */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between py-3">
+            <div>
+              <p className="text-sm text-muted-foreground">E-post</p>
               <p className="text-foreground">{session.user.email}</p>
             </div>
-            <Separator />
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">Bruker-ID</p>
-              <p className="text-xs text-muted-foreground font-mono break-all">
-                {session.user.id}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Logout */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <LogOut className="h-5 w-5" />
-              Logg ut
-            </CardTitle>
-            <CardDescription>
-              Logg ut fra kontoen din på denne enheten
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={handleLogout} variant="outline" disabled={logoutMutation.isPending}>
-              <LogOut className="h-4 w-4 mr-2" />
-              {logoutMutation.isPending ? "Logger ut..." : "Logg ut"}
-            </Button>
-          </CardContent>
-        </Card>
+          <Separator />
 
-        {/* Privacy */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Personvern
-            </CardTitle>
-            <CardDescription>
-              Les om hvordan vi håndterer dine personopplysninger
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Vi tar personvern på alvor. Her er informasjon om hvordan vi samler inn, 
-                bruker og beskytter dine personopplysninger.
-              </p>
-            </div>
+          <button
+            onClick={handleLogout}
+            disabled={logoutMutation.isPending}
+            className="flex items-center gap-3 w-full py-3 text-left text-foreground hover:text-accent transition-colors"
+          >
+            <LogOut className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">{logoutMutation.isPending ? "Logger ut..." : "Logg ut"}</span>
+          </button>
 
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-foreground">Personopplysninger vi samler inn:</p>
-              <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                <li>E-postadresse (brukes til autentisering og kommunikasjon)</li>
-                <li>Visningsnavn og profilinformasjon (du bestemmer selv hva som deles)</li>
-                <li>Prosjektdata og innhold du oppretter (ligger under din kontroll)</li>
-              </ul>
-            </div>
+          <Separator />
 
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-foreground">Dine rettigheter:</p>
-              <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                <li>Du kan når som helst se, endre eller slette dine personopplysninger</li>
-                <li>Du kan be om eksport av dine data</li>
-                <li>Du kan når som helst slette kontoen din</li>
-              </ul>
-            </div>
+          <Link
+            to="/dashboard/privacy"
+            className="flex items-center gap-3 w-full py-3 text-foreground hover:text-accent transition-colors"
+          >
+            <Shield className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">Personvernpolicy</span>
+          </Link>
 
-            <Button asChild variant="outline" size="sm">
-              <Link to="/dashboard/privacy">
-                <Lock className="h-4 w-4 mr-2" />
-                Les full personvernpolicy
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+          <Link
+            to="/dashboard/settings"
+            className="flex items-center gap-3 w-full py-3 text-foreground hover:text-accent transition-colors"
+          >
+            <Lock className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">Endre passord</span>
+          </Link>
+        </div>
 
-        {/* Delete Account */}
-        <Card className="border-destructive/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-destructive">
-              <Trash2 className="h-5 w-5" />
-              Slett konto
-            </CardTitle>
-            <CardDescription>
-              Dette er en permanent handling som ikke kan angres
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-              <div className="flex gap-3">
-                <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-destructive">Advarsel: Permanent sletting</p>
-                  <p className="text-sm text-muted-foreground">
-                    Når du sletter kontoen din:
-                  </p>
-                  
-                  <p className="text-xs font-medium text-foreground mt-2">Følgende slettes permanent:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>Din profil og all profilinformasjon</li>
-                    <li>Alle dine personas (offentlige profiler)</li>
-                    <li>Dine tilganger til prosjekter og scener</li>
-                    <li>Mediefiler som kun du bruker</li>
-                  </ul>
-                  
-                  <p className="text-xs font-medium text-foreground mt-2">Følgende bevares for delte prosjekter:</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>Prosjekter du har opprettet (overføres til andre team-medlemmer)</li>
-                    <li>Bilder og filer som er i bruk av prosjekter (eierskap overføres)</li>
-                    <li>Arrangementer og festivaler (forblir tilgjengelige)</li>
-                  </ul>
-                  
-                  <p className="text-sm text-destructive font-medium mt-2">
-                    Du kan ikke angre denne handlingen.
-                  </p>
-                </div>
-              </div>
-            </div>
+        <Separator />
 
-            <Button 
-              variant="destructive"
-              onClick={() => setShowDeleteDialog(true)}
-              className="w-full"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Slett konto
-            </Button>
-          </CardContent>
-        </Card>
+        {/* Delete Account – compact */}
+        <div className="pt-2">
+          <button
+            onClick={() => setShowDeleteDialog(true)}
+            className="flex items-center gap-3 w-full py-3 text-destructive/70 hover:text-destructive transition-colors"
+          >
+            <Trash2 className="h-4 w-4" />
+            <span className="text-sm">Slett konto</span>
+          </button>
+          <p className="text-xs text-muted-foreground pl-7">
+            Permanent sletting av konto og personlige data.
+          </p>
+        </div>
 
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
