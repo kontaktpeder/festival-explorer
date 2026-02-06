@@ -106,12 +106,12 @@ export default function AdminEntities() {
 
       {/* Type filter - dynamic from entity_types */}
       <Tabs value={typeFilter} onValueChange={(v) => setTypeFilter(v as EntityType | "all")}>
-        <TabsList>
-          <TabsTrigger value="all">Alle</TabsTrigger>
+        <TabsList className="w-full overflow-x-auto justify-start md:justify-center">
+          <TabsTrigger value="all" className="text-xs md:text-sm">Alle</TabsTrigger>
           {entityTypes?.map((et) => (
-            <TabsTrigger key={et.key} value={et.key}>
-              <EntityTypeIcon iconKey={et.icon_key} className="h-4 w-4 mr-1" />
-              {et.label_nb}
+            <TabsTrigger key={et.key} value={et.key} className="text-xs md:text-sm">
+              <EntityTypeIcon iconKey={et.icon_key} className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1" />
+              <span className="hidden sm:inline">{et.label_nb}</span>
             </TabsTrigger>
           ))}
         </TabsList>
