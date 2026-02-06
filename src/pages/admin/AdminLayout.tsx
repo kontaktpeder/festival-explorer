@@ -77,7 +77,7 @@ export default function AdminLayout() {
         </Link>
       </div>
       
-      <nav className="flex-1 p-3 md:p-4 space-y-1">
+      <nav className="flex-1 p-2 md:p-4 space-y-0.5">
         {navItems.map(({ to, icon: Icon, label, exact }) => {
           const isActive = exact 
             ? location.pathname === to 
@@ -88,24 +88,24 @@ export default function AdminLayout() {
               key={to}
               to={to}
               onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-3 md:px-4 py-3 rounded-md transition-colors ${
+              className={`flex items-center gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-md transition-colors text-sm md:text-base active:bg-muted ${
                 isActive
                   ? "bg-accent/15 text-accent"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
               {label}
             </Link>
           );
         })}
       </nav>
 
-      <div className="p-3 md:p-4 border-t border-border/30 space-y-2">
+      <div className="p-3 md:p-4 border-t border-border/30 space-y-1">
         <Link 
           to="/dashboard" 
           onClick={() => setSidebarOpen(false)}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground active:text-foreground transition-colors py-2"
         >
           <Home className="h-4 w-4" />
           Backstage
@@ -113,7 +113,7 @@ export default function AdminLayout() {
         <Link 
           to="/" 
           onClick={() => setSidebarOpen(false)}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors block"
+          className="text-sm text-muted-foreground hover:text-foreground active:text-foreground transition-colors block py-2"
         >
           ← Tilbake til siden
         </Link>
@@ -122,20 +122,20 @@ export default function AdminLayout() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
+    <div className="min-h-[100svh] flex flex-col md:flex-row">
       {/* Mobile header */}
       {isMobile && (
-        <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-sm border-b border-border/30 p-3 flex items-center justify-between">
-          <Link to="/admin" className="text-lg font-bold text-foreground">
-            GIGGEN <span className="text-muted-foreground font-normal text-sm">Backstage</span>
+        <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/30 px-3 py-2.5 flex items-center justify-between" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 0.625rem)' }}>
+          <Link to="/admin" className="text-base font-bold text-foreground">
+            GIGGEN <span className="text-muted-foreground font-normal text-xs">Backstage</span>
           </Link>
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="h-9 w-9">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0 flex flex-col">
+            <SheetContent side="left" className="w-[280px] p-0 flex flex-col">
               <NavContent />
             </SheetContent>
           </Sheet>
@@ -151,7 +151,7 @@ export default function AdminLayout() {
 
       {/* Main content */}
       <main className="flex-1 overflow-auto">
-        <div className="p-4 md:p-8">
+        <div className="px-3 py-4 md:p-8 pb-[env(safe-area-inset-bottom)]">
           <AdminErrorBoundary>
             <Outlet />
           </AdminErrorBoundary>

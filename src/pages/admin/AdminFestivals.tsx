@@ -50,57 +50,58 @@ export default function AdminFestivals() {
         </Button>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {festivals?.map((festival) => (
           <div
             key={festival.id}
-            className="bg-card border border-border rounded-lg p-4 md:p-6"
+            className="bg-card border border-border rounded-lg p-3 md:p-6"
           >
-            <div className="flex flex-col gap-4">
-              <div className="space-y-2">
+            <div className="flex flex-col gap-3">
+              <div className="space-y-1.5">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-lg md:text-xl font-semibold text-foreground">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <h2 className="text-base md:text-xl font-semibold text-foreground truncate">
                       {festival.name}
                     </h2>
-                    <Badge variant={festival.status === "published" ? "default" : "secondary"}>
+                    <Badge variant={festival.status === "published" ? "default" : "secondary"} className="text-[10px] md:text-xs shrink-0">
                       {festival.status === "published" ? "Publisert" : "Utkast"}
                     </Badge>
                   </div>
-                  <Button asChild variant="ghost" size="icon" className="shrink-0">
+                  <Button asChild variant="ghost" size="icon" className="shrink-0 h-8 w-8">
                     <Link to={`/festival/${festival.slug}`} target="_blank">
-                      <ExternalLink className="h-4 w-4" />
+                      <ExternalLink className="h-3.5 w-3.5" />
                     </Link>
                   </Button>
                 </div>
                 
                 {festival.start_at && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs md:text-sm text-muted-foreground">
                     {format(new Date(festival.start_at), "d. MMM yyyy", { locale: nb })}
                     {festival.end_at && ` – ${format(new Date(festival.end_at), "d. MMM yyyy", { locale: nb })}`}
                   </p>
                 )}
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                <Button asChild variant="outline" size="sm">
+              <div className="flex flex-wrap gap-1.5 md:gap-2">
+                <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
                   <Link to={`/admin/festivals/${festival.id}/program`}>
-                    <Calendar className="h-4 w-4 mr-1" />
+                    <Calendar className="h-3.5 w-3.5 mr-1" />
                     Program
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="sm">
+                <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
                   <Link to={`/admin/festivals/${festival.id}`}>
-                    <Settings className="h-4 w-4 mr-1" />
+                    <Settings className="h-3.5 w-3.5 mr-1" />
                     Rediger
                   </Link>
                 </Button>
               </div>
 
-              <div className="pt-3 border-t border-border">
+              <div className="pt-2 border-t border-border">
                 <Button
                   variant={festival.status === "published" ? "outline" : "default"}
                   size="sm"
+                  className="h-8 text-xs md:text-sm"
                   onClick={() => toggleStatus.mutate({
                     id: festival.id,
                     status: festival.status === "published" ? "draft" : "published"

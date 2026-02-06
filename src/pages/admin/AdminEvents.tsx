@@ -82,68 +82,71 @@ export default function AdminEvents() {
         </Button>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {events?.map((event) => (
           <div
             key={event.id}
-            className="bg-card border border-border rounded-lg p-4 md:p-6"
+            className="bg-card border border-border rounded-lg p-3 md:p-6"
           >
-            <div className="flex flex-col gap-4">
-              <div className="space-y-2">
+            <div className="flex flex-col gap-3">
+              <div className="space-y-1.5">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Music className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <h2 className="text-lg md:text-xl font-semibold text-foreground">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Music className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground shrink-0" />
+                    <h2 className="text-base md:text-xl font-semibold text-foreground truncate">
                       {event.title}
                     </h2>
-                    <Badge variant={event.status === "published" ? "default" : "secondary"}>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Badge variant={event.status === "published" ? "default" : "secondary"} className="text-[10px] md:text-xs">
                       {event.status === "published" ? "Publisert" : "Utkast"}
                     </Badge>
+                    <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                      <Link to={`/event/${event.slug}`} target="_blank">
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </Link>
+                    </Button>
                   </div>
-                  <Button asChild variant="ghost" size="icon" className="shrink-0">
-                    <Link to={`/event/${event.slug}`} target="_blank">
-                      <ExternalLink className="h-4 w-4" />
-                    </Link>
-                  </Button>
                 </div>
                 
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs md:text-sm text-muted-foreground">
                   {format(new Date(event.start_at), "d. MMM yyyy 'kl.' HH:mm", { locale: nb })}
                   {event.venue && ` · ${event.venue.name}`}
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                <Button asChild variant="outline" size="sm">
+              <div className="flex flex-wrap gap-1.5 md:gap-2">
+                <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
                   <Link to={`/admin/events/${event.id}/lineup`}>
-                    <Users className="h-4 w-4 mr-1" />
+                    <Users className="h-3.5 w-3.5 mr-1" />
                     Lineup
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="sm">
+                <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
                   <Link to={`/admin/events/${event.id}`}>
-                    <Settings className="h-4 w-4 mr-1" />
+                    <Settings className="h-3.5 w-3.5 mr-1" />
                     Rediger
                   </Link>
                 </Button>
                 <Button 
                   variant="outline" 
                   size="sm"
-                  className="text-destructive hover:text-destructive border-destructive/30"
+                  className="h-8 text-xs md:text-sm text-destructive hover:text-destructive border-destructive/30"
                   onClick={() => {
                     setDeleteId(event.id);
                     setDeleteTitle(event.title);
                   }}
                 >
-                  <Trash2 className="h-4 w-4 mr-1" />
+                  <Trash2 className="h-3.5 w-3.5 mr-1" />
                   Slett
                 </Button>
               </div>
 
-              <div className="pt-3 border-t border-border">
+              <div className="pt-2 border-t border-border">
                 <Button
                   variant={event.status === "published" ? "outline" : "default"}
                   size="sm"
+                  className="h-8 text-xs md:text-sm"
                   onClick={() => toggleStatus.mutate({
                     id: event.id,
                     status: event.status === "published" ? "draft" : "published"
