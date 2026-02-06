@@ -7,13 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { PersonaSelector } from "@/components/dashboard/PersonaSelector";
 import { useToast } from "@/hooks/use-toast";
 import { useContactInfo, useUpsertContactInfo } from "@/hooks/useContactInfo";
 import { toast as sonnerToast } from "sonner";
 import { Link } from "react-router-dom";
-import { User, Mail, Lock, ArrowLeft, Contact, Pencil, Save, X } from "lucide-react";
+import { User, Mail, Lock, ArrowLeft, Pencil, Save, X } from "lucide-react";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import type { ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
@@ -22,20 +23,23 @@ import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 export default function Settings() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
+  const [editing, setEditing] = useState(false);
+
+  // Profile state
   const [displayName, setDisplayName] = useState("");
   const [handle, setHandle] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [avatarImageSettings, setAvatarImageSettings] = useState<ImageSettings | null>(null);
 
-  // Contact info
+  // Contact info state
   const { data: contactInfo } = useContactInfo();
   const upsertContactInfo = useUpsertContactInfo();
-  const [editingContact, setEditingContact] = useState(false);
   const [contactName, setContactName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
-  const [contactPhone, setContactPhone] = useState("")
+  const [contactPhone, setContactPhone] = useState("");
   const [useAsDefault, setUseAsDefault] = useState(true);
+
   const { data: profile, isLoading } = useQuery({
     queryKey: ["my-profile"],
     queryFn: async () => {
@@ -53,7 +57,7 @@ export default function Settings() {
     },
   });
 
-  // Populate form when profile loads
+  // Populate profile form
   useEffect(() => {
     if (profile) {
       setDisplayName(profile.display_name || "");
@@ -91,53 +95,63 @@ export default function Settings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-profile"] });
       queryClient.invalidateQueries({ queryKey: ["entity-team"] });
-      toast({ title: "Profil oppdatert" });
     },
     onError: (error: Error) => {
       toast({ title: "Feil", description: error.message, variant: "destructive" });
     },
   });
 
-  const handleSave = () => {
-    updateProfile.mutate({
-      display_name: displayName || null,
-      handle: handle || null,
-      avatar_url: avatarUrl || null,
-      avatar_image_settings: avatarImageSettings,
-    });
-  };
+  const isSaving = updateProfile.isPending || upsertContactInfo.isPending;
 
-  const handleSaveContact = async () => {
+  const handleSave = async () => {
+    // Validate contact info if use_as_default
     if (useAsDefault) {
       if (!contactName.trim() || contactName.trim().length < 2) {
-        sonnerToast.error("Navn må være minst 2 tegn");
+        sonnerToast.error("Kontaktnavn må være minst 2 tegn");
         return;
       }
       if (!contactEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail.trim())) {
-        sonnerToast.error("Ugyldig e-postadresse");
+        sonnerToast.error("Ugyldig kontakt-e-postadresse");
         return;
       }
     }
+
     try {
+      // Save profile
+      await updateProfile.mutateAsync({
+        display_name: displayName || null,
+        handle: handle || null,
+        avatar_url: avatarUrl || null,
+        avatar_image_settings: avatarImageSettings,
+      });
+
+      // Save contact info
       await upsertContactInfo.mutateAsync({
         contact_name: contactName.trim() || null,
         contact_email: contactEmail.trim() || null,
         contact_phone: contactPhone.trim() || null,
         use_as_default: useAsDefault,
       });
-      sonnerToast.success("Kontaktinfo lagret");
-      setEditingContact(false);
+
+      sonnerToast.success("Profil oppdatert");
+      setEditing(false);
     } catch (err: any) {
       sonnerToast.error(err.message || "Kunne ikke lagre");
     }
   };
 
-  const handleCancelContact = () => {
+  const handleCancel = () => {
+    // Reset profile
+    setDisplayName(profile?.display_name || "");
+    setHandle(profile?.handle || "");
+    setAvatarUrl(profile?.avatar_url || "");
+    setAvatarImageSettings(parseImageSettings(profile?.avatar_image_settings) || null);
+    // Reset contact info
     setContactName(contactInfo?.contact_name || "");
     setContactEmail(contactInfo?.contact_email || profile?.email || "");
     setContactPhone(contactInfo?.contact_phone || "");
     setUseAsDefault(contactInfo?.use_as_default ?? true);
-    setEditingContact(false);
+    setEditing(false);
   };
 
   if (isLoading) {
@@ -162,22 +176,44 @@ export default function Settings() {
       <main className="container mx-auto px-4 py-6 sm:py-8 max-w-2xl space-y-4 sm:space-y-6">
         <h1 className="text-xl sm:text-2xl font-bold text-foreground">Innstillinger</h1>
 
-        {/* Profile Settings */}
+        {/* Profile + Contact Info */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Profil
-            </CardTitle>
-            <CardDescription>
-              Administrer din profilinformasjon. Dette brukes for å identifisere deg i team-medlemmer.
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Profil
+                </CardTitle>
+                <CardDescription>
+                  Administrer din profilinformasjon og kontaktinfo.
+                </CardDescription>
+              </div>
+              {!editing ? (
+                <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
+                  <Pencil className="h-4 w-4 mr-1" />
+                  Rediger
+                </Button>
+              ) : (
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" onClick={handleCancel} disabled={isSaving}>
+                    <X className="h-4 w-4 mr-1" />
+                    Avbryt
+                  </Button>
+                  <Button size="sm" onClick={handleSave} disabled={isSaving}>
+                    <Save className="h-4 w-4 mr-1" />
+                    {isSaving ? "Lagrer..." : "Lagre"}
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="space-y-4 sm:space-y-6">
+            {/* Avatar + identity summary */}
             <div className="flex items-center gap-3 sm:gap-4">
               <Avatar className="h-12 w-12 sm:h-16 sm:w-16">
-                <AvatarImage 
-                  src={avatarUrl || undefined} 
+                <AvatarImage
+                  src={avatarUrl || undefined}
                   style={getCroppedImageStyles(avatarImageSettings)}
                 />
                 <AvatarFallback className="text-base sm:text-lg">
@@ -190,50 +226,120 @@ export default function Settings() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Profilbilde</Label>
-              <InlineMediaPickerWithCrop
-                value={avatarUrl}
-                imageSettings={avatarImageSettings}
-                onChange={setAvatarUrl}
-                onSettingsChange={setAvatarImageSettings}
-                cropMode="avatar"
-                placeholder="Velg profilbilde"
-              />
-              <p className="text-xs text-muted-foreground">
-                Velg et bilde fra filbank som ditt profilbilde
-              </p>
-            </div>
+            {/* Profile picture */}
+            {editing && (
+              <div className="space-y-2">
+                <Label>Profilbilde</Label>
+                <InlineMediaPickerWithCrop
+                  value={avatarUrl}
+                  imageSettings={avatarImageSettings}
+                  onChange={setAvatarUrl}
+                  onSettingsChange={setAvatarImageSettings}
+                  cropMode="avatar"
+                  placeholder="Velg profilbilde"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Velg et bilde fra filbank som ditt profilbilde
+                </p>
+              </div>
+            )}
 
+            {/* Display name */}
             <div className="space-y-2">
               <Label htmlFor="displayName">Visningsnavn</Label>
-              <Input
-                id="displayName"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Ditt navn"
-              />
+              {editing ? (
+                <Input
+                  id="displayName"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Ditt navn"
+                />
+              ) : (
+                <p className="text-sm text-foreground">{displayName || <span className="text-muted-foreground italic">Ikke satt</span>}</p>
+              )}
               <p className="text-xs text-muted-foreground">
                 Dette navnet vises i team-medlemmer
               </p>
             </div>
 
+            {/* Handle */}
             <div className="space-y-2">
               <Label htmlFor="handle">Handle</Label>
-              <Input
-                id="handle"
-                value={handle}
-                onChange={(e) => setHandle(e.target.value)}
-                placeholder="@brukernavn"
-              />
+              {editing ? (
+                <Input
+                  id="handle"
+                  value={handle}
+                  onChange={(e) => setHandle(e.target.value)}
+                  placeholder="@brukernavn"
+                />
+              ) : (
+                <p className="text-sm text-foreground">{handle || <span className="text-muted-foreground italic">Ikke satt</span>}</p>
+              )}
               <p className="text-xs text-muted-foreground">
                 Valgfritt brukernavn
               </p>
             </div>
 
-            <Button onClick={handleSave} disabled={updateProfile.isPending}>
-              {updateProfile.isPending ? "Lagrer..." : "Lagre endringer"}
-            </Button>
+            {/* Separator */}
+            <Separator />
+            <p className="text-sm font-medium text-muted-foreground">Kontakt (valgfritt)</p>
+
+            {/* Contact name */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Navn {useAsDefault && "*"}</Label>
+              {editing ? (
+                <Input
+                  value={contactName}
+                  onChange={(e) => setContactName(e.target.value)}
+                  placeholder="Ditt fulle navn"
+                />
+              ) : (
+                <p className="text-sm text-foreground">{contactName || <span className="text-muted-foreground italic">Ikke satt</span>}</p>
+              )}
+            </div>
+
+            {/* Contact email + phone */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">E-post {useAsDefault && "*"}</Label>
+                {editing ? (
+                  <Input
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    placeholder={profile?.email || "din@epost.no"}
+                  />
+                ) : (
+                  <p className="text-sm text-foreground">{contactEmail || <span className="text-muted-foreground italic">Ikke satt</span>}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Telefon</Label>
+                {editing ? (
+                  <Input
+                    type="tel"
+                    value={contactPhone}
+                    onChange={(e) => setContactPhone(e.target.value)}
+                    placeholder="+47 000 00 000"
+                  />
+                ) : (
+                  <p className="text-sm text-foreground">{contactPhone || <span className="text-muted-foreground italic">Ikke satt</span>}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Use as default */}
+            <div className="flex items-center justify-between pt-2 border-t border-border/30">
+              <div>
+                <p className="text-sm font-medium">Bruk som standard</p>
+                <p className="text-xs text-muted-foreground">Fyll inn automatisk i kontaktskjemaer</p>
+              </div>
+              {editing ? (
+                <Switch checked={useAsDefault} onCheckedChange={setUseAsDefault} />
+              ) : (
+                <span className="text-sm text-muted-foreground">{useAsDefault ? "Ja" : "Nei"}</span>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -270,95 +376,6 @@ export default function Settings() {
                   Kontosenter
                 </Link>
               </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Contact Info – inline */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Contact className="h-5 w-5" />
-                  Kontaktinfo
-                </CardTitle>
-                <CardDescription>
-                  Brukes når du sender forespørsler via GIGGEN. Ikke synlig for andre.
-                </CardDescription>
-              </div>
-              {!editingContact ? (
-                <Button variant="ghost" size="sm" onClick={() => setEditingContact(true)}>
-                  <Pencil className="h-4 w-4 mr-1" />
-                  Rediger
-                </Button>
-              ) : (
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="sm" onClick={handleCancelContact}>
-                    <X className="h-4 w-4 mr-1" />
-                    Avbryt
-                  </Button>
-                  <Button size="sm" onClick={handleSaveContact} disabled={upsertContactInfo.isPending}>
-                    <Save className="h-4 w-4 mr-1" />
-                    {upsertContactInfo.isPending ? "Lagrer..." : "Lagre"}
-                  </Button>
-                </div>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Navn {useAsDefault && "*"}</Label>
-              {editingContact ? (
-                <Input
-                  value={contactName}
-                  onChange={(e) => setContactName(e.target.value)}
-                  placeholder="Ditt fulle navn"
-                />
-              ) : (
-                <p className="text-sm text-foreground">{contactName || <span className="text-muted-foreground italic">Ikke satt</span>}</p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">E-post {useAsDefault && "*"}</Label>
-                {editingContact ? (
-                  <Input
-                    type="email"
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                    placeholder={profile?.email || "din@epost.no"}
-                  />
-                ) : (
-                  <p className="text-sm text-foreground">{contactEmail || <span className="text-muted-foreground italic">Ikke satt</span>}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Telefon</Label>
-                {editingContact ? (
-                  <Input
-                    type="tel"
-                    value={contactPhone}
-                    onChange={(e) => setContactPhone(e.target.value)}
-                    placeholder="+47 000 00 000"
-                  />
-                ) : (
-                  <p className="text-sm text-foreground">{contactPhone || <span className="text-muted-foreground italic">Ikke satt</span>}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-2 border-t border-border/30">
-              <div>
-                <p className="text-sm font-medium">Bruk som standard</p>
-                <p className="text-xs text-muted-foreground">Fyll inn automatisk i kontaktskjemaer</p>
-              </div>
-              {editingContact ? (
-                <Switch checked={useAsDefault} onCheckedChange={setUseAsDefault} />
-              ) : (
-                <span className="text-sm text-muted-foreground">{useAsDefault ? "Ja" : "Nei"}</span>
-              )}
             </div>
           </CardContent>
         </Card>
