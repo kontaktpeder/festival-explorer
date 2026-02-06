@@ -8,7 +8,6 @@ export type AccessRequestRoleType =
 
 export type AccessRequestStatus =
   | 'new'
-  | 'reviewed'
   | 'approved'
   | 'rejected';
 
@@ -39,7 +38,6 @@ export const ROLE_TYPE_OPTIONS: Array<{
 
 export const STATUS_LABELS: Record<AccessRequestStatus, string> = {
   new: 'Ny',
-  reviewed: 'Vurdert',
   approved: 'Godkjent',
   rejected: 'Avslått',
 };
