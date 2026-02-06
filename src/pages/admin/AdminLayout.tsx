@@ -47,6 +47,7 @@ export default function AdminLayout() {
     { to: "/crew/checkin", icon: QrCode, label: "Scan billetter" },
     { to: "/admin/deletion-requests", icon: Trash2, label: "Sletting" },
     { to: "/admin/inbox", icon: Inbox, label: "Inbox" },
+    { to: "/admin/access-requests", icon: UserPlus, label: "Forespørsler" },
     // Legacy - hidden but still accessible
     // { to: "/admin/projects", icon: Users, label: "Artister (legacy)" },
     // { to: "/admin/venues", icon: MapPin, label: "Venues (legacy)" },

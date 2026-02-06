@@ -30,6 +30,7 @@ import ValidatorPage from "./pages/ValidatorPage";
 import CrewCheckInPage from "./pages/CrewCheckInPage";
 import PrivacyGuestPage from "./pages/PrivacyGuestPage";
 import TermsPage from "./pages/TermsPage";
+import RequestAccess from "./pages/RequestAccess";
 
 // Admin pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -56,6 +57,8 @@ import AdminMedia from "./pages/admin/AdminMedia";
 import AdminTimelineEvents from "./pages/admin/AdminTimelineEvents";
 import AdminTimelineEventEdit from "./pages/admin/AdminTimelineEventEdit";
 import AdminTicketsDashboard from "./pages/admin/AdminTicketsDashboard";
+import AdminAccessRequests from "./pages/admin/AdminAccessRequests";
+import AdminAccessRequestDetail from "./pages/admin/AdminAccessRequestDetail";
 
 // Redirect component for legacy /venue/:slug routes
 function VenueRedirect() {
@@ -88,6 +91,7 @@ const App = () => (
           <Route path="/crew/checkin" element={<CrewCheckInPage />} />
           <Route path="/personvern" element={<PrivacyGuestPage />} />
           <Route path="/vilkar" element={<TermsPage />} />
+          <Route path="/request-access" element={<RequestAccess />} />
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/entities/:id/edit" element={<EntityEdit />} />
@@ -119,6 +123,8 @@ const App = () => (
             <Route path="deletion-requests" element={<AdminDeletionRequests />} />
             <Route path="inbox" element={<AdminInbox />} />
             <Route path="inbox/:id" element={<AdminInboxDetail />} />
+            <Route path="access-requests" element={<AdminAccessRequests />} />
+            <Route path="access-requests/:id" element={<AdminAccessRequestDetail />} />
             {/* Legacy routes - redirect to entities in future */}
             <Route path="projects" element={<AdminProjects />} />
             <Route path="projects/:id" element={<AdminProjectEdit />} />

@@ -302,10 +302,10 @@ export default function OmGiggenPage() {
             asChild
             className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-200 bg-black hover:bg-zinc-900 text-orange-400 border border-orange-500/50 hover:border-orange-400 px-10 py-6 text-lg"
           >
-            <a href="mailto:giggen.main@gmail.com">
+            <Link to="/request-access">
               <Mail className="w-5 h-5 mr-3" />
-              Ta kontakt
-            </a>
+              Be om tilgang
+            </Link>
           </Button>
         </div>
       </section>
