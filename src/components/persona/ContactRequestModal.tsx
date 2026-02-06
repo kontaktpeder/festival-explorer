@@ -44,14 +44,19 @@ export function ContactRequestModal({ open, onOpenChange, persona, avatarUrl }: 
   const [budget, setBudget] = useState("");
   const [details, setDetails] = useState("");
 
-  // Prefill from contact info
+  // Prefill from contact info when modal opens
   useEffect(() => {
+    if (!open) return;
     if (contactInfo?.use_as_default) {
       setSenderName(contactInfo.contact_name || "");
       setSenderEmail(contactInfo.contact_email || "");
       setSenderPhone(contactInfo.contact_phone || "");
+    } else {
+      setSenderName("");
+      setSenderEmail("");
+      setSenderPhone("");
     }
-  }, [contactInfo]);
+  }, [open, contactInfo]);
 
   const recipientEmail = (persona as any).public_email || "";
   const recipientName = persona.name;
@@ -145,7 +150,6 @@ export function ContactRequestModal({ open, onOpenChange, persona, avatarUrl }: 
       window.location.href = mailtoUrl;
       setTimeout(() => {
         toast.success("Send e-posten i e-postprogrammet ditt.");
-        onOpenChange(false);
       }, 500);
     } catch {
       toast.error("Kunne ikke åpne e-postklient. Sjekk at du har en e-postklient installert.");

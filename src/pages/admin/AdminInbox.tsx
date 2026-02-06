@@ -4,19 +4,26 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useContactRequests } from "@/hooks/useContactRequests";
-import { getRequestTypeLabel } from "@/types/contact";
-import type { ContactMode } from "@/types/contact";
+import { getRequestTypeLabel, REQUEST_TYPE_OPTIONS } from "@/types/contact";
+import type { ContactMode, RequestType } from "@/types/contact";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { Search, Mail, ArrowRight } from "lucide-react";
 
 export default function AdminInbox() {
   const [modeFilter, setModeFilter] = useState<ContactMode | "">("");
+  const [requestTypeFilter, setRequestTypeFilter] = useState<RequestType | "">("");
   const [search, setSearch] = useState("");
 
-  const { data: requests, isLoading } = useContactRequests({
+  const { data: allRequests, isLoading } = useContactRequests({
     mode: modeFilter || undefined,
     search: search || undefined,
+  });
+
+  // Client-side filter for request_type (from template_payload)
+  const requests = allRequests?.filter((req) => {
+    if (!requestTypeFilter) return true;
+    return req.template_payload?.request_type === requestTypeFilter;
   });
 
   return (
@@ -38,13 +45,24 @@ export default function AdminInbox() {
           />
         </div>
         <Select value={modeFilter || "all"} onValueChange={(v) => setModeFilter(v === "all" ? "" : v as ContactMode)}>
-          <SelectTrigger className="w-40 bg-transparent border-border/50">
+          <SelectTrigger className="w-36 bg-transparent border-border/50">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Alle typer</SelectItem>
+            <SelectItem value="all">Alle modi</SelectItem>
             <SelectItem value="free">Fritekst</SelectItem>
             <SelectItem value="template">Mal</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={requestTypeFilter || "all"} onValueChange={(v) => setRequestTypeFilter(v === "all" ? "" : v as RequestType)}>
+          <SelectTrigger className="w-44 bg-transparent border-border/50">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Alle kategorier</SelectItem>
+            {REQUEST_TYPE_OPTIONS.map((opt) => (
+              <SelectItem key={opt.key} value={opt.key}>{opt.label}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
