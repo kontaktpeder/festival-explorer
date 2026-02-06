@@ -2,11 +2,12 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Building2, User, Users, ExternalLink, ArrowLeft, MapPin } from "lucide-react";
+import { Building2, User, Users, ExternalLink, ArrowLeft, MapPin, Mail } from "lucide-react";
 import { EntityTimeline } from "@/components/ui/EntityTimeline";
 import { usePublicEntityTimelineEvents } from "@/hooks/useEntityTimeline";
 import { usePersona } from "@/hooks/usePersona";
 import { usePersonaEntityBindings } from "@/hooks/usePersonaBindings";
+import { ContactRequestModal } from "@/components/persona/ContactRequestModal";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { parseImageSettings } from "@/types/database";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
@@ -96,6 +97,12 @@ export default function PersonaPage() {
   const { data: bindings, isLoading: isLoadingBindings } = usePersonaEntityBindings(persona?.id);
   const { data: otherPersonas } = usePersonasByUserId(persona?.user_id);
   const { data: timelineEvents } = usePublicEntityTimelineEvents(undefined, persona?.id);
+
+  // Contact modal state
+  const [contactModalOpen, setContactModalOpen] = useState(false);
+  const showContactButton = (persona as any)?.show_email === true &&
+    (persona as any)?.public_email &&
+    (persona as any)?.public_email.trim().length > 0;
 
   // Scroll reveal for sections - hero is visible immediately
   const heroReveal = useScrollReveal(true); // Always visible immediately
@@ -224,6 +231,17 @@ export default function PersonaPage() {
 
           {/* Social links */}
           <PersonaSocialLinks links={personaSocialLinks} />
+
+          {/* Contact button */}
+          {showContactButton && (
+            <button
+              onClick={() => setContactModalOpen(true)}
+              className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-accent text-accent-foreground font-medium hover:bg-accent/90 transition-colors duration-300"
+            >
+              <Mail className="w-4 h-4" />
+              Book / samarbeid
+            </button>
+          )}
         </section>
 
         {/* Bio Section */}
@@ -383,6 +401,16 @@ export default function PersonaPage() {
 
         {/* Spacer at bottom */}
         <div className="h-8 md:h-12" />
+
+        {/* Contact Request Modal */}
+        {persona && showContactButton && (
+          <ContactRequestModal
+            open={contactModalOpen}
+            onOpenChange={setContactModalOpen}
+            persona={persona as any}
+            avatarUrl={avatarUrl}
+          />
+        )}
       </div>
     </PageLayout>
   );

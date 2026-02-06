@@ -20,6 +20,7 @@ import Settings from "./pages/dashboard/Settings";
 import ChangePassword from "./pages/dashboard/ChangePassword";
 import AccountCenter from "./pages/dashboard/AccountCenter";
 import Privacy from "./pages/dashboard/Privacy";
+import ContactInfo from "./pages/dashboard/ContactInfo";
 import PersonaPage from "./pages/PersonaPage";
 import NotFound from "./pages/NotFound";
 import TicketsPage from "./pages/TicketsPage";
@@ -44,6 +45,8 @@ import AdminEntities from "./pages/admin/AdminEntities";
 import AdminEntityEdit from "./pages/admin/AdminEntityEdit";
 import AdminAccessGenerator from "./pages/admin/AdminAccessGenerator";
 import AdminDeletionRequests from "./pages/admin/AdminDeletionRequests";
+import AdminInbox from "./pages/admin/AdminInbox";
+import AdminInboxDetail from "./pages/admin/AdminInboxDetail";
 // Legacy - kept for backwards compatibility
 import AdminProjects from "./pages/admin/AdminProjects";
 import AdminProjectEdit from "./pages/admin/AdminProjectEdit";
@@ -96,6 +99,7 @@ const App = () => (
           <Route path="/dashboard/settings/change-password" element={<ChangePassword />} />
           <Route path="/dashboard/account" element={<AccountCenter />} />
           <Route path="/dashboard/privacy" element={<Privacy />} />
+          <Route path="/dashboard/contact-info" element={<ContactInfo />} />
           <Route path="/p/:slug" element={<PersonaPage />} />
           
           {/* Admin routes */}
@@ -113,6 +117,8 @@ const App = () => (
             <Route path="entities/:id" element={<AdminEntityEdit />} />
             <Route path="access-generator" element={<AdminAccessGenerator />} />
             <Route path="deletion-requests" element={<AdminDeletionRequests />} />
+            <Route path="inbox" element={<AdminInbox />} />
+            <Route path="inbox/:id" element={<AdminInboxDetail />} />
             {/* Legacy routes - redirect to entities in future */}
             <Route path="projects" element={<AdminProjects />} />
             <Route path="projects/:id" element={<AdminProjectEdit />} />

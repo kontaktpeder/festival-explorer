@@ -10,7 +10,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { PersonaSelector } from "@/components/dashboard/PersonaSelector";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
-import { User, Mail, Lock, ArrowLeft } from "lucide-react";
+import { User, Mail, Lock, ArrowLeft, Contact } from "lucide-react";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import type { ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
@@ -213,6 +213,12 @@ export default function Settings() {
                 <Link to="/dashboard/account">
                   <User className="h-4 w-4 mr-2" />
                   Kontosenter
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="justify-start sm:justify-center">
+                <Link to="/dashboard/contact-info">
+                  <Contact className="h-4 w-4 mr-2" />
+                  Kontaktinfo
                 </Link>
               </Button>
             </div>
