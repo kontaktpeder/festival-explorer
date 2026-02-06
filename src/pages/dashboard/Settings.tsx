@@ -104,7 +104,6 @@ export default function Settings() {
   const isSaving = updateProfile.isPending || upsertContactInfo.isPending;
 
   const handleSave = async () => {
-    // Validate contact info if use_as_default
     if (useAsDefault) {
       if (!contactName.trim() || contactName.trim().length < 2) {
         sonnerToast.error("Kontaktnavn må være minst 2 tegn");
@@ -117,7 +116,6 @@ export default function Settings() {
     }
 
     try {
-      // Save profile
       await updateProfile.mutateAsync({
         display_name: displayName || null,
         handle: handle || null,
@@ -125,7 +123,6 @@ export default function Settings() {
         avatar_image_settings: avatarImageSettings,
       });
 
-      // Save contact info
       await upsertContactInfo.mutateAsync({
         contact_name: contactName.trim() || null,
         contact_email: contactEmail.trim() || null,
@@ -141,12 +138,10 @@ export default function Settings() {
   };
 
   const handleCancel = () => {
-    // Reset profile
     setDisplayName(profile?.display_name || "");
     setHandle(profile?.handle || "");
     setAvatarUrl(profile?.avatar_url || "");
     setAvatarImageSettings(parseImageSettings(profile?.avatar_image_settings) || null);
-    // Reset contact info
     setContactName(contactInfo?.contact_name || "");
     setContactEmail(contactInfo?.contact_email || profile?.email || "");
     setContactPhone(contactInfo?.contact_phone || "");
@@ -163,73 +158,74 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[100svh] bg-background pb-[env(safe-area-inset-bottom)]">
+      {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <Link to="/dashboard" className="text-lg sm:text-xl font-bold text-primary hover:opacity-80 transition-opacity">
+        <div className="container mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex justify-between items-center">
+          <Link to="/dashboard" className="text-base sm:text-xl font-bold text-primary hover:opacity-80 transition-opacity">
             GIGGEN
           </Link>
           <PersonaSelector />
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 sm:py-8 max-w-2xl space-y-4 sm:space-y-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Innstillinger</h1>
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-2xl space-y-3 sm:space-y-6">
+        <h1 className="text-lg sm:text-2xl font-bold text-foreground">Innstillinger</h1>
 
         {/* Profile + Contact Info */}
         <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
+          <CardHeader className="px-4 py-3 sm:p-6">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-2xl">
+                  <User className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
                   Profil
                 </CardTitle>
-                <CardDescription>
-                  Administrer din profilinformasjon og kontaktinfo.
+                <CardDescription className="text-xs sm:text-sm mt-0.5">
+                  Profilinformasjon og kontaktinfo.
                 </CardDescription>
               </div>
               {!editing ? (
-                <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
-                  <Pencil className="h-4 w-4 mr-1" />
-                  Rediger
+                <Button variant="ghost" size="sm" className="shrink-0 h-8 px-2 sm:px-3" onClick={() => setEditing(true)}>
+                  <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+                  <span className="text-xs sm:text-sm">Rediger</span>
                 </Button>
               ) : (
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="sm" onClick={handleCancel} disabled={isSaving}>
-                    <X className="h-4 w-4 mr-1" />
-                    Avbryt
+                <div className="flex gap-1 shrink-0">
+                  <Button variant="ghost" size="sm" className="h-8 px-2 sm:px-3" onClick={handleCancel} disabled={isSaving}>
+                    <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+                    <span className="text-xs sm:text-sm">Avbryt</span>
                   </Button>
-                  <Button size="sm" onClick={handleSave} disabled={isSaving}>
-                    <Save className="h-4 w-4 mr-1" />
-                    {isSaving ? "Lagrer..." : "Lagre"}
+                  <Button size="sm" className="h-8 px-2 sm:px-3" onClick={handleSave} disabled={isSaving}>
+                    <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
+                    <span className="text-xs sm:text-sm">{isSaving ? "Lagrer..." : "Lagre"}</span>
                   </Button>
                 </div>
               )}
             </div>
           </CardHeader>
-          <CardContent className="space-y-4 sm:space-y-6">
+          <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 pt-0 space-y-3 sm:space-y-6">
             {/* Avatar + identity summary */}
-            <div className="flex items-center gap-3 sm:gap-4">
-              <Avatar className="h-12 w-12 sm:h-16 sm:w-16">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-11 w-11 sm:h-16 sm:w-16 shrink-0">
                 <AvatarImage
                   src={avatarUrl || undefined}
                   style={getCroppedImageStyles(avatarImageSettings)}
                 />
-                <AvatarFallback className="text-base sm:text-lg">
+                <AvatarFallback className="text-sm sm:text-lg">
                   {(displayName || profile?.email || "U").charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0">
-                <p className="font-medium text-foreground truncate">{displayName || "Ingen navn"}</p>
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">{profile?.email}</p>
+                <p className="font-medium text-foreground truncate text-sm sm:text-base">{displayName || "Ingen navn"}</p>
+                <p className="text-xs text-muted-foreground truncate">{profile?.email}</p>
               </div>
             </div>
 
-            {/* Profile picture */}
+            {/* Profile picture picker */}
             {editing && (
-              <div className="space-y-2">
-                <Label>Profilbilde</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs sm:text-sm">Profilbilde</Label>
                 <InlineMediaPickerWithCrop
                   value={avatarUrl}
                   imageSettings={avatarImageSettings}
@@ -238,18 +234,19 @@ export default function Settings() {
                   cropMode="avatar"
                   placeholder="Velg profilbilde"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Velg et bilde fra filbank som ditt profilbilde
+                <p className="text-[11px] sm:text-xs text-muted-foreground">
+                  Velg et bilde fra filbank
                 </p>
               </div>
             )}
 
             {/* Display name */}
-            <div className="space-y-2">
-              <Label htmlFor="displayName">Visningsnavn</Label>
+            <div className="space-y-1 sm:space-y-2">
+              <Label htmlFor="displayName" className="text-xs sm:text-sm">Visningsnavn</Label>
               {editing ? (
                 <Input
                   id="displayName"
+                  className="text-base sm:text-sm h-10"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Ditt navn"
@@ -257,17 +254,18 @@ export default function Settings() {
               ) : (
                 <p className="text-sm text-foreground">{displayName || <span className="text-muted-foreground italic">Ikke satt</span>}</p>
               )}
-              <p className="text-xs text-muted-foreground">
-                Dette navnet vises i team-medlemmer
+              <p className="text-[11px] sm:text-xs text-muted-foreground">
+                Vises i team-medlemmer
               </p>
             </div>
 
             {/* Handle */}
-            <div className="space-y-2">
-              <Label htmlFor="handle">Handle</Label>
+            <div className="space-y-1 sm:space-y-2">
+              <Label htmlFor="handle" className="text-xs sm:text-sm">Handle</Label>
               {editing ? (
                 <Input
                   id="handle"
+                  className="text-base sm:text-sm h-10"
                   value={handle}
                   onChange={(e) => setHandle(e.target.value)}
                   placeholder="@brukernavn"
@@ -275,20 +273,21 @@ export default function Settings() {
               ) : (
                 <p className="text-sm text-foreground">{handle || <span className="text-muted-foreground italic">Ikke satt</span>}</p>
               )}
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[11px] sm:text-xs text-muted-foreground">
                 Valgfritt brukernavn
               </p>
             </div>
 
             {/* Separator */}
             <Separator />
-            <p className="text-sm font-medium text-muted-foreground">Kontakt (valgfritt)</p>
+            <p className="text-xs sm:text-sm font-medium text-muted-foreground">Kontakt (valgfritt)</p>
 
             {/* Contact name */}
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Navn {useAsDefault && "*"}</Label>
+            <div className="space-y-1 sm:space-y-2">
+              <Label className="text-[11px] sm:text-xs text-muted-foreground">Navn {useAsDefault && "*"}</Label>
               {editing ? (
                 <Input
+                  className="text-base sm:text-sm h-10"
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
                   placeholder="Ditt fulle navn"
@@ -299,25 +298,27 @@ export default function Settings() {
             </div>
 
             {/* Contact email + phone */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">E-post {useAsDefault && "*"}</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-1 sm:space-y-2">
+                <Label className="text-[11px] sm:text-xs text-muted-foreground">E-post {useAsDefault && "*"}</Label>
                 {editing ? (
                   <Input
                     type="email"
+                    className="text-base sm:text-sm h-10"
                     value={contactEmail}
                     onChange={(e) => setContactEmail(e.target.value)}
                     placeholder={profile?.email || "din@epost.no"}
                   />
                 ) : (
-                  <p className="text-sm text-foreground">{contactEmail || <span className="text-muted-foreground italic">Ikke satt</span>}</p>
+                  <p className="text-sm text-foreground truncate">{contactEmail || <span className="text-muted-foreground italic">Ikke satt</span>}</p>
                 )}
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Telefon</Label>
+              <div className="space-y-1 sm:space-y-2">
+                <Label className="text-[11px] sm:text-xs text-muted-foreground">Telefon</Label>
                 {editing ? (
                   <Input
                     type="tel"
+                    className="text-base sm:text-sm h-10"
                     value={contactPhone}
                     onChange={(e) => setContactPhone(e.target.value)}
                     placeholder="+47 000 00 000"
@@ -329,15 +330,15 @@ export default function Settings() {
             </div>
 
             {/* Use as default */}
-            <div className="flex items-center justify-between pt-2 border-t border-border/30">
-              <div>
-                <p className="text-sm font-medium">Bruk som standard</p>
-                <p className="text-xs text-muted-foreground">Fyll inn automatisk i kontaktskjemaer</p>
+            <div className="flex items-center justify-between py-2 border-t border-border/30">
+              <div className="min-w-0 mr-3">
+                <p className="text-xs sm:text-sm font-medium">Bruk som standard</p>
+                <p className="text-[11px] sm:text-xs text-muted-foreground">Automatisk i kontaktskjemaer</p>
               </div>
               {editing ? (
                 <Switch checked={useAsDefault} onCheckedChange={setUseAsDefault} />
               ) : (
-                <span className="text-sm text-muted-foreground">{useAsDefault ? "Ja" : "Nei"}</span>
+                <span className="text-xs sm:text-sm text-muted-foreground shrink-0">{useAsDefault ? "Ja" : "Nei"}</span>
               )}
             </div>
           </CardContent>
@@ -345,34 +346,35 @@ export default function Settings() {
 
         {/* Account Settings */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5" />
+          <CardHeader className="px-4 py-3 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-2xl">
+              <Mail className="h-4 w-4 sm:h-5 sm:w-5" />
               Konto
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs sm:text-sm">
               Din kontoinformasjon
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>E-post</Label>
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <Lock className="h-4 w-4" />
-                {profile?.email} · Kan ikke endres
+          <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 pt-0 space-y-3 sm:space-y-4">
+            <div className="space-y-1">
+              <Label className="text-xs sm:text-sm">E-post</Label>
+              <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1.5">
+                <Lock className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+                <span className="truncate">{profile?.email}</span>
+                <span className="shrink-0">· Kan ikke endres</span>
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Button asChild variant="outline" size="sm" className="justify-start sm:justify-center">
+            <div className="flex flex-col gap-2">
+              <Button asChild variant="outline" size="sm" className="justify-start h-9">
                 <Link to="/dashboard/settings/change-password">
-                  <Lock className="h-4 w-4 mr-2" />
+                  <Lock className="h-3.5 w-3.5 mr-2" />
                   Endre passord
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="justify-start sm:justify-center">
+              <Button asChild variant="outline" size="sm" className="justify-start h-9">
                 <Link to="/dashboard/account">
-                  <User className="h-4 w-4 mr-2" />
+                  <User className="h-3.5 w-3.5 mr-2" />
                   Kontosenter
                 </Link>
               </Button>
@@ -381,10 +383,10 @@ export default function Settings() {
         </Card>
 
         {/* Back to dashboard */}
-        <div className="pt-4">
-          <Button asChild variant="outline">
+        <div className="pt-2 pb-4">
+          <Button asChild variant="outline" size="sm" className="h-9">
             <Link to="/dashboard">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <ArrowLeft className="h-3.5 w-3.5 mr-2" />
               Tilbake til backstage
             </Link>
           </Button>
