@@ -22,12 +22,12 @@ export function FestivalFooter() {
         
         {/* Links */}
         <div className="flex items-center justify-center gap-8 text-xs text-white/25">
-          <a 
-            href="mailto:giggen.main@gmail.com"
+          <Link 
+            to="/request-access"
             className="hover:text-white/50 transition-colors"
           >
-            Kontakt
-          </a>
+            Be om tilgang
+          </Link>
           <Link 
             to="/personvern"
             className="hover:text-white/50 transition-colors"

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,6 @@ export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
-  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -61,56 +60,32 @@ export default function AdminLogin() {
     e.preventDefault();
     setLoading(true);
 
-    if (isSignUp) {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: window.location.origin + "/dashboard",
-        },
-      });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      if (error) {
+    if (error) {
+      toast({
+        title: "Feil",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else if (data.user) {
+      const isAdmin = await checkIsAdmin();
+
+      if (isAdmin) {
         toast({
-          title: "Feil",
-          description: error.message,
-          variant: "destructive",
+          title: "Logget inn",
+          description: "Velkommen til admin!",
         });
+        navigate("/admin");
       } else {
         toast({
-          title: "Sjekk e-posten din",
-          description: "Vi har sendt deg en bekreftelseslenke.",
+          title: "Logget inn",
+          description: "Velkommen til backstage!",
         });
-      }
-    } else {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        toast({
-          title: "Feil",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else if (data.user) {
-        // Check if user is admin
-        const isAdmin = await checkIsAdmin();
-        
-        if (isAdmin) {
-          toast({
-            title: "Logget inn",
-            description: "Velkommen til admin!",
-          });
-          navigate("/admin");
-        } else {
-          toast({
-            title: "Logget inn",
-            description: "Velkommen til backstage!",
-          });
-          navigate("/dashboard");
-        }
+        navigate("/dashboard");
       }
     }
 
@@ -131,7 +106,7 @@ export default function AdminLogin() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground">GIGGEN Backstage</h1>
           <p className="text-muted-foreground mt-2">
-            {isSignUp ? "Opprett konto for å få tilgang til backstage" : "Logg inn for å fortsette"}
+            Logg inn for å fortsette
           </p>
         </div>
 
@@ -162,23 +137,17 @@ export default function AdminLogin() {
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Vennligst vent..." : isSignUp ? "Opprett konto" : "Logg inn"}
+            {loading ? "Vennligst vent..." : "Logg inn"}
           </Button>
         </form>
 
-        <div className="text-center space-y-3">
-          <button
-            type="button"
-            onClick={() => setIsSignUp(!isSignUp)}
+        <div className="text-center">
+          <Link
+            to="/request-access"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            {isSignUp ? "Har du allerede konto? Logg inn" : "Ingen konto? Opprett en"}
-          </button>
-          {isSignUp && (
-            <p className="text-xs text-muted-foreground">
-              Prosjekter opprettes av administrator. Du får tilgang via invitasjon.
-            </p>
-          )}
+            Ingen konto? Be om tilgang
+          </Link>
         </div>
       </div>
     </div>
