@@ -20,7 +20,7 @@ import Settings from "./pages/dashboard/Settings";
 import ChangePassword from "./pages/dashboard/ChangePassword";
 import AccountCenter from "./pages/dashboard/AccountCenter";
 import Privacy from "./pages/dashboard/Privacy";
-import ContactInfo from "./pages/dashboard/ContactInfo";
+
 import PersonaPage from "./pages/PersonaPage";
 import NotFound from "./pages/NotFound";
 import TicketsPage from "./pages/TicketsPage";
@@ -99,7 +99,7 @@ const App = () => (
           <Route path="/dashboard/settings/change-password" element={<ChangePassword />} />
           <Route path="/dashboard/account" element={<AccountCenter />} />
           <Route path="/dashboard/privacy" element={<Privacy />} />
-          <Route path="/dashboard/contact-info" element={<ContactInfo />} />
+          
           <Route path="/p/:slug" element={<PersonaPage />} />
           
           {/* Admin routes */}

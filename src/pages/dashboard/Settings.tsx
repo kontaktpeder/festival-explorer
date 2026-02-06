@@ -6,11 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { PersonaSelector } from "@/components/dashboard/PersonaSelector";
 import { useToast } from "@/hooks/use-toast";
+import { useContactInfo, useUpsertContactInfo } from "@/hooks/useContactInfo";
+import { toast as sonnerToast } from "sonner";
 import { Link } from "react-router-dom";
-import { User, Mail, Lock, ArrowLeft, Contact } from "lucide-react";
+import { User, Mail, Lock, ArrowLeft, Contact, Pencil, Save, X } from "lucide-react";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import type { ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
@@ -25,7 +28,14 @@ export default function Settings() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [avatarImageSettings, setAvatarImageSettings] = useState<ImageSettings | null>(null);
 
-  // Get current user profile
+  // Contact info
+  const { data: contactInfo } = useContactInfo();
+  const upsertContactInfo = useUpsertContactInfo();
+  const [editingContact, setEditingContact] = useState(false);
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("")
+  const [useAsDefault, setUseAsDefault] = useState(true);
   const { data: profile, isLoading } = useQuery({
     queryKey: ["my-profile"],
     queryFn: async () => {
@@ -52,6 +62,18 @@ export default function Settings() {
       setAvatarImageSettings(parseImageSettings(profile.avatar_image_settings) || null);
     }
   }, [profile]);
+
+  // Populate contact info
+  useEffect(() => {
+    if (contactInfo) {
+      setContactName(contactInfo.contact_name || "");
+      setContactEmail(contactInfo.contact_email || "");
+      setContactPhone(contactInfo.contact_phone || "");
+      setUseAsDefault(contactInfo.use_as_default);
+    } else if (profile?.email && !contactInfo) {
+      setContactEmail(profile.email);
+    }
+  }, [contactInfo, profile?.email]);
 
   // Update profile mutation
   const updateProfile = useMutation({
@@ -83,6 +105,39 @@ export default function Settings() {
       avatar_url: avatarUrl || null,
       avatar_image_settings: avatarImageSettings,
     });
+  };
+
+  const handleSaveContact = async () => {
+    if (useAsDefault) {
+      if (!contactName.trim() || contactName.trim().length < 2) {
+        sonnerToast.error("Navn må være minst 2 tegn");
+        return;
+      }
+      if (!contactEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail.trim())) {
+        sonnerToast.error("Ugyldig e-postadresse");
+        return;
+      }
+    }
+    try {
+      await upsertContactInfo.mutateAsync({
+        contact_name: contactName.trim() || null,
+        contact_email: contactEmail.trim() || null,
+        contact_phone: contactPhone.trim() || null,
+        use_as_default: useAsDefault,
+      });
+      sonnerToast.success("Kontaktinfo lagret");
+      setEditingContact(false);
+    } catch (err: any) {
+      sonnerToast.error(err.message || "Kunne ikke lagre");
+    }
+  };
+
+  const handleCancelContact = () => {
+    setContactName(contactInfo?.contact_name || "");
+    setContactEmail(contactInfo?.contact_email || profile?.email || "");
+    setContactPhone(contactInfo?.contact_phone || "");
+    setUseAsDefault(contactInfo?.use_as_default ?? true);
+    setEditingContact(false);
   };
 
   if (isLoading) {
@@ -215,12 +270,95 @@ export default function Settings() {
                   Kontosenter
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="justify-start sm:justify-center">
-                <Link to="/dashboard/contact-info">
-                  <Contact className="h-4 w-4 mr-2" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Contact Info – inline */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Contact className="h-5 w-5" />
                   Kontaktinfo
-                </Link>
-              </Button>
+                </CardTitle>
+                <CardDescription>
+                  Brukes når du sender forespørsler via GIGGEN. Ikke synlig for andre.
+                </CardDescription>
+              </div>
+              {!editingContact ? (
+                <Button variant="ghost" size="sm" onClick={() => setEditingContact(true)}>
+                  <Pencil className="h-4 w-4 mr-1" />
+                  Rediger
+                </Button>
+              ) : (
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" onClick={handleCancelContact}>
+                    <X className="h-4 w-4 mr-1" />
+                    Avbryt
+                  </Button>
+                  <Button size="sm" onClick={handleSaveContact} disabled={upsertContactInfo.isPending}>
+                    <Save className="h-4 w-4 mr-1" />
+                    {upsertContactInfo.isPending ? "Lagrer..." : "Lagre"}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Navn {useAsDefault && "*"}</Label>
+              {editingContact ? (
+                <Input
+                  value={contactName}
+                  onChange={(e) => setContactName(e.target.value)}
+                  placeholder="Ditt fulle navn"
+                />
+              ) : (
+                <p className="text-sm text-foreground">{contactName || <span className="text-muted-foreground italic">Ikke satt</span>}</p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">E-post {useAsDefault && "*"}</Label>
+                {editingContact ? (
+                  <Input
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    placeholder={profile?.email || "din@epost.no"}
+                  />
+                ) : (
+                  <p className="text-sm text-foreground">{contactEmail || <span className="text-muted-foreground italic">Ikke satt</span>}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Telefon</Label>
+                {editingContact ? (
+                  <Input
+                    type="tel"
+                    value={contactPhone}
+                    onChange={(e) => setContactPhone(e.target.value)}
+                    placeholder="+47 000 00 000"
+                  />
+                ) : (
+                  <p className="text-sm text-foreground">{contactPhone || <span className="text-muted-foreground italic">Ikke satt</span>}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-border/30">
+              <div>
+                <p className="text-sm font-medium">Bruk som standard</p>
+                <p className="text-xs text-muted-foreground">Fyll inn automatisk i kontaktskjemaer</p>
+              </div>
+              {editingContact ? (
+                <Switch checked={useAsDefault} onCheckedChange={setUseAsDefault} />
+              ) : (
+                <span className="text-sm text-muted-foreground">{useAsDefault ? "Ja" : "Nei"}</span>
+              )}
             </div>
           </CardContent>
         </Card>
