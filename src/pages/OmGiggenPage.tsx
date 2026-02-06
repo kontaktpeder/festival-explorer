@@ -65,7 +65,7 @@ export default function OmGiggenPage() {
       {/* Back button */}
       <div className="fixed top-6 left-6 z-50">
         <Link
-          to="/festival/giggen-sessions"
+          to="/festival"
           className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -187,7 +187,7 @@ export default function OmGiggenPage() {
               I dag er GIGGEN nettsiden du nå er inne på. Her kan du idag bli kjent med alle 
               i vår fantastiske{" "}
               <Link 
-                to="/festival/giggen-sessions#lineup" 
+                to="/festival#lineup" 
                 className="text-orange-400 hover:text-orange-300 underline underline-offset-4 transition-colors"
               >
                 LINEUP
@@ -233,7 +233,7 @@ export default function OmGiggenPage() {
         
         <div className="relative z-10 max-w-3xl mx-auto text-center">
           <Link 
-            to="/festival/giggen-sessions"
+            to="/festival"
             className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out inline-block group"
           >
             <h2 

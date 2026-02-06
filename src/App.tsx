@@ -77,6 +77,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/festival" element={<FestivalPage />} />
           <Route path="/festival/:slug" element={<FestivalPage />} />
           <Route path="/event/:slug" element={<EventPage />} />
           <Route path="/project/:slug" element={<ProjectPage />} />

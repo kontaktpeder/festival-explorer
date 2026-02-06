@@ -19,7 +19,8 @@ import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
 
 export default function FestivalPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { data: festival, isLoading, error } = useFestival(slug || "");
+  const festivalSlug = slug || "giggen-sessions";
+  const { data: festival, isLoading, error } = useFestival(festivalSlug);
 
   // Hent venue hvis festival har venue_id
   const { data: venue } = useQuery({
