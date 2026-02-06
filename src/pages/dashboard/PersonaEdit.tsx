@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Loader2, X, ChevronDown, Users, Trash2, User, Sparkles, Clock, Link2, MapPin, Briefcase } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Mail as MailIcon } from "lucide-react";
 import { 
   usePersonaById, 
   useCreatePersona, 
@@ -51,6 +52,10 @@ export default function PersonaEdit() {
   const [availableFor, setAvailableFor] = useState<AvailableForKey[]>([]);
   const [locationName, setLocationName] = useState("");
   const [locationType, setLocationType] = useState<LocationType | "">("");
+  
+  // Contact visibility fields
+  const [showEmail, setShowEmail] = useState(false);
+  const [publicEmail, setPublicEmail] = useState("");
 
   // Collapsible states
   const [basicOpen, setBasicOpen] = useState(true);
@@ -58,6 +63,7 @@ export default function PersonaEdit() {
   const [availabilityOpen, setAvailabilityOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
   const [socialOpen, setSocialOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [projectsOpen, setProjectsOpen] = useState(false);
 
@@ -133,6 +139,9 @@ export default function PersonaEdit() {
       setAvailableFor(((existingPersona as any).available_for || []) as AvailableForKey[]);
       setLocationName((existingPersona as any).location_name || "");
       setLocationType((existingPersona as any).location_type || "");
+      // Contact visibility
+      setShowEmail((existingPersona as any).show_email || false);
+      setPublicEmail((existingPersona as any).public_email || "");
     }
   }, [existingPersona]);
 
@@ -142,6 +151,14 @@ export default function PersonaEdit() {
     if (!name.trim()) {
       toast.error("Navn er påkrevd");
       return;
+    }
+
+    // Validate contact email if show_email is on
+    if (showEmail) {
+      if (!publicEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(publicEmail.trim())) {
+        toast.error("Offentlig e-post må være gyldig når kontaktknapp er aktivert");
+        return;
+      }
     }
 
     // Prepare location fields
@@ -167,6 +184,8 @@ export default function PersonaEdit() {
           is_public: isPublic,
           social_links: socialLinks,
           available_for: availableFor,
+          show_email: showEmail,
+          public_email: showEmail ? publicEmail.trim() : null,
           ...locationData,
         } as any);
         toast.success("Profil oppdatert");
@@ -180,6 +199,8 @@ export default function PersonaEdit() {
           is_public: isPublic,
           social_links: socialLinks.length > 0 ? socialLinks : undefined,
           available_for: availableFor,
+          show_email: showEmail,
+          public_email: showEmail ? publicEmail.trim() : null,
           ...locationData,
         } as any);
         toast.success("Profil opprettet");
@@ -439,6 +460,45 @@ export default function PersonaEdit() {
           </CollapsibleTrigger>
           <CollapsibleContent className="py-5 border-b border-border/30">
             <SocialLinksEditor links={socialLinks} onChange={setSocialLinks} />
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Kontaktvisning */}
+        <Collapsible open={contactOpen} onOpenChange={setContactOpen}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
+            <div className="flex items-center gap-3">
+              <MailIcon className="h-4 w-4 text-accent" />
+              <span className="font-medium">Kontaktvisning</span>
+              {showEmail && <span className="text-xs text-accent">Aktiv</span>}
+            </div>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${contactOpen ? "rotate-180" : ""}`} />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="py-5 space-y-4 border-b border-border/30">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Vis kontaktknapp på offentlig side</p>
+                <p className="text-xs text-muted-foreground">
+                  Aktiverer «Book / samarbeid»-knappen på personasiden
+                </p>
+              </div>
+              <Switch checked={showEmail} onCheckedChange={setShowEmail} />
+            </div>
+
+            {showEmail && (
+              <div className="space-y-2">
+                <Label className="text-muted-foreground text-xs uppercase tracking-wide">Offentlig e-post *</Label>
+                <Input
+                  type="email"
+                  value={publicEmail}
+                  onChange={(e) => setPublicEmail(e.target.value)}
+                  placeholder="epost@eksempel.no"
+                  className="bg-transparent border-border/50 focus:border-accent"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Denne e-posten brukes i Book/Samarbeid-skjemaet. Kun synlig hvis kontaktknappen er aktiv.
+                </p>
+              </div>
+            )}
           </CollapsibleContent>
         </Collapsible>
 
