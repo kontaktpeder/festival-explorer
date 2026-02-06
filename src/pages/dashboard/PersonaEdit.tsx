@@ -283,7 +283,7 @@ export default function PersonaEdit() {
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Ditt artistnavn eller fullt navn"
+                placeholder="Ditt fulle navn"
                 required
                 className="bg-transparent border-border/50 focus:border-accent"
               />
