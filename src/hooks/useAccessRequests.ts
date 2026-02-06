@@ -50,14 +50,12 @@ export function useCreateAccessRequest() {
         verification_sent_at: new Date().toISOString(),
       };
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("access_requests")
-        .insert([insertPayload])
-        .select()
-        .single();
+        .insert([insertPayload]);
 
       if (error) throw error;
-      return data as AccessRequest;
+      return { ...insertPayload, id: "", created_at: new Date().toISOString(), status: "new", reviewed_at: null, reviewed_by: null, admin_notes: null, email_verified: false, verification_sent_at: insertPayload.verification_sent_at ?? null } as AccessRequest;
     },
   });
 }
