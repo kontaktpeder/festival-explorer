@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 const checkIsAdmin = async (): Promise<boolean> => {
   const { data } = await supabase.rpc("is_admin");
@@ -15,9 +16,46 @@ export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(true);
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // If already logged in, redirect away from login page
+  useEffect(() => {
+    let isMounted = true;
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!isMounted) return;
+        if (session) {
+          setTimeout(async () => {
+            if (!isMounted) return;
+            const isAdmin = await checkIsAdmin();
+            navigate(isAdmin ? "/admin" : "/dashboard", { replace: true });
+          }, 0);
+        } else {
+          setChecking(false);
+        }
+      }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
+      if (session) {
+        checkIsAdmin().then((isAdmin) => {
+          if (isMounted) navigate(isAdmin ? "/admin" : "/dashboard", { replace: true });
+        });
+      } else {
+        setChecking(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +116,14 @@ export default function AdminLogin() {
 
     setLoading(false);
   };
+
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <LoadingState message="Sjekker innlogging..." />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
