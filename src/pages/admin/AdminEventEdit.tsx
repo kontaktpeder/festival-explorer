@@ -17,6 +17,8 @@ import { getAuthenticatedUser } from "@/lib/admin-helpers";
 import { generateSlug, cn } from "@/lib/utils";
 import type { ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
+import { useMyEntities } from "@/hooks/useEntity";
+import { inferEntityKind, getEventHostId } from "@/lib/role-model-helpers";
 
 export default function AdminEventEdit() {
   const { id } = useParams<{ id: string }>();
@@ -39,6 +41,9 @@ export default function AdminEventEdit() {
   const [heroImageSettings, setHeroImageSettings] = useState<ImageSettings | null>(null);
   const [venuePickerOpen, setVenuePickerOpen] = useState(false);
 
+  // NEW ROLE MODEL STEP 1.2: Host-gating (computed after event query)
+  const { data: myEntities } = useMyEntities();
+
   // Fetch event data
   const { data: event, isLoading } = useQuery({
     queryKey: ["admin-event", id],
@@ -55,6 +60,11 @@ export default function AdminEventEdit() {
     enabled: !isNew,
     retry: 1,
   });
+
+  // NEW ROLE MODEL STEP 1.2: Host-gating computed values
+  const hostEntities = (myEntities ?? []).filter((e) => inferEntityKind(e) === "host");
+  const eventHostId = event ? getEventHostId(event) : null;
+  const canEdit = isNew || (!!eventHostId && hostEntities.some((h) => h.id === eventHostId));
 
   // Fetch venues for dropdown
   const { data: venues } = useQuery({
@@ -146,6 +156,25 @@ export default function AdminEventEdit() {
 
   if (isLoading) {
     return <LoadingState message="Laster event..." />;
+  }
+
+  // NEW ROLE MODEL STEP 1.2: Host-gating – block edit if user doesn't own the host
+  if (!isNew && event && !canEdit) {
+    return (
+      <div className="space-y-6 max-w-2xl">
+        <div className="flex items-center gap-4">
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/admin/events">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Tilbake
+            </Link>
+          </Button>
+        </div>
+        <div className="p-6 bg-muted/50 border border-border rounded-lg text-center">
+          <p className="text-muted-foreground">Du har ikke tilgang til å redigere dette eventet.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
