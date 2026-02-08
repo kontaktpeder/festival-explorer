@@ -10,6 +10,7 @@ import { HeroSection } from "@/components/ui/HeroSection";
 import { LineupItem } from "@/components/ui/LineupItem";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
+import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
 
 
 export default function EventPage() {
@@ -134,6 +135,38 @@ export default function EventPage() {
                   showBilling 
                   isFirst={index === 0}
                 />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* NEW ROLE MODEL STEP 1.2: Bak scenen */}
+      {(event as any).backstage && (event as any).backstage.length > 0 && (
+        <section className="py-16 md:py-24 border-t border-border/20">
+          <div className="max-w-2xl mx-auto px-6">
+            <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
+              Bak scenen
+            </h2>
+            <div className="space-y-4">
+              {((event as any).backstage as any[]).map((item: any, i: number) => (
+                <EventParticipantItem key={item.participant_id || i} item={item} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* NEW ROLE MODEL STEP 1.2: Arrangør */}
+      {(event as any).hostRoles && (event as any).hostRoles.length > 0 && (
+        <section className="py-16 md:py-24 border-t border-border/20">
+          <div className="max-w-2xl mx-auto px-6">
+            <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
+              Arrangør
+            </h2>
+            <div className="space-y-4">
+              {((event as any).hostRoles as any[]).map((item: any, i: number) => (
+                <EventParticipantItem key={item.participant_id || i} item={item} />
               ))}
             </div>
           </div>

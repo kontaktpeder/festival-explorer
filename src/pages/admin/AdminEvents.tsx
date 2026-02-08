@@ -2,7 +2,10 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { Plus, ExternalLink, Settings, Music, Users, Trash2 } from "lucide-react";
+import { Plus, ExternalLink, Settings, Music, Users, Trash2, Info } from "lucide-react";
+import { useMyEntities } from "@/hooks/useEntity";
+import { inferEntityKind } from "@/lib/role-model-helpers";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -23,6 +26,11 @@ export default function AdminEvents() {
   const queryClient = useQueryClient();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteTitle, setDeleteTitle] = useState<string>("");
+
+  // NEW ROLE MODEL STEP 1.2: Host-gating – only users with host access can create events
+  const { data: myEntities } = useMyEntities();
+  const hostEntities = (myEntities ?? []).filter((e) => inferEntityKind(e) === "host");
+  const canCreateEvent = hostEntities.length > 0;
 
   const { data: events, isLoading } = useQuery({
     queryKey: ["admin-events"],
@@ -75,14 +83,26 @@ export default function AdminEvents() {
     <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-2xl md:text-3xl font-bold text-foreground">Events</h1>
-        <Button asChild size="sm" className="md:size-default">
-          <Link to="/admin/events/new">
-            <Plus className="h-4 w-4 mr-1 md:mr-2" />
-            <span className="hidden sm:inline">Ny event</span>
-            <span className="sm:hidden">Ny</span>
-          </Link>
-        </Button>
+        {canCreateEvent && (
+          <Button asChild size="sm" className="md:size-default">
+            <Link to="/admin/events/new">
+              <Plus className="h-4 w-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">Ny event</span>
+              <span className="sm:hidden">Ny</span>
+            </Link>
+          </Button>
+        )}
       </div>
+
+      {/* NEW ROLE MODEL STEP 1.2: Host-gating info */}
+      {!canCreateEvent && (
+        <Alert className="bg-muted/50 border-border/30">
+          <Info className="h-4 w-4 text-muted-foreground" />
+          <AlertDescription className="text-sm text-muted-foreground">
+            Du må ha tilgang til en scene/arrangør for å opprette event.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="space-y-3">
         {events?.map((event) => (
@@ -164,9 +184,11 @@ export default function AdminEvents() {
         {events?.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
             <p>Ingen events ennå.</p>
-            <Button asChild className="mt-4">
-              <Link to="/admin/events/new">Opprett din første event</Link>
-            </Button>
+            {canCreateEvent && (
+              <Button asChild className="mt-4">
+                <Link to="/admin/events/new">Opprett din første event</Link>
+              </Button>
+            )}
           </div>
         )}
       </div>
