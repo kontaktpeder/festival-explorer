@@ -49,6 +49,8 @@ export function LineupSectionHeader({ title, variant }: LineupSectionHeaderProps
         <img 
           src={getBgImage()} 
           alt="" 
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover"
         />
         {variant === "festival" && <div className="absolute inset-0 bg-black/20" />}
