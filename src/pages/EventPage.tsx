@@ -127,9 +127,9 @@ export default function EventPage() {
             </h2>
 
             <div className="space-y-8 md:space-y-12">
-              {event.lineup.map((item, index) => (
+              {event.lineup.map((item: any, index: number) => (
                 <LineupItem 
-                  key={item.entity_id || (item as any).project_id} 
+                  key={item.entity_id || item.participant_id || index} 
                   item={item} 
                   showBilling 
                   isFirst={index === 0}

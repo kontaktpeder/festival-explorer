@@ -13,6 +13,8 @@ import { getEntityTypeConfig, getDefaultEntityTypeConfig } from "@/lib/entity-ty
 import { EntityTypeIcon } from "@/components/ui/EntityTypeIcon";
 import type { EntityType } from "@/types/database";
 
+// NEW ROLE MODEL STEP 1.1: Read/write event_participants (on_stage zone) with fallback to event_entities
+
 export default function AdminEventLineup() {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
@@ -42,18 +44,56 @@ export default function AdminEventLineup() {
     },
   });
 
-  // Fetch lineup from event_entities (NEW)
+  // NEW ROLE MODEL STEP 1.1: Fetch lineup from event_participants first, fallback to event_entities
   const { data: lineup, isLoading } = useQuery({
     queryKey: ["admin-event-lineup", id],
     queryFn: async () => {
+      // Try event_participants (on_stage zone) first
+      const { data: participants } = await supabase
+        .from("event_participants")
+        .select("*")
+        .eq("event_id", id)
+        .eq("zone", "on_stage")
+        .order("sort_order", { ascending: true });
+
+      if (participants && participants.length > 0) {
+        // Resolve entity data for participants
+        const entityIds = participants
+          .filter((p) => p.participant_kind === "project" || p.participant_kind === "entity")
+          .map((p) => p.participant_id);
+
+        const { data: entities } = entityIds.length > 0
+          ? await supabase.from("entities").select("*").in("id", entityIds)
+          : { data: [] as any[] };
+
+        const entitiesMap = new Map((entities || []).map((e: any) => [e.id, e]));
+
+        return participants.map((p) => ({
+          // Map to a compatible format
+          _source: "participants" as const,
+          participant_id: p.participant_id,
+          entity_id: p.participant_id,
+          event_id: p.event_id,
+          billing_order: p.sort_order,
+          is_featured: false,
+          feature_order: 0,
+          entity: entitiesMap.get(p.participant_id) || null,
+          role_label: p.role_label,
+        }));
+      }
+
+      // Fallback: legacy event_entities
       const { data } = await supabase
         .from("event_entities")
         .select("*, entity:entities(*)")
         .eq("event_id", id)
         .order("billing_order", { ascending: true });
-      return data || [];
+      return (data || []).map((d) => ({ ...d, _source: "legacy" as const }));
     },
   });
+
+  // Detect which source we're using
+  const isUsingParticipants = lineup && lineup.length > 0 && lineup[0]._source === "participants";
 
   // Fetch all entities (solo + band) for adding - exclude venues and system entities
   const { data: allEntities } = useQuery({
@@ -69,18 +109,32 @@ export default function AdminEventLineup() {
     },
   });
 
-  // Add to lineup mutation
+  // NEW ROLE MODEL STEP 1.1: Add to lineup writes to event_participants
   const addToLineup = useMutation({
     mutationFn: async (entityId: string) => {
       const maxOrder = lineup?.length || 0;
-      const { error } = await supabase.from("event_entities").insert({
+      
+      // Always write to event_participants (new model)
+      const { error: participantError } = await supabase.from("event_participants").insert({
+        event_id: id,
+        participant_id: entityId,
+        participant_kind: "entity",
+        zone: "on_stage",
+        sort_order: maxOrder,
+        is_public: true,
+      });
+      if (participantError) throw participantError;
+
+      // Also write to legacy event_entities for backward compatibility
+      const { error: legacyError } = await supabase.from("event_entities").insert({
         event_id: id,
         entity_id: entityId,
         billing_order: maxOrder,
         is_featured: false,
         feature_order: 0,
       });
-      if (error) throw error;
+      // Don't throw on legacy error (might be duplicate)
+      if (legacyError) console.warn("Legacy event_entities insert failed:", legacyError.message);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-event-lineup", id] });
@@ -92,9 +146,17 @@ export default function AdminEventLineup() {
     },
   });
 
-  // Remove from lineup mutation
+  // NEW ROLE MODEL STEP 1.1: Remove from lineup
   const removeFromLineup = useMutation({
     mutationFn: async (entityId: string) => {
+      // Remove from both tables
+      await supabase
+        .from("event_participants")
+        .delete()
+        .eq("event_id", id)
+        .eq("participant_id", entityId)
+        .eq("zone", "on_stage");
+
       const { error } = await supabase
         .from("event_entities")
         .delete()
@@ -108,7 +170,7 @@ export default function AdminEventLineup() {
     },
   });
 
-  // Toggle featured mutation
+  // Toggle featured mutation (still uses event_entities for now)
   const toggleFeatured = useMutation({
     mutationFn: async ({ entityId, isFeatured }: { entityId: string; isFeatured: boolean }) => {
       const featuredCount = lineup?.filter((l) => l.is_featured).length || 0;
@@ -127,7 +189,7 @@ export default function AdminEventLineup() {
     },
   });
 
-  // Move in lineup mutation
+  // NEW ROLE MODEL STEP 1.1: Move in lineup updates both tables
   const moveInLineup = useMutation({
     mutationFn: async ({ entityId, direction }: { entityId: string; direction: "up" | "down" }) => {
       const currentItem = lineup?.find((l) => l.entity_id === entityId);
@@ -139,12 +201,26 @@ export default function AdminEventLineup() {
 
       if (!swapItem) return;
 
+      // Update event_participants
+      await supabase
+        .from("event_participants")
+        .update({ sort_order: newOrder })
+        .eq("event_id", id)
+        .eq("participant_id", entityId)
+        .eq("zone", "on_stage");
+      await supabase
+        .from("event_participants")
+        .update({ sort_order: currentOrder })
+        .eq("event_id", id)
+        .eq("participant_id", swapItem.entity_id)
+        .eq("zone", "on_stage");
+
+      // Update legacy event_entities
       await supabase
         .from("event_entities")
         .update({ billing_order: newOrder })
         .eq("event_id", id)
         .eq("entity_id", entityId);
-
       await supabase
         .from("event_entities")
         .update({ billing_order: currentOrder })

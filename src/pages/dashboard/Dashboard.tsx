@@ -16,6 +16,7 @@ import { Users, Building2, Pencil, ExternalLink, User, ArrowRight, Eye, Sparkles
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CroppedImage } from "@/components/ui/CroppedImage";
 import type { EntityType, AccessLevel } from "@/types/database";
+import { inferEntityKind } from "@/lib/role-model-helpers"; // NEW ROLE MODEL STEP 1.1
 import type { Json } from "@/integrations/supabase/types";
 // Helper component for entity hero image with signed URL
 function EntityHeroImage({
@@ -297,24 +298,115 @@ export default function Dashboard() {
           ) : null}
         </section>
 
-        {/* Projects section */}
-        <section className="space-y-3 sm:space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-base sm:text-xl font-semibold text-foreground">
-                {selectedPersonaId ? "Prosjekter" : "Dine prosjekter"}
-              </h2>
-              <p className="text-[11px] sm:text-sm text-muted-foreground mt-0.5">
-                Artistprosjekt, band, eller scene
-              </p>
-            </div>
-          </div>
+        {/* NEW ROLE MODEL STEP 1.1: Split entities into hosts and projects */}
+        {(() => {
+          const hostEntities = entities?.filter((e) => inferEntityKind(e) === "host") || [];
+          const projectEntities = entities?.filter((e) => inferEntityKind(e) === "project") || [];
+          
+          return (
+            <>
+              {/* Host entities section (venues/organizers) */}
+              {hostEntities.length > 0 && (
+                <section className="space-y-3 sm:space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-base sm:text-xl font-semibold text-foreground">
+                        {selectedPersonaId ? "Scener" : "Dine scener"}
+                      </h2>
+                      <p className="text-[11px] sm:text-sm text-muted-foreground mt-0.5">
+                        Spillested og arrangør
+                      </p>
+                    </div>
+                  </div>
 
-          {entities && entities.length > 0 ? (
+                  <div className="space-y-2 sm:space-y-3">
+                    {hostEntities.map((entity) => {
+                      const typeConfig = TYPE_CONFIG[entity.type as EntityType];
+                      return (
+                        <Link
+                          key={entity.id}
+                          to={`/dashboard/entities/${entity.id}/edit`}
+                          className="group rounded-lg bg-card/60 hover:bg-card/80 active:bg-card border border-border/30 hover:border-border/50 transition-all overflow-hidden block"
+                        >
+                          <div className="flex">
+                            <div className="relative w-16 sm:w-28 shrink-0 bg-secondary">
+                              {entity.hero_image_url ? (
+                                <EntityHeroImage imageUrl={entity.hero_image_url} imageSettings={entity.hero_image_settings} name={entity.name} />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <span className="text-xl sm:text-2xl font-bold text-muted-foreground/20">
+                                    {entity.name.charAt(0).toUpperCase()}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0 p-3 sm:p-4 flex flex-col justify-center">
+                              <div className="space-y-0.5 sm:space-y-1">
+                                <h3 className="text-sm sm:text-base font-semibold text-foreground truncate group-hover:text-accent transition-colors">
+                                  {entity.name}
+                                </h3>
+                                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                  <Badge variant="secondary" className="text-[10px] sm:text-xs font-normal px-1.5 py-0">
+                                    {typeConfig.label}
+                                  </Badge>
+                                  {entity.city && (
+                                    <span className="flex items-center gap-0.5 text-[10px] sm:text-xs text-muted-foreground/70">
+                                      <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                                      {entity.city}
+                                    </span>
+                                  )}
+                                  {!entity.is_published && (
+                                    <Badge variant="outline" className="text-[10px] sm:text-xs font-normal text-warning border-warning/30 px-1.5 py-0">
+                                      Utkast
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="text-[10px] sm:text-xs text-muted-foreground/70">
+                                  {ACCESS_DESCRIPTIONS[entity.access]}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center pr-2 sm:pr-3 shrink-0">
+                              {entity.is_published && (
+                                <Button
+                                  asChild
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 sm:h-8 sm:w-8"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <Link to={`${typeConfig.route}/${entity.slug}`} target="_blank" onClick={(e) => e.stopPropagation()}>
+                                    <ExternalLink className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                                  </Link>
+                                </Button>
+                              )}
+                              <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors" />
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+
+              {/* Project entities section (artists/bands) */}
+              <section className="space-y-3 sm:space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-base sm:text-xl font-semibold text-foreground">
+                      {selectedPersonaId ? "Prosjekter" : "Dine prosjekter"}
+                    </h2>
+                    <p className="text-[11px] sm:text-sm text-muted-foreground mt-0.5">
+                      Artistprosjekt eller band
+                    </p>
+                  </div>
+                </div>
+
+          {projectEntities.length > 0 ? (
             <div className="space-y-2 sm:space-y-3">
-              {entities.map((entity) => {
+              {projectEntities.map((entity) => {
                 const typeConfig = TYPE_CONFIG[entity.type as EntityType];
-                const userCanEdit = canEdit(entity.access);
                 return (
                   <Link
                     key={entity.id}
@@ -322,7 +414,6 @@ export default function Dashboard() {
                     className="group rounded-lg bg-card/60 hover:bg-card/80 active:bg-card border border-border/30 hover:border-border/50 transition-all overflow-hidden block"
                   >
                     <div className="flex">
-                      {/* Hero image */}
                       <div className="relative w-16 sm:w-28 shrink-0 bg-secondary">
                         {entity.hero_image_url ? (
                           <EntityHeroImage imageUrl={entity.hero_image_url} imageSettings={entity.hero_image_settings} name={entity.name} />
@@ -334,8 +425,6 @@ export default function Dashboard() {
                           </div>
                         )}
                       </div>
-
-                      {/* Content */}
                       <div className="flex-1 min-w-0 p-3 sm:p-4 flex flex-col justify-center">
                         <div className="space-y-0.5 sm:space-y-1">
                           <h3 className="text-sm sm:text-base font-semibold text-foreground truncate group-hover:text-accent transition-colors">
@@ -362,8 +451,6 @@ export default function Dashboard() {
                           </p>
                         </div>
                       </div>
-
-                      {/* Actions - visible on mobile */}
                       <div className="flex items-center pr-2 sm:pr-3 shrink-0">
                         {entity.is_published && (
                           <Button
@@ -408,6 +495,9 @@ export default function Dashboard() {
             </div>
           )}
         </section>
+            </>
+          );
+        })()}
 
         {/* Admin/Crew Section */}
         {(isAdmin || isStaff) && (

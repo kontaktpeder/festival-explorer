@@ -182,35 +182,89 @@ export function useEvent(slug: string) {
       if (error) throw error;
       if (!event) return null;
 
-      // Get full lineup from event_entities (NEW)
-      const { data: lineup, error: lineupError } = await supabase
-        .from("event_entities")
-        .select(`
-          *,
-          entity:entities(*)
-        `)
+      // NEW ROLE MODEL STEP 1.1: Try event_participants first, fallback to event_entities
+      const { data: participants } = await supabase
+        .from("event_participants")
+        .select("*")
         .eq("event_id", event.id)
-        .order("billing_order", { ascending: true });
+        .order("zone", { ascending: true })
+        .order("sort_order", { ascending: true });
 
-      if (lineupError) throw lineupError;
+      let lineup: Array<Record<string, unknown>> = [];
+      let backstage: Array<Record<string, unknown>> = [];
+      let hostRoles: Array<Record<string, unknown>> = [];
 
-      // Filter out unpublished entities
-      const publishedLineup = (lineup || []).filter(
-        (item) => item.entity?.is_published === true
-      );
+      if (participants && participants.length > 0) {
+        // Resolve participant references
+        const projectIds = participants
+          .filter((p) => p.participant_kind === "project" || p.participant_kind === "entity")
+          .map((p) => p.participant_id);
+        const personaIds = participants
+          .filter((p) => p.participant_kind === "persona")
+          .map((p) => p.participant_id);
+
+        const [entitiesRes, personasRes] = await Promise.all([
+          projectIds.length > 0
+            ? supabase.from("entities").select("*").in("id", projectIds)
+            : Promise.resolve({ data: [] as any[] }),
+          personaIds.length > 0
+            ? supabase.from("personas").select("*").in("id", personaIds)
+            : Promise.resolve({ data: [] as any[] }),
+        ]);
+
+        const entitiesMap = new Map((entitiesRes.data || []).map((e: any) => [e.id, e]));
+        const personasMap = new Map((personasRes.data || []).map((p: any) => [p.id, p]));
+
+        participants.forEach((p, idx) => {
+          const resolved =
+            p.participant_kind === "persona"
+              ? personasMap.get(p.participant_id)
+              : entitiesMap.get(p.participant_id);
+
+          // Skip unpublished entities (personas use is_public, entities use is_published)
+          if (!resolved) return;
+          if (p.participant_kind !== "persona" && resolved.is_published === false) return;
+          if (p.participant_kind === "persona" && resolved.is_public === false) return;
+
+          const item = {
+            participant_kind: p.participant_kind,
+            participant_id: p.participant_id,
+            entity: p.participant_kind !== "persona" ? resolved : null,
+            persona: p.participant_kind === "persona" ? resolved : null,
+            role_label: p.role_label,
+            sort_order: p.sort_order,
+            billing_order: idx + 1,
+            entity_id: p.participant_kind !== "persona" ? p.participant_id : undefined,
+            is_featured: false,
+          };
+
+          if (p.zone === "on_stage") lineup.push(item);
+          else if (p.zone === "backstage") backstage.push(item);
+          else if (p.zone === "host") hostRoles.push(item);
+        });
+      } else {
+        // Fallback: legacy event_entities
+        const { data: legacyLineup } = await supabase
+          .from("event_entities")
+          .select(`*, entity:entities(*)`)
+          .eq("event_id", event.id)
+          .order("billing_order", { ascending: true });
+
+        lineup = (legacyLineup || []).filter((i) => i.entity?.is_published === true);
+      }
 
       // Check if event belongs to a festival
       const { data: festivalEvent } = await supabase
         .from("festival_events")
-        .select(`
-          festival:festivals(slug, name)
-        `)
+        .select(`festival:festivals(slug, name)`)
         .eq("event_id", event.id)
         .maybeSingle();
 
       return {
         ...event,
-        lineup: publishedLineup,
+        lineup,
+        backstage,
+        hostRoles,
         festival: festivalEvent?.festival || null,
       };
     },
