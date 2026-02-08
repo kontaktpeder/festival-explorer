@@ -42,6 +42,10 @@ export function parseImageSettings(json: unknown): ImageSettings | null {
 // ============================================
 
 export type EntityType = 'venue' | 'solo' | 'band';
+export type EntityKind = 'host' | 'project';
+export type PersonaType = 'musician' | 'dj' | 'photographer' | 'video' | 'technician' | 'organizer' | 'audience' | 'volunteer' | 'manager';
+export type EventParticipantZone = 'on_stage' | 'backstage' | 'host';
+export type EventParticipantKind = 'persona' | 'project' | 'entity';
 export type AccessLevel = 'owner' | 'admin' | 'editor' | 'viewer';
 export type TimelineEventType = 
   // Persona/Artist categories
@@ -93,6 +97,7 @@ export interface Persona {
   avatar_url?: string | null;
   avatar_image_settings?: unknown; // JSONB from DB, use parseImageSettings() to access
   category_tags: string[];
+  type?: PersonaType | null; // NEW ROLE MODEL STEP 1
   is_public: boolean;
   created_at: string;
   updated_at: string;
@@ -105,6 +110,7 @@ export interface Persona {
 export interface Entity {
   id: string;
   type: EntityType;
+  entity_kind?: string | null; // NEW ROLE MODEL STEP 1 – use inferEntityKind() for typed access
   name: string;
   slug: string;
   tagline?: string | null;
@@ -243,6 +249,7 @@ export interface Event {
   hero_image_settings?: unknown; // JSONB from DB, use parseImageSettings() to access
   city?: string | null;
   venue_id?: string | null;
+  host_entity_id?: string | null; // NEW ROLE MODEL STEP 1
   status: 'draft' | 'submitted' | 'published';
   created_by: string;
   created_at: string;
@@ -333,4 +340,25 @@ export interface EntityWithTeam extends Entity {
 
 export interface EntityWithAccess extends Entity {
   access: AccessLevel;
+}
+
+// ============================================
+// NEW ROLE MODEL STEP 1: Event Participants
+// ============================================
+
+export interface EventParticipant {
+  id: string;
+  event_id: string;
+  zone: EventParticipantZone;
+  participant_kind: EventParticipantKind;
+  participant_id: string;
+  role_label?: string | null;
+  sort_order: number;
+  start_at?: string | null;
+  end_at?: string | null;
+  is_public: boolean;
+  created_at: string;
+  // Resolved references (populated by hooks)
+  entity?: Entity | null;
+  persona?: Persona | null;
 }
