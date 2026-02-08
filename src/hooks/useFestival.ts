@@ -37,34 +37,54 @@ export function useFestival(slug: string) {
 
       if (eventsError) throw eventsError;
 
-      // For each event, get the FULL lineup from event_entities (NEW)
-      const eventsWithLineup = await Promise.all(
-        (festivalEvents || []).map(async (fe) => {
-          if (!fe.event) return fe;
+      // Collect all event IDs for a single batched lineup query
+      const eventIds = (festivalEvents || [])
+        .map((fe) => fe.event?.id)
+        .filter(Boolean) as string[];
 
-          const { data: lineup } = await supabase
-            .from("event_entities")
-            .select(`
-              *,
-              entity:entities(*)
-            `)
-            .eq("event_id", fe.event.id)
-            .order("billing_order", { ascending: true });
+      // Run lineup + sections queries IN PARALLEL (they are independent)
+      const [lineupResult, sectionsResult] = await Promise.all([
+        // Single batched query for ALL event lineups (replaces N separate queries)
+        eventIds.length > 0
+          ? supabase
+              .from("event_entities")
+              .select(`*, entity:entities(*)`)
+              .in("event_id", eventIds)
+              .order("billing_order", { ascending: true })
+          : Promise.resolve({ data: [], error: null }),
+        // Festival sections (independent of lineup)
+        supabase
+          .from("festival_sections")
+          .select("*")
+          .eq("festival_id", festival.id)
+          .eq("is_enabled", true)
+          .order("sort_order", { ascending: true }),
+      ]);
 
-          // Filter out unpublished entities
-          const publishedLineup = (lineup || []).filter(
-            (item) => item.entity?.is_published === true
-          );
+      const allLineupItems = lineupResult.data || [];
+      const sections = sectionsResult.data || [];
+      if (sectionsResult.error) throw sectionsResult.error;
 
-          return {
-            ...fe,
-            event: {
-              ...fe.event,
-              lineup: publishedLineup,
-            },
-          };
-        })
-      );
+      // Group lineup items by event_id and filter unpublished
+      const lineupByEventId = new Map<string, typeof allLineupItems>();
+      for (const item of allLineupItems) {
+        if (item.entity?.is_published !== true) continue;
+        const existing = lineupByEventId.get(item.event_id) || [];
+        existing.push(item);
+        lineupByEventId.set(item.event_id, existing);
+      }
+
+      // Attach lineup to each event
+      const eventsWithLineup = (festivalEvents || []).map((fe) => {
+        if (!fe.event) return fe;
+        return {
+          ...fe,
+          event: {
+            ...fe.event,
+            lineup: lineupByEventId.get(fe.event.id) || [],
+          },
+        };
+      });
 
       // Sort events chronologically by start_at (earliest first)
       const sortedEvents = eventsWithLineup.sort((a, b) => {
@@ -89,7 +109,6 @@ export function useFestival(slug: string) {
         const eventSlug = fe.event.slug;
         const eventWithLineup = fe.event as { lineup?: any[] };
         (eventWithLineup.lineup || []).forEach((lineupItem: any) => {
-          // Only include published entities
           if (lineupItem.entity && lineupItem.entity.is_published === true) {
             allArtistsWithEventSlug.push({
               id: lineupItem.entity.id,
@@ -103,26 +122,16 @@ export function useFestival(slug: string) {
         });
       });
 
-      // Hent festival sections fra database
-      const { data: sections, error: sectionsError } = await supabase
-        .from("festival_sections")
-        .select("*")
-        .eq("festival_id", festival.id)
-        .eq("is_enabled", true)
-        .order("sort_order", { ascending: true });
-
-      if (sectionsError) throw sectionsError;
-
       // Extract all artist IDs from sections' content_json
       const allArtistIds = new Set<string>();
-      (sections || []).forEach((section) => {
+      sections.forEach((section) => {
         const rawContent = section.content_json as Record<string, unknown> | null;
         const content = (rawContent?.content as Record<string, unknown>) || rawContent;
         const artistIds = (content?.artists as string[]) || [];
         artistIds.forEach((id) => allArtistIds.add(id));
       });
 
-      // Fetch all referenced artists from entities (NEW - uses entities instead of projects)
+      // Fetch section artists (only if needed)
       let sectionArtists: Array<{ id: string; name: string; slug: string; tagline?: string | null; type?: string }> = [];
       if (allArtistIds.size > 0) {
         const { data: entities } = await supabase
