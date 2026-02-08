@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
-import type { EventProject, EventEntity } from "@/types/database";
+import type { EventProject, EventEntity, EventParticipant } from "@/types/database";
 import { useEntityTypes } from "@/hooks/useEntityTypes";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { getEntityPublicRoute } from "@/lib/entity-types";
 import { getObjectPositionFromFocal } from "@/lib/image-crop-helpers";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-// Support both legacy EventProject and new EventEntity
-type LineupItemData = EventProject | EventEntity;
+// Support legacy EventProject, EventEntity, and NEW EventParticipant
+type LineupItemData = EventProject | EventEntity | EventParticipant;
 
 interface LineupItemProps {
   item: LineupItemData;
@@ -15,9 +15,14 @@ interface LineupItemProps {
   isFirst?: boolean;
 }
 
-// Type guard to check if it's the new EventEntity format
+// Type guard for new EventEntity format
 function isEventEntity(item: LineupItemData): item is EventEntity {
-  return 'entity_id' in item && 'entity' in item;
+  return 'entity_id' in item && 'entity' in item && !('participant_kind' in item);
+}
+
+// NEW ROLE MODEL STEP 1.1: Type guard for EventParticipant
+function isEventParticipant(item: LineupItemData): item is EventParticipant {
+  return 'participant_kind' in item;
 }
 
 /**
@@ -25,31 +30,65 @@ function isEventEntity(item: LineupItemData): item is EventEntity {
  * Redesigned as "poster" style - large, breathing, not list-like
  * Uses hero_image_settings for focal point positioning when available
  * Mobile: No hover effects, no tagline - only "Utforsk" indicator
+ * 
+ * NEW ROLE MODEL STEP 1.1: Supports EventParticipant (entity + persona)
  */
 export function LineupItem({ item, showBilling, isFirst }: LineupItemProps) {
   const { data: entityTypes } = useEntityTypes();
   const isMobile = useIsMobile();
   
-  // Handle both new entity format and legacy project format
-  const entityData = isEventEntity(item) ? item.entity : item.project;
-  
-  // Signed URL for public viewing
-  const imageUrl = useSignedMediaUrl(entityData?.hero_image_url, 'public');
-  
-  // Get image settings if available (Entity type has it)
-  const imageSettings = isEventEntity(item) && item.entity 
-    ? item.entity.hero_image_settings 
-    : null;
-  
-  if (!entityData) return null;
+  // Resolve display data from different item formats
+  let displayName = "";
+  let displayTagline: string | null = null;
+  let displayImageUrl: string | null = null;
+  let displayImageSettings: unknown = null;
+  let route = "#";
+  let billingOrder = 0;
 
-  // Get route from entity_types config
-  const entityType = isEventEntity(item) && item.entity?.type;
-  const route = entityType 
-    ? getEntityPublicRoute(entityType, entityData.slug, entityTypes)
-    : `/project/${entityData.slug}`;
+  if (isEventParticipant(item)) {
+    // NEW ROLE MODEL STEP 1.1: EventParticipant format
+    if (item.participant_kind === "persona" && item.persona) {
+      displayName = item.persona.name;
+      displayImageUrl = item.persona.avatar_url || null;
+      displayImageSettings = item.persona.avatar_image_settings || null;
+      route = `/persona/${item.persona.slug}`;
+    } else if (item.entity) {
+      displayName = item.entity.name;
+      displayTagline = item.entity.tagline || null;
+      displayImageUrl = item.entity.hero_image_url || null;
+      displayImageSettings = item.entity.hero_image_settings || null;
+      route = getEntityPublicRoute(item.entity.type, item.entity.slug, entityTypes);
+    }
+    billingOrder = item.sort_order;
+    // Show role_label as tagline if persona
+    if (item.participant_kind === "persona" && item.role_label) {
+      displayTagline = item.role_label;
+    }
+  } else if (isEventEntity(item)) {
+    // EventEntity format
+    const entity = item.entity;
+    if (!entity) return null;
+    displayName = entity.name;
+    displayTagline = entity.tagline || null;
+    displayImageUrl = entity.hero_image_url || null;
+    displayImageSettings = entity.hero_image_settings || null;
+    route = getEntityPublicRoute(entity.type, entity.slug, entityTypes);
+    billingOrder = item.billing_order;
+  } else {
+    // Legacy EventProject format
+    const project = item.project;
+    if (!project) return null;
+    displayName = project.name;
+    displayTagline = project.tagline || null;
+    displayImageUrl = project.hero_image_url || null;
+    route = `/project/${project.slug}`;
+    billingOrder = item.billing_order;
+  }
 
-  const isHeadliner = showBilling && item.billing_order === 1;
+  if (!displayName) return null;
+
+  const imageUrl = useSignedMediaUrl(displayImageUrl, 'public');
+  const isHeadliner = showBilling && billingOrder === 1;
 
   return (
     <Link 
@@ -66,9 +105,11 @@ export function LineupItem({ item, showBilling, isFirst }: LineupItemProps) {
           {imageUrl ? (
             <img
               src={imageUrl}
-              alt={entityData.name}
+              alt={displayName}
               className="w-full h-full object-cover"
-              style={{ objectPosition: getObjectPositionFromFocal(imageSettings) }}
+              loading="lazy"
+              decoding="async"
+              style={{ objectPosition: getObjectPositionFromFocal(displayImageSettings) }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -76,7 +117,7 @@ export function LineupItem({ item, showBilling, isFirst }: LineupItemProps) {
                 font-bold text-muted-foreground/30
                 ${isHeadliner ? 'text-3xl' : 'text-xl'}
               `}>
-                {entityData.name.charAt(0)}
+                {displayName.charAt(0)}
               </span>
             </div>
           )}
@@ -89,7 +130,7 @@ export function LineupItem({ item, showBilling, isFirst }: LineupItemProps) {
             ${!isMobile ? 'group-hover:text-accent' : ''} transition-colors duration-200
             ${isHeadliner ? 'text-2xl md:text-3xl' : 'text-lg md:text-xl'}
           `}>
-            {entityData.name}
+            {displayName}
           </h3>
           
           {/* Mobile: show "Utforsk" instead of tagline */}
@@ -98,12 +139,12 @@ export function LineupItem({ item, showBilling, isFirst }: LineupItemProps) {
               Utforsk →
             </p>
           ) : (
-            entityData.tagline && (
+            displayTagline && (
               <p className={`
                 text-muted-foreground/70 mt-1
                 ${isHeadliner ? 'text-base md:text-lg' : 'text-sm md:text-base'}
               `}>
-                {entityData.tagline}
+                {displayTagline}
               </p>
             )
           )}

@@ -46,7 +46,9 @@ export default function AdminEvents() {
 
   const deleteEvent = useMutation({
     mutationFn: async (id: string) => {
-      // Delete related data first
+      // NEW ROLE MODEL STEP 1.1: Delete event_participants first
+      await supabase.from("event_participants").delete().eq("event_id", id);
+      // Delete legacy related data
       await supabase.from("event_entities").delete().eq("event_id", id);
       await supabase.from("event_projects").delete().eq("event_id", id);
       await supabase.from("festival_events").delete().eq("event_id", id);
