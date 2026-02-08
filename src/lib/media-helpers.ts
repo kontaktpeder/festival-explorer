@@ -43,6 +43,7 @@ export async function getMediaUrl(
     
     if (error) {
       console.error("Error creating signed URL:", error);
+      setCachedFailedPath(mediaItem.storage_path);
       return mediaItem.public_url || "";
     }
     
@@ -73,6 +74,7 @@ export async function getMediaUrl(
       
       if (error) {
         console.error("Error creating signed URL:", error);
+        setCachedFailedPath(storagePath);
         return mediaItem.public_url;
       }
       
@@ -118,10 +120,19 @@ function parseStoragePathFromUrl(url: string): string | null {
 
 /**
  * Cache for signed URLs (forbedrer ytelse ved offentlig visning)
+ * Also caches failed lookups to prevent repeated API calls for missing objects
  */
 const signedUrlCache = new Map<string, { url: string; expiresAt: number }>();
+const failedPathCache = new Map<string, number>(); // path → timestamp of failure
+const FAILED_CACHE_TTL = 5 * 60 * 1000; // Cache failures for 5 minutes
 
 export function getCachedSignedUrl(storagePath: string): string | null {
+  // Check if this path recently failed — return empty string immediately
+  const failedAt = failedPathCache.get(storagePath);
+  if (failedAt && (Date.now() - failedAt) < FAILED_CACHE_TTL) {
+    return ""; // Return empty string to skip API call
+  }
+
   const cached = signedUrlCache.get(storagePath);
   if (cached && cached.expiresAt > Date.now()) {
     return cached.url;
@@ -145,6 +156,13 @@ export function setCachedSignedUrl(
     url,
     expiresAt: Date.now() + ((expiresInSeconds - 600) * 1000)
   });
+}
+
+/**
+ * Mark a storage path as failed so we don't retry it
+ */
+export function setCachedFailedPath(storagePath: string): void {
+  failedPathCache.set(storagePath, Date.now());
 }
 
 // Cache version for forcing re-fetch in useSignedMediaUrl
@@ -176,6 +194,7 @@ export function incrementCacheVersion(): void {
 export function cleanupSignedUrlCache(clearAll: boolean = false): void {
   if (clearAll) {
     signedUrlCache.clear();
+    failedPathCache.clear(); // Also clear failed path cache
     incrementCacheVersion(); // Increment version to force re-fetch in hooks
     return;
   }
