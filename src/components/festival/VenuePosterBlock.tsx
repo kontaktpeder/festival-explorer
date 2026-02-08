@@ -39,6 +39,8 @@ export function VenuePosterBlock({ venue }: VenuePosterBlockProps) {
           <img
             src={heroImageUrl}
             alt=""
+            loading="lazy"
+            decoding="async"
             className={cn(
               "w-full h-full object-cover transition-transform duration-1000",
               !isMobile && "group-hover:scale-105"

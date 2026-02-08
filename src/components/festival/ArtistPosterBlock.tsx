@@ -82,6 +82,8 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
           <img
             src={heroImageUrl}
             alt=""
+            loading="lazy"
+            decoding="async"
             className={cn(
               "w-full h-full object-cover",
               !isMobile && "transition-transform duration-1000 group-hover:scale-105"
@@ -109,6 +111,8 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
             <img
               src={artistLogo}
               alt={artist.name}
+              loading="lazy"
+              decoding="async"
               className={cn(
                 "w-auto max-w-full h-auto max-h-32 md:max-h-48 object-contain drop-shadow-2xl",
                 !isMobile && "transition-all duration-500 group-hover:scale-105",

@@ -134,6 +134,8 @@ export function HeroSection({
           <img
             src={activeImage}
             alt=""
+            fetchPriority="high"
+            decoding="async"
             className="absolute inset-0 w-full h-full object-cover will-change-transform"
             style={{ 
               objectPosition: getObjectPositionFromFocal(imageSettings),

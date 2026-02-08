@@ -98,7 +98,7 @@ function SectionBackground({
 
   // Always use <img> tag to ensure GIF animations work (GIFs may have .jpg extension from storage)
   return <div className="absolute inset-0 overflow-hidden">
-      <img src={activeImage} alt="" className={`w-full h-full ${imageFitMode === 'contain' ? 'object-contain' : 'object-cover'}`} style={{
+      <img src={activeImage} alt="" loading="lazy" decoding="async" className={`w-full h-full ${imageFitMode === 'contain' ? 'object-contain' : 'object-cover'}`} style={{
       objectPosition: getObjectPositionFromFocal(imageSettings)
     }} />
     </div>;
