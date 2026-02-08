@@ -308,6 +308,7 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          entity_kind: string | null
           hero_image_settings: Json | null
           hero_image_url: string | null
           id: string
@@ -331,6 +332,7 @@ export type Database = {
           created_at?: string
           created_by: string
           description?: string | null
+          entity_kind?: string | null
           hero_image_settings?: Json | null
           hero_image_url?: string | null
           id?: string
@@ -354,6 +356,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           description?: string | null
+          entity_kind?: string | null
           hero_image_settings?: Json | null
           hero_image_url?: string | null
           id?: string
@@ -611,6 +614,56 @@ export type Database = {
           },
         ]
       }
+      event_participants: {
+        Row: {
+          created_at: string
+          end_at: string | null
+          event_id: string
+          id: string
+          is_public: boolean
+          participant_id: string
+          participant_kind: string
+          role_label: string | null
+          sort_order: number
+          start_at: string | null
+          zone: string
+        }
+        Insert: {
+          created_at?: string
+          end_at?: string | null
+          event_id: string
+          id?: string
+          is_public?: boolean
+          participant_id: string
+          participant_kind: string
+          role_label?: string | null
+          sort_order?: number
+          start_at?: string | null
+          zone: string
+        }
+        Update: {
+          created_at?: string
+          end_at?: string | null
+          event_id?: string
+          id?: string
+          is_public?: boolean
+          participant_id?: string
+          participant_kind?: string
+          role_label?: string | null
+          sort_order?: number
+          start_at?: string | null
+          zone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_participants_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_projects: {
         Row: {
           billing_order: number
@@ -659,6 +712,7 @@ export type Database = {
           end_at: string | null
           hero_image_settings: Json | null
           hero_image_url: string | null
+          host_entity_id: string | null
           id: string
           slug: string
           start_at: string
@@ -675,6 +729,7 @@ export type Database = {
           end_at?: string | null
           hero_image_settings?: Json | null
           hero_image_url?: string | null
+          host_entity_id?: string | null
           id?: string
           slug: string
           start_at: string
@@ -691,6 +746,7 @@ export type Database = {
           end_at?: string | null
           hero_image_settings?: Json | null
           hero_image_url?: string | null
+          host_entity_id?: string | null
           id?: string
           slug?: string
           start_at?: string
@@ -705,6 +761,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_host_entity_id_fkey"
+            columns: ["host_entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
             referencedColumns: ["id"]
           },
           {
@@ -1087,6 +1150,7 @@ export type Database = {
           show_email: boolean
           slug: string
           social_links: Json | null
+          type: string | null
           updated_at: string
           user_id: string
         }
@@ -1108,6 +1172,7 @@ export type Database = {
           show_email?: boolean
           slug: string
           social_links?: Json | null
+          type?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1129,6 +1194,7 @@ export type Database = {
           show_email?: boolean
           slug?: string
           social_links?: Json | null
+          type?: string | null
           updated_at?: string
           user_id?: string
         }
