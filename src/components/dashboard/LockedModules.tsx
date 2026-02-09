@@ -6,7 +6,7 @@ const BACKSTAGE_TYPES = ['photographer', 'video', 'technician', 'volunteer', 'ma
 interface LockedModulesProps {
   projectEntities: { id: string }[];
   hostEntities: { id: string }[];
-  selectedPersona: { type?: string | null } | null;
+  selectedPersona: { id?: string; type?: string | null } | null;
 }
 
 const MODULES = [
@@ -27,6 +27,26 @@ export function LockedModules({ projectEntities, hostEntities, selectedPersona }
     }
   };
 
+  const getModuleHref = (key: string): string => {
+    switch (key) {
+      case "on_stage":
+        return projectEntities.length > 0
+          ? `/dashboard/entities/${projectEntities[0].id}/edit`
+          : "/dashboard";
+      case "festival":
+        return hostEntities.length > 0
+          ? `/dashboard/entities/${hostEntities[0].id}/edit`
+          : "/dashboard";
+      case "backstage":
+        return selectedPersona?.id
+          ? `/dashboard/personas/${selectedPersona.id}`
+          : "/dashboard";
+      case "audience":
+      default:
+        return "/request-access";
+    }
+  };
+
   return (
     <section className="space-y-3">
       <h2 className="text-base sm:text-xl font-semibold text-foreground">Moduler</h2>
@@ -37,7 +57,7 @@ export function LockedModules({ projectEntities, hostEntities, selectedPersona }
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
         {MODULES.map(({ key, label, desc, icon: Icon }) => {
           const isUnlocked = getModuleState(key);
-          const href = isUnlocked ? "/dashboard" : "/request-access";
+          const href = isUnlocked ? getModuleHref(key) : "/request-access";
           const cta = isUnlocked ? "Åpne" : "Be om tilgang";
 
           return (
