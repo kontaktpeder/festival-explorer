@@ -143,6 +143,7 @@ export function useCreatePersona() {
       avatar_url?: string;
       avatar_image_settings?: { focal_x: number; focal_y: number; zoom?: number } | null;
       category_tags?: string[];
+      type?: string;
       is_public?: boolean;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -175,6 +176,7 @@ export function useCreatePersona() {
         avatar_image_settings: persona.avatar_image_settings || null,
         category_tags: persona.category_tags || [],
         is_public: persona.is_public ?? true,
+        ...(persona.type && { type: persona.type }),
       };
 
       const { data, error } = await supabase
