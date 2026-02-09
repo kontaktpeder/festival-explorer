@@ -17,6 +17,7 @@ interface TicketType {
   capacity: number;
   sales_start: string | null;
   sales_end: string | null;
+  stripe_price_id: string | null;
   ticket_events: {
     id: string;
     name: string;
@@ -118,24 +119,29 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://giggn.lovable.app";
     
+    // Use stripe_price_id if available, otherwise use price_data
+    const lineItems = tt.stripe_price_id
+      ? [{ price: tt.stripe_price_id, quantity: 1 }]
+      : [
+          {
+            price_data: {
+              currency: (tt.currency || "nok").toLowerCase(),
+              product_data: {
+                name: `${tt.ticket_events?.name} - ${tt.name}`,
+                description: tt.description || undefined,
+              },
+              unit_amount: tt.price_nok,
+            },
+            quantity: 1,
+          },
+        ];
+
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       customer: customerId,
       customer_email: customerId ? undefined : buyerEmail,
-      line_items: [
-        {
-          price_data: {
-            currency: tt.currency || "nok",
-            product_data: {
-              name: `${tt.ticket_events?.name} - ${tt.name}`,
-              description: tt.description || undefined,
-            },
-            unit_amount: tt.price_nok, // Already in øre
-          },
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       mode: "payment",
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/tickets`,
