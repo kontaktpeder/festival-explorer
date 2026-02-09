@@ -51,10 +51,13 @@ SELECT 'c3333333-3333-3333-3333-333333333301'::uuid, 'Test Event Main', 'test-ev
   'b2222222-2222-2222-2222-222222222201'::uuid
 WHERE NOT EXISTS (SELECT 1 FROM public.events WHERE slug = 'test-event-main');
 
--- 7. event_participants: on_stage, backstage, host
+-- 7. event_participants: on_stage, backstage, host (lookup event_id via slug)
 INSERT INTO public.event_participants (event_id, zone, participant_kind, participant_id, role_label, sort_order, is_public)
-VALUES
-  ('c3333333-3333-3333-3333-333333333301', 'on_stage', 'entity', 'b2222222-2222-2222-2222-222222222202', null, 1, true),
-  ('c3333333-3333-3333-3333-333333333301', 'on_stage', 'entity', 'b2222222-2222-2222-2222-222222222203', null, 2, true),
-  ('c3333333-3333-3333-3333-333333333301', 'backstage', 'persona', 'a1111111-1111-1111-1111-111111111103', 'Foto', 1, true),
-  ('c3333333-3333-3333-3333-333333333301', 'host', 'persona', 'a1111111-1111-1111-1111-111111111102', 'Arrangør', 1, true);
+SELECT e.id, v.zone, v.participant_kind, v.participant_id::uuid, v.role_label, v.sort_order::integer, v.is_public::boolean
+FROM (VALUES
+  ('test-event-main', 'on_stage', 'entity', 'b2222222-2222-2222-2222-222222222202', null::text, 1, true),
+  ('test-event-main', 'on_stage', 'entity', 'b2222222-2222-2222-2222-222222222203', null::text, 2, true),
+  ('test-event-main', 'backstage', 'persona', 'a1111111-1111-1111-1111-111111111103', 'Foto', 1, true),
+  ('test-event-main', 'host', 'persona', 'a1111111-1111-1111-1111-111111111102', 'Arrangør', 1, true)
+) AS v(slug, zone, participant_kind, participant_id, role_label, sort_order, is_public)
+JOIN public.events e ON e.slug = v.slug;
