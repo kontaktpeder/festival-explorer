@@ -7,6 +7,9 @@ import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCreatePersona } from "@/hooks/usePersona";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
+import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
+import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
+import type { ImageSettings } from "@/types/database";
 import { Music, Camera, Building2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
@@ -26,7 +29,8 @@ export default function CreateProfileWizard() {
   const [step, setStep] = useState(0);
   const [type, setType] = useState<string | null>(null);
   const [name, setName] = useState("");
-  const [avatarUrl] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarImageSettings, setAvatarImageSettings] = useState<ImageSettings | null>(null);
   const [isPublic, setIsPublic] = useState(true);
 
   const handleCreate = async () => {
@@ -38,6 +42,7 @@ export default function CreateProfileWizard() {
       const persona = await createPersona.mutateAsync({
         name: name.trim(),
         avatar_url: avatarUrl || undefined,
+        avatar_image_settings: avatarImageSettings,
         is_public: isPublic,
         type: type || undefined,
       });
@@ -118,17 +123,24 @@ export default function CreateProfileWizard() {
             <div>
               <Label>Profilbilde (valgfritt)</Label>
               <div className="flex items-center gap-4 mt-2">
-                <Avatar className="h-14 w-14 ring-2 ring-border/50">
+                <Avatar className="h-16 w-16 ring-2 ring-border/50 shrink-0">
                   {avatarUrl ? (
-                    <AvatarImage src={avatarUrl} />
+                    <AvatarImage src={avatarUrl} style={getCroppedImageStyles(avatarImageSettings)} className="object-cover" />
                   ) : null}
                   <AvatarFallback className="text-base bg-muted text-muted-foreground">
                     {name ? name.charAt(0).toUpperCase() : "?"}
                   </AvatarFallback>
                 </Avatar>
-                <p className="text-xs text-muted-foreground">
-                  Du kan legge til bilde senere i redigeringsmodus.
-                </p>
+                <div className="flex-1">
+                  <InlineMediaPickerWithCrop
+                    value={avatarUrl}
+                    imageSettings={avatarImageSettings}
+                    onChange={setAvatarUrl}
+                    onSettingsChange={setAvatarImageSettings}
+                    cropMode="avatar"
+                    placeholder="Velg profilbilde"
+                  />
+                </div>
               </div>
             </div>
           </div>
