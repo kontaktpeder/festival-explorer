@@ -1,1 +1,0 @@
-UPDATE public.festival_sections SET image_fit_mode = 'contain' WHERE id = '2f6edfa9-fa85-41f0-ba1c-f86af8347083';

@@ -115,9 +115,9 @@ export default function FestivalPage() {
                 imageFitMode={heroFitMode}
                 useNaturalAspect
               >
-                <div className="space-y-5 md:space-y-6">
+                <div>
                   {showDateRange && (
-                    <div className="animate-slide-up text-mono text-[10px] md:text-xs uppercase tracking-[0.2em] text-accent/70">
+                    <div className="animate-slide-up text-mono text-[10px] md:text-xs uppercase tracking-[0.2em] text-accent/70 mb-4">
                       {showDateRange}
                     </div>
                   )}
@@ -127,27 +127,10 @@ export default function FestivalPage() {
                     </h1>
                   )}
                   {showDescription && (
-                    <p className="animate-slide-up delay-200 text-foreground/50 text-base md:text-lg max-w-sm leading-relaxed">
+                    <p className="animate-slide-up delay-200 text-foreground/50 text-base md:text-lg max-w-sm leading-relaxed mt-4">
                       {showDescription}
                     </p>
                   )}
-
-                  {/* Dato + venue */}
-                  <div className="animate-slide-up delay-300 space-y-1">
-                    {festival.start_at && (
-                      <p className="text-accent text-2xl sm:text-3xl md:text-4xl font-display font-bold tracking-tight uppercase">
-                        {format(new Date(festival.start_at), "d. MMMM", { locale: nb })}
-                      </p>
-                    )}
-                    {venue && (
-                      <Link
-                        to={`/venue/${venue.slug}`}
-                        className="block text-accent/70 text-xl sm:text-2xl md:text-3xl font-display font-medium tracking-tight hover:text-accent transition-colors"
-                      >
-                        {venue.name} →
-                      </Link>
-                    )}
-                  </div>
                 </div>
               </HeroSection>
             );
@@ -237,11 +220,11 @@ export default function FestivalPage() {
         fullScreen 
         backgroundFixed
       >
-        <div className="animate-slide-up pb-8 space-y-5 md:space-y-6">
+        <div className="animate-slide-up pb-8">
           {dateRange && (
-            <div className="text-mono text-accent">{dateRange}</div>
+            <div className="text-mono text-accent mb-3">{dateRange}</div>
           )}
-          <h1 className="text-display text-5xl md:text-7xl leading-none">
+          <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">
             {festival.name}
           </h1>
           {shortDescription && (
@@ -249,23 +232,6 @@ export default function FestivalPage() {
               {shortDescription}
             </p>
           )}
-
-          {/* Dato + venue */}
-          <div className="space-y-1">
-            {festival.start_at && (
-              <p className="text-accent text-2xl sm:text-3xl md:text-4xl font-display font-bold tracking-tight uppercase">
-                {format(new Date(festival.start_at), "d. MMMM", { locale: nb })}
-              </p>
-            )}
-            {venue && (
-              <Link
-                to={`/venue/${venue.slug}`}
-                className="block text-accent/70 text-xl sm:text-2xl md:text-3xl font-display font-medium tracking-tight hover:text-accent transition-colors"
-              >
-                {venue.name} →
-              </Link>
-            )}
-          </div>
         </div>
       </HeroSection>
 

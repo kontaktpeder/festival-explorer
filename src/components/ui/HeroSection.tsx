@@ -136,7 +136,7 @@ export function HeroSection({
             alt=""
             fetchPriority="high"
             decoding="async"
-            className={`absolute inset-0 w-full h-full will-change-transform ${imageFitMode === 'contain' ? 'object-contain' : 'object-cover'}`}
+            className="absolute inset-0 w-full h-full object-cover will-change-transform"
             style={{ 
               objectPosition: getObjectPositionFromFocal(imageSettings),
               transform: `scale(${imageScale})`,
@@ -147,7 +147,7 @@ export function HeroSection({
           />
         ) : (
           <div
-            className={`absolute inset-0 bg-no-repeat will-change-transform ${imageFitMode === 'contain' ? 'bg-contain' : 'bg-cover'}`}
+            className="absolute inset-0 bg-no-repeat bg-cover will-change-transform"
             style={{ 
               backgroundImage: `url(${activeImage})`,
               backgroundPosition: getObjectPositionFromFocal(imageSettings),
@@ -162,7 +162,7 @@ export function HeroSection({
       
       {/* Content */}
       <div 
-        className="absolute bottom-0 left-0 right-0 z-10 px-5 pb-16 sm:pb-20 [text-shadow:0_1px_8px_rgba(255,255,255,0.6),0_0_3px_rgba(255,255,255,0.4)]"
+        className="absolute bottom-0 left-0 right-0 z-10 px-5 pb-4"
         style={{ 
           opacity: Math.max(0, textOpacity),
           transition: overscrollProgress === 0 ? 'opacity 0.3s ease-out' : 'none'
