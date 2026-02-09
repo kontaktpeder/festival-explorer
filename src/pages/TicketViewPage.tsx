@@ -94,7 +94,7 @@ export default function TicketViewPage() {
           style={{ backgroundImage: `url(${ticketBgBlue})` }}
         >
           {/* Semi-transparent overlay for readability */}
-          <div className="backdrop-blur-[2px] bg-black/20 p-6 space-y-5">
+          <div className="bg-black/10 p-6 space-y-5">
             <div className="text-center space-y-1">
               <h2 className="text-xl font-bold text-accent tracking-wide">{festivalName}</h2>
               <p className="text-sm text-accent/70 font-medium">{ticket.ticketType}</p>
