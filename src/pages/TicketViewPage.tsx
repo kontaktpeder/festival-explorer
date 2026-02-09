@@ -96,30 +96,30 @@ export default function TicketViewPage() {
           {/* Semi-transparent overlay for readability */}
           <div className="bg-black/10 p-6 space-y-5">
             <div className="text-center space-y-1">
-              <h2 className="text-xl font-bold text-accent tracking-wide">{festivalName}</h2>
-              <p className="text-sm text-accent/70 font-medium">{ticket.ticketType}</p>
+              <h2 className="text-2xl font-extrabold text-accent tracking-wide uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{festivalName}</h2>
+              <p className="text-base font-bold text-accent/80 drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">{ticket.ticketType}</p>
             </div>
 
             <div className="bg-white p-4 rounded-xl flex justify-center mx-auto w-fit">
               <QRCodeSVG value={`${window.location.origin}/t/${ticket.ticketCode}`} size={200} />
             </div>
 
-            <p className="text-center font-mono text-lg font-bold text-white tracking-widest">
+            <p className="text-center font-mono text-xl font-extrabold text-white tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
               {ticket.ticketCode}
             </p>
 
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2 text-white/90">
-                <Calendar className="w-4 h-4 text-accent" />
+            <div className="space-y-2 text-base font-bold">
+              <div className="flex items-center gap-2 text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
+                <Calendar className="w-5 h-5 text-accent" />
                 {eventDate}
               </div>
-              <div className="flex items-center gap-2 text-white/90">
-                <MapPin className="w-4 h-4 text-accent" />
+              <div className="flex items-center gap-2 text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
+                <MapPin className="w-5 h-5 text-accent" />
                 {venueName}
               </div>
             </div>
 
-            <p className="text-center text-white/60 text-sm">{ticket.buyerName}</p>
+            <p className="text-center text-white/80 text-base font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">{ticket.buyerName}</p>
           </div>
         </div>
         
