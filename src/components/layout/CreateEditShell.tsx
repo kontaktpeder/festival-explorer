@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 export interface CreateEditShellProps {
@@ -54,17 +55,25 @@ export function CreateEditShell({
       </div>
 
       {/* Footer actions */}
-      <div className="border-t border-border/30 px-4 sm:px-6 py-4 flex items-center justify-between max-w-lg mx-auto w-full">
-        <div>
-          {secondaryAction && (
-            <Button variant="ghost" onClick={secondaryAction.onClick}>
-              {secondaryAction.label}
-            </Button>
-          )}
+      <div className="border-t border-border/30 px-4 sm:px-6 py-4 max-w-lg mx-auto w-full space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            {secondaryAction && (
+              <Button variant="ghost" onClick={secondaryAction.onClick}>
+                {secondaryAction.label}
+              </Button>
+            )}
+          </div>
+          <Button onClick={primaryAction.onClick} disabled={primaryAction.disabled}>
+            {primaryAction.label}
+          </Button>
         </div>
-        <Button onClick={primaryAction.onClick} disabled={primaryAction.disabled}>
-          {primaryAction.label}
-        </Button>
+        <p className="text-[11px] text-muted-foreground/60 text-center">
+          Ved å fortsette godtar du våre{" "}
+          <Link to="/vilkar" className="underline hover:text-muted-foreground">vilkår</Link>
+          {" "}og{" "}
+          <Link to="/personvern" className="underline hover:text-muted-foreground">personvern</Link>.
+        </p>
       </div>
     </div>
   );
