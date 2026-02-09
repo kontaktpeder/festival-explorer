@@ -89,25 +89,36 @@ export default function TicketViewPage() {
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] opacity-[0.06] pointer-events-none select-none"
           />
 
+          {/* Top gradient overlay for header text */}
+          <div
+            className="absolute inset-x-0 top-0 h-32 pointer-events-none"
+            style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.35), transparent)' }}
+          />
+          {/* Bottom gradient overlay for info text */}
+          <div
+            className="absolute inset-x-0 bottom-0 h-40 pointer-events-none"
+            style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.4), transparent)' }}
+          />
+
           <div className="relative z-10 p-7 flex flex-col items-center">
             {/* === POSTER TOP — visual identity === */}
-            <div className="text-center mb-6 space-y-3">
+            <div className="text-center mb-5 space-y-2">
               <img
                 src={giggenLogo}
                 alt="GIGGEN"
-                className="h-10 mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
+                className="h-10 mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
               />
-              <p className="text-white/70 text-sm font-medium tracking-[0.2em] uppercase">
+              <p className="text-lg font-semibold text-white tracking-[0.15em] uppercase drop-shadow-[0_1px_4px_rgba(0,0,0,0.5)]">
                 Festival for én kveld · 2026
               </p>
             </div>
 
-            {/* === QR CODE — premium, smaller === */}
+            {/* === QR CODE — premium === */}
             <div
-              className="p-3 rounded-xl mx-auto"
+              className="p-4 rounded-xl mx-auto"
               style={{
                 background: 'white',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.15), 0 0 0 2px hsl(24 100% 55% / 0.3)',
+                boxShadow: '0 6px 24px rgba(0,0,0,0.2), 0 0 0 2.5px hsl(24 100% 55% / 0.35)',
               }}
             >
               <QRCodeSVG
@@ -117,13 +128,13 @@ export default function TicketViewPage() {
               />
             </div>
 
-            {/* === TICKET CODE — serial number feel === */}
+            {/* === TICKET CODE — serial number pill === */}
             <div className="mt-5 mb-4">
               <div
-                className="inline-block px-5 py-1.5 rounded-full"
+                className="inline-block px-5 py-2 rounded-full"
                 style={{
-                  background: 'rgba(0,0,0,0.25)',
-                  border: '1px solid hsl(24 100% 55% / 0.3)',
+                  background: 'rgba(0,0,0,0.35)',
+                  border: '1px solid hsl(24 100% 55% / 0.35)',
                 }}
               >
                 <p className="font-mono text-base font-bold text-white tracking-[0.25em]">
@@ -132,22 +143,22 @@ export default function TicketViewPage() {
               </div>
             </div>
 
-            {/* === EVENT INFO === */}
-            <div className="w-full space-y-2 text-sm">
-              <div className="flex items-center gap-2.5 text-white/90 font-medium">
-                <Calendar className="w-4 h-4 text-accent flex-shrink-0" />
+            {/* === EVENT INFO — larger, high contrast === */}
+            <div className="w-full space-y-2.5">
+              <div className="flex items-center gap-2.5 text-white font-semibold text-base drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
+                <Calendar className="w-5 h-5 text-accent flex-shrink-0" />
                 {eventDate}
               </div>
-              <div className="flex items-center gap-2.5 text-white/90 font-medium">
-                <MapPin className="w-4 h-4 text-accent flex-shrink-0" />
+              <div className="flex items-center gap-2.5 text-white font-semibold text-base drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
+                <MapPin className="w-5 h-5 text-accent flex-shrink-0" />
                 {venueName}
               </div>
             </div>
 
-            {/* === BOTTOM — name + type === */}
-            <div className="mt-5 pt-4 border-t border-white/10 w-full flex items-center justify-between">
-              <p className="text-white/70 text-sm">{ticket.buyerName}</p>
-              <p className="text-accent/60 text-xs font-medium uppercase tracking-wider">{ticket.ticketType}</p>
+            {/* === BOTTOM — type + name in one clean line === */}
+            <div className="mt-5 pt-3 border-t border-white/15 w-full flex items-center justify-between">
+              <p className="text-white/80 text-sm font-medium">{ticket.buyerName}</p>
+              <p className="text-accent text-sm font-semibold uppercase tracking-wider">{ticket.ticketType}</p>
             </div>
           </div>
         </div>
