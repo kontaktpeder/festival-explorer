@@ -39,12 +39,11 @@ import {
   Zap,
 } from "lucide-react";
 
-// Stripe fee calculation: 1.4% + 2.5 NOK per transaction (Norwegian cards)
-const STRIPE_FEE_PERCENT = 0.014;
-const STRIPE_FEE_FIXED = 2.5;
+// Fast Stripe-gebyr per betalt billett
+const STRIPE_FEE_PER_TICKET = 9;
 
-function calculateStripeFee(amountNok: number): number {
-  return Math.round(amountNok * STRIPE_FEE_PERCENT + STRIPE_FEE_FIXED);
+function calculateStripeFees(paidTicketCount: number): number {
+  return paidTicketCount * STRIPE_FEE_PER_TICKET;
 }
 
 function formatCurrency(amount: number): string {
@@ -129,10 +128,9 @@ function useTicketStats() {
         return sum + (priceOre / 100); // Convert from øre to kroner
       }, 0);
 
-      const totalFees = soldTickets.reduce((sum, ticket) => {
-        const priceKroner = (ticket.ticket_types?.price_nok || 0) / 100; // Convert from øre to kroner
-        return sum + calculateStripeFee(priceKroner);
-      }, 0);
+      // Count paid tickets (not internal) for fee calculation
+      const paidTickets = soldTickets.filter(t => !t.stripe_session_id.startsWith("internal-"));
+      const totalFees = calculateStripeFees(paidTickets.length);
 
       const netRevenue = totalRevenue - totalFees;
 
@@ -441,12 +439,38 @@ export default function AdminTicketsDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<TicketWithRelations[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [internalName, setInternalName] = useState("");
+  const [internalEmail, setInternalEmail] = useState("");
+  const [internalType, setInternalType] = useState("KOMPIS");
+  const [internalNote, setInternalNote] = useState("");
 
   const { data: stats, isLoading: statsLoading } = useTicketStats();
   const { data: issues, isLoading: issuesLoading } = useTicketIssues();
   const { data: checkInStats, isLoading: checkInLoading } = useCheckInStats();
   const { data: stripeMode } = useStripeMode();
   const { data: syncData, isLoading: syncLoading, refetch: refetchSync } = useStripeSync();
+
+  // Create internal ticket
+  const createInternalTicket = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("create-internal-ticket", {
+        body: { name: internalName, email: internalEmail || undefined, ticketTypeCode: internalType, note: internalNote || undefined },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["ticket-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["checkin-stats"] });
+      toast.success(`Internbillett opprettet: ${data?.ticket?.ticket_code || "OK"}`);
+      setInternalName("");
+      setInternalEmail("");
+      setInternalNote("");
+    },
+    onError: (error: Error) => {
+      toast.error("Feil: " + error.message);
+    },
+  });
 
   // Export CSV
   const exportCSV = useMutation({
@@ -592,6 +616,7 @@ export default function AdminTicketsDashboard() {
           <TabsTrigger value="overview">Oversikt</TabsTrigger>
           <TabsTrigger value="issues">Avvik</TabsTrigger>
           <TabsTrigger value="checkin">Innsjekking</TabsTrigger>
+          <TabsTrigger value="internal">Intern</TabsTrigger>
           <TabsTrigger value="report">Rapport</TabsTrigger>
         </TabsList>
 
@@ -1143,6 +1168,46 @@ export default function AdminTicketsDashboard() {
           </Card>
         </TabsContent>
 
+        {/* INTERNAL TICKET TAB */}
+        <TabsContent value="internal">
+          <Card>
+            <CardHeader>
+              <CardTitle>Legg til internbillett</CardTitle>
+              <CardDescription>Opprett billetter for kompis, gjesteliste eller crew</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Navn *</label>
+                  <Input placeholder="Fullt navn" value={internalName} onChange={(e) => setInternalName(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">E-post (valgfritt)</label>
+                  <Input type="email" placeholder="epost@eksempel.no" value={internalEmail} onChange={(e) => setInternalEmail(e.target.value)} />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Type *</label>
+                  <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={internalType} onChange={(e) => setInternalType(e.target.value)}>
+                    <option value="KOMPIS">Kompisbillett</option>
+                    <option value="LISTE">Gjesteliste</option>
+                    <option value="CREW">Crew</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Notat (valgfritt)</label>
+                  <Input placeholder="Evt. notat" value={internalNote} onChange={(e) => setInternalNote(e.target.value)} />
+                </div>
+              </div>
+              <Button onClick={() => createInternalTicket.mutate()} disabled={!internalName || createInternalTicket.isPending}>
+                {createInternalTicket.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Ticket className="h-4 w-4 mr-2" />}
+                Opprett internbillett
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* EXPORT TAB */}
         <TabsContent value="report">
           <Card>
@@ -1160,7 +1225,7 @@ export default function AdminTicketsDashboard() {
                     </span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
-                    <span>Stripe-gebyrer:</span>
+                    <span>Stripe-gebyrer (9 kr/billett):</span>
                     <span className="font-mono">
                       -{formatCurrency(stats?.totalFees || 0)}
                     </span>

@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.verify-access-email]
 verify_jwt = false
+
+[functions.create-internal-ticket]
+verify_jwt = false

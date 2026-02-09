@@ -13,7 +13,7 @@ interface TicketResult {
   buyer_email: string;
   created_at: string;
   checked_in_at: string | null;
-  ticket_types: { name: string } | null;
+  ticket_types: { name: string; code: string } | null;
   ticket_events: { name: string } | null;
 }
 
@@ -75,7 +75,7 @@ serve(async (req) => {
       .from("tickets")
       .select(`
         *,
-        ticket_types (name),
+        ticket_types (name, code),
         ticket_events (name)
       `)
       .order("created_at", { ascending: false });
@@ -102,6 +102,7 @@ serve(async (req) => {
       "Status",
       "Buyer Name",
       "Buyer Email",
+      "Type Code",
       "Ticket Type",
       "Event",
       "Created At",
@@ -113,6 +114,7 @@ serve(async (req) => {
       t.status,
       t.buyer_name,
       t.buyer_email,
+      t.ticket_types?.code || "",
       t.ticket_types?.name || "",
       t.ticket_events?.name || "",
       t.created_at,
