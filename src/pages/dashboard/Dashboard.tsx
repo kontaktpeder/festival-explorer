@@ -247,7 +247,11 @@ export default function Dashboard() {
             )}
           </section>
 
-          <LockedModules />
+          <LockedModules
+            projectEntities={projectEntities}
+            hostEntities={hostEntities}
+            selectedPersona={activePersona}
+          />
 
           {/* Admin/Crew */}
           {(isAdmin || isStaff) && (
