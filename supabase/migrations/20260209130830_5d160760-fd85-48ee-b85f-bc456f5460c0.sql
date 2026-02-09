@@ -1,0 +1,1 @@
+UPDATE public.ticket_types SET name = 'Boiler Room' WHERE id = 'e343400c-08a7-47c9-a479-c6c19c2c73a7';
