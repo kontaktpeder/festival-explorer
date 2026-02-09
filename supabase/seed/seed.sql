@@ -33,14 +33,14 @@ VALUES
   ('b2222222-2222-2222-2222-222222222201', '1b5ba549-a84f-4a4e-afbe-672fe3ac9ef9', 'admin', '{}', true),
   ('b2222222-2222-2222-2222-222222222202', '1b5ba549-a84f-4a4e-afbe-672fe3ac9ef9', 'admin', '{}', true),
   ('b2222222-2222-2222-2222-222222222203', '1b5ba549-a84f-4a4e-afbe-672fe3ac9ef9', 'admin', '{}', true)
-ON CONFLICT DO NOTHING;
+ON CONFLICT (entity_id, user_id) DO NOTHING;
 
 -- 5. entity_persona_bindings
 INSERT INTO public.entity_persona_bindings (entity_id, persona_id, is_public, role_label)
 VALUES
   ('b2222222-2222-2222-2222-222222222202', 'a1111111-1111-1111-1111-111111111101', true, 'Vokal'),
   ('b2222222-2222-2222-2222-222222222201', 'a1111111-1111-1111-1111-111111111102', true, 'Arrangør')
-ON CONFLICT DO NOTHING;
+ON CONFLICT (entity_id, persona_id) DO NOTHING;
 
 -- 6. Event with host_entity_id
 INSERT INTO public.events (id, title, slug, start_at, status, created_by, host_entity_id)
@@ -54,5 +54,4 @@ VALUES
   ('c3333333-3333-3333-3333-333333333301', 'on_stage', 'entity', 'b2222222-2222-2222-2222-222222222202', null, 1, true),
   ('c3333333-3333-3333-3333-333333333301', 'on_stage', 'entity', 'b2222222-2222-2222-2222-222222222203', null, 2, true),
   ('c3333333-3333-3333-3333-333333333301', 'backstage', 'persona', 'a1111111-1111-1111-1111-111111111103', 'Foto', 1, true),
-  ('c3333333-3333-3333-3333-333333333301', 'host', 'persona', 'a1111111-1111-1111-1111-111111111102', 'Arrangør', 1, true)
-ON CONFLICT DO NOTHING;
+  ('c3333333-3333-3333-3333-333333333301', 'host', 'persona', 'a1111111-1111-1111-1111-111111111102', 'Arrangør', 1, true);
