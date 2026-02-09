@@ -25,9 +25,9 @@ const WIZARD_ROLES = [
 function WizardWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-[100svh] bg-background flex flex-col">
-      <div className="max-w-lg mx-auto px-4 pt-4">
-        <Link to="/" className="text-sm font-bold text-foreground tracking-tight">
-          GIGGEN <span className="text-muted-foreground/70 font-normal text-[10px]">BACKSTAGE</span>
+      <div className="max-w-lg sm:max-w-xl mx-auto w-full px-4 sm:px-8 pt-4 sm:pt-6">
+        <Link to="/" className="text-sm sm:text-base font-bold text-foreground tracking-tight">
+          GIGGEN <span className="text-muted-foreground/70 font-normal text-[10px] sm:text-xs">BACKSTAGE</span>
         </Link>
       </div>
       {children}
@@ -106,19 +106,19 @@ export default function CreateProfileWizard() {
           primaryAction={{ label: "Neste", onClick: () => setStep(2), disabled: !type }}
           secondaryAction={{ label: "Tilbake", onClick: () => setStep(0) }}
         >
-          <div className="space-y-2.5">
+          <div className="space-y-2.5 sm:space-y-3">
             {WIZARD_ROLES.map(({ type: t, label, icon: Icon, desc }) => (
               <button
                 key={t}
                 onClick={() => setType(t)}
-                className={`w-full flex items-center gap-3 p-3.5 rounded-lg border text-left transition-all ${
+                className={`w-full flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-lg border text-left transition-all ${
                   type === t ? "border-accent bg-accent/10" : "border-border/30 hover:border-border/50"
                 }`}
               >
-                <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium text-foreground">{label}</span>
-                  <p className="text-[11px] text-muted-foreground/70">{desc}</p>
+                  <span className="text-sm sm:text-base font-medium text-foreground">{label}</span>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground/70">{desc}</p>
                 </div>
                 {type === t && <span className="ml-auto text-xs text-accent shrink-0">Valgt</span>}
               </button>
@@ -158,8 +158,8 @@ export default function CreateProfileWizard() {
             </div>
 
             {/* Compact avatar picker */}
-            <div className="flex items-center gap-3 sm:pt-5">
-              <Avatar className="h-14 w-14 ring-2 ring-border/50 shrink-0">
+            <div className="flex items-center gap-2.5 sm:pt-5">
+              <Avatar className="h-12 w-12 sm:h-14 sm:w-14 ring-2 ring-border/50 shrink-0">
                 {avatarUrl ? (
                   <AvatarImage src={avatarUrl} style={getCroppedImageStyles(avatarImageSettings)} className="object-cover" />
                 ) : null}
@@ -176,7 +176,7 @@ export default function CreateProfileWizard() {
                   cropMode="avatar"
                   placeholder="Bilde"
                 />
-                <p className="text-[10px] text-muted-foreground/50 mt-0.5">Valgfritt</p>
+                <p className="text-[9px] text-muted-foreground/40 mt-0.5">Valgfritt</p>
               </div>
             </div>
           </div>
