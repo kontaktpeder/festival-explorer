@@ -1,0 +1,1 @@
+UPDATE public.festivals SET start_at = '2026-03-14 00:00:00+00' WHERE slug = 'giggen-sessions';
