@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -16,6 +17,16 @@ export function EventParticipantItem({ item }: EventParticipantItemProps) {
   const name = item.persona?.name ?? item.entity?.name ?? "";
   const role = item.role_label;
 
+  const personaSlug = item.persona?.slug;
+
+  const nameElement = personaSlug ? (
+    <Link to={`/p/${personaSlug}`} className="text-sm font-medium text-foreground hover:underline">
+      {name}
+    </Link>
+  ) : (
+    <p className="text-sm font-medium text-foreground">{name}</p>
+  );
+
   return (
     <div className="flex items-center gap-4">
       <Avatar className="h-10 w-10 border border-border/30">
@@ -27,7 +38,7 @@ export function EventParticipantItem({ item }: EventParticipantItemProps) {
         </AvatarFallback>
       </Avatar>
       <div>
-        <p className="text-sm font-medium text-foreground">{name}</p>
+        {nameElement}
         {role && (
           <p className="text-xs text-muted-foreground">{role}</p>
         )}
