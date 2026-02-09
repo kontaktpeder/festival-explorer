@@ -36,7 +36,7 @@ export default function AcceptInvitation() {
   const { toast } = useToast();
   const acceptInvitation = useAcceptInvitation();
 
-  const tokenParam = searchParams.get("token") || "";
+  const tokenParam = searchParams.get("token") || searchParams.get("t") || "";
   const emailParam = searchParams.get("email") || "";
   const entityIdParam = searchParams.get("entity_id") || "";
 

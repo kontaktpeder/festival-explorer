@@ -2,6 +2,7 @@ import { useParams, Link, Navigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { getPublicUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -159,11 +160,11 @@ export default function EntityInvite() {
         invitedBy: currentUser.id,
       });
 
-      // Generate the invitation link using published URL
-      const publishedUrl = "https://giggn.lovable.app";
+      // Generate short invitation link using published URL
+      const publishedUrl = getPublicUrl();
       const token = (created as { token?: string | null })?.token;
       const link = token
-        ? `${publishedUrl}/accept-invitation?token=${encodeURIComponent(token)}`
+        ? `${publishedUrl}/i?t=${encodeURIComponent(token)}`
         : `${publishedUrl}/accept-invitation?email=${encodeURIComponent(emailToUse)}&entity_id=${id}`;
 
       setGeneratedLink(link);
