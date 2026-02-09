@@ -88,52 +88,55 @@ export default function TicketViewPage() {
   return (
     <div className="min-h-screen p-4 flex items-center justify-center bg-background">
       <div className="max-w-sm w-full space-y-4">
-        <Card
+        <div
           ref={ticketRef}
-          className="border-0 bg-cover bg-center"
+          className="rounded-2xl overflow-hidden bg-cover bg-center shadow-[0_0_40px_rgba(234,125,40,0.15)]"
           style={{ backgroundImage: `url(${ticketBgBlue})` }}
         >
-          <CardHeader className="text-center pb-2">
-            <CardTitle className="text-xl text-foreground">{festivalName}</CardTitle>
-            <p className="text-muted-foreground">{ticket.ticketType}</p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-white p-4 rounded-lg flex justify-center">
+          {/* Semi-transparent overlay for readability */}
+          <div className="backdrop-blur-[2px] bg-black/20 p-6 space-y-5">
+            <div className="text-center space-y-1">
+              <h2 className="text-xl font-bold text-accent tracking-wide">{festivalName}</h2>
+              <p className="text-sm text-accent/70 font-medium">{ticket.ticketType}</p>
+            </div>
+
+            <div className="bg-white p-4 rounded-xl flex justify-center mx-auto w-fit">
               <QRCodeSVG value={`${window.location.origin}/t/${ticket.ticketCode}`} size={200} />
             </div>
-            <p className="text-center font-mono text-lg text-foreground">{ticket.ticketCode}</p>
-            <div className="space-y-2 text-sm text-foreground">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
+
+            <p className="text-center font-mono text-lg font-bold text-white tracking-widest">
+              {ticket.ticketCode}
+            </p>
+
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2 text-white/90">
+                <Calendar className="w-4 h-4 text-accent" />
                 {eventDate}
               </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
+              <div className="flex items-center gap-2 text-white/90">
+                <MapPin className="w-4 h-4 text-accent" />
                 {venueName}
               </div>
             </div>
-            <p className="text-center text-muted-foreground">{ticket.buyerName}</p>
-          </CardContent>
-        </Card>
+
+            <p className="text-center text-white/60 text-sm">{ticket.buyerName}</p>
+          </div>
+        </div>
         
         <div className="flex gap-2">
-          <Button variant="outline" className="flex-1" onClick={handleCopyLink}>
+          <Button variant="outline" className="flex-1 border-accent/30 text-accent hover:bg-accent/10" onClick={handleCopyLink}>
             {linkCopied ? (
-              <>
-                <Check className="mr-2 w-4 h-4" />Lenke kopiert
-              </>
+              <><Check className="mr-2 w-4 h-4" />Lenke kopiert</>
             ) : (
-              <>
-                <Download className="mr-2 w-4 h-4" />Kopier lenke
-              </>
+              <><Download className="mr-2 w-4 h-4" />Kopier lenke</>
             )}
           </Button>
-          <Button variant="default" className="flex-1" onClick={handleSaveToGallery}>
+          <Button className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold" onClick={handleSaveToGallery}>
             <Save className="mr-2 w-4 h-4" />Last ned billett
           </Button>
         </div>
         
-        <Button variant="outline" className="w-full" asChild>
+        <Button variant="ghost" className="w-full text-muted-foreground hover:text-accent" asChild>
           <Link to="/">
             <ArrowLeft className="mr-2 w-4 h-4" />
             Tilbake til forsiden
