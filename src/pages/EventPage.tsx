@@ -11,7 +11,8 @@ import { LineupItem } from "@/components/ui/LineupItem";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
-
+import { EventZoneTabs } from "@/components/festival/EventZoneTabs";
+import { USE_ZONE_TABS_ON_EVENT } from "@/lib/ui-features";
 
 export default function EventPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -119,58 +120,66 @@ export default function EventPage() {
       )}
 
 
-      {/* 5. LINEUP – Plakat, ikke liste */}
-      {event.lineup && event.lineup.length > 0 && (
-        <section className="py-20 md:py-32 border-t border-border/20">
-          <div className="max-w-3xl mx-auto px-6">
-            <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-12 md:mb-16">
-              Lineup
-            </h2>
+      {/* 5. LINEUP / ZONE TABS */}
+      {USE_ZONE_TABS_ON_EVENT ? (
+        <EventZoneTabs
+          lineup={event.lineup || []}
+          backstage={(event as any).backstage || []}
+          hostRoles={(event as any).hostRoles || []}
+        />
+      ) : (
+        <>
+          {/* Legacy: separate sections */}
+          {event.lineup && event.lineup.length > 0 && (
+            <section className="py-20 md:py-32 border-t border-border/20">
+              <div className="max-w-3xl mx-auto px-6">
+                <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-12 md:mb-16">
+                  Lineup
+                </h2>
+                <div className="space-y-8 md:space-y-12">
+                  {event.lineup.map((item: any, index: number) => (
+                    <LineupItem
+                      key={item.entity_id || item.participant_id || index}
+                      item={item}
+                      showBilling
+                      isFirst={index === 0}
+                    />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
 
-            <div className="space-y-8 md:space-y-12">
-              {event.lineup.map((item: any, index: number) => (
-                <LineupItem 
-                  key={item.entity_id || item.participant_id || index} 
-                  item={item} 
-                  showBilling 
-                  isFirst={index === 0}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+          {(event as any).backstage && (event as any).backstage.length > 0 && (
+            <section className="py-16 md:py-24 border-t border-border/20">
+              <div className="max-w-2xl mx-auto px-6">
+                <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
+                  Bak scenen
+                </h2>
+                <div className="space-y-4">
+                  {((event as any).backstage as any[]).map((item: any, i: number) => (
+                    <EventParticipantItem key={item.participant_id || i} item={item} />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
 
-      {/* NEW ROLE MODEL STEP 1.2: Bak scenen */}
-      {(event as any).backstage && (event as any).backstage.length > 0 && (
-        <section className="py-16 md:py-24 border-t border-border/20">
-          <div className="max-w-2xl mx-auto px-6">
-            <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
-              Bak scenen
-            </h2>
-            <div className="space-y-4">
-              {((event as any).backstage as any[]).map((item: any, i: number) => (
-                <EventParticipantItem key={item.participant_id || i} item={item} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* NEW ROLE MODEL STEP 1.2: Arrangør */}
-      {(event as any).hostRoles && (event as any).hostRoles.length > 0 && (
-        <section className="py-16 md:py-24 border-t border-border/20">
-          <div className="max-w-2xl mx-auto px-6">
-            <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
-              Arrangør
-            </h2>
-            <div className="space-y-4">
-              {((event as any).hostRoles as any[]).map((item: any, i: number) => (
-                <EventParticipantItem key={item.participant_id || i} item={item} />
-              ))}
-            </div>
-          </div>
-        </section>
+          {(event as any).hostRoles && (event as any).hostRoles.length > 0 && (
+            <section className="py-16 md:py-24 border-t border-border/20">
+              <div className="max-w-2xl mx-auto px-6">
+                <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
+                  Arrangør
+                </h2>
+                <div className="space-y-4">
+                  {((event as any).hostRoles as any[]).map((item: any, i: number) => (
+                    <EventParticipantItem key={item.participant_id || i} item={item} />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+        </>
       )}
 
       {/* 6. PRAKTISK – Trygghet (optional section) */}

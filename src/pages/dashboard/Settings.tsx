@@ -10,6 +10,8 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { PersonaSelector } from "@/components/dashboard/PersonaSelector";
+import { PersonaModusBar } from "@/components/dashboard/PersonaModusBar";
+import { USE_PERSONA_MODUS_BAR } from "@/lib/ui-features";
 import { useToast } from "@/hooks/use-toast";
 import { useContactInfo, useUpsertContactInfo } from "@/hooks/useContactInfo";
 import { toast as sonnerToast } from "sonner";
@@ -165,9 +167,10 @@ export default function Settings() {
           <Link to="/dashboard" className="text-base sm:text-xl font-bold text-primary hover:opacity-80 transition-opacity">
             GIGGEN
           </Link>
-          <PersonaSelector />
+          {!USE_PERSONA_MODUS_BAR && <PersonaSelector />}
         </div>
       </header>
+      {USE_PERSONA_MODUS_BAR && <PersonaModusBar />}
 
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-2xl space-y-3 sm:space-y-6">
         <h1 className="text-lg sm:text-2xl font-bold text-foreground">Innstillinger</h1>

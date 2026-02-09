@@ -10,6 +10,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { PersonaSelector } from "@/components/dashboard/PersonaSelector";
+import { PersonaModusBar } from "@/components/dashboard/PersonaModusBar";
+import { USE_PERSONA_MODUS_BAR } from "@/lib/ui-features";
 import { toast } from "sonner";
 
 export default function ContactInfo() {
@@ -89,9 +91,10 @@ export default function ContactInfo() {
           <Link to="/dashboard" className="text-lg sm:text-xl font-bold text-primary hover:opacity-80 transition-opacity">
             GIGGEN
           </Link>
-          <PersonaSelector />
+          {!USE_PERSONA_MODUS_BAR && <PersonaSelector />}
         </div>
       </header>
+      {USE_PERSONA_MODUS_BAR && <PersonaModusBar />}
 
       <main className="container mx-auto px-4 py-6 sm:py-8 max-w-md space-y-6">
         <div className="flex items-center justify-between">

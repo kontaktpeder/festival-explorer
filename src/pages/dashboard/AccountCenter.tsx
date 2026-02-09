@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { PersonaSelector } from "@/components/dashboard/PersonaSelector";
+import { PersonaModusBar } from "@/components/dashboard/PersonaModusBar";
+import { USE_PERSONA_MODUS_BAR } from "@/lib/ui-features";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useNavigate } from "react-router-dom";
 import { 
@@ -173,9 +175,10 @@ export default function AccountCenter() {
           <Link to="/dashboard" className="text-lg sm:text-xl font-bold text-primary hover:opacity-80 transition-opacity">
             GIGGEN <span className="text-muted-foreground font-normal text-xs sm:text-base">BACKSTAGE</span>
           </Link>
-          <PersonaSelector />
+          {!USE_PERSONA_MODUS_BAR && <PersonaSelector />}
         </div>
       </header>
+      {USE_PERSONA_MODUS_BAR && <PersonaModusBar />}
 
       <main className="container mx-auto px-4 py-6 sm:py-8 max-w-md space-y-4 sm:space-y-6">
         <div className="flex items-center gap-2 sm:gap-3">
