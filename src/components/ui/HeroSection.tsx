@@ -162,7 +162,7 @@ export function HeroSection({
       
       {/* Content */}
       <div 
-        className="absolute bottom-0 left-0 right-0 z-10 px-5 pb-16 sm:pb-20 bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-32"
+        className="absolute bottom-0 left-0 right-0 z-10 px-5 pb-16 sm:pb-20 [text-shadow:0_2px_12px_rgba(0,0,0,0.8),0_0_4px_rgba(0,0,0,0.6)]"
         style={{ 
           opacity: Math.max(0, textOpacity),
           transition: overscrollProgress === 0 ? 'opacity 0.3s ease-out' : 'none'
