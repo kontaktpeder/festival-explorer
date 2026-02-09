@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Copy, Link2, UserPlus, Check, Globe } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
+import { getPublicUrl } from "@/lib/utils";
 import { useCreateInvitation } from "@/hooks/useInvitations";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -152,11 +153,11 @@ export default function AdminAccessGenerator() {
         invitedBy: user.id,
       });
 
-      // Generate the invitation link using published URL + token (works before login)
-      const publishedUrl = "https://giggn.lovable.app";
+      // Generate short invitation link using published URL + token
+      const publishedUrl = getPublicUrl();
       const token = (created as { token?: string | null })?.token;
       const link = token
-        ? `${publishedUrl}/accept-invitation?token=${encodeURIComponent(token)}`
+        ? `${publishedUrl}/i?t=${encodeURIComponent(token)}`
         : `${publishedUrl}/accept-invitation?email=${encodeURIComponent(email)}&entity_id=${entityIdToUse}`;
 
       setGeneratedLink(link);

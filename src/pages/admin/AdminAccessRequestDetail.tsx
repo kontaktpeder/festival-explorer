@@ -71,7 +71,7 @@ export default function AdminAccessRequestDetail() {
       const publishedUrl = getPublicUrl();
       const token = (created as { token?: string | null })?.token;
       const link = token
-        ? `${publishedUrl}/accept-invitation?token=${encodeURIComponent(token)}`
+        ? `${publishedUrl}/i?t=${encodeURIComponent(token)}`
         : `${publishedUrl}/accept-invitation?email=${encodeURIComponent(request.email)}&entity_id=${platformEntity.id}`;
 
       setGeneratedLink(link);

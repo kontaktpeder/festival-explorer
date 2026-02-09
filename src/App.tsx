@@ -97,6 +97,7 @@ const App = () => (
           <Route path="/request-access" element={<RequestAccess />} />
           <Route path="/verify-access-email" element={<VerifyAccessEmail />} />
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
+          <Route path="/i" element={<AcceptInvitation />} />
           <Route path="/onboarding/create-profile" element={<CreateProfileWizard />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/entities/:id/edit" element={<EntityEdit />} />
