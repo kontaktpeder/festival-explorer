@@ -236,6 +236,10 @@ export default function Dashboard() {
                   </a>
                 </div>
               )}
+
+              <p className="text-[11px] text-muted-foreground/50 pt-2">
+                Du kan redigere profilen din og be om tilgang, men det er festivalen og arrangørene som oppretter prosjekter og program.
+              </p>
             </section>
           )}
 
