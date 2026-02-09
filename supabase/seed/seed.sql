@@ -3,12 +3,13 @@
 --   test1:     1b5ba549-a84f-4a4e-afbe-672fe3ac9ef9 (host/admin)
 --   Livstreet: b95097b3-c425-43d5-a86e-2c241cd60644 (photographer/audience)
 
--- 1. Ensure profiles exist
+-- 1. Ensure profiles exist (WHERE NOT EXISTS to avoid constraint issues)
 INSERT INTO public.profiles (id, display_name)
-VALUES
-  ('1b5ba549-a84f-4a4e-afbe-672fe3ac9ef9', 'Test1'),
-  ('b95097b3-c425-43d5-a86e-2c241cd60644', 'Livstreet')
-ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name;
+SELECT v.id, v.display_name FROM (VALUES
+  ('1b5ba549-a84f-4a4e-afbe-672fe3ac9ef9'::uuid, 'Test1'),
+  ('b95097b3-c425-43d5-a86e-2c241cd60644'::uuid, 'Livstreet')
+) AS v(id, display_name)
+WHERE NOT EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = v.id);
 
 -- 2. Personas (4) with type
 INSERT INTO public.personas (id, user_id, name, slug, type, is_public, category_tags, show_email)
@@ -42,11 +43,13 @@ VALUES
   ('b2222222-2222-2222-2222-222222222201', 'a1111111-1111-1111-1111-111111111102', true, 'Arrangør')
 ON CONFLICT (entity_id, persona_id) DO NOTHING;
 
--- 6. Event with host_entity_id
+-- 6. Event with host_entity_id (WHERE NOT EXISTS to avoid missing UNIQUE on slug)
 INSERT INTO public.events (id, title, slug, start_at, status, created_by, host_entity_id)
-VALUES
-  ('c3333333-3333-3333-3333-333333333301', 'Test Event Main', 'test-event-main', (now() + interval '1 day'), 'published', '1b5ba549-a84f-4a4e-afbe-672fe3ac9ef9', 'b2222222-2222-2222-2222-222222222201')
-ON CONFLICT (slug) DO UPDATE SET host_entity_id = EXCLUDED.host_entity_id;
+SELECT 'c3333333-3333-3333-3333-333333333301'::uuid, 'Test Event Main', 'test-event-main',
+  (now() + interval '1 day'), 'published',
+  '1b5ba549-a84f-4a4e-afbe-672fe3ac9ef9'::uuid,
+  'b2222222-2222-2222-2222-222222222201'::uuid
+WHERE NOT EXISTS (SELECT 1 FROM public.events WHERE slug = 'test-event-main');
 
 -- 7. event_participants: on_stage, backstage, host
 INSERT INTO public.event_participants (event_id, zone, participant_kind, participant_id, role_label, sort_order, is_public)
