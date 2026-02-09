@@ -386,7 +386,7 @@ export default function AdminEventEdit() {
             <Button asChild variant="outline">
               <Link to={`/admin/events/${id}/lineup`}>
                 <Users className="h-4 w-4 mr-2" />
-                Lineup
+                På scenen
               </Link>
             </Button>
           )}

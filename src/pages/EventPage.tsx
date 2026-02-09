@@ -134,7 +134,7 @@ export default function EventPage() {
             <section className="py-20 md:py-32 border-t border-border/20">
               <div className="max-w-3xl mx-auto px-6">
                 <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-12 md:mb-16">
-                  Lineup
+                  På scenen
                 </h2>
                 <div className="space-y-8 md:space-y-12">
                   {event.lineup.map((item: any, index: number) => (
