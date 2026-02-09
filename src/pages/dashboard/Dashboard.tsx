@@ -229,7 +229,7 @@ export default function Dashboard() {
                     For å lage events må du ha en scene tilknyttet GIGGEN.
                   </p>
                   <a
-                    href="mailto:hei@giggen.no"
+                    href="mailto:giggen.main@gmail.com"
                     className="inline-flex items-center justify-center rounded-md border border-accent/30 bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/20 transition-colors"
                   >
                     Ta kontakt
@@ -287,7 +287,7 @@ export default function Dashboard() {
                   <Link to="/request-access">Be om tilgang</Link>
                 </Button>
                 <p className="text-xs text-muted-foreground">
-                  <a href="mailto:hei@giggen.no" className="text-foreground/70 hover:text-foreground underline underline-offset-2 transition-colors">
+                  <a href="mailto:giggen.main@gmail.com" className="text-foreground/70 hover:text-foreground underline underline-offset-2 transition-colors">
                     Ta kontakt
                   </a>
                 </p>
@@ -672,7 +672,7 @@ export default function Dashboard() {
                   <p className="text-sm text-muted-foreground">Du er ikke med i noen prosjekter ennå.</p>
                   <p className="text-xs sm:text-sm text-muted-foreground">
                     Vil du starte noe?{" "}
-                    <a href="mailto:hei@giggen.no" className="text-foreground/80 hover:text-foreground underline underline-offset-2 transition-colors">
+                    <a href="mailto:giggen.main@gmail.com" className="text-foreground/80 hover:text-foreground underline underline-offset-2 transition-colors">
                       Ta kontakt
                     </a>
                   </p>
