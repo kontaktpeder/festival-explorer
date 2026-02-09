@@ -251,7 +251,7 @@ export default function AdminEventLineup() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Lineup</h1>
+          <h1 className="text-3xl font-bold text-foreground">På scenen</h1>
           <p className="text-muted-foreground">{event?.title}</p>
         </div>
       </div>

@@ -27,17 +27,10 @@ function EmptyZoneState({
 }
 
 export function EventZoneTabs({ lineup, backstage, hostRoles }: EventZoneTabsProps) {
-  // Determine default tab: first non-empty zone
-  const defaultTab = lineup.length > 0
-    ? "on_stage"
-    : backstage.length > 0
-      ? "backstage"
-      : "host";
-
   return (
     <section className="py-20 md:py-32 border-t border-border/20">
       <div className="max-w-3xl mx-auto px-6">
-        <Tabs defaultValue={defaultTab}>
+        <Tabs defaultValue="on_stage">
           <TabsList className="w-full grid grid-cols-3 h-12 bg-transparent rounded-none border-b border-border/30 p-0">
             <TabsTrigger
               value="on_stage"
@@ -72,7 +65,7 @@ export function EventZoneTabs({ lineup, backstage, hostRoles }: EventZoneTabsPro
                 ))}
               </div>
             ) : (
-              <EmptyZoneState icon={Music} message="Ingen artister er lagt til ennå. Kom tilbake senere." />
+              <EmptyZoneState icon={Music} message="Ingen oppføringer enda." />
             )}
           </TabsContent>
 
@@ -84,7 +77,7 @@ export function EventZoneTabs({ lineup, backstage, hostRoles }: EventZoneTabsPro
                 ))}
               </div>
             ) : (
-              <EmptyZoneState icon={Camera} message="Ingen crew er kreditert ennå." />
+              <EmptyZoneState icon={Camera} message="Ingen oppføringer enda." />
             )}
           </TabsContent>
 
@@ -96,7 +89,7 @@ export function EventZoneTabs({ lineup, backstage, hostRoles }: EventZoneTabsPro
                 ))}
               </div>
             ) : (
-              <EmptyZoneState icon={Building2} message="Ingen arrangør er kreditert ennå." />
+              <EmptyZoneState icon={Building2} message="Ingen oppføringer enda." />
             )}
           </TabsContent>
         </Tabs>

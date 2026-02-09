@@ -141,7 +141,7 @@ export default function AdminEvents() {
                 <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
                   <Link to={`/admin/events/${event.id}/lineup`}>
                     <Users className="h-3.5 w-3.5 mr-1" />
-                    Lineup
+                    På scenen
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
