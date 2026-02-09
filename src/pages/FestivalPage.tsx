@@ -133,30 +133,18 @@ export default function FestivalPage() {
                   )}
 
                   {/* Dato + venue */}
-                  <div className="animate-slide-up delay-300 space-y-1.5">
+                  <div className="animate-slide-up delay-300 space-y-1">
                     {festival.start_at && (
-                      <p className="text-accent text-lg sm:text-xl md:text-2xl font-display font-semibold tracking-tight drop-shadow-[0_2px_6px_hsl(var(--accent)/0.3)]">
+                      <p className="text-accent text-2xl sm:text-3xl md:text-4xl font-display font-bold tracking-tight uppercase">
                         {format(new Date(festival.start_at), "d. MMMM", { locale: nb })}
                       </p>
                     )}
                     {venue && (
                       <Link
                         to={`/venue/${venue.slug}`}
-                        className="block text-2xl sm:text-3xl md:text-4xl font-bold font-display tracking-tight transition-colors drop-shadow-[0_2px_8px_hsl(var(--accent)/0.4)]"
-                        style={{
-                          color: 'transparent',
-                          WebkitTextStroke: '1.5px hsl(var(--accent))',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.color = 'hsl(var(--accent))';
-                          (e.currentTarget.style as any).webkitTextStroke = 'none';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.color = 'transparent';
-                          (e.currentTarget.style as any).webkitTextStroke = '1.5px hsl(var(--accent))';
-                        }}
+                        className="block text-accent/70 text-xl sm:text-2xl md:text-3xl font-display font-medium tracking-tight hover:text-accent transition-colors"
                       >
-                        {venue.name}
+                        {venue.name} →
                       </Link>
                     )}
                   </div>
@@ -263,30 +251,18 @@ export default function FestivalPage() {
           )}
 
           {/* Dato + venue */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             {festival.start_at && (
-              <p className="text-accent text-lg sm:text-xl md:text-2xl font-display font-semibold tracking-tight drop-shadow-[0_2px_6px_hsl(var(--accent)/0.3)]">
+              <p className="text-accent text-2xl sm:text-3xl md:text-4xl font-display font-bold tracking-tight uppercase">
                 {format(new Date(festival.start_at), "d. MMMM", { locale: nb })}
               </p>
             )}
             {venue && (
               <Link
                 to={`/venue/${venue.slug}`}
-                className="block text-2xl sm:text-3xl md:text-4xl font-bold font-display tracking-tight transition-colors drop-shadow-[0_2px_8px_hsl(var(--accent)/0.4)]"
-                style={{
-                  color: 'transparent',
-                  WebkitTextStroke: '1.5px hsl(var(--accent))',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = 'hsl(var(--accent))';
-                  (e.currentTarget.style as any).webkitTextStroke = 'none';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = 'transparent';
-                  (e.currentTarget.style as any).webkitTextStroke = '1.5px hsl(var(--accent))';
-                }}
+                className="block text-accent/70 text-xl sm:text-2xl md:text-3xl font-display font-medium tracking-tight hover:text-accent transition-colors"
               >
-                {venue.name}
+                {venue.name} →
               </Link>
             )}
           </div>
