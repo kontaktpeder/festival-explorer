@@ -458,7 +458,12 @@ export default function CrewCheckInPage() {
         {/* Mobile-optimized header */}
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3 safe-top">
           <div className="flex justify-between items-center">
-            <h1 className="text-xl font-bold">Check-in</h1>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")} className="shrink-0">
+                <X className="w-5 h-5" />
+              </Button>
+              <h1 className="text-xl font-bold">Check-in</h1>
+            </div>
             {isAdmin && (
               <Button variant="ghost" size="sm" onClick={handleExportCSV}>
                 <Download className="w-4 h-4" />
