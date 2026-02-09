@@ -73,8 +73,8 @@ export default function CreateProfileWizard() {
     return (
       <WizardWrapper>
         <CreateEditShell
-          title="Velkommen til GIGGEN"
-          subtitle="Din profesjonelle profil i musikkbransjen."
+          title="Velkommen til GIGGEN Backstage"
+          subtitle="Rommet bak scenen – her viser du hvem du er, ikke hva du eier."
           stepIndex={0}
           stepCount={stepCount}
           primaryAction={{ label: "Kom i gang", onClick: () => setStep(1) }}
@@ -99,8 +99,8 @@ export default function CreateProfileWizard() {
     return (
       <WizardWrapper>
         <CreateEditShell
-          title="Velg din rolle"
-          subtitle="Hva beskriver deg best?"
+          title="Hva gjør du?"
+          subtitle="Velg rollen som beskriver deg best. Du kan legge til flere senere."
           stepIndex={1}
           stepCount={stepCount}
           primaryAction={{ label: "Neste", onClick: () => setStep(2), disabled: !type }}
@@ -124,9 +124,6 @@ export default function CreateProfileWizard() {
               </button>
             ))}
           </div>
-          <p className="text-[10px] text-muted-foreground/50 text-center mt-3">
-            Du kan legge til flere roller senere.
-          </p>
         </CreateEditShell>
       </WizardWrapper>
     );
@@ -138,7 +135,7 @@ export default function CreateProfileWizard() {
       <WizardWrapper>
         <CreateEditShell
           title="Hva heter du?"
-          subtitle="Bruk navnet du presenterer deg med profesjonelt."
+          subtitle="Bruk navnet du ønsker å bli kreditert med profesjonelt. Dette er deg som person – ikke band- eller prosjektnavn."
           stepIndex={2}
           stepCount={stepCount}
           primaryAction={{ label: "Neste", onClick: () => setStep(3), disabled: !name.trim() }}
