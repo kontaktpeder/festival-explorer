@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { CreateEditShell } from "@/components/layout/CreateEditShell";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,18 +10,30 @@ import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import type { ImageSettings } from "@/types/database";
-import { Music, Camera, Building2, Users } from "lucide-react";
+import { Music, Camera, Building2, Wrench } from "lucide-react";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
 
 const PERSONA_CHANGE_EVENT = "personaChanged";
 
 const WIZARD_ROLES = [
-  { type: "musician", label: "Musiker / DJ", icon: Music },
-  { type: "photographer", label: "Foto / Video", icon: Camera },
-  { type: "organizer", label: "Arrangør", icon: Building2 },
-  { type: "audience", label: "Publikum", icon: Users },
+  { type: "musician", label: "Musiker / Artist", icon: Music, desc: "Musiker, band, soloartist eller DJ" },
+  { type: "photographer", label: "Fotograf / Video", icon: Camera, desc: "Foto, video eller innholdsproduksjon" },
+  { type: "technician", label: "Teknisk / Crew", icon: Wrench, desc: "Lyd, lys, scenearbeid eller crew" },
+  { type: "organizer", label: "Arrangør", icon: Building2, desc: "Festival, klubb eller arrangør" },
 ] as const;
+
+function WizardWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-[100svh] bg-background flex flex-col">
+      <div className="max-w-lg mx-auto px-4 pt-4">
+        <Link to="/" className="text-sm font-bold text-foreground tracking-tight">
+          GIGGEN <span className="text-muted-foreground/70 font-normal text-[10px]">BACKSTAGE</span>
+        </Link>
+      </div>
+      {children}
+    </div>
+  );
+}
 
 export default function CreateProfileWizard() {
   const navigate = useNavigate();
@@ -48,31 +60,54 @@ export default function CreateProfileWizard() {
       });
       localStorage.setItem("selectedPersonaId", persona.id);
       window.dispatchEvent(new Event(PERSONA_CHANGE_EVENT));
-      navigate("/dashboard");
+      navigate("/dashboard?from=onboarding");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Kunne ikke opprette profil");
     }
   };
 
-  // — Step 0: Rolle —
+  const stepCount = 4;
+
+  // — Step 0: Velkommen —
   if (step === 0) {
     return (
-      <div className="min-h-[100svh] bg-background flex flex-col">
-        <div className="max-w-lg mx-auto px-4 pt-4">
-          <Link to="/" className="text-sm font-bold text-foreground tracking-tight">
-            GIGGEN <span className="text-muted-foreground/70 font-normal text-[10px]">BACKSTAGE</span>
-          </Link>
-        </div>
+      <WizardWrapper>
+        <CreateEditShell
+          title="Velkommen til GIGGEN"
+          subtitle="Din profesjonelle profil i musikkbransjen."
+          stepIndex={0}
+          stepCount={stepCount}
+          primaryAction={{ label: "Kom i gang", onClick: () => setStep(1) }}
+          secondaryAction={{ label: "Avbryt", onClick: () => navigate("/dashboard") }}
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Festivaler og arrangører setter sammen programmet.
+              Du fyller inn profilen din, så kan de finne deg.
+            </p>
+            <p className="text-xs text-muted-foreground/70">
+              Dette tar ca. 1 minutt. Du kan endre alt senere.
+            </p>
+          </div>
+        </CreateEditShell>
+      </WizardWrapper>
+    );
+  }
+
+  // — Step 1: Rolle —
+  if (step === 1) {
+    return (
+      <WizardWrapper>
         <CreateEditShell
           title="Velg din rolle"
           subtitle="Hva beskriver deg best?"
-          stepIndex={0}
-          stepCount={3}
-          primaryAction={{ label: "Neste", onClick: () => setStep(1), disabled: !type }}
-          secondaryAction={{ label: "Avbryt", onClick: () => navigate("/dashboard") }}
+          stepIndex={1}
+          stepCount={stepCount}
+          primaryAction={{ label: "Neste", onClick: () => setStep(2), disabled: !type }}
+          secondaryAction={{ label: "Tilbake", onClick: () => setStep(0) }}
         >
           <div className="space-y-2.5">
-            {WIZARD_ROLES.map(({ type: t, label, icon: Icon }) => (
+            {WIZARD_ROLES.map(({ type: t, label, icon: Icon, desc }) => (
               <button
                 key={t}
                 onClick={() => setType(t)}
@@ -81,34 +116,34 @@ export default function CreateProfileWizard() {
                 }`}
               >
                 <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="text-sm font-medium text-foreground">{label}</span>
-                {type === t && <span className="ml-auto text-xs text-accent">Valgt</span>}
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-medium text-foreground">{label}</span>
+                  <p className="text-[11px] text-muted-foreground/70">{desc}</p>
+                </div>
+                {type === t && <span className="ml-auto text-xs text-accent shrink-0">Valgt</span>}
               </button>
             ))}
           </div>
+          <p className="text-[10px] text-muted-foreground/50 text-center mt-3">
+            Du kan legge til flere roller senere.
+          </p>
         </CreateEditShell>
-      </div>
+      </WizardWrapper>
     );
   }
 
-  // — Step 1: Navn + bilde —
-  if (step === 1) {
+  // — Step 2: Navn + bilde —
+  if (step === 2) {
     return (
-      <div className="min-h-[100svh] bg-background flex flex-col">
-        <div className="max-w-lg mx-auto px-4 pt-4">
-          <Link to="/" className="text-sm font-bold text-foreground tracking-tight">
-            GIGGEN <span className="text-muted-foreground/70 font-normal text-[10px]">BACKSTAGE</span>
-          </Link>
-        </div>
+      <WizardWrapper>
         <CreateEditShell
           title="Hva heter du?"
           subtitle="Bruk navnet du presenterer deg med profesjonelt."
-          stepIndex={1}
-          stepCount={3}
-          primaryAction={{ label: "Neste", onClick: () => setStep(2), disabled: !name.trim() }}
-          secondaryAction={{ label: "Tilbake", onClick: () => setStep(0) }}
+          stepIndex={2}
+          stepCount={stepCount}
+          primaryAction={{ label: "Neste", onClick: () => setStep(3), disabled: !name.trim() }}
+          secondaryAction={{ label: "Tilbake", onClick: () => setStep(1) }}
         >
-          {/* Two-column on desktop, stacked on mobile */}
           <div className="flex flex-col sm:flex-row sm:items-start gap-5">
             {/* Name input */}
             <div className="flex-1">
@@ -120,6 +155,9 @@ export default function CreateProfileWizard() {
                 placeholder="Fullt navn"
                 className="mt-1 text-base"
               />
+              <p className="text-[10px] text-muted-foreground/50 mt-1">
+                Eksempel: Peder August Halvorsen – band og prosjekter legger du til separat.
+              </p>
             </div>
 
             {/* Compact avatar picker */}
@@ -146,25 +184,20 @@ export default function CreateProfileWizard() {
             </div>
           </div>
         </CreateEditShell>
-      </div>
+      </WizardWrapper>
     );
   }
 
-  // — Step 2: Synlighet —
+  // — Step 3: Synlighet + bekreftelse —
   return (
-    <div className="min-h-[100svh] bg-background flex flex-col">
-      <div className="max-w-lg mx-auto px-4 pt-4">
-        <Link to="/" className="text-sm font-bold text-foreground tracking-tight">
-          GIGGEN <span className="text-muted-foreground/70 font-normal text-[10px]">BACKSTAGE</span>
-        </Link>
-      </div>
+    <WizardWrapper>
       <CreateEditShell
         title="Synlighet"
         subtitle="Bestem hvem som kan se profilen din."
-        stepIndex={2}
-        stepCount={3}
+        stepIndex={3}
+        stepCount={stepCount}
         primaryAction={{ label: "Opprett profil", onClick: handleCreate, disabled: createPersona.isPending }}
-        secondaryAction={{ label: "Tilbake", onClick: () => setStep(1) }}
+        secondaryAction={{ label: "Tilbake", onClick: () => setStep(2) }}
         showLegal
       >
         <div className="space-y-4">
@@ -184,7 +217,14 @@ export default function CreateProfileWizard() {
 
           {/* Toggle */}
           <div className="flex items-center justify-between p-3 rounded-lg bg-card/60 border border-border/30">
-            <Label htmlFor="public-switch" className="text-sm font-medium">Offentlig profil</Label>
+            <div className="flex-1 min-w-0 mr-3">
+              <Label htmlFor="public-switch" className="text-sm font-medium cursor-pointer">
+                Offentlig profil (anbefalt)
+              </Label>
+              <p className="text-[11px] text-muted-foreground/70 mt-0.5">
+                Offentlige profiler kan vises i lineup, credits og søk.
+              </p>
+            </div>
             <Switch
               id="public-switch"
               checked={isPublic}
@@ -192,11 +232,13 @@ export default function CreateProfileWizard() {
             />
           </div>
 
-          <p className="text-xs text-muted-foreground text-center">
-            {isPublic ? "Profilen vises på GIGGEN." : "Kun du ser profilen."}
-          </p>
+          {!isPublic && (
+            <p className="text-[10px] text-muted-foreground/50 text-center">
+              Privat profil er kun synlig for arrangører du jobber med.
+            </p>
+          )}
         </div>
       </CreateEditShell>
-    </div>
+    </WizardWrapper>
   );
 }

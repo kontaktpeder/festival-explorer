@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate, Navigate } from "react-router-dom";
+import { Link, useNavigate, Navigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useMyEntities, useMyEntitiesFilteredByPersona } from "@/hooks/useEntity";
 import { Button } from "@/components/ui/button";
@@ -56,6 +56,8 @@ const ACCESS_DESCRIPTIONS: Record<AccessLevel, string> = {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromOnboarding = searchParams.get("from") === "onboarding";
   const selectedPersonaId = useSelectedPersonaId();
   const [currentUser, setCurrentUser] = useState<{
     id: string;
@@ -190,7 +192,53 @@ export default function Dashboard() {
         <main className="max-w-3xl mx-auto px-3 sm:px-6 py-4 sm:py-10 space-y-5 sm:space-y-8">
           <ActivePersonaCard persona={activePersona} />
 
-          {/* Dine tilganger */}
+          {/* Onboarding confirmation */}
+          {fromOnboarding && (
+            <section className="p-4 rounded-lg bg-accent/5 border border-accent/20 space-y-3">
+              <h3 className="text-sm font-semibold text-accent">✓ Profil opprettet</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Dette er din profesjonelle profil på GIGGEN. Du kan når som helst endre den fra dashbordet.
+              </p>
+
+              {activePersona.type === "musician" && (
+                <div className="space-y-2 pt-1">
+                  <p className="text-xs text-muted-foreground">
+                    <strong className="text-foreground">Neste steg:</strong> Vent på invitasjon fra festival eller arrangør – eller be om tilgang til et prosjekt.
+                  </p>
+                  <Button asChild variant="outline" size="sm" className="border-accent/30 text-accent hover:bg-accent/10">
+                    <Link to="/request-access">Be om tilgang</Link>
+                  </Button>
+                </div>
+              )}
+
+              {activePersona.type === "photographer" && (
+                <p className="text-xs text-muted-foreground">
+                  Arrangører bruker profiler som din når de setter sammen team for foto og video.
+                </p>
+              )}
+
+              {activePersona.type === "technician" && (
+                <p className="text-xs text-muted-foreground">
+                  Arrangører ser på tekniske profiler når de bygger crew til festivaler og events.
+                </p>
+              )}
+
+              {activePersona.type === "organizer" && (
+                <div className="space-y-2 pt-1">
+                  <p className="text-xs text-muted-foreground">
+                    For å lage events må du ha en scene tilknyttet GIGGEN.
+                  </p>
+                  <a
+                    href="mailto:hei@giggen.no"
+                    className="inline-flex items-center justify-center rounded-md border border-accent/30 bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/20 transition-colors"
+                  >
+                    Ta kontakt
+                  </a>
+                </div>
+              )}
+            </section>
+          )}
+
           <section className="space-y-3 sm:space-y-4">
             <h2 className="text-base sm:text-xl font-semibold text-foreground">Dine tilganger</h2>
             {hasAccess ? (
