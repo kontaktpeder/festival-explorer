@@ -284,6 +284,14 @@ export default function ValidatorPage() {
               {ticket.status === "USED" ? "Denne billetten er allerede brukt" : "Denne billetten er kansellert"}
             </p>
           )}
+
+          <Button
+            variant="ghost"
+            className="w-full text-muted-foreground"
+            onClick={() => navigate("/crew/checkin")}
+          >
+            ← Tilbake til innsjekk
+          </Button>
         </CardContent>
       </Card>
     </div>
