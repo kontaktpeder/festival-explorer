@@ -115,9 +115,9 @@ export default function FestivalPage() {
                 imageFitMode={heroFitMode}
                 useNaturalAspect
               >
-                <div>
+                <div className="space-y-5 md:space-y-6">
                   {showDateRange && (
-                    <div className="animate-slide-up text-mono text-[10px] md:text-xs uppercase tracking-[0.2em] text-accent/70 mb-4">
+                    <div className="animate-slide-up text-mono text-[10px] md:text-xs uppercase tracking-[0.2em] text-accent/70">
                       {showDateRange}
                     </div>
                   )}
@@ -127,13 +127,18 @@ export default function FestivalPage() {
                     </h1>
                   )}
                   {showDescription && (
-                    <p className="animate-slide-up delay-200 text-foreground/50 text-base md:text-lg max-w-sm leading-relaxed mt-4">
+                    <p className="animate-slide-up delay-200 text-foreground/50 text-base md:text-lg max-w-sm leading-relaxed">
                       {showDescription}
                     </p>
                   )}
 
-                  {/* Venue + dato */}
-                  <div className="animate-slide-up delay-300 mt-6 md:mt-8 space-y-0.5">
+                  {/* Dato + venue */}
+                  <div className="animate-slide-up delay-300 space-y-1.5">
+                    {festival.start_at && (
+                      <p className="text-accent text-lg sm:text-xl md:text-2xl font-display font-semibold tracking-tight drop-shadow-[0_2px_6px_hsl(var(--accent)/0.3)]">
+                        {format(new Date(festival.start_at), "d. MMMM", { locale: nb })}
+                      </p>
+                    )}
                     {venue && (
                       <Link
                         to={`/venue/${venue.slug}`}
@@ -153,17 +158,6 @@ export default function FestivalPage() {
                       >
                         {venue.name}
                       </Link>
-                    )}
-                    {festival.start_at && (
-                      <p
-                        className="text-xl sm:text-2xl md:text-3xl font-display font-medium tracking-tight drop-shadow-[0_2px_6px_hsl(var(--accent)/0.3)]"
-                        style={{
-                          color: 'transparent',
-                          WebkitTextStroke: '1px hsl(var(--accent) / 0.7)',
-                        }}
-                      >
-                        {format(new Date(festival.start_at), "d. MMMM", { locale: nb })}
-                      </p>
                     )}
                   </div>
                 </div>
@@ -255,11 +249,11 @@ export default function FestivalPage() {
         fullScreen 
         backgroundFixed
       >
-        <div className="animate-slide-up pb-8">
+        <div className="animate-slide-up pb-8 space-y-5 md:space-y-6">
           {dateRange && (
-            <div className="text-mono text-accent mb-3">{dateRange}</div>
+            <div className="text-mono text-accent">{dateRange}</div>
           )}
-          <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">
+          <h1 className="text-display text-5xl md:text-7xl leading-none">
             {festival.name}
           </h1>
           {shortDescription && (
@@ -268,8 +262,13 @@ export default function FestivalPage() {
             </p>
           )}
 
-          {/* Venue + dato */}
-          <div className="mt-6 md:mt-8 space-y-0.5">
+          {/* Dato + venue */}
+          <div className="space-y-1.5">
+            {festival.start_at && (
+              <p className="text-accent text-lg sm:text-xl md:text-2xl font-display font-semibold tracking-tight drop-shadow-[0_2px_6px_hsl(var(--accent)/0.3)]">
+                {format(new Date(festival.start_at), "d. MMMM", { locale: nb })}
+              </p>
+            )}
             {venue && (
               <Link
                 to={`/venue/${venue.slug}`}
@@ -289,17 +288,6 @@ export default function FestivalPage() {
               >
                 {venue.name}
               </Link>
-            )}
-            {festival.start_at && (
-              <p
-                className="text-xl sm:text-2xl md:text-3xl font-display font-medium tracking-tight drop-shadow-[0_2px_6px_hsl(var(--accent)/0.3)]"
-                style={{
-                  color: 'transparent',
-                  WebkitTextStroke: '1px hsl(var(--accent) / 0.7)',
-                }}
-              >
-                {format(new Date(festival.start_at), "d. MMMM", { locale: nb })}
-              </p>
             )}
           </div>
         </div>
