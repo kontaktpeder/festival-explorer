@@ -51,7 +51,7 @@ export function LineupItem({ item, showBilling, isFirst }: LineupItemProps) {
       displayName = item.persona.name;
       displayImageUrl = item.persona.avatar_url || null;
       displayImageSettings = item.persona.avatar_image_settings || null;
-      route = `/persona/${item.persona.slug}`;
+      route = `/p/${item.persona.slug}`;
     } else if (item.entity) {
       displayName = item.entity.name;
       displayTagline = item.entity.tagline || null;
