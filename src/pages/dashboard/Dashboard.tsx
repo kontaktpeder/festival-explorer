@@ -194,8 +194,8 @@ export default function Dashboard() {
 
           {/* Onboarding confirmation */}
           {fromOnboarding && (
-            <section className="p-4 rounded-lg bg-accent/5 border border-accent/20 space-y-3">
-              <h3 className="text-sm font-semibold text-accent">✓ Profil opprettet</h3>
+            <section className="p-4 sm:p-6 rounded-lg bg-accent/5 border border-accent/20 space-y-3 sm:space-y-4">
+              <h3 className="text-sm sm:text-base font-semibold text-accent">✓ Profil opprettet</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Dette er din profesjonelle profil på GIGGEN. Du kan når som helst endre den fra dashbordet.
               </p>
@@ -205,7 +205,7 @@ export default function Dashboard() {
                   <p className="text-xs text-muted-foreground">
                     <strong className="text-foreground">Neste steg:</strong> Vent på invitasjon fra festival eller arrangør – eller be om tilgang til et prosjekt.
                   </p>
-                  <Button asChild variant="outline" size="sm" className="border-accent/30 text-accent hover:bg-accent/10">
+                  <Button asChild size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90 sm:h-10 sm:px-5 sm:text-sm font-semibold">
                     <Link to="/request-access">Be om tilgang</Link>
                   </Button>
                 </div>
