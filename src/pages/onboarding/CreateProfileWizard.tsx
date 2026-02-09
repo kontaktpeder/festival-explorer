@@ -101,7 +101,7 @@ export default function CreateProfileWizard() {
         </div>
         <CreateEditShell
           title="Hva heter du?"
-          subtitle="Bruk artistnavn, bandnavn eller ditt eget navn."
+          subtitle="Bruk navnet du presenterer deg med profesjonelt."
           stepTitle="Navn"
           stepIndex={1}
           stepCount={3}
