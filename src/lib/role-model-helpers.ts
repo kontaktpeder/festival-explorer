@@ -77,3 +77,49 @@ export function isHostType(type?: string | null): boolean {
 export function isAudienceType(type?: string | null): boolean {
   return !type || type === 'audience';
 }
+
+// ============================================
+// Persona Type Labels
+// ============================================
+
+const PERSONA_TYPE_LABELS: Record<string, string> = {
+  musician: "Musiker",
+  dj: "DJ",
+  photographer: "Foto",
+  video: "Videograf",
+  technician: "Tekniker",
+  organizer: "Arrangør",
+  manager: "Manager",
+  audience: "Publikum",
+  volunteer: "Frivillig",
+};
+
+/** Get a human-readable Norwegian label for a persona type */
+export function getPersonaTypeLabel(type?: string | null): string | null {
+  if (!type) return null;
+  return PERSONA_TYPE_LABELS[type] ?? type;
+}
+
+/** Get a short description of what the persona can do, by type */
+export function getPersonaTypeDescription(type?: string | null): string {
+  switch (type) {
+    case 'musician':
+      return 'Du kan bli lagt til i lineup, kobles til prosjekter, og vise profilen din offentlig.';
+    case 'dj':
+      return 'Du kan bli lagt til i lineup, kobles til prosjekter, og vise profilen din offentlig.';
+    case 'photographer':
+      return 'Du kan bli kreditert bak scenen og kobles til arrangementer du jobber på.';
+    case 'video':
+      return 'Du kan bli kreditert bak scenen og kobles til arrangementer du jobber på.';
+    case 'technician':
+      return 'Du kan bli kreditert som crew og kobles til scener og arrangementer.';
+    case 'organizer':
+      return 'Du kan bli vist som arrangør og kobles til scener og festivaler.';
+    case 'manager':
+      return 'Du kan representere prosjekter og håndtere booking og kommunikasjon.';
+    case 'volunteer':
+      return 'Du kan bli kreditert som frivillig på arrangementer.';
+    default:
+      return 'Du kan kobles til prosjekter og arrangementer med denne profilen.';
+  }
+}

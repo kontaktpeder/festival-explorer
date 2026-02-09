@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { PersonaSelector } from "@/components/dashboard/PersonaSelector";
+import { PersonaModusBar } from "@/components/dashboard/PersonaModusBar";
+import { USE_PERSONA_MODUS_BAR } from "@/lib/ui-features";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import { Lock, ArrowLeft, Eye, EyeOff } from "lucide-react";
@@ -97,9 +99,10 @@ export default function ChangePassword() {
           <Link to="/dashboard" className="text-xl font-bold text-primary hover:opacity-80 transition-opacity">
             GIGGEN
           </Link>
-          <PersonaSelector />
+          {!USE_PERSONA_MODUS_BAR && <PersonaSelector />}
         </div>
       </header>
+      {USE_PERSONA_MODUS_BAR && <PersonaModusBar />}
 
       <main className="container mx-auto px-4 py-8 max-w-2xl space-y-6">
         <div className="flex items-center gap-4">

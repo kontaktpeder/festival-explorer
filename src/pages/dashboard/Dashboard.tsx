@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { PersonaSelector, useSelectedPersonaId } from "@/components/dashboard/PersonaSelector";
+import { PersonaModusBar } from "@/components/dashboard/PersonaModusBar";
+import { USE_PERSONA_MODUS_BAR } from "@/lib/ui-features";
 import { useMyPersonas } from "@/hooks/usePersona";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
@@ -167,9 +169,12 @@ export default function Dashboard() {
           <Link to="/" className="text-sm sm:text-lg font-bold text-foreground tracking-tight">
             GIGGEN <span className="text-muted-foreground/70 font-normal text-[10px] sm:text-base">BACKSTAGE</span>
           </Link>
-          <PersonaSelector />
+          {!USE_PERSONA_MODUS_BAR && <PersonaSelector />}
         </div>
       </header>
+
+      {/* Persona modus bar (below header) */}
+      {USE_PERSONA_MODUS_BAR && <PersonaModusBar />}
 
       <main className="max-w-3xl mx-auto px-3 sm:px-6 py-4 sm:py-10 space-y-5 sm:space-y-12">
         {/* Welcome */}
