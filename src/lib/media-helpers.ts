@@ -28,6 +28,12 @@ export async function getMediaUrl(
     return mediaItem.public_url;
   }
 
+  // If public_url is already a public bucket URL, return it directly —
+  // no signing needed since the media bucket is public.
+  if (mediaItem.public_url && isPublicBucketUrl(mediaItem.public_url)) {
+    return mediaItem.public_url;
+  }
+
   // For offentlig visning, sjekk om vi har storage_path
   if (context === 'public' && mediaItem.storage_path) {
     // Sjekk cache først
@@ -92,6 +98,13 @@ export async function getMediaUrl(
   }
 
   return mediaItem.public_url || "";
+}
+
+/**
+ * Check if URL is already a public bucket URL (no signing needed)
+ */
+function isPublicBucketUrl(url: string): boolean {
+  return url.includes('/storage/v1/object/public/');
 }
 
 /**
