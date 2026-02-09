@@ -1,0 +1,1 @@
+UPDATE public.ticket_events SET name = 'GIGGEN – festival for en kveld 2026' WHERE id = '619cb631-d0c5-4083-829d-141da8c51934';
