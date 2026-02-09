@@ -7,7 +7,7 @@ import { Loader2, Calendar, MapPin, Download, Save, Check, ArrowLeft } from "luc
 import { useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import { useToast } from "@/hooks/use-toast";
-import ticketBg from "@/assets/ticket-bg.jpeg";
+import ticketBgBlue from "@/assets/ticket-bg-blue.jpeg";
 
 export default function TicketViewPage() {
   const { ticketCode } = useParams<{ ticketCode: string }>();
@@ -30,7 +30,7 @@ export default function TicketViewPage() {
     
     try {
       const canvas = await html2canvas(ticketRef.current, {
-        backgroundColor: 'hsl(258, 35%, 22%)',
+        backgroundColor: null,
         scale: 2,
         useCORS: true,
       });
@@ -86,12 +86,13 @@ export default function TicketViewPage() {
   const venueName = "Josefines Vertshus";
 
   return (
-    <div 
-      className="min-h-screen p-4 flex items-center justify-center bg-cover bg-center"
-      style={{ backgroundImage: `url(${ticketBg})` }}
-    >
+    <div className="min-h-screen p-4 flex items-center justify-center bg-background">
       <div className="max-w-sm w-full space-y-4">
-        <Card ref={ticketRef} className="border-0" style={{ backgroundColor: 'hsl(258, 35%, 22%)' }}>
+        <Card
+          ref={ticketRef}
+          className="border-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${ticketBgBlue})` }}
+        >
           <CardHeader className="text-center pb-2">
             <CardTitle className="text-xl text-foreground">{festivalName}</CardTitle>
             <p className="text-muted-foreground">{ticket.ticketType}</p>
