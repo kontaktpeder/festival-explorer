@@ -16,7 +16,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ChevronDown, User, Plus, HelpCircle, Sparkles } from "lucide-react";
+import { ChevronDown, User, Plus, HelpCircle, Sparkles, Settings, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { useMyPersonas } from "@/hooks/usePersona";
 import { useSelectedPersonaId } from "@/components/dashboard/PersonaSelector";
 import { getPersonaTypeLabel, getPersonaTypeDescription } from "@/lib/role-model-helpers";
@@ -58,6 +59,11 @@ export function PersonaModusBar() {
     }
     window.dispatchEvent(new Event(PERSONA_CHANGE_EVENT));
   }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  };
 
   const selectedPersona = personas?.find((p) => p.id === localSelectedId);
   const hasPersonas = personas && personas.length > 0;
@@ -171,6 +177,20 @@ export function PersonaModusBar() {
                   </DropdownMenuItem>
                 </>
               )}
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem asChild>
+                <Link to="/dashboard/settings">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Innstillinger
+                </Link>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                <LogOut className="h-4 w-4 mr-2" />
+                Logg ut
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
