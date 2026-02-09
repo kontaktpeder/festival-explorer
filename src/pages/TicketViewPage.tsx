@@ -31,7 +31,7 @@ export default function TicketViewPage() {
     try {
       const canvas = await html2canvas(ticketRef.current, {
         backgroundColor: null,
-        scale: 3,
+        scale: 4,
         useCORS: true,
       });
       canvas.toBlob(async (blob) => {
