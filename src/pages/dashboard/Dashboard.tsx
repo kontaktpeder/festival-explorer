@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useMyEntities, useMyEntitiesFilteredByPersona } from "@/hooks/useEntity";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { PersonaSelector, useSelectedPersonaId } from "@/components/dashboard/PersonaSelector";
 import { PersonaModusBar } from "@/components/dashboard/PersonaModusBar";
-import { USE_PERSONA_MODUS_BAR } from "@/lib/ui-features";
+import { USE_PERSONA_MODUS_BAR, USE_SIMPLE_ONBOARDING } from "@/lib/ui-features";
 import { useMyPersonas } from "@/hooks/usePersona";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
@@ -18,8 +18,10 @@ import { Users, Building2, Pencil, ExternalLink, User, ArrowRight, Eye, Sparkles
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CroppedImage } from "@/components/ui/CroppedImage";
 import type { EntityType, AccessLevel } from "@/types/database";
-import { inferEntityKind } from "@/lib/role-model-helpers"; // NEW ROLE MODEL STEP 1.1
+import { inferEntityKind } from "@/lib/role-model-helpers";
 import type { Json } from "@/integrations/supabase/types";
+import { ActivePersonaCard } from "@/components/dashboard/ActivePersonaCard";
+import { LockedModules } from "@/components/dashboard/LockedModules";
 // Helper component for entity hero image with signed URL
 function EntityHeroImage({
   imageUrl,
@@ -155,6 +157,133 @@ export default function Dashboard() {
     return (
       <div className="min-h-[100svh] bg-background flex items-center justify-center">
         <LoadingState message="Laster..." />
+      </div>
+    );
+  }
+
+  // Simple onboarding: redirect new users (0 personas) to wizard
+  if (USE_SIMPLE_ONBOARDING && !isLoadingPersonas && personas && personas.length === 0) {
+    return <Navigate to="/onboarding/create-profile" replace />;
+  }
+
+  // Simple onboarding layout for users with personas
+  if (USE_SIMPLE_ONBOARDING && personas && personas.length > 0) {
+    const activePersona = personas.find((p) => p.id === selectedPersonaId) || personas[0];
+    const hostEntities = entities?.filter((e) => inferEntityKind(e) === "host") || [];
+    const projectEntities = entities?.filter((e) => inferEntityKind(e) === "project") || [];
+    const hasAccess = hostEntities.length > 0 || projectEntities.length > 0;
+
+    return (
+      <div className="min-h-[100svh] pb-[env(safe-area-inset-bottom)]">
+        {/* Header */}
+        <header className="border-b border-border/30 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+          <div className="max-w-3xl mx-auto px-3 sm:px-6 py-2.5 sm:py-4 flex items-center justify-between">
+            <Link to="/" className="text-sm sm:text-lg font-bold text-foreground tracking-tight">
+              GIGGEN <span className="text-muted-foreground/70 font-normal text-[10px] sm:text-base">BACKSTAGE</span>
+            </Link>
+            {!USE_PERSONA_MODUS_BAR && <PersonaSelector />}
+          </div>
+        </header>
+
+        {USE_PERSONA_MODUS_BAR && <PersonaModusBar />}
+
+        <main className="max-w-3xl mx-auto px-3 sm:px-6 py-4 sm:py-10 space-y-5 sm:space-y-8">
+          <ActivePersonaCard persona={activePersona} />
+
+          {/* Dine tilganger */}
+          <section className="space-y-3 sm:space-y-4">
+            <h2 className="text-base sm:text-xl font-semibold text-foreground">Dine tilganger</h2>
+            {hasAccess ? (
+              <div className="space-y-4">
+                {hostEntities.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-[11px] sm:text-sm text-muted-foreground font-medium">Dine scener</p>
+                    {hostEntities.map((entity) => (
+                      <Link
+                        key={entity.id}
+                        to={`/dashboard/entities/${entity.id}/edit`}
+                        className="group flex items-center justify-between p-3 sm:p-4 rounded-lg bg-card/60 hover:bg-card/80 border border-border/30 hover:border-border/50 transition-all"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors truncate">{entity.name}</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground/70">{ACCESS_DESCRIPTIONS[entity.access]}</p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors shrink-0" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
+                {projectEntities.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-[11px] sm:text-sm text-muted-foreground font-medium">Dine prosjekter</p>
+                    {projectEntities.map((entity) => (
+                      <Link
+                        key={entity.id}
+                        to={`/dashboard/entities/${entity.id}/edit`}
+                        className="group flex items-center justify-between p-3 sm:p-4 rounded-lg bg-card/60 hover:bg-card/80 border border-border/30 hover:border-border/50 transition-all"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors truncate">{entity.name}</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground/70">{ACCESS_DESCRIPTIONS[entity.access]}</p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors shrink-0" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="p-4 sm:p-6 rounded-lg bg-card/60 border border-border/30 text-center space-y-3">
+                <p className="text-sm text-muted-foreground">Du har ingen tilgang ennå.</p>
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/request-access">Be om tilgang</Link>
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  <a href="mailto:hei@giggen.no" className="text-foreground/70 hover:text-foreground underline underline-offset-2 transition-colors">
+                    Ta kontakt
+                  </a>
+                </p>
+              </div>
+            )}
+          </section>
+
+          <LockedModules />
+
+          {/* Admin/Crew */}
+          {(isAdmin || isStaff) && (
+            <Collapsible open={adminSectionOpen} onOpenChange={setAdminSectionOpen}>
+              <CollapsibleTrigger className="w-full">
+                <div className="flex items-center justify-between p-3 sm:p-4 rounded-lg bg-card/40 hover:bg-card/60 border border-border/20 transition-all">
+                  <div className="flex items-center gap-2.5">
+                    <Shield className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-xs sm:text-sm font-medium text-foreground">
+                      {isAdmin ? "Admin & Crew" : "Crew-verktøy"}
+                    </span>
+                  </div>
+                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${adminSectionOpen ? "rotate-180" : ""}`} />
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="mt-2 space-y-2">
+                  {isAdmin && (
+                    <Link to="/admin" className="flex items-center gap-3 p-3 rounded-lg bg-card/60 hover:bg-card/80 border border-border/30 transition-all group">
+                      <Settings className="h-4 w-4 text-accent" />
+                      <span className="text-sm font-medium text-foreground">Admin Panel</span>
+                      <ChevronRight className="h-4 w-4 ml-auto text-muted-foreground/30 group-hover:text-accent transition-colors" />
+                    </Link>
+                  )}
+                  {isStaff && (
+                    <Link to="/crew/checkin" className="flex items-center gap-3 p-3 rounded-lg bg-card/60 hover:bg-card/80 border border-border/30 transition-all group">
+                      <QrCode className="h-4 w-4 text-accent" />
+                      <span className="text-sm font-medium text-foreground">Check-in billetter</span>
+                      <ChevronRight className="h-4 w-4 ml-auto text-muted-foreground/30 group-hover:text-accent transition-colors" />
+                    </Link>
+                  )}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+        </main>
       </div>
     );
   }
