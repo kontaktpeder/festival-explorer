@@ -133,17 +133,35 @@ export default function FestivalPage() {
                   )}
 
                   {/* Venue + dato */}
-                  <div className="animate-slide-up delay-300 mt-6 md:mt-8 space-y-1">
+                  <div className="animate-slide-up delay-300 mt-6 md:mt-8 space-y-0.5">
                     {venue && (
                       <Link
                         to={`/venue/${venue.slug}`}
-                        className="block text-accent text-2xl sm:text-3xl md:text-4xl font-bold font-display tracking-tight hover:text-accent/80 transition-colors drop-shadow-[0_2px_8px_hsl(var(--accent)/0.4)]"
+                        className="block text-2xl sm:text-3xl md:text-4xl font-bold font-display tracking-tight transition-colors drop-shadow-[0_2px_8px_hsl(var(--accent)/0.4)]"
+                        style={{
+                          color: 'transparent',
+                          WebkitTextStroke: '1.5px hsl(var(--accent))',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = 'hsl(var(--accent))';
+                          (e.currentTarget.style as any).webkitTextStroke = 'none';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = 'transparent';
+                          (e.currentTarget.style as any).webkitTextStroke = '1.5px hsl(var(--accent))';
+                        }}
                       >
                         {venue.name}
                       </Link>
                     )}
                     {festival.start_at && (
-                      <p className="text-accent/80 text-xl sm:text-2xl md:text-3xl font-display font-medium tracking-tight drop-shadow-[0_2px_6px_hsl(var(--accent)/0.3)]">
+                      <p
+                        className="text-xl sm:text-2xl md:text-3xl font-display font-medium tracking-tight drop-shadow-[0_2px_6px_hsl(var(--accent)/0.3)]"
+                        style={{
+                          color: 'transparent',
+                          WebkitTextStroke: '1px hsl(var(--accent) / 0.7)',
+                        }}
+                      >
                         {format(new Date(festival.start_at), "d. MMMM", { locale: nb })}
                       </p>
                     )}
@@ -251,17 +269,35 @@ export default function FestivalPage() {
           )}
 
           {/* Venue + dato */}
-          <div className="mt-6 md:mt-8 space-y-1">
+          <div className="mt-6 md:mt-8 space-y-0.5">
             {venue && (
               <Link
                 to={`/venue/${venue.slug}`}
-                className="block text-accent text-2xl sm:text-3xl md:text-4xl font-bold font-display tracking-tight hover:text-accent/80 transition-colors drop-shadow-[0_2px_8px_hsl(var(--accent)/0.4)]"
+                className="block text-2xl sm:text-3xl md:text-4xl font-bold font-display tracking-tight transition-colors drop-shadow-[0_2px_8px_hsl(var(--accent)/0.4)]"
+                style={{
+                  color: 'transparent',
+                  WebkitTextStroke: '1.5px hsl(var(--accent))',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'hsl(var(--accent))';
+                  (e.currentTarget.style as any).webkitTextStroke = 'none';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'transparent';
+                  (e.currentTarget.style as any).webkitTextStroke = '1.5px hsl(var(--accent))';
+                }}
               >
                 {venue.name}
               </Link>
             )}
             {festival.start_at && (
-              <p className="text-accent/80 text-xl sm:text-2xl md:text-3xl font-display font-medium tracking-tight drop-shadow-[0_2px_6px_hsl(var(--accent)/0.3)]">
+              <p
+                className="text-xl sm:text-2xl md:text-3xl font-display font-medium tracking-tight drop-shadow-[0_2px_6px_hsl(var(--accent)/0.3)]"
+                style={{
+                  color: 'transparent',
+                  WebkitTextStroke: '1px hsl(var(--accent) / 0.7)',
+                }}
+              >
                 {format(new Date(festival.start_at), "d. MMMM", { locale: nb })}
               </p>
             )}
