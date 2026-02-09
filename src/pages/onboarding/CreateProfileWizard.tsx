@@ -110,7 +110,7 @@ export default function CreateProfileWizard() {
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Ditt artistnavn eller fullt navn"
+                placeholder="Fullt navn"
                 className="mt-1"
               />
             </div>
