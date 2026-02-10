@@ -15,7 +15,8 @@ import {
   usePersonaById, 
   useCreatePersona, 
   useUpdatePersona,
-  PERSONA_CATEGORIES 
+  PERSONA_CATEGORIES,
+  PERSONA_ROLES,
 } from "@/hooks/usePersona";
 import { useMyEntities } from "@/hooks/useEntity";
 import { usePersonaEntityBindings, useCreatePersonaBinding, useDeletePersonaBinding } from "@/hooks/usePersonaBindings";
@@ -323,52 +324,107 @@ export default function PersonaEdit() {
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Kategorier */}
+        {/* Rolle */}
         <Collapsible open={categoriesOpen} onOpenChange={setCategoriesOpen}>
           <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
             <div className="flex items-center gap-3">
               <Sparkles className="h-4 w-4 text-accent" />
-              <span className="font-medium">Hva er du?</span>
-              {categoryTags.length > 0 && <span className="text-xs text-muted-foreground">({categoryTags.length})</span>}
+              <span className="font-medium">Rolle</span>
+              {categoryTags[0] && <span className="text-xs text-muted-foreground capitalize">({categoryTags[0]})</span>}
             </div>
             <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${categoriesOpen ? "rotate-180" : ""}`} />
           </CollapsibleTrigger>
-          <CollapsibleContent className="py-5 space-y-4 border-b border-border/30">
-            <div className="flex flex-wrap gap-2">
-              {PERSONA_CATEGORIES.map((category) => (
-                <Badge
-                  key={category}
-                  variant={categoryTags.includes(category) ? "default" : "outline"}
-                  className={`cursor-pointer capitalize text-sm py-1.5 px-3 transition-colors ${
-                    categoryTags.includes(category) ? "bg-accent text-accent-foreground border-accent" : "border-accent/30 hover:border-accent/60"
-                  }`}
-                  onClick={() => toggleCategory(category)}
-                >
-                  {category}
-                </Badge>
-              ))}
+          <CollapsibleContent className="py-5 space-y-5 border-b border-border/30">
+            {/* Primary role - single select */}
+            <div className="space-y-2">
+              <Label className="text-muted-foreground text-xs uppercase tracking-wide">Hovedrolle</Label>
+              <Select
+                value={PERSONA_ROLES.some(r => r.value === categoryTags[0]) ? categoryTags[0] : "__custom__"}
+                onValueChange={(v) => {
+                  if (v === "__custom__") return;
+                  setCategoryTags([v, ...categoryTags.slice(1)]);
+                }}
+              >
+                <SelectTrigger className="bg-transparent border-border/50 focus:border-accent">
+                  <SelectValue placeholder="Velg din rolle" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PERSONA_ROLES.map((r) => (
+                    <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            {categoryTags.length > 0 && (
-              <div className="flex flex-wrap gap-2 pt-3 border-t border-border/20">
-                {categoryTags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="capitalize bg-secondary/50">
-                    {tag}
-                    <button type="button" onClick={() => removeTag(tag)} className="ml-1.5 hover:text-accent">
-                      <X className="h-3 w-3" />
-                    </button>
+
+            {/* Custom role input */}
+            <div className="space-y-2">
+              <Label className="text-muted-foreground text-xs uppercase tracking-wide">Eller skriv egen rolle</Label>
+              <Input
+                value={categoryTags[0] && !PERSONA_ROLES.some(r => r.value === categoryTags[0]) ? categoryTags[0] : ""}
+                onChange={(e) => {
+                  const v = e.target.value.toLowerCase().trim() || e.target.value.toLowerCase();
+                  if (v) {
+                    setCategoryTags([v, ...categoryTags.slice(1)]);
+                  } else {
+                    // Clear primary role
+                    setCategoryTags(categoryTags.slice(1));
+                  }
+                }}
+                placeholder="f.eks. festivalsjef, bookingansvarlig..."
+                className="bg-transparent border-border/50 focus:border-accent"
+              />
+              {categoryTags[0] && !PERSONA_ROLES.some(r => r.value === categoryTags[0]) && (
+                <p className="text-xs text-muted-foreground">Egen rolle: <span className="text-accent capitalize">{categoryTags[0]}</span></p>
+              )}
+            </div>
+
+            {/* Additional tags */}
+            <div className="space-y-3 pt-3 border-t border-border/20">
+              <Label className="text-muted-foreground text-xs uppercase tracking-wide">Andre merkelapper (valgfritt)</Label>
+              <div className="flex flex-wrap gap-2">
+                {PERSONA_CATEGORIES.filter(c => c !== categoryTags[0]).map((category) => (
+                  <Badge
+                    key={category}
+                    variant={categoryTags.slice(1).includes(category) ? "default" : "outline"}
+                    className={`cursor-pointer capitalize text-sm py-1.5 px-3 transition-colors ${
+                      categoryTags.slice(1).includes(category) ? "bg-accent text-accent-foreground border-accent" : "border-accent/30 hover:border-accent/60"
+                    }`}
+                    onClick={() => {
+                      const otherTags = categoryTags.slice(1);
+                      const primary = categoryTags[0] || "";
+                      if (otherTags.includes(category)) {
+                        setCategoryTags([primary, ...otherTags.filter(t => t !== category)].filter(Boolean));
+                      } else {
+                        setCategoryTags([primary, ...otherTags, category].filter(Boolean));
+                      }
+                    }}
+                  >
+                    {category}
                   </Badge>
                 ))}
               </div>
-            )}
-            <div className="flex gap-2">
-              <Input
-                value={customTag}
-                onChange={(e) => setCustomTag(e.target.value)}
-                placeholder="Egen kategori..."
-                className="bg-transparent border-border/50 focus:border-accent"
-                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomTag(); } }}
-              />
-              <Button type="button" variant="outline" onClick={addCustomTag} className="border-accent/30 hover:border-accent">+</Button>
+              {categoryTags.slice(1).length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {categoryTags.slice(1).map((tag) => (
+                    <Badge key={tag} variant="secondary" className="capitalize bg-secondary/50">
+                      {tag}
+                      <button type="button" onClick={() => removeTag(tag)} className="ml-1.5 hover:text-accent">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Input
+                  value={customTag}
+                  onChange={(e) => setCustomTag(e.target.value)}
+                  placeholder="Egen merkelapp..."
+                  className="bg-transparent border-border/50 focus:border-accent"
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomTag(); } }}
+                />
+                <Button type="button" variant="outline" onClick={addCustomTag} className="border-accent/30 hover:border-accent">+</Button>
+              </div>
             </div>
           </CollapsibleContent>
         </Collapsible>

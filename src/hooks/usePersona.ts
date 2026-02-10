@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Persona } from "@/types/database";
 
 // Default category options for personas
+// Default category options for personas
 export const PERSONA_CATEGORIES = [
   "musiker",
   "fotograf",
@@ -17,6 +18,23 @@ export const PERSONA_CATEGORIES = [
   "lyd",
   "lys",
   "scene",
+] as const;
+
+// Structured role options with labels for the role selector UI
+export const PERSONA_ROLES = [
+  { value: "musiker", label: "Musiker" },
+  { value: "fotograf", label: "Fotograf" },
+  { value: "videograf", label: "Videograf" },
+  { value: "tekniker", label: "Tekniker" },
+  { value: "booking", label: "Booking" },
+  { value: "manager", label: "Manager" },
+  { value: "produsent", label: "Produsent" },
+  { value: "dj", label: "DJ" },
+  { value: "komponist", label: "Komponist" },
+  { value: "tekstforfatter", label: "Tekstforfatter" },
+  { value: "lyd", label: "Lyd" },
+  { value: "lys", label: "Lys" },
+  { value: "scene", label: "Scene" },
 ] as const;
 
 // Get all personas for current user
