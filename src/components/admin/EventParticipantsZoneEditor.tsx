@@ -6,6 +6,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { PersonaSearchList } from "@/components/persona/PersonaSearchList";
+import type { Persona } from "@/types/database";
 
 type Zone = "on_stage" | "backstage" | "host";
 
@@ -44,6 +46,7 @@ export function EventParticipantsZoneEditor({
   const [searchKind, setSearchKind] = useState<"persona" | "entity">(defaultAddKind);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ResolvedRef[]>([]);
+  const [personaResults, setPersonaResults] = useState<Persona[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
 
   const loadRows = useCallback(async () => {
@@ -91,18 +94,36 @@ export function EventParticipantsZoneEditor({
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
       setSearchResults([]);
+      setPersonaResults([]);
       return;
     }
     setSearchLoading(true);
-    const table = searchKind === "persona" ? "personas" : "entities";
-    const { data, error } = await supabase
-      .from(table)
-      .select("id,name,slug")
-      .ilike("name", `%${searchQuery}%`)
-      .limit(20);
 
-    if (error) toast.error("Søk feilet");
-    else setSearchResults((data || []) as ResolvedRef[]);
+    if (searchKind === "persona") {
+      const { data, error } = await supabase
+        .from("personas")
+        .select("id,user_id,name,slug,bio,avatar_url,category_tags,is_public,created_at,updated_at")
+        .ilike("name", `%${searchQuery}%`)
+        .limit(20);
+
+      if (error) toast.error("Søk feilet");
+      else {
+        setPersonaResults((data || []) as Persona[]);
+        setSearchResults([]);
+      }
+    } else {
+      const { data, error } = await supabase
+        .from("entities")
+        .select("id,name,slug")
+        .ilike("name", `%${searchQuery}%`)
+        .limit(20);
+
+      if (error) toast.error("Søk feilet");
+      else {
+        setSearchResults((data || []) as ResolvedRef[]);
+        setPersonaResults([]);
+      }
+    }
     setSearchLoading(false);
   };
 
@@ -130,6 +151,7 @@ export function EventParticipantsZoneEditor({
     }
     toast.success("Lagt til");
     setSearchResults([]);
+    setPersonaResults([]);
     setSearchQuery("");
     void loadRows();
   };
@@ -216,7 +238,23 @@ export function EventParticipantsZoneEditor({
           </Button>
         </div>
 
-        {searchResults.length > 0 && (
+        {/* Persona search results */}
+        {searchKind === "persona" && personaResults.length > 0 && (
+          <div className="border border-border rounded-md max-h-64 overflow-y-auto">
+            <PersonaSearchList
+              personas={personaResults}
+              onSelect={(id) => {
+                const persona = personaResults.find((p) => p.id === id);
+                if (persona) handleAdd({ id: persona.id, name: persona.name, slug: persona.slug });
+              }}
+              placeholder="Filtrer resultater..."
+              emptyMessage="Ingen personer funnet"
+            />
+          </div>
+        )}
+
+        {/* Entity search results */}
+        {searchKind === "entity" && searchResults.length > 0 && (
           <div className="border border-border rounded-md divide-y divide-border max-h-48 overflow-y-auto">
             {searchResults.map((item) => (
               <button
@@ -225,7 +263,7 @@ export function EventParticipantsZoneEditor({
                 onClick={() => handleAdd(item)}
               >
                 <Badge variant="outline" className="text-[10px]">
-                  {searchKind === "persona" ? "Person" : "Prosjekt"}
+                  Prosjekt
                 </Badge>
                 {item.name}
               </button>
