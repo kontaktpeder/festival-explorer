@@ -280,13 +280,26 @@ serve(async (req) => {
       );
     }
 
-    // Update attendance count on event
-    const newAttendanceCount = (ticket.ticket_events?.attendance_count || 0) + 1;
-    let newBoilerroomCount = ticket.ticket_events?.boilerroom_attendance_count || 0;
-    
-    if (hasBoilerroomAccess) {
-      newBoilerroomCount += 1;
-    }
+    // Count actual checked-in tickets for accurate "Inne nå"
+    const { count: checkedInCount } = await supabaseAdmin
+      .from("tickets")
+      .select("*", { count: "exact", head: true })
+      .eq("event_id", ticket.event_id)
+      .neq("status", "CANCELLED")
+      .or("status.eq.USED,checked_in_at.not.is.null");
+
+    const newAttendanceCount = checkedInCount ?? 0;
+
+    // Count boilerroom checked-in tickets
+    const { count: boilerroomCount } = await supabaseAdmin
+      .from("tickets")
+      .select("*, ticket_types!inner(code)", { count: "exact", head: true })
+      .eq("event_id", ticket.event_id)
+      .neq("status", "CANCELLED")
+      .or("status.eq.USED,checked_in_at.not.is.null")
+      .or("ticket_types.code.ilike.%BOILERROOM%,ticket_types.code.ilike.%BOILER%", { referencedTable: "ticket_types" });
+
+    const newBoilerroomCount = boilerroomCount ?? 0;
 
     const { error: eventUpdateError } = await supabaseAdmin
       .from("ticket_events")
