@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -89,6 +90,7 @@ function SectionBackground({
     mobileUrl: mobileUrl || undefined,
     fallbackUrl: fallbackUrl || null
   });
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   // If no image, return null (black background)
   if (!activeImage) return null;
@@ -100,11 +102,13 @@ function SectionBackground({
   // Parse image settings for focal point positioning
   const imageSettings = parseImageSettings(section.bg_image_settings);
 
-  // Always use <img> tag to ensure GIF animations work (GIFs may have .jpg extension from storage)
   return <div className="absolute inset-0 overflow-hidden">
-      <img src={activeImage} alt="" loading="lazy" decoding="async" className={`w-full h-full ${imageFitMode === 'contain' ? 'object-contain' : 'object-cover'}`} style={{
-      objectPosition: getObjectPositionFromFocal(imageSettings)
-    }} />
+      <img src={activeImage} alt="" loading="lazy" decoding="async"
+        onLoad={() => setImgLoaded(true)}
+        className={`w-full h-full transition-opacity duration-700 ease-out ${imgLoaded ? 'opacity-100' : 'opacity-0'} ${imageFitMode === 'contain' ? 'object-contain' : 'object-cover'}`}
+        style={{
+        objectPosition: getObjectPositionFromFocal(imageSettings)
+      }} />
     </div>;
 }
 export function SectionRenderer({
