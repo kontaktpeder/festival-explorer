@@ -116,7 +116,7 @@ export default function TicketsPage() {
 
         {/* Boiler Room only */}
         {boilerOnly.length > 0 && <div className="space-y-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Kun BOILER ROOM</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Kun BOILER ROOM - begrenset kapasitet</h2>
             {boilerOnly.map(renderTicketCard)}
           </div>}
 
