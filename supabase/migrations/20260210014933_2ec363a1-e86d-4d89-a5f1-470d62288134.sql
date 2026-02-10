@@ -1,0 +1,1 @@
+UPDATE public.tickets SET status = 'CANCELLED', refunded_at = now() WHERE ticket_code = 'GIGG-F9E4-UXZN';
