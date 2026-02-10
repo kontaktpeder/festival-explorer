@@ -5,6 +5,7 @@ import { PraktiskSection } from "./PraktiskSection";
 import { UtforskMerSection } from "./UtforskMerSection";
 import { SocialSection } from "./SocialSection";
 import { FestivalFooter } from "./FestivalFooter";
+import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
 
 interface Artist {
   id: string;
@@ -142,18 +143,9 @@ export function DualLineupSection({ artists, festivalTeam }: DualLineupSectionPr
                     Arrangør
                   </h3>
                   <div className="space-y-3">
-                    {festivalTeam.hostRoles.map((item: any, i: number) => {
-                      const name = item.persona?.name || item.entity?.name;
-                      if (!name) return null;
-                      return (
-                        <div key={item.participant_id || i} className="text-sm">
-                          <span className="font-medium text-foreground">{name}</span>
-                          {item.role_label && (
-                            <span className="text-muted-foreground text-xs ml-1.5">· {item.role_label}</span>
-                          )}
-                        </div>
-                      );
-                    })}
+                    {festivalTeam.hostRoles.map((item: any, i: number) => (
+                      <EventParticipantItem key={item.participant_id || i} item={item} />
+                    ))}
                   </div>
                 </div>
               )}
@@ -163,18 +155,9 @@ export function DualLineupSection({ artists, festivalTeam }: DualLineupSectionPr
                     Bak scenen
                   </h3>
                   <div className="space-y-3">
-                    {festivalTeam.backstage.map((item: any, i: number) => {
-                      const name = item.persona?.name || item.entity?.name;
-                      if (!name) return null;
-                      return (
-                        <div key={item.participant_id || i} className="text-sm">
-                          <span className="font-medium text-foreground">{name}</span>
-                          {item.role_label && (
-                            <span className="text-muted-foreground text-xs ml-1.5">· {item.role_label}</span>
-                          )}
-                        </div>
-                      );
-                    })}
+                    {festivalTeam.backstage.map((item: any, i: number) => (
+                      <EventParticipantItem key={item.participant_id || i} item={item} />
+                    ))}
                   </div>
                 </div>
               )}
