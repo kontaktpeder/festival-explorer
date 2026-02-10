@@ -25,6 +25,7 @@ interface ResolvedRef {
   id: string;
   name: string;
   slug?: string | null;
+  category_tags?: string[] | null;
 }
 
 interface Props {
@@ -74,7 +75,7 @@ export function EventParticipantsZoneEditor({
 
     const [pRes, eRes] = await Promise.all([
       personaIds.length > 0
-        ? supabase.from("personas").select("id,name,slug").in("id", personaIds)
+        ? supabase.from("personas").select("id,name,slug,category_tags").in("id", personaIds)
         : Promise.resolve({ data: [] as any[] }),
       entityIds.length > 0
         ? supabase.from("entities").select("id,name,slug").in("id", entityIds)
@@ -292,12 +293,27 @@ export function EventParticipantsZoneEditor({
                       {row.participant_kind === "persona" ? "Person" : "Prosjekt"}
                     </Badge>
                   </div>
-                  <Input
-                    placeholder="Rolle (valgfritt)"
-                    value={row.role_label || ""}
-                    onChange={(e) => handleRoleChange(row.id, e.target.value)}
-                    className="mt-1.5 h-7 text-xs"
-                  />
+                  {(() => {
+                    const explicitRole = row.role_label || "";
+                    const fallbackRole = row.participant_kind === "persona"
+                      ? resolved[row.participant_id]?.category_tags?.[0]
+                      : undefined;
+                    return (
+                      <>
+                        <Input
+                          placeholder={fallbackRole ? `Rolle (standard: ${fallbackRole})` : "Rolle (valgfritt)"}
+                          value={explicitRole}
+                          onChange={(e) => handleRoleChange(row.id, e.target.value)}
+                          className="mt-1.5 h-7 text-xs"
+                        />
+                        {!explicitRole && fallbackRole && (
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                            Vises som: <span className="font-medium capitalize">{fallbackRole}</span>
+                          </p>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
 
                 <div className="flex gap-1 shrink-0">
