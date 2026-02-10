@@ -43,7 +43,7 @@ export function useFestival(slug: string) {
         .filter(Boolean) as string[];
 
       // Run participants + legacy lineup + sections queries IN PARALLEL
-      const [participantsResult, legacyLineupResult, sectionsResult] = await Promise.all([
+      const [participantsResult, legacyLineupResult, sectionsResult, festivalParticipantsResult] = await Promise.all([
         // NEW: Fetch on_stage participants for all events
         eventIds.length > 0
           ? supabase
@@ -68,11 +68,20 @@ export function useFestival(slug: string) {
           .eq("festival_id", festival.id)
           .eq("is_enabled", true)
           .order("sort_order", { ascending: true }),
+        // Festival-level team (host/backstage)
+        supabase
+          .from("festival_participants")
+          .select("*")
+          .eq("festival_id", festival.id)
+          .in("zone", ["backstage", "host"])
+          .order("zone", { ascending: true })
+          .order("sort_order", { ascending: true }),
       ]);
 
       const allParticipants = participantsResult.data || [];
       const allLegacyLineupItems = legacyLineupResult.data || [];
       const sections = sectionsResult.data || [];
+      const rawFestivalParticipants = festivalParticipantsResult.data || [];
       if (sectionsResult.error) throw sectionsResult.error;
 
       // Group participants by event_id
@@ -233,13 +242,64 @@ export function useFestival(slug: string) {
         }));
       }
 
+      // Resolve festival-level team (host/backstage)
+      let festivalBackstage: Array<Record<string, unknown>> = [];
+      let festivalHostRoles: Array<Record<string, unknown>> = [];
+
+      if (rawFestivalParticipants.length > 0) {
+        const fpPersonaIds = rawFestivalParticipants
+          .filter((p) => p.participant_kind === "persona")
+          .map((p) => p.participant_id);
+        const fpEntityIds = rawFestivalParticipants
+          .filter((p) => p.participant_kind !== "persona")
+          .map((p) => p.participant_id);
+
+        const [fpPersonasRes, fpEntitiesRes] = await Promise.all([
+          fpPersonaIds.length > 0
+            ? supabase.from("personas").select("id,name,slug,avatar_url,is_public").in("id", fpPersonaIds)
+            : Promise.resolve({ data: [] as any[] }),
+          fpEntityIds.length > 0
+            ? supabase.from("entities").select("id,name,slug,hero_image_url,is_published,type").in("id", fpEntityIds)
+            : Promise.resolve({ data: [] as any[] }),
+        ]);
+
+        const fpPersonaMap = new Map((fpPersonasRes.data || []).map((p: any) => [p.id, p]));
+        const fpEntityMap = new Map((fpEntitiesRes.data || []).map((e: any) => [e.id, e]));
+
+        rawFestivalParticipants.forEach((p) => {
+          const resolved =
+            p.participant_kind === "persona"
+              ? fpPersonaMap.get(p.participant_id)
+              : fpEntityMap.get(p.participant_id);
+
+          if (!resolved) return;
+          if (p.participant_kind !== "persona" && resolved.is_published === false) return;
+          if (p.participant_kind === "persona" && resolved.is_public === false) return;
+
+          const item = {
+            participant_kind: p.participant_kind,
+            participant_id: p.participant_id,
+            entity: p.participant_kind !== "persona" ? resolved : null,
+            persona: p.participant_kind === "persona" ? resolved : null,
+            role_label: p.role_label,
+            sort_order: p.sort_order,
+          };
+
+          if (p.zone === "backstage") festivalBackstage.push(item);
+          else if (p.zone === "host") festivalHostRoles.push(item);
+        });
+      }
+
       return {
         ...festival,
         festivalEvents: sortedEvents,
         sections: sections || [],
         sectionArtists,
-        allArtistsWithEventSlug, // NEW: includes event_slug for dual-lineup sections
-        // Cast to include new fields that may not be in generated types yet
+        allArtistsWithEventSlug,
+        festivalTeam: {
+          backstage: festivalBackstage,
+          hostRoles: festivalHostRoles,
+        },
         date_range_section_id: (festival as any).date_range_section_id as string | null,
         description_section_id: (festival as any).description_section_id as string | null,
         name_section_id: (festival as any).name_section_id as string | null,
