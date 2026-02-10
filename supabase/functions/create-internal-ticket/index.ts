@@ -58,7 +58,7 @@ serve(async (req) => {
       });
     }
 
-    const validCodes = ["KOMPIS", "LISTE", "CREW"];
+    const validCodes = ["LISTE", "CREW", "MUSIKERE"];
     if (!validCodes.includes(ticketTypeCode)) {
       return new Response(JSON.stringify({ error: "Invalid ticket type code" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },

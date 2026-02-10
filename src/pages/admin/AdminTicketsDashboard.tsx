@@ -54,6 +54,18 @@ function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+// Capacity indicator
+type CapacityIndicator = 'green' | 'yellow' | 'red' | 'locked';
+function getCapacityIndicator(issued: number, capacity: number): CapacityIndicator {
+  if (issued >= capacity) return 'locked';
+  const pct = capacity > 0 ? (issued / capacity) * 100 : 0;
+  if (pct >= 85) return 'red';
+  if (pct >= 70) return 'yellow';
+  return 'green';
+}
+
+const TYPE_ORDER = ['EARLYBIRD', 'ORDINAR', 'FESTIVALPASS_BOILER', 'BOILER', 'LISTE', 'CREW', 'MUSIKERE'];
+
 interface TicketType {
   id: string;
   name: string;
@@ -135,22 +147,25 @@ function useTicketStats() {
       const netRevenue = totalRevenue - totalFees;
 
       // Sales by ticket type
-      const salesByType = ticketTypes?.map((type) => {
-        const sold = soldTickets.filter(
-          (t) => t.ticket_type_id === type.id
-        ).length;
-        const revenue = soldTickets
-          .filter((t) => t.ticket_type_id === type.id)
-          .reduce((sum, t) => sum + ((t.ticket_types?.price_nok || 0) / 100), 0); // Convert from øre
+      const salesByTypeUnsorted = ticketTypes?.map((type) => {
+        const typeTickets = soldTickets.filter((t) => t.ticket_type_id === type.id);
+        const sold = typeTickets.length;
+        const used = typeTickets.filter((t) => t.status === "USED" || !!t.checked_in_at).length;
+        const revenue = typeTickets.reduce((sum, t) => sum + ((t.ticket_types?.price_nok || 0) / 100), 0);
 
         return {
           ...type,
           sold,
+          used,
           revenue,
           capacityLeft: type.capacity - sold,
           capacityPercent: type.capacity > 0 ? (sold / type.capacity) * 100 : 0,
         };
       }) || [];
+
+      const salesByType = [...salesByTypeUnsorted].sort(
+        (a, b) => TYPE_ORDER.indexOf(a.code || '') - TYPE_ORDER.indexOf(b.code || '')
+      );
 
       // Recent purchases (last 10)
       const recentPurchases = soldTickets
@@ -441,7 +456,7 @@ export default function AdminTicketsDashboard() {
   const [isSearching, setIsSearching] = useState(false);
   const [internalName, setInternalName] = useState("");
   const [internalEmail, setInternalEmail] = useState("");
-  const [internalType, setInternalType] = useState("KOMPIS");
+  const [internalType, setInternalType] = useState("LISTE");
   const [internalNote, setInternalNote] = useState("");
 
   const { data: stats, isLoading: statsLoading } = useTicketStats();
@@ -834,40 +849,62 @@ export default function AdminTicketsDashboard() {
             </Card>
           </div>
 
-          {/* Sales by Type */}
+          {/* Per-type tabell med indikatorer */}
           <Card>
             <CardHeader>
-              <CardTitle>Solgt per billettype</CardTitle>
+              <CardTitle>Per billettype</CardTitle>
+              <CardDescription>Kapasitet, utstedt, sjekket inn</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {stats?.salesByType.map((type) => (
-                  <div key={type.id} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{type.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {type.sold} solgt • {type.capacityLeft} igjen
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">
-                          {formatCurrency(type.revenue)}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {Math.round(type.capacityPercent)}% kapasitet
-                        </p>
-                      </div>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div
-                        className="bg-primary h-2 rounded-full"
-                        style={{ width: `${Math.min(type.capacityPercent, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Type</TableHead>
+                    <TableHead className="text-right">Maks</TableHead>
+                    <TableHead className="text-right">Utstedt</TableHead>
+                    <TableHead className="text-right">Igjen</TableHead>
+                    <TableHead className="text-right">Sjekket inn</TableHead>
+                    <TableHead className="text-right">Pris</TableHead>
+                    <TableHead className="w-10" />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {stats?.salesByType.map((type) => {
+                    const ind = getCapacityIndicator(type.sold, type.capacity);
+                    const indColors = {
+                      green: 'bg-emerald-500',
+                      yellow: 'bg-amber-500',
+                      red: 'bg-red-500',
+                      locked: 'bg-red-600',
+                    };
+                    return (
+                      <TableRow key={type.id}>
+                        <TableCell>
+                          <span className="font-medium">{type.name}</span>
+                          <span className="text-muted-foreground text-xs ml-1">({type.code})</span>
+                        </TableCell>
+                        <TableCell className="text-right">{type.capacity}</TableCell>
+                        <TableCell className="text-right">{type.sold}</TableCell>
+                        <TableCell className="text-right">{type.capacityLeft}</TableCell>
+                        <TableCell className="text-right">{type.used}</TableCell>
+                        <TableCell className="text-right">
+                          {type.price_nok > 0 ? formatCurrency(type.price_nok / 100) : 'Gratis'}
+                        </TableCell>
+                        <TableCell>
+                          <div
+                            className={`w-3 h-3 rounded-full ${indColors[ind]}`}
+                            title={
+                              ind === 'green' ? 'Ok' :
+                              ind === 'yellow' ? 'Nær fullt' :
+                              ind === 'red' ? 'Nesten fullt' : 'Fullt'
+                            }
+                          />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
 
@@ -1173,7 +1210,7 @@ export default function AdminTicketsDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Legg til internbillett</CardTitle>
-              <CardDescription>Opprett billetter for kompis, gjesteliste eller crew</CardDescription>
+              <CardDescription>Opprett billetter for liste, crew eller musikere</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1190,9 +1227,9 @@ export default function AdminTicketsDashboard() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Type *</label>
                   <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={internalType} onChange={(e) => setInternalType(e.target.value)}>
-                    <option value="KOMPIS">Kompisbillett</option>
-                    <option value="LISTE">Gjesteliste</option>
+                    <option value="LISTE">Liste</option>
                     <option value="CREW">Crew</option>
+                    <option value="MUSIKERE">Musikere</option>
                   </select>
                 </div>
                 <div className="space-y-2">
@@ -1200,10 +1237,21 @@ export default function AdminTicketsDashboard() {
                   <Input placeholder="Evt. notat" value={internalNote} onChange={(e) => setInternalNote(e.target.value)} />
                 </div>
               </div>
-              <Button onClick={() => createInternalTicket.mutate()} disabled={!internalName || createInternalTicket.isPending}>
-                {createInternalTicket.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Ticket className="h-4 w-4 mr-2" />}
-                Opprett internbillett
-              </Button>
+              {(() => {
+                const internalTypeInfo = stats?.salesByType?.find(t => t.code === internalType);
+                const internalAtCapacity = internalTypeInfo && internalTypeInfo.sold >= internalTypeInfo.capacity;
+                return (
+                  <>
+                    {internalAtCapacity && (
+                      <p className="text-sm text-destructive">Kapasitet nådd for {internalTypeInfo?.name}</p>
+                    )}
+                    <Button onClick={() => createInternalTicket.mutate()} disabled={!internalName || createInternalTicket.isPending || !!internalAtCapacity}>
+                      {createInternalTicket.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Ticket className="h-4 w-4 mr-2" />}
+                      Opprett internbillett
+                    </Button>
+                  </>
+                );
+              })()}
             </CardContent>
           </Card>
         </TabsContent>
