@@ -1,0 +1,1 @@
+UPDATE public.ticket_types SET description = 'Festivalpass' WHERE code = 'ORDINAR';
