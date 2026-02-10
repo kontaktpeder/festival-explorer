@@ -66,6 +66,10 @@ interface SectionRendererProps {
   dateRange?: string | null;
   festivalDescription?: string | null;
   festivalName?: string | null;
+  festivalTeam?: {
+    backstage: Array<Record<string, unknown>>;
+    hostRoles: Array<Record<string, unknown>>;
+  } | null;
 }
 function SectionBackground({
   section,
@@ -110,7 +114,8 @@ export function SectionRenderer({
   venue,
   dateRange,
   festivalDescription,
-  festivalName
+  festivalName,
+  festivalTeam
 }: SectionRendererProps) {
   const rawContentJson = section.content_json as Record<string, unknown> | null;
   const contentJson = rawContentJson?.content as Record<string, unknown> || rawContentJson;
@@ -248,7 +253,7 @@ export function SectionRenderer({
     case "artister":
       {
         // NEW: Use DualLineupSection for Festival + Boiler Room split
-        return <DualLineupSection artists={featuredArtists} />;
+        return <DualLineupSection artists={featuredArtists} festivalTeam={festivalTeam} />;
       }
     case "venue-plakat":
       {

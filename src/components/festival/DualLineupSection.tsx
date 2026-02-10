@@ -15,8 +15,14 @@ interface Artist {
   event_slug?: string;
 }
 
+interface FestivalTeam {
+  backstage: Array<Record<string, unknown>>;
+  hostRoles: Array<Record<string, unknown>>;
+}
+
 interface DualLineupSectionProps {
   artists: Artist[];
+  festivalTeam?: FestivalTeam | null;
 }
 
 /**
@@ -28,7 +34,7 @@ interface DualLineupSectionProps {
  * - "boiler-room" event slug → BOILER ROOM section
  * - All others → FESTIVAL section
  */
-export function DualLineupSection({ artists }: DualLineupSectionProps) {
+export function DualLineupSection({ artists, festivalTeam }: DualLineupSectionProps) {
   // Split artists by section
   const { festivalArtists, boilerRoomArtists } = useMemo(() => {
     const festival: Artist[] = [];
@@ -118,6 +124,62 @@ export function DualLineupSection({ artists }: DualLineupSectionProps) {
       {/* ============================================ */}
       <PraktiskSection />
       <UtforskMerSection />
+
+      {/* Festival-team (Arrangør / Bak scenen) */}
+      {festivalTeam && (festivalTeam.hostRoles.length > 0 || festivalTeam.backstage.length > 0) && (
+        <section className="relative py-16 px-6 bg-black">
+          <div className="max-w-3xl mx-auto">
+            <p className="text-xs uppercase tracking-[0.3em] text-white/40 mb-8">
+              Festival-teamet
+            </p>
+            <div className="grid gap-10 md:grid-cols-2">
+              {festivalTeam.hostRoles.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-accent/70 mb-4">
+                    Arrangør
+                  </h3>
+                  <div className="space-y-3">
+                    {festivalTeam.hostRoles.map((item: any, i: number) => {
+                      const name = item.persona?.name || item.entity?.name;
+                      if (!name) return null;
+                      return (
+                        <div key={item.participant_id || i} className="text-sm">
+                          <span className="font-medium text-foreground">{name}</span>
+                          {item.role_label && (
+                            <span className="text-muted-foreground text-xs ml-1.5">· {item.role_label}</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              {festivalTeam.backstage.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-accent/70 mb-4">
+                    Bak scenen
+                  </h3>
+                  <div className="space-y-3">
+                    {festivalTeam.backstage.map((item: any, i: number) => {
+                      const name = item.persona?.name || item.entity?.name;
+                      if (!name) return null;
+                      return (
+                        <div key={item.participant_id || i} className="text-sm">
+                          <span className="font-medium text-foreground">{name}</span>
+                          {item.role_label && (
+                            <span className="text-muted-foreground text-xs ml-1.5">· {item.role_label}</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
       <SocialSection />
       <FestivalFooter />
     </>
