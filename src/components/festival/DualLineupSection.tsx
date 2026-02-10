@@ -62,7 +62,7 @@ export function DualLineupSection({ artists }: DualLineupSectionProps) {
         <div className="absolute inset-0 bg-gradient-to-b from-amber-950/20 via-orange-950/10 to-zinc-950 pointer-events-none" />
         
         <LineupSectionHeader
-          title="LINEUP"
+          title="PÅ SCENEN"
           variant="festival"
         />
         

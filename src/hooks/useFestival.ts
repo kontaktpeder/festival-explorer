@@ -37,14 +37,23 @@ export function useFestival(slug: string) {
 
       if (eventsError) throw eventsError;
 
-      // Collect all event IDs for a single batched lineup query
+      // Collect all event IDs for batched queries
       const eventIds = (festivalEvents || [])
         .map((fe) => fe.event?.id)
         .filter(Boolean) as string[];
 
-      // Run lineup + sections queries IN PARALLEL (they are independent)
-      const [lineupResult, sectionsResult] = await Promise.all([
-        // Single batched query for ALL event lineups (replaces N separate queries)
+      // Run participants + legacy lineup + sections queries IN PARALLEL
+      const [participantsResult, legacyLineupResult, sectionsResult] = await Promise.all([
+        // NEW: Fetch on_stage participants for all events
+        eventIds.length > 0
+          ? supabase
+              .from("event_participants")
+              .select("event_id, participant_kind, participant_id, role_label, sort_order")
+              .in("event_id", eventIds)
+              .eq("zone", "on_stage")
+              .order("sort_order", { ascending: true })
+          : Promise.resolve({ data: [], error: null }),
+        // Legacy: event_entities (used as fallback per event)
         eventIds.length > 0
           ? supabase
               .from("event_entities")
@@ -52,7 +61,7 @@ export function useFestival(slug: string) {
               .in("event_id", eventIds)
               .order("billing_order", { ascending: true })
           : Promise.resolve({ data: [], error: null }),
-        // Festival sections (independent of lineup)
+        // Festival sections (independent)
         supabase
           .from("festival_sections")
           .select("*")
@@ -61,27 +70,102 @@ export function useFestival(slug: string) {
           .order("sort_order", { ascending: true }),
       ]);
 
-      const allLineupItems = lineupResult.data || [];
+      const allParticipants = participantsResult.data || [];
+      const allLegacyLineupItems = legacyLineupResult.data || [];
       const sections = sectionsResult.data || [];
       if (sectionsResult.error) throw sectionsResult.error;
 
-      // Group lineup items by event_id and filter unpublished
-      const lineupByEventId = new Map<string, typeof allLineupItems>();
-      for (const item of allLineupItems) {
-        if (item.entity?.is_published !== true) continue;
-        const existing = lineupByEventId.get(item.event_id) || [];
-        existing.push(item);
-        lineupByEventId.set(item.event_id, existing);
+      // Group participants by event_id
+      const participantsByEventId = new Map<string, typeof allParticipants>();
+      for (const p of allParticipants) {
+        const existing = participantsByEventId.get(p.event_id) || [];
+        existing.push(p);
+        participantsByEventId.set(p.event_id, existing);
       }
 
-      // Attach lineup to each event
+      // Resolve persona + entity refs from participants
+      const personaIdsFromParticipants = new Set<string>();
+      const entityIdsFromParticipants = new Set<string>();
+      for (const p of allParticipants) {
+        if (p.participant_kind === "persona") personaIdsFromParticipants.add(p.participant_id);
+        else entityIdsFromParticipants.add(p.participant_id);
+      }
+
+      const [personasRes, participantEntitiesRes] = await Promise.all([
+        personaIdsFromParticipants.size > 0
+          ? supabase.from("personas").select("id,name,slug,hero_image_url,is_public").in("id", Array.from(personaIdsFromParticipants))
+          : Promise.resolve({ data: [] as any[] }),
+        entityIdsFromParticipants.size > 0
+          ? supabase.from("entities").select("id,name,slug,tagline,hero_image_url,is_published,type").in("id", Array.from(entityIdsFromParticipants))
+          : Promise.resolve({ data: [] as any[] }),
+      ]);
+
+      const personaMap = new Map((personasRes.data || []).map((p: any) => [p.id, p]));
+      const participantEntityMap = new Map((participantEntitiesRes.data || []).map((e: any) => [e.id, e]));
+
+      // Group legacy lineup items by event_id and filter unpublished
+      const legacyLineupByEventId = new Map<string, typeof allLegacyLineupItems>();
+      for (const item of allLegacyLineupItems) {
+        if (item.entity?.is_published !== true) continue;
+        const existing = legacyLineupByEventId.get(item.event_id) || [];
+        existing.push(item);
+        legacyLineupByEventId.set(item.event_id, existing);
+      }
+
+      // Attach lineup to each event – participants-first per event
       const eventsWithLineup = (festivalEvents || []).map((fe) => {
         if (!fe.event) return fe;
+        const eventParticipants = participantsByEventId.get(fe.event.id);
+
+        if (eventParticipants && eventParticipants.length > 0) {
+          // Use participants – map to entity-like shape for compatibility
+          const lineup = eventParticipants
+            .map((p) => {
+              if (p.participant_kind === "persona") {
+                const persona = personaMap.get(p.participant_id);
+                if (!persona || persona.is_public === false) return null;
+                return {
+                  entity_id: p.participant_id,
+                  event_id: p.event_id,
+                  billing_order: p.sort_order,
+                  is_featured: false,
+                  feature_order: null,
+                  entity: {
+                    id: persona.id,
+                    name: persona.name,
+                    slug: persona.slug,
+                    tagline: null,
+                    hero_image_url: persona.hero_image_url,
+                    is_published: true,
+                  },
+                };
+              } else {
+                const ent = participantEntityMap.get(p.participant_id);
+                if (!ent || ent.is_published !== true) return null;
+                return {
+                  entity_id: p.participant_id,
+                  event_id: p.event_id,
+                  billing_order: p.sort_order,
+                  is_featured: false,
+                  feature_order: null,
+                  entity: ent,
+                };
+              }
+            })
+            .filter(Boolean);
+
+          return {
+            ...fe,
+            event: { ...fe.event, lineup },
+          };
+        }
+
+        // Fallback: legacy event_entities
         return {
           ...fe,
           event: {
             ...fe.event,
-            lineup: lineupByEventId.get(fe.event.id) || [],
+            lineup: legacyLineupByEventId.get(fe.event.id) || [],
           },
         };
       });

@@ -95,12 +95,14 @@ export function PersonaSelector() {
                   {selectedPersona.name.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span className="max-w-[120px] truncate">{selectedPersona.name}</span>
+              <span className="max-w-[140px] truncate text-xs sm:text-sm">
+                Du handler som: {selectedPersona.name}
+              </span>
             </>
           ) : (
             <>
               <User className="h-4 w-4" />
-              <span>Min profil</span>
+              <span className="text-xs sm:text-sm">Du handler som: Privat profil</span>
             </>
           )}
           <ChevronDown className="h-4 w-4 opacity-50" />

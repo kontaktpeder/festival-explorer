@@ -10,7 +10,7 @@ interface LockedModulesProps {
 }
 
 const MODULES = [
-  { key: "on_stage", label: "På scenen", desc: "Spill og bli sett i lineup", icon: Music },
+  { key: "on_stage", label: "På scenen", desc: "Spill og bli sett på scenen", icon: Music },
   { key: "backstage", label: "Bak scenen", desc: "Crew og kreditering", icon: Camera },
   { key: "festival", label: "Festival", desc: "Program og arrangementer", icon: Calendar },
   { key: "audience", label: "Publikum", desc: "Billetter og følgere", icon: Users },

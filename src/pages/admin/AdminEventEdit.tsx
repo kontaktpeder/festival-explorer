@@ -11,6 +11,8 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Users, Check, ChevronsUpDown, Plus } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { EventParticipantsZoneEditor } from "@/components/admin/EventParticipantsZoneEditor";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
@@ -392,6 +394,32 @@ export default function AdminEventEdit() {
           )}
         </div>
       </form>
+
+      {/* Zone tabs for backstage + host */}
+      {!isNew && id && (
+        <Tabs defaultValue="backstage" className="mt-8">
+          <TabsList>
+            <TabsTrigger value="backstage">Bak scenen</TabsTrigger>
+            <TabsTrigger value="host">Arrangør</TabsTrigger>
+          </TabsList>
+          <TabsContent value="backstage" className="mt-4">
+            <EventParticipantsZoneEditor
+              eventId={id}
+              zone="backstage"
+              title="Bak scenen"
+              defaultAddKind="persona"
+            />
+          </TabsContent>
+          <TabsContent value="host" className="mt-4">
+            <EventParticipantsZoneEditor
+              eventId={id}
+              zone="host"
+              title="Arrangør"
+              defaultAddKind="entity"
+            />
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 }
