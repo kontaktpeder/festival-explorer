@@ -136,31 +136,22 @@ export function DualLineupSection({ artists, festivalTeam }: DualLineupSectionPr
             <p className="text-sm text-white/50 mb-8">
               Bli kjent med dem som står bak festivalen, og som har vært med å skape en historisk kveld.
             </p>
-            <div className="grid gap-10 md:grid-cols-2">
-              {festivalTeam.hostRoles.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-accent/70 mb-4">
-                    Arrangør
-                  </h3>
-                  <div className="space-y-3">
-                    {festivalTeam.hostRoles.map((item: any, i: number) => (
-                      <EventParticipantItem key={item.participant_id || i} item={item} />
-                    ))}
+            <div className="space-y-6">
+              {[
+                ...festivalTeam.hostRoles,
+                ...festivalTeam.backstage,
+              ]
+                .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+                .map((item: any, i: number) => (
+                  <div key={item.participant_id || i} className="flex flex-col gap-1">
+                    {item.role_label && (
+                      <p className="text-[10px] uppercase tracking-widest text-white/40">
+                        {item.role_label}
+                      </p>
+                    )}
+                    <EventParticipantItem item={item} />
                   </div>
-                </div>
-              )}
-              {festivalTeam.backstage.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-accent/70 mb-4">
-                    Bak scenen
-                  </h3>
-                  <div className="space-y-3">
-                    {festivalTeam.backstage.map((item: any, i: number) => (
-                      <EventParticipantItem key={item.participant_id || i} item={item} />
-                    ))}
-                  </div>
-                </div>
-              )}
+                ))}
             </div>
           </div>
         </section>
