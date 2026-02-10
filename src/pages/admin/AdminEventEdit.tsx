@@ -383,42 +383,48 @@ export default function AdminEventEdit() {
             <Save className="h-4 w-4 mr-2" />
             {saveMutation.isPending ? "Lagrer..." : "Lagre"}
           </Button>
-          
-          {!isNew && (
-            <Button asChild variant="outline">
-              <Link to={`/admin/events/${id}/lineup`}>
-                <Users className="h-4 w-4 mr-2" />
-                På scenen
-              </Link>
-            </Button>
-          )}
         </div>
       </form>
 
-      {/* Zone tabs for backstage + host */}
+      {/* Medvirkende – alle tre soner */}
       {!isNew && id && (
-        <Tabs defaultValue="backstage" className="mt-8">
-          <TabsList>
-            <TabsTrigger value="backstage">Bak scenen</TabsTrigger>
-            <TabsTrigger value="host">Arrangør</TabsTrigger>
-          </TabsList>
-          <TabsContent value="backstage" className="mt-4">
-            <EventParticipantsZoneEditor
-              eventId={id}
-              zone="backstage"
-              title="Bak scenen"
-              defaultAddKind="persona"
-            />
-          </TabsContent>
-          <TabsContent value="host" className="mt-4">
-            <EventParticipantsZoneEditor
-              eventId={id}
-              zone="host"
-              title="Arrangør"
-              defaultAddKind="entity"
-            />
-          </TabsContent>
-        </Tabs>
+        <div className="space-y-4 pt-6 border-t border-border/50">
+          <h2 className="text-lg font-semibold">Medvirkende</h2>
+          <p className="text-xs text-muted-foreground">
+            Styr hvem som er på scenen, bak scenen og som arrangør for dette eventet.
+          </p>
+          <Tabs defaultValue="on_stage" className="pt-2">
+            <TabsList>
+              <TabsTrigger value="on_stage">På scenen</TabsTrigger>
+              <TabsTrigger value="backstage">Bak scenen</TabsTrigger>
+              <TabsTrigger value="host">Arrangør</TabsTrigger>
+            </TabsList>
+            <TabsContent value="on_stage" className="mt-4">
+              <EventParticipantsZoneEditor
+                eventId={id}
+                zone="on_stage"
+                title="På scenen"
+                defaultAddKind="entity"
+              />
+            </TabsContent>
+            <TabsContent value="backstage" className="mt-4">
+              <EventParticipantsZoneEditor
+                eventId={id}
+                zone="backstage"
+                title="Bak scenen"
+                defaultAddKind="persona"
+              />
+            </TabsContent>
+            <TabsContent value="host" className="mt-4">
+              <EventParticipantsZoneEditor
+                eventId={id}
+                zone="host"
+                title="Arrangør"
+                defaultAddKind="persona"
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
       )}
     </div>
   );

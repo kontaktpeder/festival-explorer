@@ -107,7 +107,8 @@ export function EventParticipantsZoneEditor({
   };
 
   const handleAdd = async (item: ResolvedRef) => {
-    if (rows.find((r) => r.participant_id === item.id)) {
+    const kind = searchKind;
+    if (rows.find((r) => r.participant_kind === kind && r.participant_id === item.id)) {
       toast.error("Allerede lagt til");
       return;
     }
