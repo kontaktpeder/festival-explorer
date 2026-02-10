@@ -78,6 +78,71 @@ export default function AdminEventEdit() {
   const eventHostId = event ? getEventHostId(event) : null;
   const canEdit = isNew || isTicketAdmin || (!!eventHostId && hostEntities.some((h) => h.id === eventHostId));
 
+  // Fetch festival-team (inherited participants) for this event
+  const { data: festivalTeam } = useQuery({
+    queryKey: ["admin-event-festival-team", id],
+    enabled: !!event && !isNew,
+    queryFn: async () => {
+      const { data: festivalEvent } = await supabase
+        .from("festival_events")
+        .select("festival_id, festival:festivals(slug, name)")
+        .eq("event_id", event!.id)
+        .maybeSingle();
+      if (!festivalEvent?.festival_id) return null;
+
+      const { data: festivalParticipants } = await supabase
+        .from("festival_participants")
+        .select("*")
+        .eq("festival_id", festivalEvent.festival_id)
+        .in("zone", ["backstage", "host"])
+        .order("zone", { ascending: true })
+        .order("sort_order", { ascending: true });
+
+      if (!festivalParticipants || festivalParticipants.length === 0) {
+        return { festival: festivalEvent.festival, backstage: [], hostRoles: [] };
+      }
+
+      const personaIds = festivalParticipants.filter((p) => p.participant_kind === "persona").map((p) => p.participant_id);
+      const entityIds = festivalParticipants.filter((p) => p.participant_kind !== "persona").map((p) => p.participant_id);
+
+      const [personasRes, entitiesRes] = await Promise.all([
+        personaIds.length
+          ? supabase.from("personas").select("id, name, avatar_url, slug, is_public").in("id", personaIds)
+          : Promise.resolve({ data: [] as any[] }),
+        entityIds.length
+          ? supabase.from("entities").select("id, name, slug, type, hero_image_url, is_published").in("id", entityIds)
+          : Promise.resolve({ data: [] as any[] }),
+      ]);
+
+      const personaMap = new Map((personasRes.data || []).map((p: any) => [p.id, p]));
+      const entityMap = new Map((entitiesRes.data || []).map((e: any) => [e.id, e]));
+
+      const backstage: any[] = [];
+      const hostRoles: any[] = [];
+
+      festivalParticipants.forEach((p) => {
+        const resolved =
+          p.participant_kind === "persona"
+            ? personaMap.get(p.participant_id)
+            : entityMap.get(p.participant_id);
+        if (!resolved) return;
+
+        const item = {
+          participant_kind: p.participant_kind,
+          participant_id: p.participant_id,
+          entity: p.participant_kind !== "persona" ? resolved : null,
+          persona: p.participant_kind === "persona" ? resolved : null,
+          role_label: p.role_label,
+        };
+
+        if (p.zone === "backstage") backstage.push(item);
+        else if (p.zone === "host") hostRoles.push(item);
+      });
+
+      return { festival: festivalEvent.festival, backstage, hostRoles };
+    },
+  });
+
   // Fetch venues for dropdown
   const { data: venues } = useQuery({
     queryKey: ["admin-venues-list"],
@@ -434,6 +499,55 @@ export default function AdminEventEdit() {
               />
             </TabsContent>
           </Tabs>
+        </div>
+      )}
+
+      {/* Festival-team (read-only, inherited) */}
+      {!isNew && festivalTeam && (festivalTeam.hostRoles.length > 0 || festivalTeam.backstage.length > 0) && (
+        <div className="space-y-3 pt-6 border-t border-border/50">
+          <div className="flex items-center gap-3">
+            <Users className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">
+                Festival‑team ({festivalTeam.festival?.name})
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Arves fra festivalen – redigeres på festivalsiden.
+              </p>
+            </div>
+          </div>
+
+          {festivalTeam.hostRoles.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Arrangør</p>
+              {festivalTeam.hostRoles.map((item: any, i: number) => (
+                <div key={item.participant_id || i} className="flex items-center gap-2 text-sm">
+                  <span className="font-medium text-foreground">
+                    {item.persona?.name || item.entity?.name}
+                  </span>
+                  {item.role_label && (
+                    <span className="text-xs text-muted-foreground">· {item.role_label}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {festivalTeam.backstage.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Bak scenen</p>
+              {festivalTeam.backstage.map((item: any, i: number) => (
+                <div key={item.participant_id || i} className="flex items-center gap-2 text-sm">
+                  <span className="font-medium text-foreground">
+                    {item.persona?.name || item.entity?.name}
+                  </span>
+                  {item.role_label && (
+                    <span className="text-xs text-muted-foreground">· {item.role_label}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
