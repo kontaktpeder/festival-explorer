@@ -217,16 +217,22 @@ function TimelineEventDialog({
     storedYear: number | null | undefined
   ) {
     if (storedDate) {
-      const d = new Date(storedDate);
-      if (!Number.isNaN(d.getTime())) {
+      // Parse date string directly to avoid timezone shift
+      const dateVal = typeof storedDate === "string" ? storedDate : "";
+      const datePart = dateVal.slice(0, 10); // "YYYY-MM-DD"
+      const match = datePart.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (match) {
+        const y = parseInt(match[1], 10);
+        const m = parseInt(match[2], 10);
+        const d = parseInt(match[3], 10);
+        // Extract time if present (e.g. "2024-06-15T14:30:00")
+        const timeMatch = dateVal.match(/T(\d{2}):(\d{2})/);
+        const hasTime = timeMatch && (timeMatch[1] !== "00" || timeMatch[2] !== "00");
         return {
-          year: d.getFullYear() as number | "",
-          month: (d.getMonth() + 1) as number | "",
-          day: d.getDate() as number | "",
-          time:
-            d.getHours() !== 0 || d.getMinutes() !== 0
-              ? `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`
-              : "",
+          year: y as number | "",
+          month: m as number | "",
+          day: d as number | "",
+          time: hasTime ? `${timeMatch![1]}:${timeMatch![2]}` : "",
         };
       }
     }
@@ -236,16 +242,15 @@ function TimelineEventDialog({
     return { year: "" as number | "", month: "" as number | "", day: "" as number | "", time: "" };
   }
 
-  function toDateISO(year: number | "", month: number | "", day: number | "", time: string): string | null {
+  // Build YYYY-MM-DD string directly – no timezone conversion
+  function toDateStr(year: number | "", month: number | "", day: number | "", time: string): string | null {
     if (year === "" || year == null) return null;
     const y = Number(year);
     const m = month !== "" && month != null ? Number(month) : 1;
     const d = day !== "" && day != null ? Number(day) : 1;
     const dateStr = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    if (time && /^\d{1,2}:\d{2}$/.test(time)) {
-      return new Date(`${dateStr}T${time}:00`).toISOString();
-    }
-    return new Date(`${dateStr}T00:00:00`).toISOString();
+    // DB column is DATE, so just send YYYY-MM-DD (time is ignored by date columns)
+    return dateStr;
   }
 
   useEffect(() => {
@@ -277,8 +282,8 @@ function TimelineEventDialog({
       title: title.trim(),
       event_type: eventType,
       visibility,
-      date: (monthFrom !== "" || dayFrom !== "" || timeFrom) ? toDateISO(yearFrom, monthFrom, dayFrom, timeFrom) : null,
-      date_to: (yearTo !== "" && (monthTo !== "" || dayTo !== "" || timeTo)) ? toDateISO(yearTo, monthTo, dayTo, timeTo) : null,
+      date: (monthFrom !== "" || dayFrom !== "" || timeFrom) ? toDateStr(yearFrom, monthFrom, dayFrom, timeFrom) : null,
+      date_to: (yearTo !== "" && (monthTo !== "" || dayTo !== "" || timeTo)) ? toDateStr(yearTo, monthTo, dayTo, timeTo) : null,
       year: typeof yearFrom === "number" ? yearFrom : null,
       year_to: typeof yearTo === "number" ? yearTo : null,
       location_name: existingEvent?.location_name ?? null,
