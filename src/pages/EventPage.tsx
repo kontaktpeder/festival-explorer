@@ -150,63 +150,75 @@ export default function EventPage() {
             </section>
           )}
 
-          {/* Bak scenen – festival-team + event-spesifikke */}
-          {(((event as any).backstage?.festival?.length > 0) || ((event as any).backstage?.event?.length > 0)) && (
-            <section className="py-16 md:py-24 border-t border-border/20">
-              <div className="max-w-2xl mx-auto px-6">
-                <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
-                  Bak scenen
-                </h2>
-                {(event as any).backstage?.festival?.length > 0 && (
-                  <div className="space-y-4 mb-6">
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Festival-team</p>
-                    {((event as any).backstage.festival as any[]).map((item: any, i: number) => (
-                      <EventParticipantItem key={item.participant_id || i} item={item} />
-                    ))}
-                  </div>
-                )}
-                {(event as any).backstage?.event?.length > 0 && (
-                  <div className="space-y-4">
-                    {(event as any).backstage.festival?.length > 0 && (
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Denne kvelden</p>
-                    )}
-                    {((event as any).backstage.event as any[]).map((item: any, i: number) => (
-                      <EventParticipantItem key={item.participant_id || i} item={item} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            </section>
-          )}
+          {/* Bak scenen – festival-team + event-spesifikke (dedup: event overstyrer) */}
+          {(() => {
+            const bs = (event as any).backstage || { festival: [], event: [] };
+            const eventKeys = new Set((bs.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
+            const filteredFestival = (bs.festival || []).filter((p: any) => !eventKeys.has(`${p.participant_kind}:${p.participant_id}`));
+            if (filteredFestival.length === 0 && (bs.event || []).length === 0) return null;
+            return (
+              <section className="py-16 md:py-24 border-t border-border/20">
+                <div className="max-w-2xl mx-auto px-6">
+                  <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
+                    Bak scenen
+                  </h2>
+                  {filteredFestival.length > 0 && (
+                    <div className="space-y-4 mb-6">
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Festival-team</p>
+                      {filteredFestival.map((item: any, i: number) => (
+                        <EventParticipantItem key={item.participant_id || i} item={item} />
+                      ))}
+                    </div>
+                  )}
+                  {(bs.event || []).length > 0 && (
+                    <div className="space-y-4">
+                      {filteredFestival.length > 0 && (
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Denne kvelden</p>
+                      )}
+                      {(bs.event as any[]).map((item: any, i: number) => (
+                        <EventParticipantItem key={item.participant_id || i} item={item} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </section>
+            );
+          })()}
 
-          {/* Arrangør – festival-team + event-spesifikke */}
-          {(((event as any).hostRoles?.festival?.length > 0) || ((event as any).hostRoles?.event?.length > 0)) && (
-            <section className="py-16 md:py-24 border-t border-border/20">
-              <div className="max-w-2xl mx-auto px-6">
-                <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
-                  Arrangør
-                </h2>
-                {(event as any).hostRoles?.festival?.length > 0 && (
-                  <div className="space-y-4 mb-6">
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Festival-team</p>
-                    {((event as any).hostRoles.festival as any[]).map((item: any, i: number) => (
-                      <EventParticipantItem key={item.participant_id || i} item={item} />
-                    ))}
-                  </div>
-                )}
-                {(event as any).hostRoles?.event?.length > 0 && (
-                  <div className="space-y-4">
-                    {(event as any).hostRoles.festival?.length > 0 && (
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Denne kvelden</p>
-                    )}
-                    {((event as any).hostRoles.event as any[]).map((item: any, i: number) => (
-                      <EventParticipantItem key={item.participant_id || i} item={item} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            </section>
-          )}
+          {/* Arrangør – festival-team + event-spesifikke (dedup: event overstyrer) */}
+          {(() => {
+            const hr = (event as any).hostRoles || { festival: [], event: [] };
+            const eventKeys = new Set((hr.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
+            const filteredFestival = (hr.festival || []).filter((p: any) => !eventKeys.has(`${p.participant_kind}:${p.participant_id}`));
+            if (filteredFestival.length === 0 && (hr.event || []).length === 0) return null;
+            return (
+              <section className="py-16 md:py-24 border-t border-border/20">
+                <div className="max-w-2xl mx-auto px-6">
+                  <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
+                    Arrangør
+                  </h2>
+                  {filteredFestival.length > 0 && (
+                    <div className="space-y-4 mb-6">
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Festival-team</p>
+                      {filteredFestival.map((item: any, i: number) => (
+                        <EventParticipantItem key={item.participant_id || i} item={item} />
+                      ))}
+                    </div>
+                  )}
+                  {(hr.event || []).length > 0 && (
+                    <div className="space-y-4">
+                      {filteredFestival.length > 0 && (
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Denne kvelden</p>
+                      )}
+                      {(hr.event as any[]).map((item: any, i: number) => (
+                        <EventParticipantItem key={item.participant_id || i} item={item} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </section>
+            );
+          })()}
         </>
       )}
 
