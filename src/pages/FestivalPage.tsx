@@ -366,31 +366,22 @@ export default function FestivalPage() {
             <p className="text-foreground/70 text-base md:text-lg mb-10 max-w-xl">
               Folkene bak scenen som får festivalen til å skje.
             </p>
-            <div className="grid gap-10 md:grid-cols-2">
-              {festival.festivalTeam.hostRoles?.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-accent/70 mb-4">
-                    Arrangør
-                  </h3>
-                  <div className="space-y-3">
-                    {festival.festivalTeam.hostRoles.map((item: any, i: number) => (
-                      <EventParticipantItem key={item.participant_id || i} item={item} />
-                    ))}
+            <div className="space-y-6">
+              {[
+                ...(festival.festivalTeam.hostRoles || []),
+                ...(festival.festivalTeam.backstage || []),
+              ]
+                .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+                .map((item: any, i: number) => (
+                  <div key={item.participant_id || i} className="flex flex-col gap-1">
+                    {item.role_label && (
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                        {item.role_label}
+                      </p>
+                    )}
+                    <EventParticipantItem item={item} />
                   </div>
-                </div>
-              )}
-              {festival.festivalTeam.backstage?.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-accent/70 mb-4">
-                    Bak scenen
-                  </h3>
-                  <div className="space-y-3">
-                    {festival.festivalTeam.backstage.map((item: any, i: number) => (
-                      <EventParticipantItem key={item.participant_id || i} item={item} />
-                    ))}
-                  </div>
-                </div>
-              )}
+                ))}
             </div>
           </div>
         </section>
