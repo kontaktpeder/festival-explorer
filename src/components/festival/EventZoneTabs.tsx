@@ -37,22 +37,30 @@ function normalizeZone(zone: ZoneGroup | any[]): ZoneGroup {
 }
 
 function ZoneContent({ zone, emptyIcon, emptyMessage }: { zone: ZoneGroup; emptyIcon: React.ElementType; emptyMessage: string }) {
-  const total = zone.festival.length + zone.event.length;
+  // Deduplicate: event-level overrides festival-level for same (kind, id)
+  const eventKeys = new Set(
+    zone.event.map((p: any) => `${p.participant_kind}:${p.participant_id}`)
+  );
+  const filteredFestival = zone.festival.filter(
+    (p: any) => !eventKeys.has(`${p.participant_kind}:${p.participant_id}`)
+  );
+
+  const total = filteredFestival.length + zone.event.length;
   if (total === 0) return <EmptyZoneState icon={emptyIcon} message={emptyMessage} />;
 
   return (
     <div className="space-y-4">
-      {zone.festival.length > 0 && (
+      {filteredFestival.length > 0 && (
         <div className="space-y-4 mb-6">
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Festival-team</p>
-          {zone.festival.map((item: any, i: number) => (
+          {filteredFestival.map((item: any, i: number) => (
             <EventParticipantItem key={item.participant_id || i} item={item} />
           ))}
         </div>
       )}
       {zone.event.length > 0 && (
         <div className="space-y-4">
-          {zone.festival.length > 0 && (
+          {filteredFestival.length > 0 && (
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Denne kvelden</p>
           )}
           {zone.event.map((item: any, i: number) => (
