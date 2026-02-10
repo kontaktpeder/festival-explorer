@@ -199,57 +199,88 @@ function TimelineEventDialog({
 
   const [eventType, setEventType] = useState<TimelineEventType>(defaultEventType);
   const [title, setTitle] = useState("");
-  const [year, setYear] = useState<number | "">("");
+  const [yearFrom, setYearFrom] = useState<number | "">("");
+  const [monthFrom, setMonthFrom] = useState<number | "">("");
+  const [dayFrom, setDayFrom] = useState<number | "">("");
+  const [timeFrom, setTimeFrom] = useState("");
   const [yearTo, setYearTo] = useState<number | "">("");
-  const [dateStr, setDateStr] = useState("");
-  const [dateToStr, setDateToStr] = useState("");
-  const [timeStr, setTimeStr] = useState("");
+  const [monthTo, setMonthTo] = useState<number | "">("");
+  const [dayTo, setDayTo] = useState<number | "">("");
+  const [timeTo, setTimeTo] = useState("");
   const [visibility, setVisibility] = useState<TimelineVisibility>("public");
   const [description, setDescription] = useState("");
   const [mediaUrl, setMediaUrl] = useState("");
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
 
+  function fromStoredDate(
+    storedDate: string | null | undefined,
+    storedYear: number | null | undefined
+  ) {
+    if (storedDate) {
+      const d = new Date(storedDate);
+      if (!Number.isNaN(d.getTime())) {
+        return {
+          year: d.getFullYear() as number | "",
+          month: (d.getMonth() + 1) as number | "",
+          day: d.getDate() as number | "",
+          time:
+            d.getHours() !== 0 || d.getMinutes() !== 0
+              ? `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`
+              : "",
+        };
+      }
+    }
+    if (storedYear != null) {
+      return { year: storedYear as number | "", month: "" as number | "", day: "" as number | "", time: "" };
+    }
+    return { year: "" as number | "", month: "" as number | "", day: "" as number | "", time: "" };
+  }
+
+  function toDateISO(year: number | "", month: number | "", day: number | "", time: string): string | null {
+    if (year === "" || year == null) return null;
+    const y = Number(year);
+    const m = month !== "" && month != null ? Number(month) : 1;
+    const d = day !== "" && day != null ? Number(day) : 1;
+    const dateStr = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    if (time && /^\d{1,2}:\d{2}$/.test(time)) {
+      return new Date(`${dateStr}T${time}:00`).toISOString();
+    }
+    return new Date(`${dateStr}T00:00:00`).toISOString();
+  }
+
   useEffect(() => {
     if (open) {
       setEventType((existingEvent?.event_type as TimelineEventType) ?? defaultEventType);
       setTitle(existingEvent?.title ?? "");
-      setYear(existingEvent?.year ?? "");
-      setYearTo(existingEvent?.year_to ?? "");
       setVisibility((existingEvent?.visibility as TimelineVisibility) ?? "public");
       setDescription(existingEvent?.description ?? "");
-
-      if (existingEvent?.date) {
-        const d = new Date(existingEvent.date);
-        setDateStr(d.toISOString().slice(0, 10));
-        setTimeStr(d.getHours() !== 0 || d.getMinutes() !== 0 ? d.toISOString().slice(11, 16) : "");
-      } else {
-        setDateStr("");
-        setTimeStr("");
-      }
-
-      setDateToStr(existingEvent?.date_to ? new Date(existingEvent.date_to).toISOString().slice(0, 10) : "");
       setMediaUrl(existingEvent?.media?.[0]?.url ?? "");
+
+      const from = fromStoredDate(existingEvent?.date, existingEvent?.year);
+      setYearFrom(from.year);
+      setMonthFrom(from.month);
+      setDayFrom(from.day);
+      setTimeFrom(from.time);
+
+      const to = fromStoredDate(existingEvent?.date_to, existingEvent?.year_to ?? undefined);
+      setYearTo(to.year);
+      setMonthTo(to.month);
+      setDayTo(to.day);
+      setTimeTo(to.time);
     }
   }, [open, existingEvent, defaultEventType]);
 
   const handleSave = async () => {
-    if (!title.trim() || !year) return;
-
-    let fullDate: string | null = null;
-    if (dateStr) {
-      fullDate = timeStr
-        ? new Date(`${dateStr}T${timeStr}:00`).toISOString()
-        : new Date(`${dateStr}T00:00:00`).toISOString();
-    }
+    if (!title.trim() || yearFrom === "") return;
 
     const payload: Omit<UnifiedTimelineEvent, "id" | "created_at" | "updated_at"> = {
       title: title.trim(),
       event_type: eventType,
       visibility,
-      date: fullDate,
-      date_to: dateToStr ? new Date(`${dateToStr}T00:00:00`).toISOString() : null,
-      year: Number(year),
-      year_to: yearTo ? Number(yearTo) : null,
+      date: (monthFrom !== "" || dayFrom !== "" || timeFrom) ? toDateISO(yearFrom, monthFrom, dayFrom, timeFrom) : null,
+      date_to: (yearTo !== "" && (monthTo !== "" || dayTo !== "" || timeTo)) ? toDateISO(yearTo, monthTo, dayTo, timeTo) : null,
+      year: typeof yearFrom === "number" ? yearFrom : null,
+      year_to: typeof yearTo === "number" ? yearTo : null,
       location_name: existingEvent?.location_name ?? null,
       city: existingEvent?.city ?? null,
       country: existingEvent?.country ?? null,
@@ -313,53 +344,141 @@ function TimelineEventDialog({
             />
           </div>
 
-          {/* Year */}
+          {/* Fra */}
           <div className="space-y-1.5">
-            <Label className="text-sm">År *</Label>
-            <div className="flex gap-2 items-center">
+            <Label className="text-sm">Fra *</Label>
+            <div className="flex flex-wrap gap-2 items-center">
               <Input
                 type="number"
-                value={year}
-                onChange={(e) => setYear(e.target.value ? parseInt(e.target.value, 10) : "")}
-                placeholder="2024"
+                value={yearFrom === "" ? "" : yearFrom}
+                onChange={(e) => {
+                  const v = e.target.value ? parseInt(e.target.value, 10) : ("" as const);
+                  setYearFrom(v);
+                  if (v === "") { setMonthFrom(""); setDayFrom(""); setTimeFrom(""); }
+                }}
+                placeholder="År"
                 min={1900}
                 max={2100}
-                className="w-24 sm:w-28 h-9 sm:h-10"
+                className="w-20 h-9 sm:h-10"
               />
-              {year && (
-                <>
-                  <span className="text-muted-foreground text-sm">–</span>
-                  <Input
-                    type="number"
-                    value={yearTo}
-                    onChange={(e) => setYearTo(e.target.value ? parseInt(e.target.value, 10) : "")}
-                    placeholder="(til)"
-                    min={1900}
-                    max={2100}
-                    className="w-24 sm:w-28 h-9 sm:h-10"
-                  />
-                </>
+              {yearFrom !== "" && (
+                <Select
+                  value={monthFrom === "" ? "none" : String(monthFrom)}
+                  onValueChange={(v) => {
+                    const m = v === "none" ? ("" as const) : parseInt(v, 10);
+                    setMonthFrom(m);
+                    if (m === "") { setDayFrom(""); setTimeFrom(""); }
+                  }}
+                >
+                  <SelectTrigger className="w-[120px] h-9 sm:h-10">
+                    <SelectValue placeholder="Måned" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[40vh]">
+                    <SelectItem value="none">Kun år</SelectItem>
+                    {[1,2,3,4,5,6,7,8,9,10,11,12].map((m) => (
+                      <SelectItem key={m} value={String(m)}>
+                        {new Date(2000, m - 1, 1).toLocaleDateString("nb-NO", { month: "long" })}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {monthFrom !== "" && (
+                <Input
+                  type="number"
+                  value={dayFrom === "" ? "" : dayFrom}
+                  onChange={(e) => {
+                    const d = e.target.value ? parseInt(e.target.value, 10) : ("" as const);
+                    setDayFrom(d);
+                    if (d === "") setTimeFrom("");
+                  }}
+                  placeholder="Dag"
+                  min={1}
+                  max={31}
+                  className="w-16 h-9 sm:h-10"
+                />
+              )}
+              {monthFrom !== "" && dayFrom !== "" && (
+                <Input
+                  type="time"
+                  value={timeFrom}
+                  onChange={(e) => setTimeFrom(e.target.value)}
+                  className="w-28 h-9 sm:h-10"
+                />
               )}
             </div>
           </div>
 
-          {/* Dates */}
-          <div className="space-y-1.5">
-            <Label className="text-sm">Eksakt dato (valgfritt)</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <span className="text-xs text-muted-foreground">Fra</span>
-                <Input type="date" value={dateStr} onChange={(e) => setDateStr(e.target.value)} className="w-full h-9 sm:h-10 text-sm" />
-              </div>
-              <div className="space-y-1">
-                <span className="text-xs text-muted-foreground">Til</span>
-                <Input type="date" value={dateToStr} onChange={(e) => setDateToStr(e.target.value)} className="w-full h-9 sm:h-10 text-sm" />
+          {/* Til */}
+          {yearFrom !== "" && (
+            <div className="space-y-1.5">
+              <Label className="text-sm">Til (valgfritt)</Label>
+              <div className="flex flex-wrap gap-2 items-center">
+                <Input
+                  type="number"
+                  value={yearTo === "" ? "" : yearTo}
+                  onChange={(e) => {
+                    const v = e.target.value ? parseInt(e.target.value, 10) : ("" as const);
+                    setYearTo(v);
+                    if (v === "") { setMonthTo(""); setDayTo(""); setTimeTo(""); }
+                  }}
+                  placeholder="År"
+                  min={1900}
+                  max={2100}
+                  className="w-20 h-9 sm:h-10"
+                />
+                {yearTo !== "" && (
+                  <Select
+                    value={monthTo === "" ? "none" : String(monthTo)}
+                    onValueChange={(v) => {
+                      const m = v === "none" ? ("" as const) : parseInt(v, 10);
+                      setMonthTo(m);
+                      if (m === "") { setDayTo(""); setTimeTo(""); }
+                    }}
+                  >
+                    <SelectTrigger className="w-[120px] h-9 sm:h-10">
+                      <SelectValue placeholder="Måned" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[40vh]">
+                      <SelectItem value="none">Kun år</SelectItem>
+                      {[1,2,3,4,5,6,7,8,9,10,11,12].map((m) => (
+                        <SelectItem key={m} value={String(m)}>
+                          {new Date(2000, m - 1, 1).toLocaleDateString("nb-NO", { month: "long" })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {monthTo !== "" && (
+                  <Input
+                    type="number"
+                    value={dayTo === "" ? "" : dayTo}
+                    onChange={(e) => {
+                      const d = e.target.value ? parseInt(e.target.value, 10) : ("" as const);
+                      setDayTo(d);
+                      if (d === "") setTimeTo("");
+                    }}
+                    placeholder="Dag"
+                    min={1}
+                    max={31}
+                    className="w-16 h-9 sm:h-10"
+                  />
+                )}
+                {monthTo !== "" && dayTo !== "" && (
+                  <Input
+                    type="time"
+                    value={timeTo}
+                    onChange={(e) => setTimeTo(e.target.value)}
+                    className="w-28 h-9 sm:h-10"
+                  />
+                )}
               </div>
             </div>
-            {dateStr && !dateToStr && (
-              <Input type="time" value={timeStr} onChange={(e) => setTimeStr(e.target.value)} className="w-32 h-9 sm:h-10 text-sm" placeholder="--:--" />
-            )}
-          </div>
+          )}
+
+          <p className="text-xs text-muted-foreground">
+            Fyll kun år, år og måned, eller full dato. Klokkeslett kan settes når dag er valgt.
+          </p>
 
           {/* Visibility */}
           <div className="space-y-1.5">
@@ -411,7 +530,7 @@ function TimelineEventDialog({
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending} className="w-full sm:w-auto h-9 sm:h-10">
               Avbryt
             </Button>
-            <Button onClick={handleSave} disabled={isPending || !title.trim() || !year} className="w-full sm:w-auto h-9 sm:h-10">
+            <Button onClick={handleSave} disabled={isPending || !title.trim() || yearFrom === ""} className="w-full sm:w-auto h-9 sm:h-10">
               {isPending ? "Lagrer..." : "Lagre"}
             </Button>
           </div>
