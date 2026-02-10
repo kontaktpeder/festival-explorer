@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,57 @@ interface Props {
   zone: Zone;
   title?: string;
   defaultAddKind?: "persona" | "entity";
+}
+
+function DebouncedRoleInput({
+  initialValue,
+  placeholder,
+  fallbackRole,
+  onSave,
+}: {
+  initialValue: string;
+  placeholder: string;
+  fallbackRole?: string;
+  onSave: (value: string) => void;
+}) {
+  const [value, setValue] = useState(initialValue);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    const v = e.target.value;
+    setValue(v);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => onSave(v), 600);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  // Sync if parent value changes (e.g. after reload)
+  useEffect(() => {
+    setValue(initialValue);
+  }, [initialValue]);
+
+  return (
+    <>
+      <Input
+        placeholder={placeholder}
+        value={value}
+        onChange={handleChange}
+        onKeyDown={(e) => e.stopPropagation()}
+        className="mt-1.5 h-7 text-base"
+      />
+      {!value && fallbackRole && (
+        <p className="text-[10px] text-muted-foreground mt-0.5">
+          Vises som: <span className="font-medium capitalize">{fallbackRole}</span>
+        </p>
+      )}
+    </>
+  );
 }
 
 export function EventParticipantsZoneEditor({
@@ -157,17 +208,15 @@ export function EventParticipantsZoneEditor({
     void loadRows();
   };
 
-  const handleRoleChange = async (id: string, role: string) => {
+  const saveRoleLabel = useCallback(async (id: string, role: string) => {
     const { error } = await supabase
       .from("event_participants")
       .update({ role_label: role || null })
       .eq("id", id);
     if (error) {
       toast.error("Kunne ikke oppdatere rolle");
-      return;
     }
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, role_label: role || null } : r)));
-  };
+  }, []);
 
   const reorder = async (index: number, direction: "up" | "down") => {
     const newIndex = direction === "up" ? index - 1 : index + 1;
@@ -293,27 +342,20 @@ export function EventParticipantsZoneEditor({
                       {row.participant_kind === "persona" ? "Person" : "Prosjekt"}
                     </Badge>
                   </div>
-                  {(() => {
-                    const explicitRole = row.role_label || "";
-                    const fallbackRole = row.participant_kind === "persona"
-                      ? resolved[row.participant_id]?.category_tags?.[0]
-                      : undefined;
-                    return (
-                      <>
-                        <Input
-                          placeholder={fallbackRole ? `Rolle (standard: ${fallbackRole})` : "Rolle (valgfritt)"}
-                          value={explicitRole}
-                          onChange={(e) => handleRoleChange(row.id, e.target.value)}
-                          className="mt-1.5 h-7 text-xs"
-                        />
-                        {!explicitRole && fallbackRole && (
-                          <p className="text-[10px] text-muted-foreground mt-0.5">
-                            Vises som: <span className="font-medium capitalize">{fallbackRole}</span>
-                          </p>
-                        )}
-                      </>
-                    );
-                  })()}
+                  <DebouncedRoleInput
+                    initialValue={row.role_label || ""}
+                    placeholder={
+                      row.participant_kind === "persona" && resolved[row.participant_id]?.category_tags?.[0]
+                        ? `Rolle (standard: ${resolved[row.participant_id]?.category_tags?.[0]})`
+                        : "Rolle (valgfritt)"
+                    }
+                    fallbackRole={
+                      row.participant_kind === "persona"
+                        ? resolved[row.participant_id]?.category_tags?.[0]
+                        : undefined
+                    }
+                    onSave={(v) => saveRoleLabel(row.id, v)}
+                  />
                 </div>
 
                 <div className="flex gap-1 shrink-0">
