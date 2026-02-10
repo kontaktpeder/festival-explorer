@@ -102,7 +102,7 @@ export function useCreateUnifiedTimelineEvent(source: TimelineSource | undefined
         .from(table as any)
         .insert(payload)
         .select()
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -138,7 +138,7 @@ export function useUpdateUnifiedTimelineEvent(source: TimelineSource | undefined
         .update(rest)
         .eq("id", id)
         .select()
-        .single();
+        .maybeSingle();
       if (error) throw error;
       return data;
     },
