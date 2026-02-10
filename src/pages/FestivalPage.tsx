@@ -146,65 +146,10 @@ export default function FestivalPage() {
               dateRange={showDateRange}
               festivalDescription={showDescription}
               festivalName={showName}
+              festivalTeam={festival.festivalTeam}
             />
           );
         })}
-
-        {/* Festival-team seksjon (Arrangør / Bak scenen) */}
-        {(festival.festivalTeam?.hostRoles?.length > 0 || festival.festivalTeam?.backstage?.length > 0) && (
-          <section className="fullscreen-section relative bg-background">
-            <div className="relative z-10 max-w-3xl mx-auto px-6 py-20 md:py-28">
-              <h2 className="section-title">Bli kjent med festival-teamet</h2>
-              <p className="text-foreground/70 text-base md:text-lg mb-10 max-w-xl">
-                Folkene bak scenen som får festivalen til å skje.
-              </p>
-              <div className="grid gap-10 md:grid-cols-2">
-                {festival.festivalTeam.hostRoles?.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-accent/70 mb-4">
-                      Arrangør
-                    </h3>
-                    <div className="space-y-3">
-                      {festival.festivalTeam.hostRoles.map((item: any, i: number) => {
-                        const name = item.persona?.name || item.entity?.name;
-                        if (!name) return null;
-                        return (
-                          <div key={item.participant_id || i} className="text-sm">
-                            <span className="font-medium text-foreground">{name}</span>
-                            {item.role_label && (
-                              <span className="text-muted-foreground text-xs ml-1.5">· {item.role_label}</span>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-                {festival.festivalTeam.backstage?.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-accent/70 mb-4">
-                      Bak scenen
-                    </h3>
-                    <div className="space-y-3">
-                      {festival.festivalTeam.backstage.map((item: any, i: number) => {
-                        const name = item.persona?.name || item.entity?.name;
-                        if (!name) return null;
-                        return (
-                          <div key={item.participant_id || i} className="text-sm">
-                            <span className="font-medium text-foreground">{name}</span>
-                            {item.role_label && (
-                              <span className="text-muted-foreground text-xs ml-1.5">· {item.role_label}</span>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
-        )}
 
         <div className="fixed bottom-4 right-4 z-40">
           <Link 
@@ -338,7 +283,7 @@ export default function FestivalPage() {
       </section>
 
       {/* SEKSJON 4: ARTISTER - Dual lineup (Festival + Boiler Room) */}
-      <DualLineupSection artists={fallbackArtists} />
+      <DualLineupSection artists={fallbackArtists} festivalTeam={festival.festivalTeam} />
 
       {/* SEKSJON 5: VENUE-PLAKAT - Fullskjerm, bg-fixed */}
       <section
