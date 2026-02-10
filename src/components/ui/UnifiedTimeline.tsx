@@ -131,19 +131,35 @@ function TimelineDisplayItem({ event, index, eventTypeOptions }: TimelineDisplay
 
 // ─── Helpers ────────────────────────────────────────────────
 
-function formatEventDate(event: UnifiedTimelineEvent): string | null {
-  if (event.year) {
-    if (event.year_to) return `${event.year}–${event.year_to}`;
-    return event.year.toString();
+function formatSingleDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const hasTime = d.getUTCHours() !== 0 || d.getUTCMinutes() !== 0;
+  const isFirstOfMonth = d.getUTCDate() === 1 && !hasTime;
+  if (isFirstOfMonth) {
+    return format(d, "MMMM yyyy", { locale: nb });
   }
+  const base = format(d, "d. MMMM yyyy", { locale: nb });
+  if (hasTime) {
+    return `${base} ${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
+  }
+  return base;
+}
+
+function formatEventDate(event: UnifiedTimelineEvent): string | null {
+  // Prefer exact date over year-only
   if (event.date) {
-    const year = format(new Date(event.date), "yyyy", { locale: nb });
+    const from = formatSingleDate(event.date);
+    if (!from) return event.year?.toString() ?? null;
     if (event.date_to) {
-      const yearTo = format(new Date(event.date_to), "yyyy", { locale: nb });
-      if (year !== yearTo) return `${year}–${yearTo}`;
-      return `${format(new Date(event.date), "MMM", { locale: nb })}–${format(new Date(event.date_to), "MMM yyyy", { locale: nb })}`;
+      const to = formatSingleDate(event.date_to);
+      if (to && to !== from) return `${from} – ${to}`;
     }
-    return year;
+    return from;
+  }
+  if (event.year != null) {
+    if (event.year_to != null && event.year_to !== event.year) return `${event.year}–${event.year_to}`;
+    return event.year.toString();
   }
   return null;
 }
