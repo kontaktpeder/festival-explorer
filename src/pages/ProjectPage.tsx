@@ -5,7 +5,7 @@ import { parseImageSettings } from "@/types/database";
 import type { SocialLink } from "@/types/social";
 import { formatEntityLocationDisplay, type LocationType } from "@/types/location";
 
-import { usePublicEntityTimelineEvents } from "@/hooks/useEntityTimeline";
+import { useUnifiedTimelineEvents } from "@/hooks/useUnifiedTimeline";
 
 type EntityType = Database["public"]["Enums"]["entity_type"];
 
@@ -28,7 +28,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
-import { EntityTimeline } from "@/components/ui/EntityTimeline";
+import { UnifiedTimeline } from "@/components/ui/UnifiedTimeline";
 import { EntitySocialLinks } from "@/components/ui/EntitySocialLinks";
 import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
 
@@ -36,7 +36,8 @@ export default function ProjectPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: entity, isLoading, error } = useEntity(slug || "");
   const { data: personaBindings } = useEntityPersonaBindings(entity?.id);
-  const { data: timelineEvents } = usePublicEntityTimelineEvents(entity?.id);
+  const timelineSource = entity?.id ? { type: "entity" as const, id: entity.id } : undefined;
+  const { data: timelineEvents } = useUnifiedTimelineEvents(timelineSource, { visibility: "public" });
   
   // Signed URL for public viewing
   const heroImageUrl = useSignedMediaUrl(entity?.hero_image_url, 'public');
@@ -189,7 +190,7 @@ export default function ProjectPage() {
           <h2 className="text-xs uppercase tracking-[0.25em] text-muted-foreground/60 mb-12 md:mb-20">
             Historien
           </h2>
-          <EntityTimeline entityId={entity.id} viewerRole="fan" />
+          <UnifiedTimeline source={{ type: "entity", id: entity.id }} />
         </section>
       )}
 

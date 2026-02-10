@@ -25,7 +25,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { EntityTimelineManager } from "@/components/dashboard/EntityTimelineManager";
+import { UnifiedTimelineManager } from "@/components/dashboard/UnifiedTimelineManager";
+import { PERSONA_EVENT_TYPE_OPTIONS, VENUE_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
 import { EntityPersonaBindingsEditor } from "@/components/admin/EntityPersonaBindingsEditor";
 import { SocialLinksEditor } from "@/components/ui/SocialLinksEditor";
 import { 
@@ -492,12 +493,12 @@ export default function EntityEdit() {
             <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${timelineOpen ? "rotate-180" : ""}`} />
           </CollapsibleTrigger>
           <CollapsibleContent className="py-5 border-b border-border/30">
-            <p className="text-sm text-muted-foreground mb-4">
-              {isVenue ? "Viktige hendelser i scenens historie" : "Viktige øyeblikk i prosjektets reise"}
-            </p>
-            <EntityTimelineManager
-              entityId={entityWithAccess.id}
+            <UnifiedTimelineManager
+              source={{ type: "entity", id: entityWithAccess.id }}
               canEdit={canEdit}
+              eventTypeOptions={isVenue ? VENUE_EVENT_TYPE_OPTIONS : PERSONA_EVENT_TYPE_OPTIONS}
+              title={isVenue ? "Historien" : "Tidslinje"}
+              helperText={isVenue ? "Viktige hendelser i scenens historie" : "Viktige øyeblikk i prosjektets reise"}
             />
           </CollapsibleContent>
         </Collapsible>

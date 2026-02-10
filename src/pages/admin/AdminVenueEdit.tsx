@@ -11,7 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save } from "lucide-react";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { EntityTimelineManager } from "@/components/dashboard/EntityTimelineManager";
+import { UnifiedTimelineManager } from "@/components/dashboard/UnifiedTimelineManager";
+import { VENUE_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
 import { generateSlug } from "@/lib/utils";
 import type { ImageSettings } from "@/types/database";
@@ -257,10 +258,12 @@ export default function AdminVenueEdit() {
 
       {/* Timeline for venue - only show for existing venues */}
       {!isNew && id && (
-        <EntityTimelineManager 
-          entityId={id} 
-          entityType="venue"
-          canEdit={true} 
+        <UnifiedTimelineManager
+          source={{ type: "entity", id }}
+          canEdit={true}
+          eventTypeOptions={VENUE_EVENT_TYPE_OPTIONS}
+          title="Historien"
+          helperText="Viktige hendelser i stedets historie."
         />
       )}
     </div>
