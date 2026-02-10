@@ -337,18 +337,78 @@ export function useEvent(slug: string) {
         lineup = (legacyLineup || []).filter((i) => i.entity?.is_published === true);
       }
 
-      // Check if event belongs to a festival
+      // Check if event belongs to a festival + fetch festival participants
       const { data: festivalEvent } = await supabase
         .from("festival_events")
-        .select(`festival:festivals(slug, name)`)
+        .select(`festival_id, festival:festivals(slug, name)`)
         .eq("event_id", event.id)
         .maybeSingle();
+
+      let festivalBackstage: Array<Record<string, unknown>> = [];
+      let festivalHostRoles: Array<Record<string, unknown>> = [];
+
+      if (festivalEvent?.festival_id) {
+        const { data: festivalParticipants } = await supabase
+          .from("festival_participants")
+          .select("*")
+          .eq("festival_id", festivalEvent.festival_id)
+          .in("zone", ["backstage", "host"])
+          .order("sort_order", { ascending: true });
+
+        if (festivalParticipants && festivalParticipants.length > 0) {
+          // Resolve references
+          const fpPersonaIds = festivalParticipants.filter((p) => p.participant_kind === "persona").map((p) => p.participant_id);
+          const fpEntityIds = festivalParticipants.filter((p) => p.participant_kind !== "persona").map((p) => p.participant_id);
+
+          const [fpPersonasRes, fpEntitiesRes] = await Promise.all([
+            fpPersonaIds.length > 0
+              ? supabase.from("personas").select("*").in("id", fpPersonaIds)
+              : Promise.resolve({ data: [] as any[] }),
+            fpEntityIds.length > 0
+              ? supabase.from("entities").select("*").in("id", fpEntityIds)
+              : Promise.resolve({ data: [] as any[] }),
+          ]);
+
+          const fpPersonaMap = new Map((fpPersonasRes.data || []).map((p: any) => [p.id, p]));
+          const fpEntityMap = new Map((fpEntitiesRes.data || []).map((e: any) => [e.id, e]));
+
+          festivalParticipants.forEach((p) => {
+            const resolved =
+              p.participant_kind === "persona"
+                ? fpPersonaMap.get(p.participant_id)
+                : fpEntityMap.get(p.participant_id);
+
+            if (!resolved) return;
+            if (p.participant_kind !== "persona" && resolved.is_published === false) return;
+            if (p.participant_kind === "persona" && resolved.is_public === false) return;
+
+            const item = {
+              participant_kind: p.participant_kind,
+              participant_id: p.participant_id,
+              entity: p.participant_kind !== "persona" ? resolved : null,
+              persona: p.participant_kind === "persona" ? resolved : null,
+              role_label: p.role_label,
+              sort_order: p.sort_order,
+              scope: "festival" as const,
+            };
+
+            if (p.zone === "backstage") festivalBackstage.push(item);
+            else if (p.zone === "host") festivalHostRoles.push(item);
+          });
+        }
+      }
 
       return {
         ...event,
         lineup,
-        backstage,
-        hostRoles,
+        backstage: {
+          festival: festivalBackstage,
+          event: backstage,
+        },
+        hostRoles: {
+          festival: festivalHostRoles,
+          event: hostRoles,
+        },
         festival: festivalEvent?.festival || null,
       };
     },

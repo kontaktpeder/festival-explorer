@@ -818,6 +818,50 @@ export type Database = {
           },
         ]
       }
+      festival_participants: {
+        Row: {
+          created_at: string | null
+          festival_id: string
+          id: string
+          is_public: boolean | null
+          participant_id: string
+          participant_kind: string
+          role_label: string | null
+          sort_order: number | null
+          zone: string
+        }
+        Insert: {
+          created_at?: string | null
+          festival_id: string
+          id?: string
+          is_public?: boolean | null
+          participant_id: string
+          participant_kind: string
+          role_label?: string | null
+          sort_order?: number | null
+          zone: string
+        }
+        Update: {
+          created_at?: string | null
+          festival_id?: string
+          id?: string
+          is_public?: boolean | null
+          participant_id?: string
+          participant_kind?: string
+          role_label?: string | null
+          sort_order?: number | null
+          zone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "festival_participants_festival_id_fkey"
+            columns: ["festival_id"]
+            isOneToOne: false
+            referencedRelation: "festivals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       festival_sections: {
         Row: {
           accent_override: string | null
