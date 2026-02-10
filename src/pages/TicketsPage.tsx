@@ -90,9 +90,9 @@ export default function TicketsPage() {
   };
 
   // Group: festival passes vs boiler room only
-  const festivalPassCodes = ["FEST_EARLYBIRD", "FEST_STEP2", "FEST_STEP3"];
+  const festivalPassCodes = ["EARLYBIRD", "ORDINAR", "FESTIVALPASS_BOILER"];
   const festivalPasses = (ticketTypes || []).filter((t) => festivalPassCodes.includes(t.code));
-  const boilerOnly = (ticketTypes || []).filter((t) => t.code === "DJ_ONLY");
+  const boilerOnly = (ticketTypes || []).filter((t) => t.code === "BOILER");
 
   const renderTicketCard = (type: TicketTypeWithCount) => {
     const soldOut = type.issued >= type.capacity;
