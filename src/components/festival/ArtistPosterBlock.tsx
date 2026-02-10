@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -45,6 +46,7 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
   const artistLogo = artistLogos[artist.slug];
   const isEven = index % 2 === 0;
   const isMobile = useIsMobile();
+  const [imageLoaded, setImageLoaded] = useState(false);
   
   // Variant-specific styles
   const variantStyles = {
@@ -84,9 +86,11 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
             alt=""
             loading="lazy"
             decoding="async"
+            onLoad={() => setImageLoaded(true)}
             className={cn(
-              "w-full h-full object-cover",
-              !isMobile && "transition-transform duration-1000 group-hover:scale-105"
+              "w-full h-full object-cover transition-all duration-700 ease-out",
+              imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-105",
+              !isMobile && imageLoaded && "group-hover:scale-105 duration-1000"
             )}
           />
         </div>
