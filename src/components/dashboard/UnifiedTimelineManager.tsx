@@ -14,6 +14,7 @@ import {
   useDeleteUnifiedTimelineEvent,
 } from "@/hooks/useUnifiedTimeline";
 import { getEventTypeConfig, VISIBILITY_LABELS, PERSONA_EVENT_TYPE_OPTIONS, VENUE_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
+import { formatTimelineEventDate } from "@/lib/timeline-format";
 import type { TimelineSource, EventTypeOption, UnifiedTimelineEvent } from "@/types/timeline";
 import type { TimelineVisibility, TimelineEventType } from "@/types/database";
 import { format } from "date-fns";
@@ -99,21 +100,8 @@ export function UnifiedTimelineManager({
 
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-                    {event.date ? (
-                      <span className="flex items-center gap-1">
-                        {format(new Date(event.date), "d. MMM yyyy", { locale: nb })}
-                        {event.date_to && (
-                          <>
-                            <span>–</span>
-                            {format(new Date(event.date_to), "d. MMM yyyy", { locale: nb })}
-                          </>
-                        )}
-                      </span>
-                    ) : event.year ? (
-                      <span>
-                        {event.year}
-                        {event.year_to && event.year_to !== event.year ? `–${event.year_to}` : ""}
-                      </span>
+                    {formatTimelineEventDate(event) ? (
+                      <span>{formatTimelineEventDate(event)}</span>
                     ) : null}
                     <span>·</span>
                     <Badge variant="outline" className="text-[10px] py-0 h-4">
