@@ -22,7 +22,8 @@ import { useMyEntities } from "@/hooks/useEntity";
 import { usePersonaEntityBindings, useCreatePersonaBinding, useDeletePersonaBinding } from "@/hooks/usePersonaBindings";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
-import { PersonaTimelineManager } from "@/components/dashboard/PersonaTimelineManager";
+import { UnifiedTimelineManager } from "@/components/dashboard/UnifiedTimelineManager";
+import { PERSONA_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
 import { SocialLinksEditor } from "@/components/ui/SocialLinksEditor";
 import { parseImageSettings, type ImageSettings, type AccessLevel } from "@/types/database";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
@@ -569,8 +570,13 @@ export default function PersonaEdit() {
               <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${timelineOpen ? "rotate-180" : ""}`} />
             </CollapsibleTrigger>
             <CollapsibleContent className="py-5 border-b border-border/30">
-              <p className="text-sm text-muted-foreground mb-4">Milepæler i din karriere</p>
-              <PersonaTimelineManager personaId={id} canEdit={true} />
+              <UnifiedTimelineManager
+                source={{ type: "persona", id }}
+                canEdit={true}
+                eventTypeOptions={PERSONA_EVENT_TYPE_OPTIONS}
+                title="Min reise"
+                helperText="Milepæler i din karriere"
+              />
             </CollapsibleContent>
           </Collapsible>
         )}

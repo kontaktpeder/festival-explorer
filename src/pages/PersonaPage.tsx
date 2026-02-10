@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Building2, User, Users, ExternalLink, ArrowLeft, MapPin, Mail } from "lucide-react";
-import { EntityTimeline } from "@/components/ui/EntityTimeline";
-import { usePublicEntityTimelineEvents } from "@/hooks/useEntityTimeline";
+import { UnifiedTimeline } from "@/components/ui/UnifiedTimeline";
+import { useUnifiedTimelineEvents } from "@/hooks/useUnifiedTimeline";
 import { usePersona } from "@/hooks/usePersona";
 import { usePersonaEntityBindings } from "@/hooks/usePersonaBindings";
 import { ContactRequestModal } from "@/components/persona/ContactRequestModal";
@@ -96,7 +96,8 @@ export default function PersonaPage() {
   const { data: persona, isLoading: isLoadingPersona, error } = usePersona(slug);
   const { data: bindings, isLoading: isLoadingBindings } = usePersonaEntityBindings(persona?.id);
   const { data: otherPersonas } = usePersonasByUserId(persona?.user_id);
-  const { data: timelineEvents } = usePublicEntityTimelineEvents(undefined, persona?.id);
+  const personaTimelineSource = persona?.id ? { type: "persona" as const, id: persona.id } : undefined;
+  const { data: timelineEvents } = useUnifiedTimelineEvents(personaTimelineSource, { visibility: "public" });
 
   // Contact modal state
   const [contactModalOpen, setContactModalOpen] = useState(false);
@@ -276,7 +277,7 @@ export default function PersonaPage() {
               </h2>
               
               {persona && (
-                <EntityTimeline personaId={persona.id} viewerRole="fan" />
+                <UnifiedTimeline source={{ type: "persona", id: persona.id }} />
               )}
             </div>
           </section>
