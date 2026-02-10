@@ -80,15 +80,6 @@ export default function TicketsPage() {
 
   if (typesLoading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>;
 
-  // Helper function to replace DJ/Afterparty with BOILER ROOM
-  const formatTicketText = (text: string | null) => {
-    if (!text) return "";
-    return text
-      .replace(/DJ/gi, "BOILER ROOM")
-      .replace(/Afterparty/gi, "BOILER ROOM")
-      .replace(/afterparty/gi, "BOILER ROOM");
-  };
-
   // Group: festival passes vs boiler room only
   const festivalPassCodes = ["EARLYBIRD", "ORDINAR", "FESTIVALPASS_BOILER"];
   const festivalPasses = (ticketTypes || []).filter((t) => festivalPassCodes.includes(t.code));
@@ -97,6 +88,7 @@ export default function TicketsPage() {
   const renderTicketCard = (type: TicketTypeWithCount) => {
     const soldOut = type.issued >= type.capacity;
     const remaining = type.capacity - type.issued;
+    const showRemaining = type.code !== "BOILER" && !soldOut && remaining <= 20;
 
     return (
       <div
@@ -106,11 +98,11 @@ export default function TicketsPage() {
       >
         <div className="flex items-center justify-between p-4">
           <div className="space-y-0.5">
-            <p className="text-base font-semibold text-foreground">{formatTicketText(type.name)}</p>
-            <p className="text-xs text-muted-foreground">{formatTicketText(type.description)}</p>
+            <p className="text-base font-semibold text-foreground">{type.name}</p>
+            <p className="text-xs text-muted-foreground">{type.description}</p>
             {soldOut ? (
               <p className="text-xs font-semibold text-destructive">Utsolgt</p>
-            ) : remaining <= 20 ? (
+            ) : showRemaining ? (
               <p className="text-xs font-semibold text-accent">{remaining} igjen</p>
             ) : null}
           </div>
