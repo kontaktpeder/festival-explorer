@@ -129,8 +129,11 @@ export function DualLineupSection({ artists, festivalTeam }: DualLineupSectionPr
       {festivalTeam && (festivalTeam.hostRoles.length > 0 || festivalTeam.backstage.length > 0) && (
         <section className="relative py-16 px-6 bg-black">
           <div className="max-w-3xl mx-auto">
-            <p className="text-xs uppercase tracking-[0.3em] text-white/40 mb-8">
+            <p className="text-xs uppercase tracking-[0.3em] text-white/40 mb-2">
               Festival-teamet
+            </p>
+            <p className="text-sm text-white/50 mb-8">
+              Bli kjent med dem som står bak festivalen, og har skapt en historisk kveld
             </p>
             <div className="grid gap-10 md:grid-cols-2">
               {festivalTeam.hostRoles.length > 0 && (
