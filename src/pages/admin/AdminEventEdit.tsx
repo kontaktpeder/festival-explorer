@@ -1,7 +1,7 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,6 +42,7 @@ export default function AdminEventEdit() {
   });
   const [heroImageSettings, setHeroImageSettings] = useState<ImageSettings | null>(null);
   const [venuePickerOpen, setVenuePickerOpen] = useState(false);
+  const [isTicketAdmin, setIsTicketAdmin] = useState(false);
 
   // NEW ROLE MODEL STEP 1.2: Host-gating (computed after event query)
   const { data: myEntities } = useMyEntities();
@@ -63,10 +64,19 @@ export default function AdminEventEdit() {
     retry: 1,
   });
 
+  // Check ticket-admin (super admin)
+  useEffect(() => {
+    const check = async () => {
+      const { data } = await supabase.rpc("is_ticket_admin");
+      setIsTicketAdmin(!!data);
+    };
+    void check();
+  }, []);
+
   // NEW ROLE MODEL STEP 1.2: Host-gating computed values
   const hostEntities = (myEntities ?? []).filter((e) => inferEntityKind(e) === "host");
   const eventHostId = event ? getEventHostId(event) : null;
-  const canEdit = isNew || (!!eventHostId && hostEntities.some((h) => h.id === eventHostId));
+  const canEdit = isNew || isTicketAdmin || (!!eventHostId && hostEntities.some((h) => h.id === eventHostId));
 
   // Fetch venues for dropdown
   const { data: venues } = useQuery({
