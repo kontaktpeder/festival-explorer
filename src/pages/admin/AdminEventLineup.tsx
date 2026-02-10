@@ -238,7 +238,7 @@ export default function AdminEventLineup() {
   ) || [];
 
   if (isLoading) {
-    return <LoadingState message="Laster lineup..." />;
+    return <LoadingState message="Laster på scenen..." />;
   }
 
   return (
@@ -362,7 +362,7 @@ export default function AdminEventLineup() {
 
         {lineup?.length === 0 && (
           <div className="text-center py-12 text-muted-foreground border border-dashed border-border rounded-lg">
-            <p>Ingen artister i lineup ennå.</p>
+            <p>Ingen artister på scenen ennå.</p>
             <p className="text-sm mt-2">Velg en artist fra listen over for å legge til.</p>
           </div>
         )}
