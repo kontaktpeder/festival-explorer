@@ -231,7 +231,8 @@ function TimelineEventDialog({
         return {
           year: y as number | "",
           month: m as number | "",
-          day: d as number | "",
+          // Dag 1 uten tid = kun måned valgt, vis dag som tom
+          day: (d === 1 && !hasTime) ? ("" as number | "") : (d as number | ""),
           time: hasTime ? `${timeMatch![1]}:${timeMatch![2]}` : "",
         };
       }
@@ -242,15 +243,13 @@ function TimelineEventDialog({
     return { year: "" as number | "", month: "" as number | "", day: "" as number | "", time: "" };
   }
 
-  // Build YYYY-MM-DD string directly – no timezone conversion
   function toDateStr(year: number | "", month: number | "", day: number | "", time: string): string | null {
     if (year === "" || year == null) return null;
     const y = Number(year);
-    const m = month !== "" && month != null ? Number(month) : 1;
+    if (month === "" || month == null) return null;
+    const m = Number(month);
     const d = day !== "" && day != null ? Number(day) : 1;
-    const dateStr = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    // DB column is DATE, so just send YYYY-MM-DD (time is ignored by date columns)
-    return dateStr;
+    return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
   }
 
   useEffect(() => {
