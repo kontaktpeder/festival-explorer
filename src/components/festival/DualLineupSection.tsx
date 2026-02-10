@@ -142,16 +142,23 @@ export function DualLineupSection({ artists, festivalTeam }: DualLineupSectionPr
                 ...festivalTeam.backstage,
               ]
                 .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-                .map((item: any, i: number) => (
-                  <div key={item.participant_id || i} className="flex flex-col gap-1">
-                    {item.role_label && (
-                      <p className="text-[10px] uppercase tracking-widest text-white/40">
-                        {item.role_label}
-                      </p>
-                    )}
-                    <EventParticipantItem item={item} />
-                  </div>
-                ))}
+                .map((item: any, i: number) => {
+                  const displayRole =
+                    item.role_label ||
+                    (item.persona?.category_tags && item.persona.category_tags[0]) ||
+                    item.entity?.type ||
+                    null;
+                  return (
+                    <div key={item.participant_id || i} className="flex flex-col gap-1">
+                      {displayRole && (
+                        <p className="text-[10px] uppercase tracking-widest text-white/40">
+                          {displayRole}
+                        </p>
+                      )}
+                      <EventParticipantItem item={item} />
+                    </div>
+                  );
+                })}
             </div>
           </div>
         </section>

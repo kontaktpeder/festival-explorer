@@ -256,7 +256,7 @@ export function useFestival(slug: string) {
 
         const [fpPersonasRes, fpEntitiesRes] = await Promise.all([
           fpPersonaIds.length > 0
-            ? supabase.from("personas").select("id,name,slug,avatar_url,is_public").in("id", fpPersonaIds)
+            ? supabase.from("personas").select("id,name,slug,avatar_url,is_public,category_tags").in("id", fpPersonaIds)
             : Promise.resolve({ data: [] as any[] }),
           fpEntityIds.length > 0
             ? supabase.from("entities").select("id,name,slug,hero_image_url,is_published,type").in("id", fpEntityIds)
