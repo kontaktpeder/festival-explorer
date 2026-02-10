@@ -133,7 +133,7 @@ export function DualLineupSection({ artists, festivalTeam }: DualLineupSectionPr
               Festival-teamet
             </p>
             <p className="text-sm text-white/50 mb-8">
-              Bli kjent med dem som står bak festivalen, og har skapt en historisk kveld
+              Bli kjent med dem som står bak festivalen, og som har vært med å skape en historisk kveld.
             </p>
             <div className="grid gap-10 md:grid-cols-2">
               {festivalTeam.hostRoles.length > 0 && (
