@@ -92,6 +92,11 @@ serve(async (req) => {
     const ticketCode = ticketCodeResult;
     console.log("Generated ticket code:", ticketCode);
 
+    // Extract payment_intent ID (can be string or expanded object)
+    const paymentIntentId = typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : (session.payment_intent as { id?: string } | null)?.id ?? null;
+
     // Create ticket
     const { data: ticket, error: ticketError } = await supabaseAdmin
       .from("tickets")
@@ -102,7 +107,7 @@ serve(async (req) => {
         buyer_email: buyerEmail,
         ticket_code: ticketCode,
         stripe_session_id: session.id,
-        stripe_payment_intent_id: session.payment_intent as string,
+        stripe_payment_intent_id: paymentIntentId,
         status: "VALID",
       })
       .select()
@@ -124,7 +129,10 @@ serve(async (req) => {
   // Handle refund
   if (event.type === "charge.refunded") {
     const charge = event.data.object as Stripe.Charge;
-    const paymentIntentId = charge.payment_intent as string;
+    // Extract payment_intent ID (can be string or expanded object)
+    const paymentIntentId = typeof charge.payment_intent === "string"
+      ? charge.payment_intent
+      : (charge.payment_intent as { id?: string } | null)?.id;
     
     console.log("Processing refund for payment intent:", paymentIntentId);
 
@@ -154,8 +162,10 @@ serve(async (req) => {
           }
         }
       } else {
-        console.log("No tickets found for payment intent:", paymentIntentId);
+        console.log("No tickets found for payment intent:", paymentIntentId, "- verify stripe_payment_intent_id in tickets table matches Stripe charge");
       }
+    } else {
+      console.log("charge.refunded received but payment_intent is missing on charge");
     }
 
     return new Response(JSON.stringify({ received: true }), {
