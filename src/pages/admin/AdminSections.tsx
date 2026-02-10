@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff, GripVertical, ImageIcon, X, Monitor, Smartphone, Settings, Save, Calendar, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff, GripVertical, ImageIcon, X, Monitor, Smartphone, Settings, Save, Calendar, ChevronDown, ChevronUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { FestivalParticipantsZoneEditor } from "@/components/admin/FestivalParticipantsZoneEditor";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { MediaPicker } from "@/components/admin/MediaPicker";
@@ -700,6 +702,41 @@ export default function AdminSections() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Festival Team (Arrangør / Bak scenen) */}
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
+        <div className="p-4 flex items-center gap-3 border-b border-border">
+          <Users className="h-5 w-5 text-muted-foreground" />
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Festival-team</h2>
+            <p className="text-sm text-muted-foreground">Arrangør og crew som gjelder hele festivalen</p>
+          </div>
+        </div>
+        <div className="p-4">
+          <Tabs defaultValue="host">
+            <TabsList>
+              <TabsTrigger value="host">Arrangør</TabsTrigger>
+              <TabsTrigger value="backstage">Bak scenen</TabsTrigger>
+            </TabsList>
+            <TabsContent value="host" className="mt-4">
+              <FestivalParticipantsZoneEditor
+                festivalId={id!}
+                zone="host"
+                title="Arrangør"
+                defaultAddKind="persona"
+              />
+            </TabsContent>
+            <TabsContent value="backstage" className="mt-4">
+              <FestivalParticipantsZoneEditor
+                festivalId={id!}
+                zone="backstage"
+                title="Bak scenen"
+                defaultAddKind="persona"
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
 
       {/* Actions */}

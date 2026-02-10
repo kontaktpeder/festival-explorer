@@ -3,10 +3,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LineupItem } from "@/components/ui/LineupItem";
 import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
 
+interface ZoneGroup {
+  festival: any[];
+  event: any[];
+}
+
 interface EventZoneTabsProps {
   lineup: any[];
-  backstage: any[];
-  hostRoles: any[];
+  backstage: ZoneGroup | any[];
+  hostRoles: ZoneGroup | any[];
 }
 
 function EmptyZoneState({
@@ -26,7 +31,43 @@ function EmptyZoneState({
   );
 }
 
+function normalizeZone(zone: ZoneGroup | any[]): ZoneGroup {
+  if (Array.isArray(zone)) return { festival: [], event: zone };
+  return zone;
+}
+
+function ZoneContent({ zone, emptyIcon, emptyMessage }: { zone: ZoneGroup; emptyIcon: React.ElementType; emptyMessage: string }) {
+  const total = zone.festival.length + zone.event.length;
+  if (total === 0) return <EmptyZoneState icon={emptyIcon} message={emptyMessage} />;
+
+  return (
+    <div className="space-y-4">
+      {zone.festival.length > 0 && (
+        <div className="space-y-4 mb-6">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Festival-team</p>
+          {zone.festival.map((item: any, i: number) => (
+            <EventParticipantItem key={item.participant_id || i} item={item} />
+          ))}
+        </div>
+      )}
+      {zone.event.length > 0 && (
+        <div className="space-y-4">
+          {zone.festival.length > 0 && (
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Denne kvelden</p>
+          )}
+          {zone.event.map((item: any, i: number) => (
+            <EventParticipantItem key={item.participant_id || i} item={item} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function EventZoneTabs({ lineup, backstage, hostRoles }: EventZoneTabsProps) {
+  const bs = normalizeZone(backstage);
+  const hr = normalizeZone(hostRoles);
+
   return (
     <section className="py-20 md:py-32 border-t border-border/20">
       <div className="max-w-3xl mx-auto px-6">
@@ -70,27 +111,11 @@ export function EventZoneTabs({ lineup, backstage, hostRoles }: EventZoneTabsPro
           </TabsContent>
 
           <TabsContent value="backstage" className="mt-8">
-            {backstage.length > 0 ? (
-              <div className="space-y-4">
-                {backstage.map((item: any, i: number) => (
-                  <EventParticipantItem key={item.participant_id || i} item={item} />
-                ))}
-              </div>
-            ) : (
-              <EmptyZoneState icon={Camera} message="Ingen oppføringer enda." />
-            )}
+            <ZoneContent zone={bs} emptyIcon={Camera} emptyMessage="Ingen oppføringer enda." />
           </TabsContent>
 
           <TabsContent value="host" className="mt-8">
-            {hostRoles.length > 0 ? (
-              <div className="space-y-4">
-                {hostRoles.map((item: any, i: number) => (
-                  <EventParticipantItem key={item.participant_id || i} item={item} />
-                ))}
-              </div>
-            ) : (
-              <EmptyZoneState icon={Building2} message="Ingen oppføringer enda." />
-            )}
+            <ZoneContent zone={hr} emptyIcon={Building2} emptyMessage="Ingen oppføringer enda." />
           </TabsContent>
         </Tabs>
       </div>
