@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState, useRef } from "react";
+import { ReactNode, useEffect, useState, useRef, useCallback } from "react";
 import { useResponsiveImage } from "@/hooks/useResponsiveImage";
 import { ParallaxBackground } from "./ParallaxBackground";
 import { getObjectPositionFromFocal } from "@/lib/image-crop-helpers";
@@ -39,7 +39,9 @@ export function HeroSection({
   useNaturalAspect = false,
 }: HeroSectionProps) {
   const [overscrollProgress, setOverscrollProgress] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
+  const onImageLoad = useCallback(() => setImageLoaded(true), []);
 
   // Parse image settings for aspect ratio
   const parsedSettings = parseImageSettings(imageSettings);
@@ -136,27 +138,36 @@ export function HeroSection({
             alt=""
             fetchPriority="high"
             decoding="async"
-            className="absolute inset-0 w-full h-full object-cover will-change-transform"
+            onLoad={onImageLoad}
+            className={`absolute inset-0 w-full h-full object-cover will-change-transform transition-opacity duration-700 ease-out ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
             style={{ 
               objectPosition: getObjectPositionFromFocal(imageSettings),
               transform: `scale(${imageScale})`,
               transformOrigin: 'center center',
-              transition: overscrollProgress === 0 ? 'transform 0.3s ease-out' : 'none',
+              transition: `opacity 0.7s ease-out${overscrollProgress === 0 ? ', transform 0.3s ease-out' : ''}`,
               top: 'calc(-1 * var(--safe-top, 0px))',
             }}
           />
         ) : (
-          <div
-            className="absolute inset-0 bg-no-repeat bg-cover will-change-transform"
-            style={{ 
-              backgroundImage: `url(${activeImage})`,
-              backgroundPosition: getObjectPositionFromFocal(imageSettings),
-              transform: `scale(${imageScale})`,
-              transformOrigin: 'center center',
-              transition: overscrollProgress === 0 ? 'transform 0.3s ease-out' : 'none',
-              top: 'calc(-1 * var(--safe-top, 0px))',
-            }}
-          />
+          <>
+            <img
+              src={activeImage}
+              alt=""
+              onLoad={onImageLoad}
+              className="hidden"
+            />
+            <div
+              className={`absolute inset-0 bg-no-repeat bg-cover will-change-transform transition-opacity duration-700 ease-out ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+              style={{ 
+                backgroundImage: `url(${activeImage})`,
+                backgroundPosition: getObjectPositionFromFocal(imageSettings),
+                transform: `scale(${imageScale})`,
+                transformOrigin: 'center center',
+                transition: `opacity 0.7s ease-out${overscrollProgress === 0 ? ', transform 0.3s ease-out' : ''}`,
+                top: 'calc(-1 * var(--safe-top, 0px))',
+              }}
+            />
+          </>
         )
       )}
       
