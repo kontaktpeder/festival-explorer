@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MapPin } from "lucide-react";
-import { format } from "date-fns";
-import { nb } from "date-fns/locale";
 import { useUnifiedTimelineEvents } from "@/hooks/useUnifiedTimeline";
+import { formatTimelineEventDate } from "@/lib/timeline-format";
 import type { TimelineSource, EventTypeOption, UnifiedTimelineEvent } from "@/types/timeline";
 import { getEventTypeConfig, ALL_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
 
@@ -74,7 +73,7 @@ function TimelineDisplayItem({ event, index, eventTypeOptions }: TimelineDisplay
   const typeConfig = getEventTypeConfig(event.event_type, eventTypeOptions);
   const EventIcon = typeConfig.icon;
 
-  const dateStr = formatEventDate(event);
+  const dateStr = formatTimelineEventDate(event);
   const locationStr = formatLocation(event);
 
   return (
@@ -129,40 +128,7 @@ function TimelineDisplayItem({ event, index, eventTypeOptions }: TimelineDisplay
   );
 }
 
-// ─── Helpers ────────────────────────────────────────────────
 
-function formatSingleDate(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  const hasTime = d.getUTCHours() !== 0 || d.getUTCMinutes() !== 0;
-  const isFirstOfMonth = d.getUTCDate() === 1 && !hasTime;
-  if (isFirstOfMonth) {
-    return format(d, "MMMM yyyy", { locale: nb });
-  }
-  const base = format(d, "d. MMMM yyyy", { locale: nb });
-  if (hasTime) {
-    return `${base} ${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
-  }
-  return base;
-}
-
-function formatEventDate(event: UnifiedTimelineEvent): string | null {
-  // Prefer exact date over year-only
-  if (event.date) {
-    const from = formatSingleDate(event.date);
-    if (!from) return event.year?.toString() ?? null;
-    if (event.date_to) {
-      const to = formatSingleDate(event.date_to);
-      if (to && to !== from) return `${from} – ${to}`;
-    }
-    return from;
-  }
-  if (event.year != null) {
-    if (event.year_to != null && event.year_to !== event.year) return `${event.year}–${event.year_to}`;
-    return event.year.toString();
-  }
-  return null;
-}
 
 function formatLocation(event: UnifiedTimelineEvent): string | null {
   const parts = [event.location_name, event.city, event.country].filter(Boolean);
