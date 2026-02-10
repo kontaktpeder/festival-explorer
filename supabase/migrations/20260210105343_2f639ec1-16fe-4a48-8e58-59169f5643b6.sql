@@ -1,0 +1,1 @@
+UPDATE public.ticket_types SET description = 'Festivalpass - begrenset antall' WHERE code IN ('EARLYBIRD', 'ORDINAR');
