@@ -118,7 +118,7 @@ export default function AdminFestivals() {
                   </Link>
                 </Button>
                 {canEdit(festival.id) && (
-                  <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
+                  <Button asChild size="sm" className="h-auto px-3 py-1.5 text-xs md:text-sm bg-accent hover:bg-accent/90 text-accent-foreground border-accent">
                     <Link to={`/admin/festivals/${festival.id}`}>
                       <Settings className="h-3.5 w-3.5 mr-1" />
                       Gå til festival-backstage
