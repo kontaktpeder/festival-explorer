@@ -10,6 +10,14 @@ import { nb } from "date-fns/locale";
 export default function AdminFestivals() {
   const queryClient = useQueryClient();
 
+  const { data: isAdmin } = useQuery({
+    queryKey: ["is-admin"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("is_admin");
+      return data || false;
+    },
+  });
+
   const { data: festivals, isLoading } = useQuery({
     queryKey: ["admin-festivals"],
     queryFn: async () => {
@@ -40,14 +48,18 @@ export default function AdminFestivals() {
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Festivaler</h1>
-        <Button asChild size="sm" className="md:size-default">
-          <Link to="/admin/festivals/new">
-            <Plus className="h-4 w-4 mr-1 md:mr-2" />
-            <span className="hidden sm:inline">Ny festival</span>
-            <span className="sm:hidden">Ny</span>
-          </Link>
-        </Button>
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+          {isAdmin ? "Festivaler" : "Mine festivaler"}
+        </h1>
+        {isAdmin && (
+          <Button asChild size="sm" className="md:size-default">
+            <Link to="/admin/festivals/new">
+              <Plus className="h-4 w-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">Ny festival</span>
+              <span className="sm:hidden">Ny</span>
+            </Link>
+          </Button>
+        )}
       </div>
 
       <div className="space-y-3">

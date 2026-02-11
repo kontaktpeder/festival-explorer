@@ -45,23 +45,24 @@ export default function AdminLayout() {
 
   const isLoading = isLoadingSession || (!!session && isLoadingAccess);
 
-  const navItems = [
+  const allNavItems = [
     { to: "/admin", icon: LayoutDashboard, label: "Dashboard", exact: true },
     { to: "/admin/festivals", icon: Calendar, label: "Festivaler" },
-    { to: "/admin/events", icon: Music, label: "Events" },
-    { to: "/admin/entities", icon: Layers, label: "Entities" },
-    { to: "/admin/access-generator", icon: UserPlus, label: "Tilgang" },
-    { to: "/admin/timeline", icon: Clock, label: "Timeline" },
+    { to: "/admin/events", icon: Music, label: "Events", adminOnly: true },
+    { to: "/admin/entities", icon: Layers, label: "Entities", adminOnly: true },
+    { to: "/admin/access-generator", icon: UserPlus, label: "Tilgang", adminOnly: true },
+    { to: "/admin/timeline", icon: Clock, label: "Timeline", adminOnly: true },
     { to: "/admin/media", icon: FolderOpen, label: "Filbank" },
-    { to: "/admin/tickets", icon: Ticket, label: "Billetter" },
+    { to: "/admin/tickets", icon: Ticket, label: "Billetter", adminOnly: true },
     { to: "/crew/checkin", icon: QrCode, label: "Scan billetter" },
-    { to: "/admin/deletion-requests", icon: Trash2, label: "Sletting" },
-    { to: "/admin/inbox", icon: Inbox, label: "Inbox" },
-    { to: "/admin/access-requests", icon: UserPlus, label: "Forespørsler" },
-    // Legacy - hidden but still accessible
-    // { to: "/admin/projects", icon: Users, label: "Artister (legacy)" },
-    // { to: "/admin/venues", icon: MapPin, label: "Venues (legacy)" },
+    { to: "/admin/deletion-requests", icon: Trash2, label: "Sletting", adminOnly: true },
+    { to: "/admin/inbox", icon: Inbox, label: "Inbox", adminOnly: true },
+    { to: "/admin/access-requests", icon: UserPlus, label: "Forespørsler", adminOnly: true },
   ];
+
+  const navItems = isAdmin
+    ? allNavItems
+    : allNavItems.filter((item) => !item.adminOnly);
 
   if (isLoading) {
     return (
