@@ -67,8 +67,16 @@ export default function CrewCheckInPage() {
           .select("role")
           .eq("user_id", user.id)
           .single();
-        setIsAdmin(staffRole?.role === "admin");
-        setIsStaff(!!staffRole);
+        
+        if (staffRole) {
+          setIsAdmin(staffRole.role === "admin");
+          setIsStaff(true);
+        } else {
+          // Check festival-level scan permission
+          const { data: canScan } = await supabase.rpc("can_scan_tickets_any");
+          setIsStaff(canScan ?? false);
+          setIsAdmin(false);
+        }
       } else {
         setIsStaff(false);
       }

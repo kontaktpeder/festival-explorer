@@ -115,6 +115,16 @@ export default function AdminSections() {
   const { toast } = useToast();
   const [mediaPickerOpen, setMediaPickerOpen] = useState<MediaPickerState>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+
+  // Check if user can edit this festival
+  const { data: canEdit } = useQuery({
+    queryKey: ["can-edit-festival", id],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_edit_festival", { p_festival_id: id });
+      return data ?? false;
+    },
+    enabled: !!id,
+  });
   
   const [festivalFormExpanded, setFestivalFormExpanded] = useState(false);
   

@@ -1,14 +1,24 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Loader2, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Loader2, ArrowUp, ArrowDown, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import { PersonaSearchList } from "@/components/persona/PersonaSearchList";
 import type { Persona } from "@/types/database";
 
 type FestivalZone = "backstage" | "host" | "crew" | "other";
+
+interface FestivalParticipantPermissions {
+  can_edit_festival: boolean;
+  can_access_media: boolean;
+  can_scan_tickets: boolean;
+  can_see_ticket_stats: boolean;
+}
 
 interface FestivalParticipantRow {
   id: string;
@@ -18,6 +28,10 @@ interface FestivalParticipantRow {
   participant_id: string;
   role_label: string | null;
   sort_order: number;
+  can_edit_festival?: boolean;
+  can_access_media?: boolean;
+  can_scan_tickets?: boolean;
+  can_see_ticket_stats?: boolean;
 }
 
 interface ResolvedRef {
@@ -94,12 +108,21 @@ export function FestivalParticipantsZoneEditor({
   const [searchQuery, setSearchQuery] = useState("");
   const [personaResults, setPersonaResults] = useState<Persona[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+
+  const { data: isAdmin } = useQuery({
+    queryKey: ["is-admin"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("is_admin");
+      return data || false;
+    },
+  });
 
   const loadRows = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("festival_participants")
-      .select("*")
+      .select("id, festival_id, zone, participant_kind, participant_id, role_label, sort_order, can_edit_festival, can_access_media, can_scan_tickets, can_see_ticket_stats")
       .eq("festival_id", festivalId)
       .eq("zone", zone)
       .order("sort_order", { ascending: true });
@@ -164,6 +187,10 @@ export function FestivalParticipantsZoneEditor({
       participant_id: persona.id,
       role_label: null,
       sort_order: nextSort,
+      can_edit_festival: false,
+      can_access_media: false,
+      can_scan_tickets: false,
+      can_see_ticket_stats: false,
     });
 
     if (error) {
@@ -217,6 +244,26 @@ export function FestivalParticipantsZoneEditor({
     setRows((prev) => prev.filter((r) => r.id !== id));
   };
 
+  const savePermissions = useCallback(async (id: string, perms: FestivalParticipantPermissions) => {
+    const { error } = await supabase
+      .from("festival_participants")
+      .update(perms)
+      .eq("id", id);
+    if (error) toast.error("Kunne ikke oppdatere tillatelser");
+    else {
+      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...perms } : r)));
+    }
+  }, []);
+
+  const toggleRowExpanded = (id: string) => {
+    setExpandedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -259,40 +306,81 @@ export function FestivalParticipantsZoneEditor({
           </div>
         ) : (
           <div className="space-y-2">
-            {rows.map((row, index) => (
+            {rows.map((row, index) => {
+              const isExpanded = expandedRows.has(row.id);
+              return (
               <div
                 key={row.id}
-                className="bg-muted/30 border border-border rounded-lg p-3 flex items-center gap-3"
+                className="bg-muted/30 border border-border rounded-lg overflow-hidden"
               >
-                <div className="flex-1 min-w-0">
-                  <span className="font-medium text-sm truncate">
-                    {resolved[row.participant_id]?.name || "Ukjent"}
-                  </span>
-                  <DebouncedRoleInput
-                    initialValue={row.role_label || ""}
-                    placeholder={
-                      resolved[row.participant_id]?.category_tags?.[0]
-                        ? `Rolle (standard: ${resolved[row.participant_id]?.category_tags?.[0]})`
-                        : "Rolle (valgfritt)"
-                    }
-                    fallbackRole={resolved[row.participant_id]?.category_tags?.[0]}
-                    onSave={(v) => saveRoleLabel(row.id, v)}
-                  />
+                <div className="p-3 flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <span className="font-medium text-sm truncate">
+                      {resolved[row.participant_id]?.name || "Ukjent"}
+                    </span>
+                    <DebouncedRoleInput
+                      initialValue={row.role_label || ""}
+                      placeholder={
+                        resolved[row.participant_id]?.category_tags?.[0]
+                          ? `Rolle (standard: ${resolved[row.participant_id]?.category_tags?.[0]})`
+                          : "Rolle (valgfritt)"
+                      }
+                      fallbackRole={resolved[row.participant_id]?.category_tags?.[0]}
+                      onSave={(v) => saveRoleLabel(row.id, v)}
+                    />
+                  </div>
+
+                  <div className="flex gap-1 shrink-0">
+                    {isAdmin && (
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toggleRowExpanded(row.id)}>
+                        {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => reorder(index, "up")} disabled={index === 0}>
+                      <ArrowUp className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => reorder(index, "down")} disabled={index === rows.length - 1}>
+                      <ArrowDown className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(row.id)}>
+                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
 
-                <div className="flex gap-1 shrink-0">
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => reorder(index, "up")} disabled={index === 0}>
-                    <ArrowUp className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => reorder(index, "down")} disabled={index === rows.length - 1}>
-                    <ArrowDown className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(row.id)}>
-                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                  </Button>
-                </div>
+                {/* Permissions panel */}
+                {isAdmin && isExpanded && (
+                  <div className="px-3 pb-3 pt-1 border-t border-border/50">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Tillatelser</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {([
+                        { key: "can_edit_festival", label: "Redigere festival" },
+                        { key: "can_access_media", label: "Filbank" },
+                        { key: "can_scan_tickets", label: "Skanne billetter" },
+                        { key: "can_see_ticket_stats", label: "Se billettstatistikk" },
+                      ] as const).map(({ key, label }) => (
+                        <Label key={key} className="flex items-center gap-2 text-xs font-normal cursor-pointer">
+                          <Checkbox
+                            checked={!!row[key]}
+                            onCheckedChange={(v) =>
+                              savePermissions(row.id, {
+                                can_edit_festival: !!row.can_edit_festival,
+                                can_access_media: !!row.can_access_media,
+                                can_scan_tickets: !!row.can_scan_tickets,
+                                can_see_ticket_stats: !!row.can_see_ticket_stats,
+                                [key]: !!v,
+                              })
+                            }
+                          />
+                          {label}
+                        </Label>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            ))}
+              );
+            })}
             {rows.length === 0 && (
               <div className="text-center py-8 text-muted-foreground text-sm border border-dashed border-border rounded-lg">
                 Ingen deltakere lagt til ennå.

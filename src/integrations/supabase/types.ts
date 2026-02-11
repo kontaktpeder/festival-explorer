@@ -820,6 +820,10 @@ export type Database = {
       }
       festival_participants: {
         Row: {
+          can_access_media: boolean | null
+          can_edit_festival: boolean | null
+          can_scan_tickets: boolean | null
+          can_see_ticket_stats: boolean | null
           created_at: string | null
           festival_id: string
           id: string
@@ -831,6 +835,10 @@ export type Database = {
           zone: string
         }
         Insert: {
+          can_access_media?: boolean | null
+          can_edit_festival?: boolean | null
+          can_scan_tickets?: boolean | null
+          can_see_ticket_stats?: boolean | null
           created_at?: string | null
           festival_id: string
           id?: string
@@ -842,6 +850,10 @@ export type Database = {
           zone: string
         }
         Update: {
+          can_access_media?: boolean | null
+          can_edit_festival?: boolean | null
+          can_scan_tickets?: boolean | null
+          can_see_ticket_stats?: boolean | null
           created_at?: string | null
           festival_id?: string
           id?: string
@@ -1959,7 +1971,15 @@ export type Database = {
         }
       }
       can_edit_entity: { Args: { p_entity_id: string }; Returns: boolean }
+      can_edit_festival: { Args: { p_festival_id: string }; Returns: boolean }
+      can_edit_festival_program: {
+        Args: { p_festival_id: string }
+        Returns: boolean
+      }
+      can_scan_tickets_any: { Args: never; Returns: boolean }
+      can_see_ticket_stats_any: { Args: never; Returns: boolean }
       can_upload_high_res: { Args: { p_user_id: string }; Returns: boolean }
+      can_view_event_lineup: { Args: { p_event_id: string }; Returns: boolean }
       delete_user_safely: { Args: { p_user_id: string }; Returns: Json }
       generate_ticket_code: { Args: never; Returns: string }
       get_invitation_by_token: { Args: { p_token: string }; Returns: Json }

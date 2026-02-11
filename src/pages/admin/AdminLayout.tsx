@@ -43,9 +43,28 @@ export default function AdminLayout() {
     enabled: !!session,
   });
 
+  // Permission-based nav visibility
+  const { data: canScanTickets } = useQuery({
+    queryKey: ["can-scan-tickets"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_scan_tickets_any");
+      return data ?? false;
+    },
+    enabled: !!session && !isAdmin,
+  });
+
   const isLoading = isLoadingSession || (!!session && isLoadingAccess);
 
-  const allNavItems = [
+  type NavItem = {
+    to: string;
+    icon: typeof LayoutDashboard;
+    label: string;
+    exact?: boolean;
+    adminOnly?: boolean;
+    showIf?: boolean;
+  };
+
+  const allNavItems: NavItem[] = [
     { to: "/admin", icon: LayoutDashboard, label: "Dashboard", exact: true },
     { to: "/admin/festivals", icon: Calendar, label: "Festivaler" },
     { to: "/admin/events", icon: Music, label: "Events", adminOnly: true },
@@ -54,7 +73,7 @@ export default function AdminLayout() {
     { to: "/admin/timeline", icon: Clock, label: "Timeline", adminOnly: true },
     { to: "/admin/media", icon: FolderOpen, label: "Filbank" },
     { to: "/admin/tickets", icon: Ticket, label: "Billetter", adminOnly: true },
-    { to: "/crew/checkin", icon: QrCode, label: "Scan billetter" },
+    { to: "/crew/checkin", icon: QrCode, label: "Scan billetter", showIf: !!(isAdmin || canScanTickets) },
     { to: "/admin/deletion-requests", icon: Trash2, label: "Sletting", adminOnly: true },
     { to: "/admin/inbox", icon: Inbox, label: "Inbox", adminOnly: true },
     { to: "/admin/access-requests", icon: UserPlus, label: "Forespørsler", adminOnly: true },
@@ -62,7 +81,9 @@ export default function AdminLayout() {
 
   const navItems = isAdmin
     ? allNavItems
-    : allNavItems.filter((item) => !item.adminOnly);
+    : allNavItems.filter(
+        (item) => !item.adminOnly && (item.showIf === undefined || item.showIf)
+      );
 
   if (isLoading) {
     return (
