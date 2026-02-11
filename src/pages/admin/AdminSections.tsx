@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Eye, EyeOff, GripVertical, ImageIcon, X, Monitor, Smartphone, Settings, Save, Calendar, ChevronDown, ChevronUp, Users } from "lucide-react";
@@ -126,6 +126,7 @@ export default function AdminSections() {
     enabled: !!id,
   });
   
+
   const [festivalFormExpanded, setFestivalFormExpanded] = useState(false);
   
   // Festival form state
@@ -471,6 +472,10 @@ export default function AdminSections() {
       return next;
     });
   };
+
+  if (id && canEdit === false) {
+    return <Navigate to={`/admin/festivals/${id}/program`} replace />;
+  }
 
   if (isLoadingFestival || isLoadingSections) {
     return <LoadingState message="Laster festival..." />;
