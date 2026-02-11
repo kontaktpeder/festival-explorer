@@ -31,6 +31,18 @@ export default function AdminDashboard() {
     },
   });
 
+  const { data: myFestivalsAsTeam } = useQuery({
+    queryKey: ["admin-my-festivals-as-team"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("get_my_festivals_as_team");
+      return data || [];
+    },
+    enabled: !!isAdmin && !!previewAsTeam,
+  });
+
+  const festivalsToShow =
+    isAdmin && previewAsTeam ? (myFestivalsAsTeam ?? []) : (myFestivals ?? []);
+
   const publishedFestival = myFestivals?.find((f) => f.status === "published") ?? myFestivals?.[0] ?? null;
 
   const { data: stats } = useQuery({
@@ -84,9 +96,9 @@ export default function AdminDashboard() {
             Oversikt over festivalene du har tilgang til. Her kan du redigere innhold, program og team.
           </p>
 
-          {myFestivals && myFestivals.length > 0 ? (
+          {festivalsToShow.length > 0 ? (
             <div className="space-y-3">
-              {myFestivals.map((festival) => (
+              {festivalsToShow.map((festival) => (
                 <div key={festival.id} className="bg-card border border-border rounded-lg p-3 md:p-6">
                   <div className="flex items-start justify-between gap-2 mb-3">
                     <div>
@@ -119,7 +131,11 @@ export default function AdminDashboard() {
           ) : (
             <div className="bg-card border border-border rounded-lg p-6 text-center">
               <p className="text-sm font-medium text-foreground">Du har ikke tilgang til noen festivaler ennå.</p>
-              <p className="text-xs text-muted-foreground mt-1">Be admin om å legge deg til i festival-teamet.</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {previewAsTeam
+                  ? "Forhåndsvisning: En festivalsjef uten tilgang ville sett dette."
+                  : "Be admin om å legge deg til i festival-teamet."}
+              </p>
             </div>
           )}
 

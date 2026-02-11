@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, Navigate, useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMyEntities, useMyEntitiesFilteredByPersona } from "@/hooks/useEntity";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { parseImageSettings, type ImageSettings } from "@/types/database";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Users, Building2, Pencil, ExternalLink, User, ArrowRight, Eye, Sparkles, Plus, ChevronRight, ChevronDown, QrCode, Info, MapPin, Settings, Shield } from "lucide-react";
+import { Users, Building2, Pencil, ExternalLink, User, ArrowRight, Eye, Sparkles, Plus, ChevronRight, ChevronDown, QrCode, Info, MapPin, Settings, Shield, Calendar } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CroppedImage } from "@/components/ui/CroppedImage";
 import type { EntityType, AccessLevel } from "@/types/database";
@@ -73,6 +74,27 @@ export default function Dashboard() {
 
   const { data: personas, isLoading: isLoadingPersonas } = useMyPersonas();
   const { data: allEntities, isLoading: isLoadingAll } = useMyEntities();
+
+  const { data: hasBackstageAccess } = useQuery({
+    queryKey: ["has-backstage-access"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("has_backstage_access");
+      return data || false;
+    },
+    enabled: !!currentUser?.id,
+  });
+
+  const { data: myFestivals } = useQuery({
+    queryKey: ["dashboard-my-festivals"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("festivals")
+        .select("id, name, slug, status")
+        .order("start_at", { ascending: false });
+      return data || [];
+    },
+    enabled: !!hasBackstageAccess,
+  });
   const { data: filteredEntities, isLoading: isLoadingFiltered } = useMyEntitiesFilteredByPersona(selectedPersonaId);
   const entities = selectedPersonaId ? filteredEntities : allEntities;
   const isLoading = selectedPersonaId ? isLoadingFiltered : isLoadingAll;
@@ -174,7 +196,7 @@ export default function Dashboard() {
     const activePersona = personas.find((p) => p.id === selectedPersonaId) || personas[0];
     const hostEntities = entities?.filter((e) => inferEntityKind(e) === "host") || [];
     const projectEntities = entities?.filter((e) => inferEntityKind(e) === "project") || [];
-    const hasAccess = hostEntities.length > 0 || projectEntities.length > 0;
+    const hasAccess = hostEntities.length > 0 || projectEntities.length > 0 || !!hasBackstageAccess;
 
     return (
       <div className="min-h-[100svh] pb-[env(safe-area-inset-bottom)]">
@@ -287,18 +309,48 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="p-4 sm:p-6 rounded-lg bg-card/60 border border-border/30 text-center space-y-3">
-                <p className="text-sm text-muted-foreground">Du har ingen tilgang ennå.</p>
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/request-access">Be om tilgang</Link>
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  <a href="mailto:giggen.main@gmail.com" className="text-foreground/70 hover:text-foreground underline underline-offset-2 transition-colors">
-                    Ta kontakt
-                  </a>
+                <p className="text-sm text-muted-foreground">
+                  {hasBackstageAccess
+                    ? "Du har festivaltilgang. Se «Festival-backstage» over for å redigere festivaler."
+                    : "Du har ingen tilgang ennå."}
+                </p>
+                {!hasBackstageAccess && (
+                  <Button asChild variant="outline" size="sm">
+                    <Link to="/request-access">Be om tilgang</Link>
+                  </Button>
+                )}
+                <p className="text-[11px] text-muted-foreground/50">
+                  Du kan redigere profilen din og be om tilgang, men det er festivalen og arrangørene som oppretter prosjekter og program.
                 </p>
               </div>
             )}
           </section>
+
+          {/* Festival backstage-tilgang */}
+          {hasBackstageAccess && (
+            <section className="space-y-3">
+              <h2 className="text-base sm:text-xl font-semibold text-foreground">Festival-backstage</h2>
+              <Link
+                to="/admin"
+                className="group flex items-center justify-between p-3 sm:p-4 rounded-lg bg-card/60 hover:bg-card/80 border border-border/30 hover:border-border/50 transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  <Calendar className="h-5 w-5 text-accent" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors">
+                      Mine festivaler
+                    </p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground/70">
+                      {myFestivals && myFestivals.length > 0
+                        ? `${myFestivals.length} festival${myFestivals.length !== 1 ? "er" : ""}`
+                        : "Rediger innhold, program og team"}
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors shrink-0" />
+              </Link>
+            </section>
+          )}
 
           <LockedModules
             projectEntities={projectEntities}
