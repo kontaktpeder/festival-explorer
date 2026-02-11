@@ -1963,6 +1963,32 @@ export type Database = {
       delete_user_safely: { Args: { p_user_id: string }; Returns: Json }
       generate_ticket_code: { Args: never; Returns: string }
       get_invitation_by_token: { Args: { p_token: string }; Returns: Json }
+      get_my_festivals_as_team: {
+        Args: never
+        Returns: {
+          created_at: string
+          created_by: string
+          date_range_section_id: string | null
+          description: string | null
+          description_section_id: string | null
+          end_at: string | null
+          id: string
+          name: string
+          name_section_id: string | null
+          slug: string
+          start_at: string | null
+          status: Database["public"]["Enums"]["publish_status"]
+          theme_id: string | null
+          updated_at: string
+          venue_id: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "festivals"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_platform_access_level: {
         Args: never
         Returns: Database["public"]["Enums"]["access_level"]
