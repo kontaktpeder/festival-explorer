@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { AlertCircle, CheckCircle, Calendar, Music, Users, MapPin, QrCode, FolderOpen } from "lucide-react";
+import { AlertCircle, CheckCircle, Calendar, Music, Users, MapPin, QrCode, FolderOpen, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QRCodeGenerator } from "@/components/admin/QRCodeGenerator";
 import { getPublicUrl } from "@/lib/utils";
 
 export default function AdminDashboard() {
+  const [previewAsTeam, setPreviewAsTeam] = useState(false);
+
   const { data: isAdmin } = useQuery({
     queryKey: ["is-admin"],
     queryFn: async () => {
@@ -14,6 +17,8 @@ export default function AdminDashboard() {
       return data || false;
     },
   });
+
+  const showAsAdmin = isAdmin && !previewAsTeam;
 
   const { data: myFestivals } = useQuery({
     queryKey: ["admin-my-festivals"],
@@ -49,12 +54,31 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-4 md:space-y-8">
-      <h1 className="text-xl md:text-3xl font-bold text-foreground">
-        {isAdmin ? "Dashboard" : "Mine festivaler"}
-      </h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-xl md:text-3xl font-bold text-foreground">
+          {showAsAdmin ? "Dashboard" : "Mine festivaler"}
+        </h1>
+        {isAdmin && (
+          <Button
+            variant={previewAsTeam ? "default" : "outline"}
+            size="sm"
+            onClick={() => setPreviewAsTeam(!previewAsTeam)}
+            className="shrink-0"
+          >
+            <Eye className="h-4 w-4 mr-1.5" />
+            {previewAsTeam ? "Tilbake til admin" : "Vis som festivalsjef"}
+          </Button>
+        )}
+      </div>
+
+      {previewAsTeam && (
+        <div className="bg-accent/10 border border-accent/30 rounded-lg px-3 py-2 text-xs text-accent">
+          Forhåndsvisning: Du ser dashboardet slik en festivalsjef ville sett det.
+        </div>
+      )}
 
       {/* Festival team view */}
-      {!isAdmin && (
+      {!showAsAdmin && (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
             Oversikt over festivalene du har tilgang til. Her kan du redigere innhold, program og team.
@@ -126,7 +150,7 @@ export default function AdminDashboard() {
       )}
 
       {/* Admin view */}
-      {isAdmin && (
+      {showAsAdmin && (
         <>
           {publishedFestival ? (
             <div className="bg-card border border-border rounded-lg p-3 md:p-6">
