@@ -141,7 +141,7 @@ export function DualLineupSection({ artists, festivalTeam }: DualLineupSectionPr
               Menneskene bak festivalen
             </h2>
             <p className="text-base text-foreground/50 mb-12 max-w-lg leading-relaxed">
-              Bli kjent med dem som står bak festivalen, og som har vært med å skape en historisk kveld.
+              Bli kjent med dem som står bak festivalen, og som er med på å skape en historisk kveld.
             </p>
             
             <div className="space-y-8">
