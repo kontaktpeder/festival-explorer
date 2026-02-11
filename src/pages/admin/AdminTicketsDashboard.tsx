@@ -465,6 +465,43 @@ export default function AdminTicketsDashboard() {
   const { data: stripeMode } = useStripeMode();
   const { data: syncData, isLoading: syncLoading, refetch: refetchSync } = useStripeSync();
 
+  // Permission queries
+  const { data: isAdmin } = useQuery({
+    queryKey: ["is-admin"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("is_admin");
+      return data ?? false;
+    },
+  });
+
+  const { data: canCreateInternal } = useQuery({
+    queryKey: ["can-create-internal-ticket"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_create_internal_ticket_any");
+      return data ?? false;
+    },
+  });
+
+  const { data: canSeeReport } = useQuery({
+    queryKey: ["can-see-report"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_see_report_any");
+      return data ?? false;
+    },
+  });
+
+  const { data: canSeeRevenue } = useQuery({
+    queryKey: ["can-see-revenue"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_see_revenue_any");
+      return data ?? false;
+    },
+  });
+
+  const showInternal = isAdmin || canCreateInternal;
+  const showReport = isAdmin || canSeeReport;
+  const showRevenue = isAdmin || canSeeRevenue;
+
   // Create internal ticket
   const createInternalTicket = useMutation({
     mutationFn: async () => {
@@ -620,10 +657,12 @@ export default function AdminTicketsDashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Billettkontroll</h1>
-        <Button onClick={() => exportCSV.mutate()} disabled={exportCSV.isPending}>
-          <Download className="h-4 w-4 mr-2" />
-          Eksporter CSV
-        </Button>
+        {showReport && (
+          <Button onClick={() => exportCSV.mutate()} disabled={exportCSV.isPending}>
+            <Download className="h-4 w-4 mr-2" />
+            Eksporter CSV
+          </Button>
+        )}
       </div>
 
       <Tabs defaultValue="overview" className="space-y-4">
@@ -631,8 +670,8 @@ export default function AdminTicketsDashboard() {
           <TabsTrigger value="overview">Oversikt</TabsTrigger>
           <TabsTrigger value="issues">Avvik</TabsTrigger>
           <TabsTrigger value="checkin">Innsjekking</TabsTrigger>
-          <TabsTrigger value="internal">Intern</TabsTrigger>
-          <TabsTrigger value="report">Rapport</TabsTrigger>
+          {showInternal && <TabsTrigger value="internal">Intern</TabsTrigger>}
+          {showReport && <TabsTrigger value="report">Rapport</TabsTrigger>}
         </TabsList>
 
         {/* OVERVIEW TAB */}
@@ -791,44 +830,48 @@ export default function AdminTicketsDashboard() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  Inntekt brutto
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">
-                  {formatCurrency(stats?.totalRevenue || 0)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Netto: {formatCurrency(stats?.netRevenue || 0)}
-                </p>
-              </CardContent>
-            </Card>
+            {showRevenue && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    Inntekt brutto
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold">
+                    {formatCurrency(stats?.totalRevenue || 0)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Netto: {formatCurrency(stats?.netRevenue || 0)}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4" />
-                  Stripe-gebyrer
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">
-                  {formatCurrency(stats?.totalFees || 0)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.totalRevenue
-                    ? Math.round(
-                        (stats.totalFees / stats.totalRevenue) * 100
-                      )
-                    : 0}
-                  % av brutto
-                </p>
-              </CardContent>
-            </Card>
+            {showRevenue && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" />
+                    Stripe-gebyrer
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold">
+                    {formatCurrency(stats?.totalFees || 0)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {stats?.totalRevenue
+                      ? Math.round(
+                          (stats.totalFees / stats.totalRevenue) * 100
+                        )
+                      : 0}
+                    % av brutto
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
             <Card>
               <CardHeader className="pb-2">
@@ -864,7 +907,7 @@ export default function AdminTicketsDashboard() {
                     <TableHead className="text-right">Utstedt</TableHead>
                     <TableHead className="text-right">Igjen</TableHead>
                     <TableHead className="text-right">Sjekket inn</TableHead>
-                    <TableHead className="text-right">Pris</TableHead>
+                    {showRevenue && <TableHead className="text-right">Pris</TableHead>}
                     <TableHead className="w-10" />
                   </TableRow>
                 </TableHeader>
@@ -887,9 +930,11 @@ export default function AdminTicketsDashboard() {
                         <TableCell className="text-right">{type.sold}</TableCell>
                         <TableCell className="text-right">{type.capacityLeft}</TableCell>
                         <TableCell className="text-right">{type.used}</TableCell>
-                        <TableCell className="text-right">
-                          {type.price_nok > 0 ? formatCurrency(type.price_nok / 100) : 'Gratis'}
-                        </TableCell>
+                        {showRevenue && (
+                          <TableCell className="text-right">
+                            {type.price_nok > 0 ? formatCurrency(type.price_nok / 100) : 'Gratis'}
+                          </TableCell>
+                        )}
                         <TableCell>
                           <div
                             className={`w-3 h-3 rounded-full ${indColors[ind]}`}
@@ -941,7 +986,11 @@ export default function AdminTicketsDashboard() {
                         </div>
                       </TableCell>
                       <TableCell>{purchase.ticketType}</TableCell>
-                      <TableCell>{formatCurrency(purchase.amount)}</TableCell>
+                      {showRevenue ? (
+                        <TableCell>{formatCurrency(purchase.amount)}</TableCell>
+                      ) : (
+                        <TableCell className="text-muted-foreground">—</TableCell>
+                      )}
                       <TableCell>
                         <Badge variant={purchase.checkedIn ? "default" : "secondary"}>
                           {purchase.checkedIn ? "Sjekket inn" : "Ikke sjekket inn"}
@@ -1206,6 +1255,7 @@ export default function AdminTicketsDashboard() {
         </TabsContent>
 
         {/* INTERNAL TICKET TAB */}
+        {showInternal && (
         <TabsContent value="internal">
           <Card>
             <CardHeader>
@@ -1255,14 +1305,17 @@ export default function AdminTicketsDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
+        )}
 
         {/* EXPORT TAB */}
+        {showReport && (
         <TabsContent value="report">
           <Card>
             <CardHeader>
               <CardTitle>Eksport og oppgjør</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+              {showRevenue && (
               <div className="space-y-4">
                 <h3 className="font-semibold">Oppgjør</h3>
                 <div className="space-y-2">
@@ -1284,6 +1337,7 @@ export default function AdminTicketsDashboard() {
                   </div>
                 </div>
               </div>
+              )}
 
               <div className="space-y-4">
                 <h3 className="font-semibold">Refunds og chargebacks</h3>
@@ -1314,6 +1368,7 @@ export default function AdminTicketsDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
+        )}
       </Tabs>
     </div>
   );
