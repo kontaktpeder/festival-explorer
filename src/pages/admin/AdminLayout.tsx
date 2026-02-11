@@ -23,8 +23,18 @@ export default function AdminLayout() {
     },
   });
 
-  // Check if user is admin
-  const { data: isAdmin, isLoading: isLoadingAdmin } = useQuery({
+  // Check if user has backstage access (admin, crew, or festival team)
+  const { data: hasBackstageAccess, isLoading: isLoadingAccess } = useQuery({
+    queryKey: ["has-backstage-access"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("has_backstage_access");
+      return data || false;
+    },
+    enabled: !!session,
+  });
+
+  // Check if user is admin (for showing admin-only nav items)
+  const { data: isAdmin } = useQuery({
     queryKey: ["is-admin"],
     queryFn: async () => {
       const { data } = await supabase.rpc("is_admin");
@@ -33,7 +43,7 @@ export default function AdminLayout() {
     enabled: !!session,
   });
 
-  const isLoading = isLoadingSession || (!!session && isLoadingAdmin);
+  const isLoading = isLoadingSession || (!!session && isLoadingAccess);
 
   const navItems = [
     { to: "/admin", icon: LayoutDashboard, label: "Dashboard", exact: true },
@@ -65,8 +75,8 @@ export default function AdminLayout() {
     return <Navigate to="/admin/login" replace />;
   }
 
-  // Redirect non-admin users to dashboard
-  if (!isAdmin) {
+  // Redirect users without backstage access to dashboard
+  if (!hasBackstageAccess) {
     return <Navigate to="/dashboard" replace />;
   }
 

@@ -1974,6 +1974,7 @@ export type Database = {
           entity_id: string
         }[]
       }
+      has_backstage_access: { Args: never; Returns: boolean }
       has_platform_access: { Args: never; Returns: boolean }
       has_role: {
         Args: {
@@ -1990,6 +1991,10 @@ export type Database = {
       is_entity_admin: { Args: { p_entity_id: string }; Returns: boolean }
       is_entity_owner: { Args: { p_entity_id: string }; Returns: boolean }
       is_entity_team_member: { Args: { p_entity_id: string }; Returns: boolean }
+      is_festival_team_member: {
+        Args: { p_festival_id: string }
+        Returns: boolean
+      }
       is_project_admin: { Args: { p_project_id: string }; Returns: boolean }
       is_project_member: { Args: { p_project_id: string }; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }

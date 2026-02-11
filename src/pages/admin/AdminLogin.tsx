@@ -12,6 +12,11 @@ const checkIsAdmin = async (): Promise<boolean> => {
   return data || false;
 };
 
+const checkHasBackstageAccess = async (): Promise<boolean> => {
+  const { data } = await supabase.rpc("has_backstage_access");
+  return data || false;
+};
+
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +36,8 @@ export default function AdminLogin() {
           setTimeout(async () => {
             if (!isMounted) return;
             const isAdmin = await checkIsAdmin();
-            navigate(isAdmin ? "/admin" : "/dashboard", { replace: true });
+            const hasAccess = await checkHasBackstageAccess();
+            navigate(isAdmin ? "/admin" : hasAccess ? "/admin" : "/dashboard", { replace: true });
           }, 0);
         } else {
           setChecking(false);
@@ -42,8 +48,8 @@ export default function AdminLogin() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!isMounted) return;
       if (session) {
-        checkIsAdmin().then((isAdmin) => {
-          if (isMounted) navigate(isAdmin ? "/admin" : "/dashboard", { replace: true });
+        Promise.all([checkIsAdmin(), checkHasBackstageAccess()]).then(([isAdmin, hasAccess]) => {
+          if (isMounted) navigate((isAdmin || hasAccess) ? "/admin" : "/dashboard", { replace: true });
         });
       } else {
         setChecking(false);
@@ -72,12 +78,12 @@ export default function AdminLogin() {
         variant: "destructive",
       });
     } else if (data.user) {
-      const isAdmin = await checkIsAdmin();
+      const [isAdmin, hasAccess] = await Promise.all([checkIsAdmin(), checkHasBackstageAccess()]);
 
-      if (isAdmin) {
+      if (isAdmin || hasAccess) {
         toast({
           title: "Logget inn",
-          description: "Velkommen til admin!",
+          description: isAdmin ? "Velkommen til admin!" : "Velkommen til backstage!",
         });
         navigate("/admin");
       } else {
