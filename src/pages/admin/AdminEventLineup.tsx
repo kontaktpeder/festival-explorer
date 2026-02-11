@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowUp, ArrowDown, Plus, Trash2, ArrowLeft, Star } from "lucide-react";
@@ -20,6 +20,16 @@ export default function AdminEventLineup() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [selectedEntity, setSelectedEntity] = useState("");
+
+  // Check if user can view this event's lineup
+  const { data: canViewLineup, isLoading: isLoadingAccess } = useQuery({
+    queryKey: ["can-view-event-lineup", id],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_view_event_lineup", { p_event_id: id });
+      return data ?? false;
+    },
+    enabled: !!id,
+  });
   
   // Load entity types from database
   const { data: entityTypes } = useEntityTypes();
@@ -237,8 +247,12 @@ export default function AdminEventLineup() {
     (e) => !lineup?.some((l) => l.entity_id === e.id)
   ) || [];
 
-  if (isLoading) {
+  if (isLoading || isLoadingAccess) {
     return <LoadingState message="Laster på scenen..." />;
+  }
+
+  if (canViewLineup === false) {
+    return <Navigate to="/admin" replace />;
   }
 
   return (

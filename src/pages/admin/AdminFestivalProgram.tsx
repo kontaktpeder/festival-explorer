@@ -17,6 +17,16 @@ export default function AdminFestivalProgram() {
   const { toast } = useToast();
   const [selectedEvent, setSelectedEvent] = useState("");
 
+  // Check edit permission
+  const { data: canEditProgram } = useQuery({
+    queryKey: ["can-edit-festival", id],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_edit_festival", { p_festival_id: id });
+      return data ?? false;
+    },
+    enabled: !!id,
+  });
+
   // Fetch festival info
   const { data: festival } = useQuery({
     queryKey: ["admin-festival", id],
@@ -158,30 +168,32 @@ export default function AdminFestivalProgram() {
         </div>
       </div>
 
-      {/* Add event */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
-        <Select value={selectedEvent} onValueChange={setSelectedEvent}>
-          <SelectTrigger className="w-full sm:w-64">
-            <SelectValue placeholder="Velg event..." />
-          </SelectTrigger>
-          <SelectContent>
-            {availableEvents.map((event) => (
-              <SelectItem key={event.id} value={event.id}>
-                {event.title}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button
-          onClick={() => selectedEvent && addEvent.mutate(selectedEvent)}
-          disabled={!selectedEvent}
-          size="sm"
-          className="sm:w-auto"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Legg til
-        </Button>
-      </div>
+      {/* Add event - only for editors */}
+      {canEditProgram && (
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
+          <Select value={selectedEvent} onValueChange={setSelectedEvent}>
+            <SelectTrigger className="w-full sm:w-64">
+              <SelectValue placeholder="Velg event..." />
+            </SelectTrigger>
+            <SelectContent>
+              {availableEvents.map((event) => (
+                <SelectItem key={event.id} value={event.id}>
+                  {event.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            onClick={() => selectedEvent && addEvent.mutate(selectedEvent)}
+            disabled={!selectedEvent}
+            size="sm"
+            className="sm:w-auto"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Legg til
+          </Button>
+        </div>
+      )}
 
       {/* Festival events list */}
       <div className="space-y-2">
@@ -203,6 +215,7 @@ export default function AdminFestivalProgram() {
                     </p>
                   )}
                 </div>
+                {canEditProgram && (
                 <div className="flex items-center gap-1 flex-shrink-0">
                   <Button
                     variant={fe.is_featured ? "default" : "ghost"}
@@ -239,6 +252,7 @@ export default function AdminFestivalProgram() {
                     <Trash2 className="h-3 w-3 text-destructive" />
                   </Button>
                 </div>
+                )}
               </div>
             </div>
 
@@ -253,6 +267,8 @@ export default function AdminFestivalProgram() {
                 )}
               </div>
 
+              {canEditProgram && (
+              <>
               <Button
                 variant={fe.is_featured ? "default" : "ghost"}
                 size="sm"
@@ -288,6 +304,8 @@ export default function AdminFestivalProgram() {
               >
                 <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
+              </>
+              )}
             </div>
           </div>
         ))}
