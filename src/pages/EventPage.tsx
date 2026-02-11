@@ -137,14 +137,20 @@ export default function EventPage() {
                   På scenen
                 </h2>
                 <div className="space-y-8 md:space-y-12">
-                  {event.lineup.map((item: any, index: number) => (
-                    <LineupItem
-                      key={item.entity_id || item.participant_id || index}
-                      item={item}
-                      showBilling
-                      isFirst={index === 0}
-                    />
-                  ))}
+                  {event.lineup.map((item: any, index: number) => {
+                    const headlinerIndex = event.lineup.some((i: any) => i.is_featured)
+                      ? event.lineup.findIndex((i: any) => i.is_featured)
+                      : 0;
+                    return (
+                      <LineupItem
+                        key={item.entity_id || item.participant_id || index}
+                        item={item}
+                        showBilling
+                        isFirst={index === 0}
+                        isHeadliner={index === headlinerIndex}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             </section>

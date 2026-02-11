@@ -163,9 +163,16 @@ export function useFestival(slug: string) {
             })
             .filter(Boolean);
 
+          // Merge is_featured from legacy event_entities
+          const legacyForEvent = legacyLineupByEventId.get(fe.event.id) || [];
+          const lineupWithFeatured = lineup.map((entry: any) => {
+            const legacy = legacyForEvent.find((le: any) => le.entity_id === (entry.entity_id ?? entry.participant_id));
+            return { ...entry, is_featured: legacy?.is_featured ?? false };
+          });
+
           return {
             ...fe,
-            event: { ...fe.event, lineup },
+            event: { ...fe.event, lineup: lineupWithFeatured },
           };
         }
 
@@ -359,6 +366,14 @@ export function useEvent(slug: string) {
         const entitiesMap = new Map((entitiesRes.data || []).map((e: any) => [e.id, e]));
         const personasMap = new Map((personasRes.data || []).map((p: any) => [p.id, p]));
 
+        // Also fetch legacy event_entities for is_featured
+        const { data: legacyLineup } = await supabase
+          .from("event_entities")
+          .select("entity_id, is_featured")
+          .eq("event_id", event.id);
+
+        const featuredMap = new Map((legacyLineup || []).map((r: any) => [r.entity_id, !!r.is_featured]));
+
         participants.forEach((p, idx) => {
           const resolved =
             p.participant_kind === "persona"
@@ -379,7 +394,7 @@ export function useEvent(slug: string) {
             sort_order: p.sort_order,
             billing_order: idx + 1,
             entity_id: p.participant_kind !== "persona" ? p.participant_id : undefined,
-            is_featured: false,
+            is_featured: featuredMap.get(p.participant_id) ?? false,
           };
 
           if (p.zone === "on_stage") lineup.push(item);

@@ -13,6 +13,8 @@ interface LineupItemProps {
   item: LineupItemData;
   showBilling?: boolean;
   isFirst?: boolean;
+  /** When set, overrides headliner logic */
+  isHeadliner?: boolean;
 }
 
 // Type guard for new EventEntity format
@@ -33,7 +35,7 @@ function isEventParticipant(item: LineupItemData): item is EventParticipant {
  * 
  * NEW ROLE MODEL STEP 1.1: Supports EventParticipant (entity + persona)
  */
-export function LineupItem({ item, showBilling, isFirst }: LineupItemProps) {
+export function LineupItem({ item, showBilling, isFirst, isHeadliner: isHeadlinerProp }: LineupItemProps) {
   const { data: entityTypes } = useEntityTypes();
   const isMobile = useIsMobile();
   
@@ -88,7 +90,7 @@ export function LineupItem({ item, showBilling, isFirst }: LineupItemProps) {
   if (!displayName) return null;
 
   const imageUrl = useSignedMediaUrl(displayImageUrl, 'public');
-  const isHeadliner = showBilling && billingOrder === 1;
+  const isHeadliner = showBilling && (isHeadlinerProp ?? (billingOrder === 1));
 
   return (
     <Link 

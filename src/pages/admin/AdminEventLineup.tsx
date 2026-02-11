@@ -72,20 +72,26 @@ export default function AdminEventLineup() {
           .filter((p) => p.participant_kind === "project" || p.participant_kind === "entity")
           .map((p) => p.participant_id);
 
-        const { data: entities } = entityIds.length > 0
-          ? await supabase.from("entities").select("*").in("id", entityIds)
-          : { data: [] as any[] };
+        const [entitiesResult, legacyResult] = await Promise.all([
+          entityIds.length > 0
+            ? supabase.from("entities").select("*").in("id", entityIds)
+            : Promise.resolve({ data: [] as any[] }),
+          supabase
+            .from("event_entities")
+            .select("entity_id, is_featured")
+            .eq("event_id", id),
+        ]);
 
-        const entitiesMap = new Map((entities || []).map((e: any) => [e.id, e]));
+        const entitiesMap = new Map((entitiesResult.data || []).map((e: any) => [e.id, e]));
+        const featuredByEntityId = new Map((legacyResult.data || []).map((r: any) => [r.entity_id, !!r.is_featured]));
 
         return participants.map((p) => ({
-          // Map to a compatible format
           _source: "participants" as const,
           participant_id: p.participant_id,
           entity_id: p.participant_id,
           event_id: p.event_id,
           billing_order: p.sort_order,
-          is_featured: false,
+          is_featured: featuredByEntityId.get(p.participant_id) ?? false,
           feature_order: 0,
           entity: entitiesMap.get(p.participant_id) || null,
           role_label: p.role_label,
