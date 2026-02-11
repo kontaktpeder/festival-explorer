@@ -498,9 +498,19 @@ export default function AdminTicketsDashboard() {
     },
   });
 
+  const { data: canSeeTicketStats } = useQuery({
+    queryKey: ["can-see-ticket-stats-dashboard"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_see_ticket_stats_any");
+      return data ?? false;
+    },
+  });
+
   const showInternal = isAdmin || canCreateInternal;
   const showReport = isAdmin || canSeeReport;
   const showRevenue = isAdmin || canSeeRevenue;
+  const showSoldTickets = isAdmin || canSeeTicketStats;
+  const showCheckedIn = isAdmin || canSeeTicketStats;
 
   // Create internal ticket
   const createInternalTicket = useMutation({
@@ -815,20 +825,22 @@ export default function AdminTicketsDashboard() {
 
           {/* Key Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Ticket className="h-4 w-4" />
-                  Solgte billetter
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">{stats?.totalSold || 0}</p>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.totalCapacityLeft || 0} igjen av {stats?.totalCapacity || 0}
-                </p>
-              </CardContent>
-            </Card>
+            {showSoldTickets && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Ticket className="h-4 w-4" />
+                    Solgte billetter
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold">{stats?.totalSold || 0}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {stats?.totalCapacityLeft || 0} igjen av {stats?.totalCapacity || 0}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
             {showRevenue && (
               <Card>
@@ -873,23 +885,25 @@ export default function AdminTicketsDashboard() {
               </Card>
             )}
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Sjekket inn
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">{stats?.checkedIn || 0}</p>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.totalSold
-                    ? Math.round((stats.checkedIn / stats.totalSold) * 100)
-                    : 0}
-                  % av solgte
-                </p>
-              </CardContent>
-            </Card>
+            {showCheckedIn && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Sjekket inn
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold">{stats?.checkedIn || 0}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {stats?.totalSold
+                      ? Math.round((stats.checkedIn / stats.totalSold) * 100)
+                      : 0}
+                    % av solgte
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Per-type tabell med indikatorer */}
