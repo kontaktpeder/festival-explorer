@@ -104,14 +104,20 @@ export function EventZoneTabs({ lineup, backstage, hostRoles }: EventZoneTabsPro
           <TabsContent value="on_stage" className="mt-8 md:mt-12">
             {lineup.length > 0 ? (
               <div className="space-y-8 md:space-y-12">
-                {lineup.map((item: any, index: number) => (
-                  <LineupItem
-                    key={item.entity_id || item.participant_id || index}
-                    item={item}
-                    showBilling
-                    isFirst={index === 0}
-                  />
-                ))}
+                {lineup.map((item: any, index: number) => {
+                  const headlinerIndex = lineup.some((i: any) => i.is_featured)
+                    ? lineup.findIndex((i: any) => i.is_featured)
+                    : 0;
+                  return (
+                    <LineupItem
+                      key={item.entity_id || item.participant_id || index}
+                      item={item}
+                      showBilling
+                      isFirst={index === 0}
+                      isHeadliner={index === headlinerIndex}
+                    />
+                  );
+                })}
               </div>
             ) : (
               <EmptyZoneState icon={Music} message="Ingen oppføringer enda." />
