@@ -18,6 +18,9 @@ interface FestivalParticipantPermissions {
   can_access_media: boolean;
   can_scan_tickets: boolean;
   can_see_ticket_stats: boolean;
+  can_create_internal_ticket: boolean;
+  can_see_report: boolean;
+  can_see_revenue: boolean;
 }
 
 interface FestivalParticipantRow {
@@ -32,6 +35,9 @@ interface FestivalParticipantRow {
   can_access_media?: boolean;
   can_scan_tickets?: boolean;
   can_see_ticket_stats?: boolean;
+  can_create_internal_ticket?: boolean;
+  can_see_report?: boolean;
+  can_see_revenue?: boolean;
 }
 
 interface ResolvedRef {
@@ -122,7 +128,7 @@ export function FestivalParticipantsZoneEditor({
     setLoading(true);
     const { data, error } = await supabase
       .from("festival_participants")
-      .select("id, festival_id, zone, participant_kind, participant_id, role_label, sort_order, can_edit_festival, can_access_media, can_scan_tickets, can_see_ticket_stats")
+      .select("id, festival_id, zone, participant_kind, participant_id, role_label, sort_order, can_edit_festival, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue")
       .eq("festival_id", festivalId)
       .eq("zone", zone)
       .order("sort_order", { ascending: true });
@@ -191,6 +197,9 @@ export function FestivalParticipantsZoneEditor({
       can_access_media: false,
       can_scan_tickets: false,
       can_see_ticket_stats: false,
+      can_create_internal_ticket: false,
+      can_see_report: false,
+      can_see_revenue: false,
     });
 
     if (error) {
@@ -353,11 +362,14 @@ export function FestivalParticipantsZoneEditor({
                   <div className="px-3 pb-3 pt-1 border-t border-border/50">
                     <p className="text-xs font-medium text-muted-foreground mb-2">Tillatelser</p>
                     <div className="grid grid-cols-2 gap-2">
-                      {([
+                       {([
                         { key: "can_edit_festival", label: "Redigere festival" },
                         { key: "can_access_media", label: "Filbank" },
                         { key: "can_scan_tickets", label: "Skanne billetter" },
                         { key: "can_see_ticket_stats", label: "Se billettstatistikk" },
+                        { key: "can_create_internal_ticket", label: "Internbillett" },
+                        { key: "can_see_report", label: "Rapport" },
+                        { key: "can_see_revenue", label: "Se inntekt" },
                       ] as const).map(({ key, label }) => (
                         <Label key={key} className="flex items-center gap-2 text-xs font-normal cursor-pointer">
                           <Checkbox
@@ -368,6 +380,9 @@ export function FestivalParticipantsZoneEditor({
                                 can_access_media: !!row.can_access_media,
                                 can_scan_tickets: !!row.can_scan_tickets,
                                 can_see_ticket_stats: !!row.can_see_ticket_stats,
+                                can_create_internal_ticket: !!row.can_create_internal_ticket,
+                                can_see_report: !!row.can_see_report,
+                                can_see_revenue: !!row.can_see_revenue,
                                 [key]: !!v,
                               })
                             }
