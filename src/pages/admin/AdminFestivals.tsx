@@ -121,7 +121,7 @@ export default function AdminFestivals() {
                   <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
                     <Link to={`/admin/festivals/${festival.id}`}>
                       <Settings className="h-3.5 w-3.5 mr-1" />
-                      Rediger
+                      Gå til festival-backstage
                     </Link>
                   </Button>
                 )}
