@@ -69,6 +69,7 @@ export default function Dashboard() {
   const [isStaff, setIsStaff] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [adminSectionOpen, setAdminSectionOpen] = useState(false);
+  const [previewAsTeam, setPreviewAsTeam] = useState(false);
 
   const { data: personas, isLoading: isLoadingPersonas } = useMyPersonas();
   const { data: allEntities, isLoading: isLoadingAll } = useMyEntities();
@@ -305,8 +306,28 @@ export default function Dashboard() {
             selectedPersona={activePersona}
           />
 
+          {/* Preview as team toggle (admin only) */}
+          {isAdmin && (
+            <div className="space-y-2">
+              <Button
+                variant={previewAsTeam ? "default" : "outline"}
+                size="sm"
+                onClick={() => setPreviewAsTeam(!previewAsTeam)}
+                className="w-full"
+              >
+                <Eye className="h-4 w-4 mr-1.5" />
+                {previewAsTeam ? "Tilbake til admin-visning" : "Vis som festivalsjef"}
+              </Button>
+              {previewAsTeam && (
+                <div className="bg-accent/10 border border-accent/30 rounded-lg px-3 py-2 text-xs text-accent">
+                  Forhåndsvisning: Du ser dashboardet slik en festivalsjef ville sett det.
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Admin/Crew */}
-          {(isAdmin || isStaff) && (
+          {!previewAsTeam && (isAdmin || isStaff) && (
             <Collapsible open={adminSectionOpen} onOpenChange={setAdminSectionOpen}>
               <CollapsibleTrigger className="w-full">
                 <div className="flex items-center justify-between p-3 sm:p-4 rounded-lg bg-card/40 hover:bg-card/60 border border-border/20 transition-all">
