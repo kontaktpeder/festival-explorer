@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PersonaSearchList } from "@/components/persona/PersonaSearchList";
@@ -15,7 +14,7 @@ interface FestivalParticipantRow {
   id: string;
   festival_id: string;
   zone: FestivalZone;
-  participant_kind: "persona" | "entity" | "project";
+  participant_kind: "persona";
   participant_id: string;
   role_label: string | null;
   sort_order: number;
@@ -32,7 +31,6 @@ interface Props {
   festivalId: string;
   zone: FestivalZone;
   title?: string;
-  defaultAddKind?: "persona" | "entity";
 }
 
 function DebouncedRoleInput({
@@ -89,14 +87,11 @@ export function FestivalParticipantsZoneEditor({
   festivalId,
   zone,
   title,
-  defaultAddKind = "persona",
 }: Props) {
   const [rows, setRows] = useState<FestivalParticipantRow[]>([]);
   const [resolved, setResolved] = useState<Record<string, ResolvedRef>>({});
   const [loading, setLoading] = useState(false);
-  const [searchKind, setSearchKind] = useState<"persona" | "entity">(defaultAddKind);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<ResolvedRef[]>([]);
   const [personaResults, setPersonaResults] = useState<Persona[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
 
@@ -115,25 +110,20 @@ export function FestivalParticipantsZoneEditor({
       return;
     }
 
-    const list = (data || []) as FestivalParticipantRow[];
+    const list = ((data || []) as any[]).filter(
+      (r) => r.participant_kind === "persona"
+    ) as FestivalParticipantRow[];
     setRows(list);
 
-    const personaIds = list.filter((r) => r.participant_kind === "persona").map((r) => r.participant_id);
-    const entityIds = list.filter((r) => r.participant_kind === "entity" || r.participant_kind === "project").map((r) => r.participant_id);
-
+    const personaIds = list.map((r) => r.participant_id);
     const map: Record<string, ResolvedRef> = {};
-
-    const [pRes, eRes] = await Promise.all([
-      personaIds.length > 0
-        ? supabase.from("personas").select("id,name,slug,category_tags").in("id", personaIds)
-        : Promise.resolve({ data: [] as any[] }),
-      entityIds.length > 0
-        ? supabase.from("entities").select("id,name,slug").in("id", entityIds)
-        : Promise.resolve({ data: [] as any[] }),
-    ]);
-
-    (pRes.data || []).forEach((p: any) => (map[p.id] = p));
-    (eRes.data || []).forEach((e: any) => (map[e.id] = e));
+    if (personaIds.length > 0) {
+      const { data: pData } = await supabase
+        .from("personas")
+        .select("id,name,slug,category_tags")
+        .in("id", personaIds);
+      (pData || []).forEach((p: any) => (map[p.id] = p));
+    }
     setResolved(map);
     setLoading(false);
   }, [festivalId, zone]);
@@ -144,43 +134,23 @@ export function FestivalParticipantsZoneEditor({
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      setSearchResults([]);
       setPersonaResults([]);
       return;
     }
     setSearchLoading(true);
+    const { data, error } = await supabase
+      .from("personas")
+      .select("id,user_id,name,slug,bio,avatar_url,category_tags,is_public,created_at,updated_at")
+      .ilike("name", `%${searchQuery}%`)
+      .limit(20);
 
-    if (searchKind === "persona") {
-      const { data, error } = await supabase
-        .from("personas")
-        .select("id,user_id,name,slug,bio,avatar_url,category_tags,is_public,created_at,updated_at")
-        .ilike("name", `%${searchQuery}%`)
-        .limit(20);
-
-      if (error) toast.error("Søk feilet");
-      else {
-        setPersonaResults((data || []) as Persona[]);
-        setSearchResults([]);
-      }
-    } else {
-      const { data, error } = await supabase
-        .from("entities")
-        .select("id,name,slug")
-        .ilike("name", `%${searchQuery}%`)
-        .limit(20);
-
-      if (error) toast.error("Søk feilet");
-      else {
-        setSearchResults((data || []) as ResolvedRef[]);
-        setPersonaResults([]);
-      }
-    }
+    if (error) toast.error("Søk feilet");
+    else setPersonaResults((data || []) as Persona[]);
     setSearchLoading(false);
   };
 
-  const handleAdd = async (item: ResolvedRef) => {
-    const kind = searchKind;
-    if (rows.find((r) => r.participant_kind === kind && r.participant_id === item.id)) {
+  const handleAdd = async (persona: { id: string; name: string; slug?: string | null }) => {
+    if (rows.find((r) => r.participant_id === persona.id)) {
       toast.error("Allerede lagt til");
       return;
     }
@@ -190,8 +160,8 @@ export function FestivalParticipantsZoneEditor({
     const { error } = await supabase.from("festival_participants").insert({
       festival_id: festivalId,
       zone,
-      participant_kind: searchKind,
-      participant_id: item.id,
+      participant_kind: "persona",
+      participant_id: persona.id,
       role_label: null,
       sort_order: nextSort,
     });
@@ -201,7 +171,6 @@ export function FestivalParticipantsZoneEditor({
       return;
     }
     toast.success("Lagt til");
-    setSearchResults([]);
     setPersonaResults([]);
     setSearchQuery("");
     void loadRows();
@@ -212,9 +181,7 @@ export function FestivalParticipantsZoneEditor({
       .from("festival_participants")
       .update({ role_label: role || null })
       .eq("id", id);
-    if (error) {
-      toast.error("Kunne ikke oppdatere rolle");
-    }
+    if (error) toast.error("Kunne ikke oppdatere rolle");
   }, []);
 
   const reorder = async (index: number, direction: "up" | "down") => {
@@ -229,7 +196,7 @@ export function FestivalParticipantsZoneEditor({
       id: r.id,
       festival_id: r.festival_id,
       participant_id: r.participant_id,
-      participant_kind: r.participant_kind,
+      participant_kind: "persona" as const,
       zone: r.zone as string,
       sort_order: i + 1,
     }));
@@ -254,28 +221,12 @@ export function FestivalParticipantsZoneEditor({
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
-        <div className="flex gap-2 pt-2">
-          <Button
-            size="sm"
-            onClick={() => setSearchKind("persona")}
-            variant={searchKind === "persona" ? "default" : "outline"}
-          >
-            Legg til person
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => setSearchKind("entity")}
-            variant={searchKind === "entity" ? "default" : "outline"}
-          >
-            Legg til prosjekt
-          </Button>
-        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Search */}
         <div className="flex gap-2">
           <Input
-            placeholder={searchKind === "persona" ? "Søk etter person..." : "Søk etter prosjekt..."}
+            placeholder="Søk etter person..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && void handleSearch()}
@@ -287,8 +238,7 @@ export function FestivalParticipantsZoneEditor({
           </Button>
         </div>
 
-        {/* Persona search results */}
-        {searchKind === "persona" && personaResults.length > 0 && (
+        {personaResults.length > 0 && (
           <div className="border border-border rounded-md max-h-64 overflow-y-auto">
             <PersonaSearchList
               personas={personaResults}
@@ -299,24 +249,6 @@ export function FestivalParticipantsZoneEditor({
               placeholder="Filtrer resultater..."
               emptyMessage="Ingen personer funnet"
             />
-          </div>
-        )}
-
-        {/* Entity search results */}
-        {searchKind === "entity" && searchResults.length > 0 && (
-          <div className="border border-border rounded-md divide-y divide-border max-h-48 overflow-y-auto">
-            {searchResults.map((item) => (
-              <button
-                key={item.id}
-                className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 active:bg-muted flex items-center gap-2"
-                onClick={() => handleAdd(item)}
-              >
-                <Badge variant="outline" className="text-[10px]">
-                  Prosjekt
-                </Badge>
-                {item.name}
-              </button>
-            ))}
           </div>
         )}
 
@@ -333,26 +265,17 @@ export function FestivalParticipantsZoneEditor({
                 className="bg-muted/30 border border-border rounded-lg p-3 flex items-center gap-3"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm truncate">
-                      {resolved[row.participant_id]?.name || "Ukjent"}
-                    </span>
-                    <Badge variant="secondary" className="text-[10px] shrink-0">
-                      {row.participant_kind === "persona" ? "Person" : "Prosjekt"}
-                    </Badge>
-                  </div>
+                  <span className="font-medium text-sm truncate">
+                    {resolved[row.participant_id]?.name || "Ukjent"}
+                  </span>
                   <DebouncedRoleInput
                     initialValue={row.role_label || ""}
                     placeholder={
-                      row.participant_kind === "persona" && resolved[row.participant_id]?.category_tags?.[0]
+                      resolved[row.participant_id]?.category_tags?.[0]
                         ? `Rolle (standard: ${resolved[row.participant_id]?.category_tags?.[0]})`
                         : "Rolle (valgfritt)"
                     }
-                    fallbackRole={
-                      row.participant_kind === "persona"
-                        ? resolved[row.participant_id]?.category_tags?.[0]
-                        : undefined
-                    }
+                    fallbackRole={resolved[row.participant_id]?.category_tags?.[0]}
                     onSave={(v) => saveRoleLabel(row.id, v)}
                   />
                 </div>

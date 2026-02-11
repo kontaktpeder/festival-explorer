@@ -724,7 +724,6 @@ export default function AdminSections() {
                 festivalId={id!}
                 zone="host"
                 title="Arrangør"
-                defaultAddKind="persona"
               />
             </TabsContent>
             <TabsContent value="backstage" className="mt-4">
@@ -732,7 +731,6 @@ export default function AdminSections() {
                 festivalId={id!}
                 zone="backstage"
                 title="Bak scenen"
-                defaultAddKind="persona"
               />
             </TabsContent>
           </Tabs>

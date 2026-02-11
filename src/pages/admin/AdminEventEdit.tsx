@@ -479,7 +479,6 @@ export default function AdminEventEdit() {
                 eventId={id}
                 zone="on_stage"
                 title="På scenen"
-                defaultAddKind="entity"
               />
             </TabsContent>
             <TabsContent value="backstage" className="mt-4">
@@ -487,7 +486,6 @@ export default function AdminEventEdit() {
                 eventId={id}
                 zone="backstage"
                 title="Bak scenen"
-                defaultAddKind="persona"
               />
             </TabsContent>
             <TabsContent value="host" className="mt-4">
@@ -495,7 +493,6 @@ export default function AdminEventEdit() {
                 eventId={id}
                 zone="host"
                 title="Arrangør"
-                defaultAddKind="persona"
               />
             </TabsContent>
           </Tabs>
