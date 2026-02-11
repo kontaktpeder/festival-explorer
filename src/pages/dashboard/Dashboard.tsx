@@ -89,7 +89,7 @@ export default function Dashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("festivals")
-        .select("id, name, slug, status")
+        .select("id, name, slug, status, start_at, end_at")
         .order("start_at", { ascending: false });
       return data || [];
     },
@@ -196,7 +196,9 @@ export default function Dashboard() {
     const activePersona = personas.find((p) => p.id === selectedPersonaId) || personas[0];
     const hostEntities = entities?.filter((e) => inferEntityKind(e) === "host") || [];
     const projectEntities = entities?.filter((e) => inferEntityKind(e) === "project") || [];
-    const hasAccess = hostEntities.length > 0 || projectEntities.length > 0 || !!hasBackstageAccess;
+    const hasProjectAccess = hostEntities.length > 0 || projectEntities.length > 0;
+    const hasFestivalAccess = !!(hasBackstageAccess && myFestivals && myFestivals.length > 0);
+    const hasAnyAccess = hasProjectAccess || hasFestivalAccess;
 
     return (
       <div className="min-h-[100svh] pb-[env(safe-area-inset-bottom)]">
@@ -266,9 +268,10 @@ export default function Dashboard() {
             </section>
           )}
 
-          <section className="space-y-3 sm:space-y-4">
-            <h2 className="text-base sm:text-xl font-semibold text-foreground">Dine tilganger</h2>
-            {hasAccess ? (
+          {/* Prosjekter du er med i */}
+          {hasProjectAccess && (
+            <section className="space-y-3 sm:space-y-4">
+              <h2 className="text-base sm:text-xl font-semibold text-foreground">Prosjekter du er med i</h2>
               <div className="space-y-4">
                 {hostEntities.length > 0 && (
                   <div className="space-y-2">
@@ -307,48 +310,67 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
-            ) : (
+            </section>
+          )}
+
+          {/* Festival-team du er med i */}
+          {hasFestivalAccess && (
+            <section className="space-y-3 sm:space-y-4">
+              <h2 className="text-base sm:text-xl font-semibold text-foreground">Festival-team du er med i</h2>
+              <div className="space-y-3">
+                {myFestivals!.map((festival) => (
+                  <div
+                    key={festival.id}
+                    className="rounded-lg border border-border/30 bg-card/60 p-3 sm:p-4"
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h3 className="text-sm font-semibold text-foreground">{festival.name}</h3>
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-full shrink-0 ${
+                          festival.status === "published" ? "bg-green-500/15 text-green-600" : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {festival.status === "published" ? "Publisert" : "Utkast"}
+                      </span>
+                    </div>
+                    {festival.start_at && (
+                      <p className="text-[10px] sm:text-xs text-muted-foreground mb-3">
+                        {new Date(festival.start_at).toLocaleDateString("nb-NO", { day: "numeric", month: "short", year: "numeric" })}
+                        {festival.end_at &&
+                          ` – ${new Date(festival.end_at).toLocaleDateString("nb-NO", { day: "numeric", month: "short", year: "numeric" })}`}
+                      </p>
+                    )}
+                    <div className="flex flex-wrap gap-2">
+                      <Button asChild variant="default" size="sm" className="h-8 text-xs">
+                        <Link to={`/admin/festivals/${festival.id}`}>Rediger</Link>
+                      </Button>
+                      <Button asChild variant="outline" size="sm" className="h-8 text-xs">
+                        <Link to={`/admin/festivals/${festival.id}/program`}>Program</Link>
+                      </Button>
+                      <Button asChild variant="ghost" size="sm" className="h-8 text-xs">
+                        <Link to={`/festival/${festival.slug}`} target="_blank">
+                          Se live →
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Tom tilstand */}
+          {!hasAnyAccess && (
+            <section className="space-y-3">
               <div className="p-4 sm:p-6 rounded-lg bg-card/60 border border-border/30 text-center space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  {hasBackstageAccess
-                    ? "Du har festivaltilgang. Se «Festival-backstage» over for å redigere festivaler."
-                    : "Du har ingen tilgang ennå."}
-                </p>
-                {!hasBackstageAccess && (
-                  <Button asChild variant="outline" size="sm">
-                    <Link to="/request-access">Be om tilgang</Link>
-                  </Button>
-                )}
+                <p className="text-sm text-muted-foreground">Du har ingen tilgang ennå.</p>
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/request-access">Be om tilgang</Link>
+                </Button>
                 <p className="text-[11px] text-muted-foreground/50">
-                  Du kan redigere profilen din og be om tilgang, men det er festivalen og arrangørene som oppretter prosjekter og program.
+                  Du kan redigere profilen din og be om tilgang. Festivalen og arrangørene oppretter prosjekter og program.
                 </p>
               </div>
-            )}
-          </section>
-
-          {/* Festival backstage-tilgang */}
-          {hasBackstageAccess && (
-            <section className="space-y-3">
-              <h2 className="text-base sm:text-xl font-semibold text-foreground">Festival-backstage</h2>
-              <Link
-                to="/admin"
-                className="group flex items-center justify-between p-3 sm:p-4 rounded-lg bg-card/60 hover:bg-card/80 border border-border/30 hover:border-border/50 transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-accent" />
-                  <div>
-                    <p className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors">
-                      Mine festivaler
-                    </p>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground/70">
-                      {myFestivals && myFestivals.length > 0
-                        ? `${myFestivals.length} festival${myFestivals.length !== 1 ? "er" : ""}`
-                        : "Rediger innhold, program og team"}
-                    </p>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors shrink-0" />
-              </Link>
             </section>
           )}
 
