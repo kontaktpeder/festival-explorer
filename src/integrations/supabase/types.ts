@@ -1970,6 +1970,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      can_access_media_any: { Args: never; Returns: boolean }
       can_edit_entity: { Args: { p_entity_id: string }; Returns: boolean }
       can_edit_festival: { Args: { p_festival_id: string }; Returns: boolean }
       can_edit_festival_program: {

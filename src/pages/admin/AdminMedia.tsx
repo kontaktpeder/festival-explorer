@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -32,6 +33,17 @@ export default function AdminMedia() {
   const [selectedType, setSelectedType] = useState("all");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showUpload, setShowUpload] = useState(false);
+
+  // Check media access permission
+  const { data: canAccess } = useQuery({
+    queryKey: ["can-access-media-page"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_access_media_any");
+      return data ?? false;
+    },
+  });
+
+  // Admin media page - show own files + files from entities user is member of
 
   // Admin media page - show own files + files from entities user is member of
   const { data: media, isLoading } = useQuery({
@@ -147,6 +159,10 @@ export default function AdminMedia() {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
   };
+
+  if (canAccess === false) {
+    return <Navigate to="/admin" replace />;
+  }
 
   return (
     <div className="space-y-6">

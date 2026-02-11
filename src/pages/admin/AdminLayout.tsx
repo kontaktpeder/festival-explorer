@@ -53,6 +53,24 @@ export default function AdminLayout() {
     enabled: !!session && !isAdmin,
   });
 
+  const { data: canAccessMedia } = useQuery({
+    queryKey: ["can-access-media"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_access_media_any");
+      return data ?? false;
+    },
+    enabled: !!session && !isAdmin,
+  });
+
+  const { data: canSeeTicketStats } = useQuery({
+    queryKey: ["can-see-ticket-stats"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_see_ticket_stats_any");
+      return data ?? false;
+    },
+    enabled: !!session && !isAdmin,
+  });
+
   const isLoading = isLoadingSession || (!!session && isLoadingAccess);
 
   type NavItem = {
@@ -71,8 +89,8 @@ export default function AdminLayout() {
     { to: "/admin/entities", icon: Layers, label: "Entities", adminOnly: true },
     { to: "/admin/access-generator", icon: UserPlus, label: "Tilgang", adminOnly: true },
     { to: "/admin/timeline", icon: Clock, label: "Timeline", adminOnly: true },
-    { to: "/admin/media", icon: FolderOpen, label: "Filbank" },
-    { to: "/admin/tickets", icon: Ticket, label: "Billetter", adminOnly: true },
+    { to: "/admin/media", icon: FolderOpen, label: "Filbank", showIf: !!(isAdmin || canAccessMedia) },
+    { to: "/admin/tickets", icon: Ticket, label: "Billetter", showIf: !!(isAdmin || canSeeTicketStats) },
     { to: "/crew/checkin", icon: QrCode, label: "Scan billetter", showIf: !!(isAdmin || canScanTickets) },
     { to: "/admin/deletion-requests", icon: Trash2, label: "Sletting", adminOnly: true },
     { to: "/admin/inbox", icon: Inbox, label: "Inbox", adminOnly: true },

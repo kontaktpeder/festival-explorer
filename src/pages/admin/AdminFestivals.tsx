@@ -32,6 +32,22 @@ export default function AdminFestivals() {
     },
   });
 
+  // Check edit permission per festival (non-admins only)
+  const { data: canEditMap } = useQuery({
+    queryKey: ["can-edit-festivals", festivals?.map((f) => f.id)],
+    queryFn: async () => {
+      const map: Record<string, boolean> = {};
+      for (const f of festivals || []) {
+        const { data } = await supabase.rpc("can_edit_festival", { p_festival_id: f.id });
+        map[f.id] = !!data;
+      }
+      return map;
+    },
+    enabled: !!festivals && festivals.length > 0 && !isAdmin,
+  });
+
+  const canEdit = (festivalId: string) => isAdmin || canEditMap?.[festivalId];
+
   const toggleStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: "draft" | "published" }) => {
       await supabase.from("festivals").update({ status }).eq("id", id);
@@ -101,12 +117,14 @@ export default function AdminFestivals() {
                     Program
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
-                  <Link to={`/admin/festivals/${festival.id}`}>
-                    <Settings className="h-3.5 w-3.5 mr-1" />
-                    Rediger
-                  </Link>
-                </Button>
+                {canEdit(festival.id) && (
+                  <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
+                    <Link to={`/admin/festivals/${festival.id}`}>
+                      <Settings className="h-3.5 w-3.5 mr-1" />
+                      Rediger
+                    </Link>
+                  </Button>
+                )}
               </div>
 
               <div className="pt-2 border-t border-border">
