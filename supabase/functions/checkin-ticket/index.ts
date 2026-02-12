@@ -284,6 +284,32 @@ serve(async (req) => {
     // 0 rows updated = another request won the race
     if (!updatedRows || updatedRows.length !== 1) {
       await logScan(ticket.id, "already_used", "Concurrent check-in; 0 rows updated");
+
+      // Re-fetch ticket to show who actually checked in
+      let raceCheckedInAt: string | null = null;
+      let raceCheckedInBy = "";
+      let raceCheckedInByName = "Annen enhet";
+      const { data: refetched } = await supabaseAdmin
+        .from("tickets")
+        .select("checked_in_at, checked_in_by")
+        .eq("id", ticket.id)
+        .single();
+      if (refetched?.checked_in_at) {
+        raceCheckedInAt = refetched.checked_in_at;
+        if (refetched.checked_in_by) {
+          const { data: profile } = await supabaseAdmin
+            .from("profiles")
+            .select("display_name")
+            .eq("id", refetched.checked_in_by)
+            .single();
+          const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(refetched.checked_in_by);
+          if (authUser?.user?.email) {
+            raceCheckedInBy = authUser.user.email;
+            raceCheckedInByName = profile?.display_name ?? authUser.user.email.split("@")[0];
+          }
+        }
+      }
+
       return new Response(
         JSON.stringify({
           success: false,
@@ -294,9 +320,9 @@ serve(async (req) => {
           ticketType: ticket.ticket_types?.name,
           ticketDescription: ticket.ticket_types?.description,
           eventName: ticket.ticket_events?.name,
-          checkedInAt: null,
-          checkedInBy: "",
-          checkedInByName: "Annen enhet",
+          checkedInAt: raceCheckedInAt,
+          checkedInBy: raceCheckedInBy,
+          checkedInByName: raceCheckedInByName,
           error: "Billetten er allerede brukt",
         }),
         { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }

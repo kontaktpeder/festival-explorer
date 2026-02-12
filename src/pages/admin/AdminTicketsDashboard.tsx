@@ -644,6 +644,14 @@ export default function AdminTicketsDashboard() {
         .eq("id", ticketId);
 
       if (error) throw error;
+
+      // Delete checkins row so next scan can insert (unique constraint)
+      const { error: checkinError } = await supabase
+        .from("checkins")
+        .delete()
+        .eq("ticket_id", ticketId);
+
+      if (checkinError) throw checkinError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ticket-stats"] });
