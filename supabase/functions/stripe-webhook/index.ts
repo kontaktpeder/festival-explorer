@@ -7,8 +7,31 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, stripe-signature",
 };
 
+/** Structured, PII-free purchase outcome log */
+const logPurchaseOutcome = (params: {
+  stripe_event_type: string;
+  stripe_session_id?: string | null;
+  stripe_payment_intent_id?: string | null;
+  ticket_id?: string | null;
+  event_id?: string | null;
+  ticket_type_id?: string | null;
+  result: string;
+  reason?: string;
+}) => {
+  console.log(JSON.stringify({
+    stripe_event_type: params.stripe_event_type,
+    stripe_session_id: params.stripe_session_id ?? null,
+    stripe_payment_intent_id: params.stripe_payment_intent_id ?? null,
+    ticket_id: params.ticket_id ?? null,
+    event_id: params.event_id ?? null,
+    ticket_type_id: params.ticket_type_id ?? null,
+    result: params.result,
+    reason: params.reason ?? null,
+    timestamp: new Date().toISOString(),
+  }));
+};
+
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -42,20 +65,20 @@ serve(async (req) => {
 
   console.log("Received Stripe event:", event.type);
 
-  // Create Supabase admin client
   const supabaseAdmin = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
 
-  // Handle checkout.session.completed - create ticket
+  // ── checkout.session.completed ──────────────────────────────────
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    
-    console.log("Processing checkout session:", session.id);
-    console.log("Session metadata:", session.metadata);
 
-    // Check idempotency - ticket already exists?
+    const paymentIntentId = typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : (session.payment_intent as { id?: string } | null)?.id ?? null;
+
+    // Idempotency check
     const { data: existingTicket } = await supabaseAdmin
       .from("tickets")
       .select("id")
@@ -63,7 +86,14 @@ serve(async (req) => {
       .single();
 
     if (existingTicket) {
-      console.log("Ticket already exists for session:", session.id);
+      logPurchaseOutcome({
+        stripe_event_type: event.type,
+        stripe_session_id: session.id,
+        stripe_payment_intent_id: paymentIntentId,
+        ticket_id: existingTicket.id,
+        result: "duplicate",
+        reason: "session_already_processed",
+      });
       return new Response(JSON.stringify({ received: true, duplicate: true }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -76,68 +106,100 @@ serve(async (req) => {
     const buyerEmail = session.metadata?.buyer_email || session.customer_email;
 
     if (!ticketTypeId || !eventId || !buyerName || !buyerEmail) {
-      console.error("Missing metadata in session:", session.metadata);
+      logPurchaseOutcome({
+        stripe_event_type: event.type,
+        stripe_session_id: session.id,
+        stripe_payment_intent_id: paymentIntentId,
+        result: "error",
+        reason: "missing_metadata",
+      });
       return new Response("Missing metadata", { status: 400 });
     }
 
-    // Generate ticket code using database function
-    const { data: ticketCodeResult, error: codeError } = await supabaseAdmin
-      .rpc("generate_ticket_code");
+    // Atomic capacity-safe reservation via RPC
+    const { data: reserveResult, error: reserveError } = await supabaseAdmin.rpc(
+      "reserve_ticket_slot_atomic",
+      {
+        p_ticket_type_id: ticketTypeId,
+        p_event_id: eventId,
+        p_buyer_name: buyerName,
+        p_buyer_email: buyerEmail,
+        p_stripe_session_id: session.id,
+        p_payment_intent_id: paymentIntentId ?? "",
+      }
+    );
 
-    if (codeError) {
-      console.error("Error generating ticket code:", codeError);
-      return new Response("Error generating ticket code", { status: 500 });
-    }
-
-    const ticketCode = ticketCodeResult;
-    console.log("Generated ticket code:", ticketCode);
-
-    // Extract payment_intent ID (can be string or expanded object)
-    const paymentIntentId = typeof session.payment_intent === "string"
-      ? session.payment_intent
-      : (session.payment_intent as { id?: string } | null)?.id ?? null;
-
-    // Create ticket
-    const { data: ticket, error: ticketError } = await supabaseAdmin
-      .from("tickets")
-      .insert({
-        event_id: eventId,
-        ticket_type_id: ticketTypeId,
-        buyer_name: buyerName,
-        buyer_email: buyerEmail,
-        ticket_code: ticketCode,
+    if (reserveError) {
+      console.error("Error in reserve_ticket_slot_atomic:", reserveError);
+      logPurchaseOutcome({
+        stripe_event_type: event.type,
         stripe_session_id: session.id,
         stripe_payment_intent_id: paymentIntentId,
-        status: "VALID",
-      })
-      .select()
-      .single();
-
-    if (ticketError) {
-      console.error("Error creating ticket:", ticketError);
-      return new Response(`Error creating ticket: ${ticketError.message}`, { status: 500 });
+        event_id: eventId,
+        ticket_type_id: ticketTypeId,
+        result: "error",
+        reason: "rpc_error",
+      });
+      return new Response("Error reserving ticket slot", { status: 500 });
     }
 
-    console.log("Ticket created successfully:", ticket.id, ticketCode);
+    if (!reserveResult || reserveResult.result === "sold_out") {
+      logPurchaseOutcome({
+        stripe_event_type: event.type,
+        stripe_session_id: session.id,
+        stripe_payment_intent_id: paymentIntentId,
+        event_id: eventId,
+        ticket_type_id: ticketTypeId,
+        result: "sold_out",
+        reason: "capacity_exceeded_at_webhook",
+      });
+      return new Response(JSON.stringify({ received: true, soldOut: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (reserveResult.result !== "success") {
+      logPurchaseOutcome({
+        stripe_event_type: event.type,
+        stripe_session_id: session.id,
+        stripe_payment_intent_id: paymentIntentId,
+        event_id: eventId,
+        ticket_type_id: ticketTypeId,
+        result: "error",
+        reason: reserveResult.reason ?? "unexpected_rpc_result",
+      });
+      return new Response("Unexpected ticket reservation result", { status: 500 });
+    }
+
+    const ticketId = reserveResult.ticket_id as string;
+    const ticketCode = reserveResult.ticket_code as string;
+
+    logPurchaseOutcome({
+      stripe_event_type: event.type,
+      stripe_session_id: session.id,
+      stripe_payment_intent_id: paymentIntentId,
+      ticket_id: ticketId,
+      event_id: eventId,
+      ticket_type_id: ticketTypeId,
+      result: "success",
+      reason: "ticket_created",
+    });
 
     return new Response(
-      JSON.stringify({ received: true, ticketId: ticket.id, ticketCode }),
+      JSON.stringify({ received: true, ticketId, ticketCode }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
   }
 
-  // Handle refund
+  // ── charge.refunded ─────────────────────────────────────────────
   if (event.type === "charge.refunded") {
     const charge = event.data.object as Stripe.Charge;
-    // Extract payment_intent ID (can be string or expanded object)
     const paymentIntentId = typeof charge.payment_intent === "string"
       ? charge.payment_intent
       : (charge.payment_intent as { id?: string } | null)?.id;
-    
-    console.log("Processing refund for payment intent:", paymentIntentId);
 
     if (paymentIntentId) {
-      // Find ticket(s) by payment intent
       const { data: tickets, error: findError } = await supabaseAdmin
         .from("tickets")
         .select("id, ticket_code, status")
@@ -149,23 +211,27 @@ serve(async (req) => {
         for (const ticket of tickets) {
           const { error: updateError } = await supabaseAdmin
             .from("tickets")
-            .update({
-              refunded_at: new Date().toISOString(),
-              status: "CANCELLED",
-            })
+            .update({ refunded_at: new Date().toISOString(), status: "CANCELLED" })
             .eq("id", ticket.id);
 
           if (updateError) {
             console.error(`Error updating ticket ${ticket.ticket_code} for refund:`, updateError);
-          } else {
-            console.log(`Ticket ${ticket.ticket_code} marked as refunded`);
           }
         }
-      } else {
-        console.log("No tickets found for payment intent:", paymentIntentId, "- verify stripe_payment_intent_id in tickets table matches Stripe charge");
       }
+
+      logPurchaseOutcome({
+        stripe_event_type: event.type,
+        stripe_payment_intent_id: paymentIntentId,
+        result: "refund",
+        reason: (tickets && tickets.length > 0) ? "tickets_marked_refunded" : "no_tickets_found_for_payment_intent",
+      });
     } else {
-      console.log("charge.refunded received but payment_intent is missing on charge");
+      logPurchaseOutcome({
+        stripe_event_type: event.type,
+        result: "refund",
+        reason: "payment_intent_missing_on_charge",
+      });
     }
 
     return new Response(JSON.stringify({ received: true }), {
@@ -174,20 +240,17 @@ serve(async (req) => {
     });
   }
 
-  // Handle chargeback/dispute created
+  // ── charge.dispute.created ──────────────────────────────────────
   if (event.type === "charge.dispute.created") {
     const dispute = event.data.object as Stripe.Dispute;
     const chargeId = dispute.charge as string;
-    
-    console.log("Processing dispute for charge:", chargeId);
+    let paymentIntentId: string | null = null;
 
-    // Get the charge to find the payment intent
     try {
       const charge = await stripe.charges.retrieve(chargeId);
-      const paymentIntentId = charge.payment_intent as string;
+      paymentIntentId = charge.payment_intent as string;
 
       if (paymentIntentId) {
-        // Find ticket(s) by payment intent
         const { data: tickets, error: findError } = await supabaseAdmin
           .from("tickets")
           .select("id, ticket_code, status")
@@ -199,24 +262,30 @@ serve(async (req) => {
           for (const ticket of tickets) {
             const { error: updateError } = await supabaseAdmin
               .from("tickets")
-              .update({
-                chargeback_at: new Date().toISOString(),
-                status: "CANCELLED",
-              })
+              .update({ chargeback_at: new Date().toISOString(), status: "CANCELLED" })
               .eq("id", ticket.id);
 
             if (updateError) {
               console.error(`Error updating ticket ${ticket.ticket_code} for dispute:`, updateError);
-            } else {
-              console.log(`Ticket ${ticket.ticket_code} marked with chargeback`);
             }
           }
-        } else {
-          console.log("No tickets found for payment intent:", paymentIntentId);
         }
+
+        logPurchaseOutcome({
+          stripe_event_type: event.type,
+          stripe_payment_intent_id: paymentIntentId,
+          result: "chargeback",
+          reason: (tickets && tickets.length > 0) ? "tickets_marked_chargeback" : "no_tickets_found_for_payment_intent",
+        });
       }
     } catch (chargeError) {
       console.error("Error retrieving charge for dispute:", chargeError);
+      logPurchaseOutcome({
+        stripe_event_type: event.type,
+        stripe_payment_intent_id: paymentIntentId,
+        result: "chargeback",
+        reason: "charge_retrieval_error",
+      });
     }
 
     return new Response(JSON.stringify({ received: true }), {
@@ -225,10 +294,15 @@ serve(async (req) => {
     });
   }
 
-  // Handle payment failed
+  // ── payment_intent.payment_failed ───────────────────────────────
   if (event.type === "payment_intent.payment_failed") {
     const paymentIntent = event.data.object as Stripe.PaymentIntent;
-    console.log("Payment failed:", paymentIntent.id, paymentIntent.last_payment_error?.message);
+    logPurchaseOutcome({
+      stripe_event_type: event.type,
+      stripe_payment_intent_id: paymentIntent.id,
+      result: "error",
+      reason: "payment_failed",
+    });
   }
 
   return new Response(JSON.stringify({ received: true }), {

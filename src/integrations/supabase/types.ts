@@ -2072,6 +2072,17 @@ export type Database = {
       is_staff: { Args: never; Returns: boolean }
       is_ticket_admin: { Args: never; Returns: boolean }
       is_venue_admin: { Args: { p_venue_id: string }; Returns: boolean }
+      reserve_ticket_slot_atomic: {
+        Args: {
+          p_buyer_email: string
+          p_buyer_name: string
+          p_event_id: string
+          p_payment_intent_id: string
+          p_stripe_session_id: string
+          p_ticket_type_id: string
+        }
+        Returns: Json
+      }
       reset_checkin_atomic: { Args: { p_ticket_id: string }; Returns: Json }
     }
     Enums: {
