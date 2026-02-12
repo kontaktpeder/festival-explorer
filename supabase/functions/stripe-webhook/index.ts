@@ -334,6 +334,91 @@ serve(async (req) => {
     });
   }
 
+  // ── charge.refund.updated ────────────────────────────────────────
+  if (event.type === "charge.refund.updated") {
+    const refund = event.data.object as Stripe.Refund;
+    const paymentIntentId = typeof refund.payment_intent === "string"
+      ? refund.payment_intent
+      : (refund.payment_intent as { id?: string } | null)?.id ?? null;
+
+    // If payment_intent not on refund object, look it up via charge
+    let resolvedPiId = paymentIntentId;
+    if (!resolvedPiId && refund.charge) {
+      try {
+        const chargeId = typeof refund.charge === "string" ? refund.charge : (refund.charge as { id?: string })?.id;
+        if (chargeId) {
+          const charge = await stripe.charges.retrieve(chargeId);
+          resolvedPiId = charge.payment_intent as string | null;
+        }
+      } catch (err) {
+        console.error("Error retrieving charge for charge.refund.updated:", err);
+      }
+    }
+
+    if (resolvedPiId) {
+      const { data: tickets } = await supabaseAdmin
+        .from("tickets")
+        .select("id, status")
+        .eq("stripe_payment_intent_id", resolvedPiId);
+
+      if (tickets && tickets.length > 0) {
+        for (const ticket of tickets) {
+          if (refund.status === "succeeded") {
+            await supabaseAdmin
+              .from("tickets")
+              .update({
+                refunded_at: new Date().toISOString(),
+                status: "CANCELLED",
+                refund_status: "succeeded",
+                refund_id: refund.id,
+              })
+              .eq("id", ticket.id);
+          } else if (refund.status === "failed" || refund.status === "canceled") {
+            if (ticket.status === "REFUND_PENDING") {
+              await supabaseAdmin
+                .from("tickets")
+                .update({
+                  status: "VALID",
+                  refund_status: refund.status,
+                  refund_id: null,
+                  refund_requested_at: null,
+                })
+                .eq("id", ticket.id);
+            }
+          } else if (refund.status === "pending") {
+            await supabaseAdmin
+              .from("tickets")
+              .update({
+                status: "REFUND_PENDING",
+                refund_status: "pending",
+                refund_id: refund.id,
+                refund_requested_at: new Date().toISOString(),
+              })
+              .eq("id", ticket.id);
+          }
+        }
+      }
+
+      logPurchaseOutcome({
+        stripe_event_type: event.type,
+        stripe_payment_intent_id: resolvedPiId,
+        result: refund.status === "succeeded" ? "refund" : "refund_status_change",
+        reason: `refund_${refund.status}`,
+      });
+    } else {
+      logPurchaseOutcome({
+        stripe_event_type: event.type,
+        result: "refund",
+        reason: "payment_intent_missing_on_refund_event",
+      });
+    }
+
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   // ── charge.dispute.created ──────────────────────────────────────
   if (event.type === "charge.dispute.created") {
     const dispute = event.data.object as Stripe.Dispute;
