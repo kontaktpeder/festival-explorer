@@ -1,0 +1,1 @@
+UPDATE public.tickets SET status = 'CANCELLED', refund_status = 'succeeded', refund_requested_at = refunded_at WHERE id = 'd025bb66-c169-4683-ba02-9b538810d67e' AND refunded_at IS NOT NULL;
