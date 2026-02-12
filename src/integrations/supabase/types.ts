@@ -131,6 +131,7 @@ export type Database = {
         Row: {
           checked_in_at: string | null
           checked_in_by: string
+          device_id: string | null
           id: string
           method: string | null
           note: string | null
@@ -139,6 +140,7 @@ export type Database = {
         Insert: {
           checked_in_at?: string | null
           checked_in_by: string
+          device_id?: string | null
           id?: string
           method?: string | null
           note?: string | null
@@ -147,6 +149,7 @@ export type Database = {
         Update: {
           checked_in_at?: string | null
           checked_in_by?: string
+          device_id?: string | null
           id?: string
           method?: string | null
           note?: string | null
