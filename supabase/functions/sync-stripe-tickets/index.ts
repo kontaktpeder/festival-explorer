@@ -36,15 +36,20 @@ serve(async (req) => {
       expand: ["data.payment_intent"],
     });
 
-    // Get all tickets from database
+    // Get all tickets from database (exclude internal tickets)
     const { data: dbTickets, error: dbError } = await supabaseAdmin
       .from("tickets")
       .select("stripe_session_id, stripe_payment_intent_id, ticket_code, buyer_email, created_at");
 
     if (dbError) throw dbError;
 
+    // Separate Stripe tickets from internal tickets for accurate stats
+    const allDbTickets = dbTickets || [];
+    const stripeDbTickets = allDbTickets.filter(t => !t.stripe_session_id.startsWith("internal-"));
+    const internalTickets = allDbTickets.filter(t => t.stripe_session_id.startsWith("internal-"));
+
     // Create maps for quick lookup
-    const dbSessionIds = new Set(dbTickets?.map(t => t.stripe_session_id) || []);
+    const dbSessionIds = new Set(allDbTickets.map(t => t.stripe_session_id));
 
     // Find missing tickets
     interface MissingTicket {
@@ -87,11 +92,12 @@ serve(async (req) => {
       .from("ticket_types")
       .select("id, name, code, price_nok, event_id");
 
-    // Statistics
+    // Statistics (compare only Stripe-originated tickets)
     const stats = {
       mode,
       total_stripe_sessions: completedSessions.length,
-      total_db_tickets: dbTickets?.length || 0,
+      total_db_tickets: stripeDbTickets.length,
+      internal_tickets: internalTickets.length,
       missing_tickets: missingTickets.length,
       sync_percentage: completedSessions.length > 0 
         ? ((completedSessions.length - missingTickets.length) / completedSessions.length * 100).toFixed(1)
