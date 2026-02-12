@@ -236,6 +236,24 @@ serve(async (req) => {
       );
     }
 
+    // Check if refund is pending
+    if (ticket.status === "REFUND_PENDING") {
+      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "refunded", reason: "refund_pending", duration_ms: Date.now() - requestStartedAt });
+      await logScan(ticket.id, "refunded", "Refund pending");
+      return new Response(
+        JSON.stringify({
+          success: false,
+          result: "refunded",
+          ticketCode: ticket.ticket_code,
+          buyerName: ticket.buyer_name,
+          buyerEmail: ticket.buyer_email,
+          ticketType: ticket.ticket_types?.name,
+          error: "Refund pågår – billetten er sperret"
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Check if already used
     if (ticket.status === "USED" && ticket.checked_in_at) {
       // Get who checked it in
