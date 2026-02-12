@@ -167,7 +167,7 @@ serve(async (req) => {
         event_id: eventId,
         ticket_type_id: ticketTypeId,
         result: "error",
-        reason: reserveResult.reason ?? "unexpected_rpc_result",
+        reason: "rpc_error",
       });
       return new Response("Unexpected ticket reservation result", { status: 500 });
     }
