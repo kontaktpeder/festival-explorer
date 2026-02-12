@@ -254,17 +254,18 @@ serve(async (req) => {
     const hasBoilerroomAccess = ticketTypeCode.includes("BOILERROOM") || 
                                 ticketTypeCode === "BOILERROOM";
 
-    // Perform atomic check-in
-    // Update ticket status
-    const { error: updateError } = await supabaseAdmin
+    // Perform atomic check-in – use .select() to detect race conditions
+    const checkedInAt = new Date().toISOString();
+    const { data: updatedRows, error: updateError } = await supabaseAdmin
       .from("tickets")
       .update({
         status: "USED",
-        checked_in_at: new Date().toISOString(),
+        checked_in_at: checkedInAt,
         checked_in_by: user.id,
       })
       .eq("id", ticket.id)
-      .eq("status", "VALID"); // Ensure we only update if still VALID (prevents race condition)
+      .eq("status", "VALID") // Only update if still VALID (prevents race condition)
+      .select("id");
 
     if (updateError) {
       console.error("Error updating ticket:", updateError);
@@ -279,6 +280,30 @@ serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // 0 rows updated = another request won the race
+    if (!updatedRows || updatedRows.length !== 1) {
+      await logScan(ticket.id, "already_used", "Concurrent check-in; 0 rows updated");
+      return new Response(
+        JSON.stringify({
+          success: false,
+          result: "already_used",
+          ticketCode: ticket.ticket_code,
+          buyerName: ticket.buyer_name,
+          buyerEmail: ticket.buyer_email,
+          ticketType: ticket.ticket_types?.name,
+          ticketDescription: ticket.ticket_types?.description,
+          eventName: ticket.ticket_events?.name,
+          checkedInAt: null,
+          checkedInBy: "",
+          checkedInByName: "Annen enhet",
+          error: "Billetten er allerede brukt",
+        }),
+        { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Exactly 1 row updated – proceed with side-effects
 
     // Count actual checked-in tickets for accurate "Inne nå"
     const { count: checkedInCount } = await supabaseAdmin
@@ -311,7 +336,6 @@ serve(async (req) => {
 
     if (eventUpdateError) {
       console.error("Error updating event attendance:", eventUpdateError);
-      // Don't fail the check-in, just log the error
     }
 
     // Create checkin audit log
@@ -326,7 +350,6 @@ serve(async (req) => {
 
     if (checkinError) {
       console.error("Error creating checkin log:", checkinError);
-      // Don't fail the request, just log it
     }
 
     // Log successful scan
@@ -345,7 +368,7 @@ serve(async (req) => {
         ticketDescription: ticket.ticket_types?.description,
         eventName: ticket.ticket_events?.name,
         hasBoilerroomAccess,
-        checkedInAt: new Date().toISOString(),
+        checkedInAt: checkedInAt,
         attendanceCount: newAttendanceCount,
         boilerroomAttendanceCount: newBoilerroomCount,
       }),
