@@ -675,8 +675,11 @@ export default function CrewCheckInPage() {
                   {checkInResult.result === 'refunded' && 'Refundert'}
                   {checkInResult.result === 'invalid' && 'Ugyldig billett'}
                   {checkInResult.result === 'wrong_event' && 'Feil event'}
-                  {checkInResult.result === 'error' && 'Feil'}
+                  {checkInResult.result === 'error' && 'FEIL'}
                 </h1>
+                {checkInResult.result === 'error' && (
+                  <p className="text-lg font-medium opacity-90">Prøv igjen eller sjekk nettverket</p>
+                )}
 
                 <div className="bg-white/10 rounded-lg p-4 space-y-3 text-left">
                   <p className="font-mono text-lg">{checkInResult.ticketCode}</p>

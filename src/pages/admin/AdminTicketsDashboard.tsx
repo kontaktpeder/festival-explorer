@@ -631,27 +631,14 @@ export default function AdminTicketsDashboard() {
     },
   });
 
-  // Override: Reset check-in
+  // Override: Reset check-in (atomic via RPC)
   const resetCheckIn = useMutation({
     mutationFn: async (ticketId: string) => {
-      const { error } = await supabase
-        .from("tickets")
-        .update({
-          status: "VALID",
-          checked_in_at: null,
-          checked_in_by: null,
-        })
-        .eq("id", ticketId);
-
+      const { data, error } = await supabase.rpc("reset_checkin_atomic", {
+        p_ticket_id: ticketId,
+      });
       if (error) throw error;
-
-      // Delete checkins row so next scan can insert (unique constraint)
-      const { error: checkinError } = await supabase
-        .from("checkins")
-        .delete()
-        .eq("ticket_id", ticketId);
-
-      if (checkinError) throw checkinError;
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ticket-stats"] });
