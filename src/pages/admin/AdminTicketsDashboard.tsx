@@ -250,7 +250,10 @@ function useTicketIssues() {
       // Check for payment failures (would need webhook logs, but we can check status)
       // For now, we'll check for tickets with no payment_intent_id
       const paymentIssues = typedTickets?.filter(
-        (t) => !t.stripe_payment_intent_id && t.status === "VALID"
+        (t) =>
+          !t.stripe_payment_intent_id &&
+          t.status === "VALID" &&
+          !(t.stripe_session_id || "").startsWith("internal-")
       ) || [];
 
       // All issues combined
