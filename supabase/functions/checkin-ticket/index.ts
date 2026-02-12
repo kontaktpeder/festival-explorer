@@ -1,6 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
+async function sha256Hex(text: string): Promise<string> {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -124,7 +129,7 @@ serve(async (req) => {
       }
     };
 
-    // Structured outcome logging for observability
+    // Structured outcome logging for observability (no PII – no names/emails/raw codes)
     const logCheckInOutcome = (params: {
       event_id: string | null;
       ticket_id: string | null;
@@ -132,6 +137,8 @@ serve(async (req) => {
       result: string;
       reason?: string;
       duration_ms?: number;
+      code_hash?: string | null;
+      error_detail?: string | null;
     }) => {
       console.log(JSON.stringify({
         event_id: params.event_id ?? null,
@@ -140,6 +147,8 @@ serve(async (req) => {
         result: params.result,
         ...(params.reason && { reason: params.reason }),
         ...(params.duration_ms !== undefined && { duration_ms: params.duration_ms }),
+        ...(params.code_hash && { code_hash: params.code_hash }),
+        ...(params.error_detail && { error_detail: params.error_detail }),
         timestamp: new Date().toISOString(),
       }));
     };
@@ -155,7 +164,8 @@ serve(async (req) => {
       .single();
 
     if (ticketError || !data) {
-      logCheckInOutcome({ event_id: null, ticket_id: null, scanner_user_id: user.id, result: "invalid", reason: "ticket not found", duration_ms: Date.now() - requestStartedAt });
+      const codeHash = await sha256Hex(normalizedCode).catch(() => null);
+      logCheckInOutcome({ event_id: null, ticket_id: null, scanner_user_id: user.id, result: "invalid", reason: "ticket_not_found", duration_ms: Date.now() - requestStartedAt, code_hash: codeHash });
       await logScan(null, "invalid", "Ticket not found");
       return new Response(
         JSON.stringify({ 
@@ -172,7 +182,7 @@ serve(async (req) => {
 
     // Check if refunded
     if (ticket.refunded_at) {
-      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "refunded", reason: "refunded_at", duration_ms: Date.now() - requestStartedAt });
+      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "refunded", reason: "refunded", duration_ms: Date.now() - requestStartedAt });
       await logScan(ticket.id, "refunded", "Ticket was refunded");
       return new Response(
         JSON.stringify({
@@ -254,7 +264,7 @@ serve(async (req) => {
         }
       }
 
-      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "already_used", reason: "read path", duration_ms: Date.now() - requestStartedAt });
+      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "already_used", reason: "already_used_read_path", duration_ms: Date.now() - requestStartedAt });
       await logScan(ticket.id, "already_used", "Ticket already checked in");
       return new Response(
         JSON.stringify({
@@ -294,7 +304,7 @@ serve(async (req) => {
 
     if (rpcError) {
       console.error("Error in checkin_ticket_atomic:", rpcError);
-      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "error", reason: rpcError.message, duration_ms: Date.now() - requestStartedAt });
+      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "error", reason: "rpc_error", duration_ms: Date.now() - requestStartedAt, error_detail: rpcError.message?.slice(0, 200) ?? null });
       await logScan(ticket.id, "error", `RPC failed: ${rpcError.message}`);
       return new Response(
         JSON.stringify({ 
@@ -309,7 +319,7 @@ serve(async (req) => {
 
     // RPC returned already_used (0 rows updated = race condition)
     if (rpcResult?.result === "already_used") {
-      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "already_used", reason: "0 rows updated (RPC)", duration_ms: Date.now() - requestStartedAt });
+      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "already_used", reason: "conflict_already_used", duration_ms: Date.now() - requestStartedAt });
       await logScan(ticket.id, "already_used", "Concurrent check-in; 0 rows updated");
 
       // Re-fetch ticket to show who actually checked in
@@ -393,10 +403,8 @@ serve(async (req) => {
     }
 
     // Log successful scan
-    logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "success", duration_ms: Date.now() - requestStartedAt });
+    logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "success", reason: "success", duration_ms: Date.now() - requestStartedAt });
     await logScan(ticket.id, "success");
-
-    console.log(`Ticket ${normalizedCode} checked in by ${user.email} via ${method}`);
 
     return new Response(
       JSON.stringify({
