@@ -1996,6 +1996,16 @@ export type Database = {
       can_see_ticket_stats_any: { Args: never; Returns: boolean }
       can_upload_high_res: { Args: { p_user_id: string }; Returns: boolean }
       can_view_event_lineup: { Args: { p_event_id: string }; Returns: boolean }
+      checkin_ticket_atomic: {
+        Args: {
+          p_checked_in_by: string
+          p_device_id?: string
+          p_method?: string
+          p_note?: string
+          p_ticket_id: string
+        }
+        Returns: Json
+      }
       delete_user_safely: { Args: { p_user_id: string }; Returns: Json }
       generate_ticket_code: { Args: never; Returns: string }
       get_invitation_by_token: { Args: { p_token: string }; Returns: Json }
@@ -2062,6 +2072,7 @@ export type Database = {
       is_staff: { Args: never; Returns: boolean }
       is_ticket_admin: { Args: never; Returns: boolean }
       is_venue_admin: { Args: { p_venue_id: string }; Returns: boolean }
+      reset_checkin_atomic: { Args: { p_ticket_id: string }; Returns: Json }
     }
     Enums: {
       access_level: "owner" | "admin" | "editor" | "viewer"

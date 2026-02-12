@@ -130,6 +130,7 @@ serve(async (req) => {
       scanner_user_id: string;
       result: string;
       reason?: string;
+      duration_ms?: number;
     }) => {
       console.log(JSON.stringify({
         event_id: params.event_id ?? null,
@@ -137,6 +138,7 @@ serve(async (req) => {
         scanner_user_id: params.scanner_user_id,
         result: params.result,
         ...(params.reason && { reason: params.reason }),
+        ...(params.duration_ms !== undefined && { duration_ms: params.duration_ms }),
         timestamp: new Date().toISOString(),
       }));
     };
@@ -273,22 +275,24 @@ serve(async (req) => {
     const hasBoilerroomAccess = ticketTypeCode.includes("BOILERROOM") || 
                                 ticketTypeCode === "BOILERROOM";
 
-    // Perform atomic check-in – use .select() to detect race conditions
-    const checkedInAt = new Date().toISOString();
-    const { data: updatedRows, error: updateError } = await supabaseAdmin
-      .from("tickets")
-      .update({
-        status: "USED",
-        checked_in_at: checkedInAt,
-        checked_in_by: user.id,
-      })
-      .eq("id", ticket.id)
-      .eq("status", "VALID") // Only update if still VALID (prevents race condition)
-      .select("id");
+    const requestStartedAt = Date.now();
 
-    if (updateError) {
-      console.error("Error updating ticket:", updateError);
-      await logScan(ticket.id, "error", `Failed to update ticket: ${updateError.message}`);
+    // Atomic check-in via RPC (UPDATE tickets + INSERT checkins in one DB transaction)
+    const { data: rpcResult, error: rpcError } = await supabaseAdmin.rpc(
+      "checkin_ticket_atomic",
+      {
+        p_ticket_id: ticket.id,
+        p_checked_in_by: user.id,
+        p_method: method,
+        p_note: note || null,
+        p_device_id: device_id || null,
+      }
+    );
+
+    if (rpcError) {
+      console.error("Error in checkin_ticket_atomic:", rpcError);
+      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "error", reason: rpcError.message, duration_ms: Date.now() - requestStartedAt });
+      await logScan(ticket.id, "error", `RPC failed: ${rpcError.message}`);
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -300,9 +304,9 @@ serve(async (req) => {
       );
     }
 
-    // 0 rows updated = another request won the race
-    if (!updatedRows || updatedRows.length !== 1) {
-      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "already_used", reason: "0 rows updated" });
+    // RPC returned already_used (0 rows updated = race condition)
+    if (rpcResult?.result === "already_used") {
+      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "already_used", reason: "0 rows updated (RPC)", duration_ms: Date.now() - requestStartedAt });
       await logScan(ticket.id, "already_used", "Concurrent check-in; 0 rows updated");
 
       // Re-fetch ticket to show who actually checked in
@@ -349,7 +353,8 @@ serve(async (req) => {
       );
     }
 
-    // Exactly 1 row updated – proceed with side-effects
+    // Success – proceed with side-effects (attendance counting)
+    const checkedInAt = rpcResult?.checked_in_at || new Date().toISOString();
 
     // Count actual checked-in tickets for accurate "Inne nå"
     const { count: checkedInCount } = await supabaseAdmin
@@ -384,33 +389,8 @@ serve(async (req) => {
       console.error("Error updating event attendance:", eventUpdateError);
     }
 
-    // Create checkin audit log
-    const { error: checkinError } = await supabaseAdmin
-      .from("checkins")
-      .insert({
-        ticket_id: ticket.id,
-        checked_in_by: user.id,
-        method,
-        note,
-        ...(device_id && { device_id }),
-      });
-
-    if (checkinError) {
-      console.error("Error creating checkin log:", checkinError);
-      await logScan(ticket.id, "error", `Checkins insert failed: ${checkinError.message}`);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          result: "error",
-          ticketCode: ticket.ticket_code,
-          error: "Kunne ikke registrere innsjekking",
-        }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     // Log successful scan
-    logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "success" });
+    logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "success", duration_ms: Date.now() - requestStartedAt });
     await logScan(ticket.id, "success");
 
     console.log(`Ticket ${normalizedCode} checked in by ${user.email} via ${method}`);
