@@ -101,6 +101,7 @@ serve(async (req) => {
     }
 
     const normalizedCode = ticketCode.toUpperCase().trim();
+    const requestStartedAt = Date.now();
 
     // Helper function to log scan attempts
     const logScan = async (
@@ -154,6 +155,7 @@ serve(async (req) => {
       .single();
 
     if (ticketError || !data) {
+      logCheckInOutcome({ event_id: null, ticket_id: null, scanner_user_id: user.id, result: "invalid", reason: "ticket not found", duration_ms: Date.now() - requestStartedAt });
       await logScan(null, "invalid", "Ticket not found");
       return new Response(
         JSON.stringify({ 
@@ -170,6 +172,7 @@ serve(async (req) => {
 
     // Check if refunded
     if (ticket.refunded_at) {
+      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "refunded", reason: "refunded_at", duration_ms: Date.now() - requestStartedAt });
       await logScan(ticket.id, "refunded", "Ticket was refunded");
       return new Response(
         JSON.stringify({
@@ -188,6 +191,7 @@ serve(async (req) => {
 
     // Check if chargeback
     if (ticket.chargeback_at) {
+      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "refunded", reason: "chargeback", duration_ms: Date.now() - requestStartedAt });
       await logScan(ticket.id, "refunded", "Ticket has chargeback");
       return new Response(
         JSON.stringify({
@@ -206,6 +210,7 @@ serve(async (req) => {
 
     // Check if cancelled
     if (ticket.status === "CANCELLED") {
+      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "invalid", reason: "cancelled", duration_ms: Date.now() - requestStartedAt });
       await logScan(ticket.id, "invalid", "Ticket is cancelled");
       return new Response(
         JSON.stringify({
@@ -249,7 +254,7 @@ serve(async (req) => {
         }
       }
 
-      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "already_used", reason: "read path" });
+      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "already_used", reason: "read path", duration_ms: Date.now() - requestStartedAt });
       await logScan(ticket.id, "already_used", "Ticket already checked in");
       return new Response(
         JSON.stringify({
@@ -274,8 +279,6 @@ serve(async (req) => {
     const ticketTypeCode = ticket.ticket_types?.code?.toUpperCase() || "";
     const hasBoilerroomAccess = ticketTypeCode.includes("BOILERROOM") || 
                                 ticketTypeCode === "BOILERROOM";
-
-    const requestStartedAt = Date.now();
 
     // Atomic check-in via RPC (UPDATE tickets + INSERT checkins in one DB transaction)
     const { data: rpcResult, error: rpcError } = await supabaseAdmin.rpc(

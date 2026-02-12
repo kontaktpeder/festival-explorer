@@ -638,6 +638,8 @@ export default function AdminTicketsDashboard() {
         p_ticket_id: ticketId,
       });
       if (error) throw error;
+      const result = data as { result: string; error?: string } | null;
+      if (result?.result === 'denied') throw new Error(result.error || 'Ingen tilgang');
       return data;
     },
     onSuccess: () => {
