@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -57,6 +57,11 @@ export default function CrewCheckInPage() {
   // Synchronous scan lock - prevents multiple requests per "scan round"
   const scanLockRef = useRef(false);
   const navigate = useNavigate();
+  const [deviceId] = useState(() =>
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `device-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+  );
 
   useEffect(() => {
     const checkRole = async () => {
@@ -152,7 +157,7 @@ export default function CrewCheckInPage() {
               "Content-Type": "application/json",
               Authorization: `Bearer ${session.access_token}`,
             },
-            body: JSON.stringify({ ticketCode: code, method }),
+            body: JSON.stringify({ ticketCode: code, method, device_id: deviceId }),
           }
         );
       } catch (networkError) {

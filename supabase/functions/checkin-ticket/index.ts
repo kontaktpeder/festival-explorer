@@ -35,6 +35,7 @@ interface CheckInRequest {
   ticketCode: string;
   method?: 'qr' | 'manual' | 'manual_override';
   note?: string;
+  device_id?: string;
 }
 
 serve(async (req) => {
@@ -90,7 +91,7 @@ serve(async (req) => {
       );
     }
 
-    const { ticketCode, method = "qr", note }: CheckInRequest = await req.json();
+    const { ticketCode, method = "qr", note, device_id }: CheckInRequest = await req.json();
 
     if (!ticketCode) {
       return new Response(
@@ -122,7 +123,24 @@ serve(async (req) => {
       }
     };
 
-    // Find ticket with full info
+    // Structured outcome logging for observability
+    const logCheckInOutcome = (params: {
+      event_id: string | null;
+      ticket_id: string | null;
+      scanner_user_id: string;
+      result: string;
+      reason?: string;
+    }) => {
+      console.log(JSON.stringify({
+        event_id: params.event_id ?? null,
+        ticket_id: params.ticket_id ?? null,
+        scanner_user_id: params.scanner_user_id,
+        result: params.result,
+        ...(params.reason && { reason: params.reason }),
+        timestamp: new Date().toISOString(),
+      }));
+    };
+
     const { data, error: ticketError } = await supabaseAdmin
       .from("tickets")
       .select(`
@@ -229,6 +247,7 @@ serve(async (req) => {
         }
       }
 
+      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "already_used", reason: "read path" });
       await logScan(ticket.id, "already_used", "Ticket already checked in");
       return new Response(
         JSON.stringify({
@@ -283,6 +302,7 @@ serve(async (req) => {
 
     // 0 rows updated = another request won the race
     if (!updatedRows || updatedRows.length !== 1) {
+      logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "already_used", reason: "0 rows updated" });
       await logScan(ticket.id, "already_used", "Concurrent check-in; 0 rows updated");
 
       // Re-fetch ticket to show who actually checked in
@@ -372,13 +392,25 @@ serve(async (req) => {
         checked_in_by: user.id,
         method,
         note,
+        ...(device_id && { device_id }),
       });
 
     if (checkinError) {
       console.error("Error creating checkin log:", checkinError);
+      await logScan(ticket.id, "error", `Checkins insert failed: ${checkinError.message}`);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          result: "error",
+          ticketCode: ticket.ticket_code,
+          error: "Kunne ikke registrere innsjekking",
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Log successful scan
+    logCheckInOutcome({ event_id: ticket.event_id, ticket_id: ticket.id, scanner_user_id: user.id, result: "success" });
     await logScan(ticket.id, "success");
 
     console.log(`Ticket ${normalizedCode} checked in by ${user.email} via ${method}`);
