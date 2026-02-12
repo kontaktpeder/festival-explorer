@@ -224,9 +224,10 @@ function useTicketIssues() {
 
       const typedTickets = (tickets || []) as unknown as TicketWithRelations[];
 
-      // Find duplicate stripe_session_ids
+      // Find duplicate stripe_session_ids (exclude internal tickets)
       const sessionIds = new Map<string, string[]>();
       typedTickets?.forEach((ticket) => {
+        if ((ticket.stripe_session_id || "").startsWith("internal-")) return;
         if (!sessionIds.has(ticket.stripe_session_id)) {
           sessionIds.set(ticket.stripe_session_id, []);
         }
@@ -241,14 +242,15 @@ function useTicketIssues() {
           count: ids.length,
         }));
 
-      // Refunded tickets
-      const refunded = typedTickets?.filter((t) => t.refunded_at) || [];
+      // Refunded tickets (only unresolved – exclude properly handled refunds)
+      const refunded = typedTickets?.filter(
+        (t) => t.refunded_at && t.status !== "CANCELLED"
+      ) || [];
 
       // Chargebacks
       const chargebacks = typedTickets?.filter((t) => t.chargeback_at) || [];
 
-      // Check for payment failures (would need webhook logs, but we can check status)
-      // For now, we'll check for tickets with no payment_intent_id
+      // Payment issues (exclude internal tickets)
       const paymentIssues = typedTickets?.filter(
         (t) =>
           !t.stripe_payment_intent_id &&
@@ -256,7 +258,7 @@ function useTicketIssues() {
           !(t.stripe_session_id || "").startsWith("internal-")
       ) || [];
 
-      // All issues combined
+      // All issues combined (only real problems, not resolved refunds)
       const allIssues = [
         ...duplicateSessions.map((d) => ({
           type: "duplicate_session",
@@ -268,7 +270,7 @@ function useTicketIssues() {
         ...refunded.map((t) => ({
           type: "refunded",
           severity: "medium" as const,
-          message: `Refundert: ${t.ticket_code}`,
+          message: `Refundert men ikke kansellert: ${t.ticket_code}`,
           count: refunded.length,
           data: t,
         })),
@@ -422,6 +424,7 @@ interface StripeSyncData {
     mode: string;
     total_stripe_sessions: number;
     total_db_tickets: number;
+    internal_tickets?: number;
     missing_tickets: number;
     sync_percentage: string;
   };
@@ -781,8 +784,13 @@ export default function AdminTicketsDashboard() {
                     <p className="font-medium">{syncData.stats.total_stripe_sessions}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Billetter i database:</p>
-                    <p className="font-medium">{syncData.stats.total_db_tickets}</p>
+                    <p className="text-muted-foreground">Stripe-billetter i DB:</p>
+                    <p className="font-medium">
+                      {syncData.stats.total_db_tickets}
+                      {syncData.stats.internal_tickets ? (
+                        <span className="text-muted-foreground font-normal"> (+{syncData.stats.internal_tickets} interne)</span>
+                      ) : null}
+                    </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Mangler:</p>
