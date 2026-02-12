@@ -308,6 +308,10 @@ export type Database = {
         Row: {
           address: string | null
           city: string | null
+          contact_display: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
           created_at: string
           created_by: string
           description: string | null
@@ -332,6 +336,10 @@ export type Database = {
         Insert: {
           address?: string | null
           city?: string | null
+          contact_display?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string
           created_by: string
           description?: string | null
@@ -356,6 +364,10 @@ export type Database = {
         Update: {
           address?: string | null
           city?: string | null
+          contact_display?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
@@ -1220,6 +1232,7 @@ export type Database = {
           social_links: Json | null
           type: string | null
           updated_at: string
+          use_account_contact: boolean
           user_id: string
         }
         Insert: {
@@ -1242,6 +1255,7 @@ export type Database = {
           social_links?: Json | null
           type?: string | null
           updated_at?: string
+          use_account_contact?: boolean
           user_id: string
         }
         Update: {
@@ -1264,6 +1278,7 @@ export type Database = {
           social_links?: Json | null
           type?: string | null
           updated_at?: string
+          use_account_contact?: boolean
           user_id?: string
         }
         Relationships: [
