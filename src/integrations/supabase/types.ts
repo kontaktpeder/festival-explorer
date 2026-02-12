@@ -1762,6 +1762,9 @@ export type Database = {
           created_at: string | null
           event_id: string
           id: string
+          refund_id: string | null
+          refund_requested_at: string | null
+          refund_status: string | null
           refunded_at: string | null
           status: string
           stripe_payment_intent_id: string | null
@@ -1778,6 +1781,9 @@ export type Database = {
           created_at?: string | null
           event_id: string
           id?: string
+          refund_id?: string | null
+          refund_requested_at?: string | null
+          refund_status?: string | null
           refunded_at?: string | null
           status?: string
           stripe_payment_intent_id?: string | null
@@ -1794,6 +1800,9 @@ export type Database = {
           created_at?: string | null
           event_id?: string
           id?: string
+          refund_id?: string | null
+          refund_requested_at?: string | null
+          refund_status?: string | null
           refunded_at?: string | null
           status?: string
           stripe_payment_intent_id?: string | null

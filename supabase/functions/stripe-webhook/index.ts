@@ -200,6 +200,11 @@ serve(async (req) => {
       : (charge.payment_intent as { id?: string } | null)?.id;
 
     if (paymentIntentId) {
+      // Determine refund status from the latest refund on the charge
+      const latestRefund = charge.refunds?.data?.[0];
+      const refundStatus = latestRefund?.status ?? "succeeded"; // default to succeeded for backwards compat
+      const refundId = latestRefund?.id ?? null;
+
       const { data: tickets, error: findError } = await supabaseAdmin
         .from("tickets")
         .select("id, ticket_code, status")
@@ -209,13 +214,41 @@ serve(async (req) => {
         console.error("Error finding tickets for refund:", findError);
       } else if (tickets && tickets.length > 0) {
         for (const ticket of tickets) {
-          const { error: updateError } = await supabaseAdmin
-            .from("tickets")
-            .update({ refunded_at: new Date().toISOString(), status: "CANCELLED" })
-            .eq("id", ticket.id);
-
-          if (updateError) {
-            console.error(`Error updating ticket ${ticket.ticket_code} for refund:`, updateError);
+          if (refundStatus === "pending") {
+            // Refund initiated but not yet completed – block scanning immediately
+            await supabaseAdmin
+              .from("tickets")
+              .update({
+                status: "REFUND_PENDING",
+                refund_status: "pending",
+                refund_id: refundId,
+                refund_requested_at: new Date().toISOString(),
+              })
+              .eq("id", ticket.id);
+          } else if (refundStatus === "succeeded") {
+            // Refund completed – finalize cancellation
+            await supabaseAdmin
+              .from("tickets")
+              .update({
+                refunded_at: new Date().toISOString(),
+                status: "CANCELLED",
+                refund_status: "succeeded",
+                refund_id: refundId,
+              })
+              .eq("id", ticket.id);
+          } else if (refundStatus === "failed" || refundStatus === "canceled") {
+            // Refund failed/cancelled – restore ticket if it was pending
+            if (ticket.status === "REFUND_PENDING") {
+              await supabaseAdmin
+                .from("tickets")
+                .update({
+                  status: "VALID",
+                  refund_status: refundStatus,
+                  refund_id: null,
+                  refund_requested_at: null,
+                })
+                .eq("id", ticket.id);
+            }
           }
         }
       }
@@ -224,13 +257,74 @@ serve(async (req) => {
         stripe_event_type: event.type,
         stripe_payment_intent_id: paymentIntentId,
         result: "refund",
-        reason: (tickets && tickets.length > 0) ? "tickets_marked_refunded" : "no_tickets_found_for_payment_intent",
+        reason: !tickets?.length
+          ? "no_tickets_found_for_payment_intent"
+          : refundStatus === "pending"
+            ? "tickets_marked_refund_pending"
+            : refundStatus === "succeeded"
+              ? "tickets_marked_refunded"
+              : `refund_${refundStatus}`,
       });
     } else {
       logPurchaseOutcome({
         stripe_event_type: event.type,
         result: "refund",
         reason: "payment_intent_missing_on_charge",
+      });
+    }
+
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // ── refund.updated ──────────────────────────────────────────────
+  if (event.type === "refund.updated") {
+    const refund = event.data.object as Stripe.Refund;
+    const paymentIntentId = typeof refund.payment_intent === "string"
+      ? refund.payment_intent
+      : (refund.payment_intent as { id?: string } | null)?.id;
+
+    if (paymentIntentId) {
+      const { data: tickets } = await supabaseAdmin
+        .from("tickets")
+        .select("id, status")
+        .eq("stripe_payment_intent_id", paymentIntentId);
+
+      if (tickets && tickets.length > 0) {
+        for (const ticket of tickets) {
+          if (refund.status === "succeeded") {
+            await supabaseAdmin
+              .from("tickets")
+              .update({
+                refunded_at: new Date().toISOString(),
+                status: "CANCELLED",
+                refund_status: "succeeded",
+                refund_id: refund.id,
+              })
+              .eq("id", ticket.id);
+          } else if (refund.status === "failed" || refund.status === "canceled") {
+            if (ticket.status === "REFUND_PENDING") {
+              await supabaseAdmin
+                .from("tickets")
+                .update({
+                  status: "VALID",
+                  refund_status: refund.status,
+                  refund_id: null,
+                  refund_requested_at: null,
+                })
+                .eq("id", ticket.id);
+            }
+          }
+        }
+      }
+
+      logPurchaseOutcome({
+        stripe_event_type: event.type,
+        stripe_payment_intent_id: paymentIntentId,
+        result: refund.status === "succeeded" ? "refund" : "refund_status_change",
+        reason: `refund_${refund.status}`,
       });
     }
 
