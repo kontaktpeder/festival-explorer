@@ -11,6 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Loader2, X, ChevronDown, Users, Trash2, User, Sparkles, Clock, Link2, MapPin, Briefcase } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Mail as MailIcon } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { 
   usePersonaById, 
   useCreatePersona, 
@@ -18,6 +19,7 @@ import {
   PERSONA_CATEGORIES,
   PERSONA_ROLES,
 } from "@/hooks/usePersona";
+import { useContactInfo } from "@/hooks/useContactInfo";
 import { useMyEntities } from "@/hooks/useEntity";
 import { usePersonaEntityBindings, useCreatePersonaBinding, useDeletePersonaBinding } from "@/hooks/usePersonaBindings";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -58,6 +60,10 @@ export default function PersonaEdit() {
   // Contact visibility fields
   const [showEmail, setShowEmail] = useState(false);
   const [publicEmail, setPublicEmail] = useState("");
+  const [useAccountContact, setUseAccountContact] = useState(true);
+
+  // Account contact info for prefill display
+  const { data: accountContactInfo } = useContactInfo();
 
   // Collapsible states
   const [basicOpen, setBasicOpen] = useState(true);
@@ -144,6 +150,7 @@ export default function PersonaEdit() {
       // Contact visibility
       setShowEmail((existingPersona as any).show_email || false);
       setPublicEmail((existingPersona as any).public_email || "");
+      setUseAccountContact((existingPersona as any).use_account_contact ?? true);
     }
   }, [existingPersona]);
 
@@ -155,12 +162,16 @@ export default function PersonaEdit() {
       return;
     }
 
-    // Validate contact email if show_email is on
-    if (showEmail) {
+    // Validate contact email if show_email is on and using custom email
+    if (showEmail && !useAccountContact) {
       if (!publicEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(publicEmail.trim())) {
         toast.error("Offentlig e-post må være gyldig når kontaktknapp er aktivert");
         return;
       }
+    }
+    if (showEmail && useAccountContact && !accountContactInfo?.contact_email) {
+      toast.error("Du må sette kontakt-e-post i Kontosenter først");
+      return;
     }
 
     // Prepare location fields
@@ -187,7 +198,8 @@ export default function PersonaEdit() {
           social_links: socialLinks,
           available_for: availableFor,
           show_email: showEmail,
-          public_email: showEmail ? publicEmail.trim() : null,
+          public_email: useAccountContact ? (accountContactInfo?.contact_email || null) : (showEmail ? publicEmail.trim() : null),
+          use_account_contact: useAccountContact,
           ...locationData,
         } as any);
         toast.success("Profil oppdatert");
@@ -202,7 +214,8 @@ export default function PersonaEdit() {
           social_links: socialLinks.length > 0 ? socialLinks : undefined,
           available_for: availableFor,
           show_email: showEmail,
-          public_email: showEmail ? publicEmail.trim() : null,
+          public_email: useAccountContact ? (accountContactInfo?.contact_email || null) : (showEmail ? publicEmail.trim() : null),
+          use_account_contact: useAccountContact,
           ...locationData,
         } as any);
         toast.success("Profil opprettet");
@@ -542,18 +555,53 @@ export default function PersonaEdit() {
             </div>
 
             {showEmail && (
-              <div className="space-y-2">
-                <Label className="text-muted-foreground text-xs uppercase tracking-wide">Offentlig e-post *</Label>
-                <Input
-                  type="email"
-                  value={publicEmail}
-                  onChange={(e) => setPublicEmail(e.target.value)}
-                  placeholder="epost@eksempel.no"
-                  className="bg-transparent border-border/50 focus:border-accent"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Denne e-posten brukes i Book/Samarbeid-skjemaet. Kun synlig hvis kontaktknappen er aktiv.
-                </p>
+              <div className="space-y-4">
+                <RadioGroup
+                  value={useAccountContact ? "account" : "custom"}
+                  onValueChange={(v) => setUseAccountContact(v === "account")}
+                  className="space-y-2"
+                >
+                  <div className="flex items-start gap-3 p-3 rounded-md border border-border/30 hover:border-accent/30 transition-colors">
+                    <RadioGroupItem value="account" id="contact-account" className="mt-0.5" />
+                    <div>
+                      <Label htmlFor="contact-account" className="text-sm font-medium cursor-pointer">
+                        Bruk konto sin kontakt
+                      </Label>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {accountContactInfo?.contact_email 
+                          ? `(${accountContactInfo.contact_email})`
+                          : "Ikke satt – gå til Kontosenter for å sette opp"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3 rounded-md border border-border/30 hover:border-accent/30 transition-colors">
+                    <RadioGroupItem value="custom" id="contact-custom" className="mt-0.5" />
+                    <div className="flex-1">
+                      <Label htmlFor="contact-custom" className="text-sm font-medium cursor-pointer">
+                        Bruk annen e-post
+                      </Label>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Skriv inn en e-post spesifikt for denne persona
+                      </p>
+                    </div>
+                  </div>
+                </RadioGroup>
+
+                {!useAccountContact && (
+                  <div className="space-y-2">
+                    <Label className="text-muted-foreground text-xs uppercase tracking-wide">Offentlig e-post *</Label>
+                    <Input
+                      type="email"
+                      value={publicEmail}
+                      onChange={(e) => setPublicEmail(e.target.value)}
+                      placeholder="epost@eksempel.no"
+                      className="bg-transparent border-border/50 focus:border-accent"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Denne e-posten brukes i Book/Samarbeid-skjemaet.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </CollapsibleContent>

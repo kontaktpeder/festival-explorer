@@ -145,34 +145,52 @@ export default function EntityEdit() {
     retry: 1,
   });
 
-  // Fetch team members with personas
+  // Fetch team members with personas (prefer entity-bound persona)
   const { data: teamMembers } = useQuery({
     queryKey: ["entity-team", id],
     queryFn: async () => {
       const { data: teamData, error } = await supabase
         .from("entity_team")
-        .select(`
-          *,
-          profile:profiles(id, display_name, handle, avatar_url)
-        `)
+        .select("*")
         .eq("entity_id", id)
         .is("left_at", null)
         .order("joined_at", { ascending: true });
       
       if (error) throw error;
       
-      const userIds = teamData?.map(m => m.user_id) || [];
+      const userIds = (teamData || []).map(m => m.user_id);
       if (userIds.length === 0) return [];
+
+      // Fetch persona bindings for this entity
+      const { data: bindings } = await supabase
+        .from("entity_persona_bindings")
+        .select("persona_id, role_label")
+        .eq("entity_id", id!);
+
+      const bindingPersonaIds = (bindings || []).map(b => b.persona_id);
       
       const { data: personasData } = await supabase
         .from("personas")
         .select("id, user_id, name, avatar_url, slug")
-        .in("user_id", userIds);
+        .or(`user_id.in.(${userIds.join(",")}),id.in.(${bindingPersonaIds.join(",")})`);
       
-      return (teamData || []).map(member => ({
-        ...member,
-        persona: personasData?.find(p => p.user_id === member.user_id) || null
-      }));
+      return (teamData || []).map(member => {
+        // Prefer persona bound to this entity
+        const boundBinding = (bindings || []).find(b => {
+          const p = (personasData || []).find(p => p.id === b.persona_id);
+          return p?.user_id === member.user_id;
+        });
+        const boundPersona = boundBinding 
+          ? (personasData || []).find(p => p.id === boundBinding.persona_id) 
+          : null;
+        const fallbackPersona = (personasData || []).find(p => p.user_id === member.user_id);
+        
+        return {
+          ...member,
+          persona: boundPersona || fallbackPersona || null,
+          bindingRoleLabel: boundBinding?.role_label || null,
+        };
+      });
     },
     enabled: !!id,
   });
@@ -535,11 +553,11 @@ export default function EntityEdit() {
             </CollapsibleTrigger>
             <CollapsibleContent className="py-5 space-y-2 border-b border-border/30">
               {teamMembers.map((member) => {
-                const profile = member.profile as { id: string; display_name?: string; handle?: string; avatar_url?: string } | null;
                 const persona = member.persona as { id: string; name: string; avatar_url?: string; slug?: string } | null;
                 
-                const displayName = persona?.name || profile?.display_name || profile?.handle || "Ingen navn";
-                const avatarUrl = persona?.avatar_url || profile?.avatar_url;
+                const displayName = persona?.name || "Ingen navn";
+                const avatarUrl = persona?.avatar_url;
+                const roleLabel = member.bindingRoleLabel || (member.role_labels?.length > 0 ? member.role_labels.join(", ") : null);
                 
                 return (
                   <div key={member.id} className="flex items-center justify-between py-2 border-b border-border/20 last:border-0">
@@ -557,8 +575,8 @@ export default function EntityEdit() {
                         <p className="font-medium text-sm">{displayName}</p>
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-muted-foreground">{ACCESS_LABELS[member.access as AccessLevel]}</span>
-                          {member.role_labels && member.role_labels.length > 0 && (
-                            <span className="text-xs text-accent">{member.role_labels.join(", ")}</span>
+                          {roleLabel && (
+                            <span className="text-xs text-accent">{roleLabel}</span>
                           )}
                         </div>
                       </div>

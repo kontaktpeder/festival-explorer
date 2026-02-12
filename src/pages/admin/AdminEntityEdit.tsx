@@ -69,22 +69,52 @@ export default function AdminEntityEdit() {
     retry: 1,
   });
 
-  // Fetch team members
+  // Fetch team members with personas
   const { data: team } = useQuery({
     queryKey: ["admin-entity-team", id],
     queryFn: async () => {
       if (isNew) return [];
-      const { data, error } = await supabase
+      const { data: teamData, error } = await supabase
         .from("entity_team")
-        .select(`
-          *,
-          profile:profiles(id, display_name, handle, avatar_url)
-        `)
+        .select("*")
         .eq("entity_id", id)
         .is("left_at", null)
         .order("access", { ascending: true });
       if (error) throw error;
-      return data || [];
+      
+      const userIds = (teamData || []).map(m => m.user_id);
+      if (userIds.length === 0) return [];
+
+      // Fetch persona bindings for this entity
+      const { data: bindings } = await supabase
+        .from("entity_persona_bindings")
+        .select("persona_id, role_label")
+        .eq("entity_id", id!);
+
+      // Fetch personas for all team members (and any bound personas)
+      const bindingPersonaIds = (bindings || []).map(b => b.persona_id);
+      const allPersonaFilter = [...new Set([...userIds, ...bindingPersonaIds])];
+      
+      const { data: personas } = await supabase
+        .from("personas")
+        .select("id, user_id, name, avatar_url, slug")
+        .or(`user_id.in.(${userIds.join(",")}),id.in.(${bindingPersonaIds.join(",")})`);
+
+      return (teamData || []).map(member => {
+        // Prefer persona bound to this entity
+        const boundBinding = (bindings || []).find(b => {
+          const p = (personas || []).find(p => p.id === b.persona_id);
+          return p?.user_id === member.user_id;
+        });
+        const boundPersona = boundBinding 
+          ? (personas || []).find(p => p.id === boundBinding.persona_id) 
+          : null;
+        const fallbackPersona = (personas || []).find(p => p.user_id === member.user_id);
+        const persona = boundPersona || fallbackPersona || null;
+        const bindingRoleLabel = boundBinding?.role_label || null;
+        
+        return { ...member, persona, bindingRoleLabel };
+      });
     },
     enabled: !isNew,
   });
@@ -384,50 +414,51 @@ export default function AdminEntityEdit() {
             </p>
           ) : (
             <div className="space-y-2">
-              {team.map((member) => (
-                <div
-                  key={member.id}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                      {member.profile?.avatar_url ? (
-                        <img
-                          src={member.profile.avatar_url}
-                          alt=""
-                          className="w-full h-full rounded-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-xs font-bold text-muted-foreground">
-                          {(member.profile?.display_name || member.profile?.handle || "?").charAt(0).toUpperCase()}
-                        </span>
-                      )}
+              {team.map((member) => {
+                const persona = member.persona as { id: string; name: string; avatar_url?: string; slug?: string } | null;
+                const displayName = persona?.name || "Persona ikke satt";
+                const avatarUrl = persona?.avatar_url;
+                const roleLabel = member.bindingRoleLabel || (member.role_labels?.length > 0 ? member.role_labels.join(", ") : null);
+
+                return (
+                  <div
+                    key={member.id}
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                        {avatarUrl ? (
+                          <img
+                            src={avatarUrl}
+                            alt=""
+                            className="w-full h-full rounded-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-xs font-bold text-muted-foreground">
+                            {displayName.charAt(0).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-sm">{displayName}</p>
+                        {roleLabel ? (
+                          <p className="text-xs text-muted-foreground">{roleLabel}</p>
+                        ) : (
+                          <p className="text-xs text-muted-foreground italic">Ingen rolle satt</p>
+                        )}
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-sm">
-                        {member.profile?.display_name || member.profile?.handle || "Ukjent bruker"}
-                      </p>
-                      {member.role_labels && member.role_labels.length > 0 ? (
-                        <p className="text-xs text-muted-foreground">
-                          {member.role_labels.join(", ")}
-                        </p>
-                      ) : (
-                        <p className="text-xs text-muted-foreground italic">
-                          Ingen rolle satt
-                        </p>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Badge variant={member.access === 'owner' ? 'default' : 'secondary'}>
+                        {ACCESS_LABELS[member.access as AccessLevel] || member.access}
+                      </Badge>
+                      {member.is_public && (
+                        <Badge variant="outline" className="text-xs">Offentlig</Badge>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <Badge variant={member.access === 'owner' ? 'default' : 'secondary'}>
-                      {ACCESS_LABELS[member.access as AccessLevel] || member.access}
-                    </Badge>
-                    {member.is_public && (
-                      <Badge variant="outline" className="text-xs">Offentlig</Badge>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
