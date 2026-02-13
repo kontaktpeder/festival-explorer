@@ -166,25 +166,22 @@ export default function EntityInvite() {
 
   // Persona search handler
   const handlePersonaSearch = useCallback(async (query: string) => {
-    if (query.length < 2) {
+    const q = query.trim();
+    if (q.length < 2) {
       setPersonaResults([]);
       return;
     }
     setPersonaSearching(true);
     try {
-      const { data, error } = await supabase
-        .from("personas")
-        .select("id, user_id, name, slug, avatar_url, category_tags")
-        .ilike("name", `%${query}%`)
-        .eq("is_public", true)
-        .limit(20);
-      if (error) throw error;
+      const excluded = [...(existingTeamUserIds || [])];
+      if (currentUser?.id) excluded.push(currentUser.id);
 
-      // Exclude personas whose user_id is already in the team
-      const excluded = new Set(existingTeamUserIds || []);
-      if (currentUser?.id) excluded.add(currentUser.id);
-      const filtered = (data || []).filter((p) => !excluded.has(p.user_id));
-      setPersonaResults(filtered);
+      const { data, error } = await supabase.rpc("search_public_personas", {
+        p_query: q,
+        p_exclude_user_ids: excluded,
+      });
+      if (error) throw error;
+      setPersonaResults((data || []) as PersonaSearchResult[]);
     } catch {
       setPersonaResults([]);
     } finally {
@@ -348,7 +345,7 @@ export default function EntityInvite() {
               Inviter fra plattformen
             </CardTitle>
             <CardDescription>
-              Søk etter en profil på GIGGEN og send invitasjon. Vedkommende får invitasjonen i sin backstage.
+              Søk etter offentlige profiler (personas) på GIGGEN. Kun profiler som har «Bli funnet på plattformen» slått på, vises i søket. Vedkommende får invitasjonen i sin backstage.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -373,7 +370,7 @@ export default function EntityInvite() {
             </div>
 
             <div className="space-y-2">
-              <Label>Søk etter profil</Label>
+              <Label>Søk etter navn (offentlige profiler)</Label>
               <Input
                 value={personaQuery}
                 onChange={(e) => {
@@ -413,7 +410,9 @@ export default function EntityInvite() {
               </div>
             )}
             {personaQuery.length >= 2 && personaResults.length === 0 && !personaSearching && !selectedPersona && (
-              <p className="text-xs text-muted-foreground">Ingen profiler funnet.</p>
+              <p className="text-xs text-muted-foreground">
+                Ingen offentlige profiler funnet med det navnet. Kun profiler som har «Bli funnet på plattformen» slått på, kan søkes opp her.
+              </p>
             )}
 
             {selectedPersona && (
