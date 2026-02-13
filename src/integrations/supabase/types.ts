@@ -18,12 +18,13 @@ export type Database = {
         Row: {
           accepted_at: string | null
           access: Database["public"]["Enums"]["access_level"]
-          email: string
+          email: string | null
           entity_id: string
           expires_at: string
           id: string
           invited_at: string
           invited_by: string
+          invited_user_id: string | null
           role_labels: string[] | null
           status: string
           token: string | null
@@ -31,12 +32,13 @@ export type Database = {
         Insert: {
           accepted_at?: string | null
           access: Database["public"]["Enums"]["access_level"]
-          email: string
+          email?: string | null
           entity_id: string
           expires_at?: string
           id?: string
           invited_at?: string
           invited_by: string
+          invited_user_id?: string | null
           role_labels?: string[] | null
           status?: string
           token?: string | null
@@ -44,12 +46,13 @@ export type Database = {
         Update: {
           accepted_at?: string | null
           access?: Database["public"]["Enums"]["access_level"]
-          email?: string
+          email?: string | null
           entity_id?: string
           expires_at?: string
           id?: string
           invited_at?: string
           invited_by?: string
+          invited_user_id?: string | null
           role_labels?: string[] | null
           status?: string
           token?: string | null
@@ -65,6 +68,13 @@ export type Database = {
           {
             foreignKeyName: "access_invitations_invited_by_fkey"
             columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_invitations_invited_user_id_fkey"
+            columns: ["invited_user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1984,17 +1994,41 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      accept_invitation_by_token: {
-        Args: { p_token: string }
+      accept_invitation_by_id: {
+        Args: { p_invitation_id: string }
         Returns: {
           accepted_at: string | null
           access: Database["public"]["Enums"]["access_level"]
-          email: string
+          email: string | null
           entity_id: string
           expires_at: string
           id: string
           invited_at: string
           invited_by: string
+          invited_user_id: string | null
+          role_labels: string[] | null
+          status: string
+          token: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "access_invitations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      accept_invitation_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          accepted_at: string | null
+          access: Database["public"]["Enums"]["access_level"]
+          email: string | null
+          entity_id: string
+          expires_at: string
+          id: string
+          invited_at: string
+          invited_by: string
+          invited_user_id: string | null
           role_labels: string[] | null
           status: string
           token: string | null

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { AccessInvitation, Entity } from "@/types/database";
 
@@ -19,7 +19,7 @@ export function useInvitation(params: { email?: string; entityId?: string; token
 
         // RPC returns `jsonb` (typed as `Json` in generated types). Cast via `unknown` first.
         const raw: unknown = data;
-        return (raw as (AccessInvitation & { entity: Entity | null })) ?? null;
+        return (raw as (AccessInvitation & { entity: Partial<Entity> | null })) ?? null;
       }
 
       // Fallback: fetch by email+entityId (requires auth via RLS in most cases)
@@ -39,7 +39,7 @@ export function useInvitation(params: { email?: string; entityId?: string; token
 
       const { data, error } = await query.maybeSingle();
       if (error) throw error;
-      return data as (AccessInvitation & { entity: Entity | null }) | null;
+      return data as unknown as (AccessInvitation & { entity: Partial<Entity> | null }) | null;
     },
     enabled: !!(params.token || (params.email && params.entityId)),
   });
@@ -65,10 +65,74 @@ export function useEntityInvitations(entityId: string | undefined) {
   });
 }
 
+// Fetch pending invitations for the current user (in-app invitations)
+export function useMyPendingInvitations() {
+  return useQuery({
+    queryKey: ["my-pending-invitations"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from("access_invitations")
+        .select(`
+          id,
+          entity_id,
+          access,
+          role_labels,
+          invited_at,
+          expires_at,
+          invited_user_id,
+          entity:entities(id, name, slug, type)
+        `)
+        .eq("status", "pending")
+        .not("invited_user_id", "is", null)
+        .order("invited_at", { ascending: false });
+
+      if (error) throw error;
+      // RLS filters to only show invitations where invited_user_id = auth.uid()
+      return data ?? [];
+    },
+  });
+}
+
+// Accept invitation by ID (in-app, when invited_user_id is set)
+export function useAcceptInvitationById() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ invitationId }: { invitationId: string }) => {
+      const { data, error } = await supabase.rpc("accept_invitation_by_id", {
+        p_invitation_id: invitationId,
+      });
+      if (error) throw error;
+      if (!data) throw new Error("Invitation not found or expired");
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-entities"] });
+      queryClient.invalidateQueries({ queryKey: ["my-pending-invitations"] });
+    },
+  });
+}
+
+// Decline invitation by updating status to 'revoked' (for invited_user_id invitations)
+export function useDeclineInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ invitationId }: { invitationId: string }) => {
+      const { error } = await supabase
+        .from("access_invitations")
+        .update({ status: "revoked" })
+        .eq("id", invitationId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-pending-invitations"] });
+    },
+  });
+}
+
 // Check if email already has an account
 export async function checkEmailExists(email: string): Promise<boolean> {
-  // We can't directly check auth.users, but we can check profiles by looking up
-  // Note: This is a simplified check - in production you might use a Supabase function
-  // For now, we'll handle this in the accept flow by trying to sign in first
   return false;
 }

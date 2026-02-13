@@ -23,6 +23,7 @@ import { inferEntityKind } from "@/lib/role-model-helpers";
 import type { Json } from "@/integrations/supabase/types";
 import { ActivePersonaCard } from "@/components/dashboard/ActivePersonaCard";
 import { LockedModules } from "@/components/dashboard/LockedModules";
+import { PendingInvitations } from "@/components/dashboard/PendingInvitations";
 // Helper component for entity hero image with signed URL
 function EntityHeroImage({
   imageUrl,
@@ -216,6 +217,9 @@ export default function Dashboard() {
 
         <main className="max-w-3xl mx-auto px-3 sm:px-6 py-4 sm:py-10 space-y-5 sm:space-y-8">
           <ActivePersonaCard persona={activePersona} />
+
+          {/* Pending invitations */}
+          <PendingInvitations />
 
           {/* Onboarding confirmation */}
           {fromOnboarding && (
