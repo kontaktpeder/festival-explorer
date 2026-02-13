@@ -6,7 +6,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -125,21 +124,37 @@ export function ProjectCreditFlow({
               {CREDIT_INTRO}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            {personaSlug && (
-              <Button asChild variant="outline" size="sm">
-                <Link to={`/p/${personaSlug}`} target="_blank">
-                  Se min profil
-                </Link>
+
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-foreground">
+                Gå gjennom profilen din
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Sjekk at bilde, beskrivelse og rolle ser slik ut at du vil at andre skal bli kjent med deg.
+              </p>
+              {personaId ? (
+                <Button asChild variant="default" size="sm" className="w-full">
+                  <Link to={`/dashboard/personas/${personaId}`}>
+                    Åpne min profil
+                  </Link>
+                </Button>
+              ) : null}
+            </div>
+
+            <div className="space-y-2 border-t pt-4">
+              <p className="text-sm text-muted-foreground">
+                Når du er fornøyd, kan du krediteres for dette prosjektet.
+              </p>
+              <Button
+                variant="outline"
+                onClick={handleConfirmCredit}
+                disabled={updateTeamMember.isPending}
+              >
+                {updateTeamMember.isPending ? "Krediterer..." : "Krediter meg"}
               </Button>
-            )}
-            <Button
-              onClick={handleConfirmCredit}
-              disabled={updateTeamMember.isPending}
-            >
-              {updateTeamMember.isPending ? "Krediterer..." : "Krediter meg"}
-            </Button>
-          </DialogFooter>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </>
