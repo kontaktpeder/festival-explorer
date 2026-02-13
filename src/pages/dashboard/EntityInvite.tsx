@@ -336,106 +336,9 @@ export default function EntityInvite() {
             Inviter til {entity.name}
           </h1>
           <p className="text-muted-foreground">
-            Gi noen tilgang til å redigere eller se dette prosjektet
+            Inviter noen som allerede er på GIGGEN, eller send en tilgangslenke på e-post.
           </p>
         </div>
-
-        {/* Existing invitations */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Eksisterende invitasjoner</CardTitle>
-            <CardDescription>
-              Alle som har blitt invitert til dette prosjektet
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {invitationsLoading ? (
-              <LoadingState message="Laster invitasjoner..." />
-            ) : invitations && invitations.length > 0 ? (
-              <div className="space-y-3">
-                {invitations.map((inv) => {
-                  const statusConfig = STATUS_CONFIG[inv.status] || STATUS_CONFIG.pending;
-                  const isExpired = inv.expires_at && new Date(inv.expires_at) < new Date();
-                  const effectiveStatus = isExpired && inv.status === "pending" ? "expired" : inv.status;
-                  const effectiveConfig = STATUS_CONFIG[effectiveStatus] || statusConfig;
-                  const isUserInvite = !!(inv as { invited_user_id?: string | null }).invited_user_id;
-
-                  return (
-                    <div
-                      key={inv.id}
-                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        {isUserInvite ? (
-                          <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        ) : (
-                          <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        )}
-                        <div className="min-w-0">
-                          <p className="font-medium text-foreground truncate">
-                            {isUserInvite ? "Plattforminvitasjon" : inv.email}
-                          </p>
-                          <div className="flex items-center gap-2 flex-wrap mt-1">
-                            <Badge variant={effectiveConfig.variant} className="text-xs">
-                              {effectiveConfig.label}
-                            </Badge>
-                            <Badge variant="outline" className="text-xs">
-                              {ACCESS_LABELS[inv.access as AccessLevel]}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">
-                              {format(new Date(inv.invited_at), "d. MMM yyyy", { locale: nb })}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-1 flex-shrink-0">
-                        {inv.status === "pending" && !isExpired && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <Ban className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Tilbakekall invitasjon?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Invitasjonen vil bli ugyldig. Du kan sende en ny invitasjon senere.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Avbryt</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleRevoke(inv.id)}>
-                                  Tilbakekall
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        )}
-                        {!isUserInvite && (inv.status === "revoked" || effectiveStatus === "expired") && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => handleRegenerate(inv.email || "")}
-                            title="Send ny invitasjon"
-                          >
-                            <RefreshCw className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                Ingen invitasjoner ennå
-              </p>
-            )}
-          </CardContent>
-        </Card>
 
         {/* Invite from platform (persona search) */}
         <Card>
@@ -449,7 +352,6 @@ export default function EntityInvite() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Access level for persona invite */}
             <div className="space-y-2">
               <Label>Tilgangsnivå</Label>
               <Select
@@ -470,7 +372,6 @@ export default function EntityInvite() {
               </Select>
             </div>
 
-            {/* Search input */}
             <div className="space-y-2">
               <Label>Søk etter profil</Label>
               <Input
@@ -483,7 +384,6 @@ export default function EntityInvite() {
               />
             </div>
 
-            {/* Search results */}
             {personaSearching && (
               <p className="text-xs text-muted-foreground">Søker...</p>
             )}
@@ -516,7 +416,6 @@ export default function EntityInvite() {
               <p className="text-xs text-muted-foreground">Ingen profiler funnet.</p>
             )}
 
-            {/* Selected persona confirmation */}
             {selectedPersona && (
               <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border">
                 <div className="flex items-center gap-3">
@@ -541,7 +440,6 @@ export default function EntityInvite() {
               </div>
             )}
 
-            {/* Send button */}
             {selectedPersona && (
               <Button
                 onClick={handlePersonaInvite}
@@ -659,6 +557,103 @@ export default function EntityInvite() {
             </CardContent>
           </Card>
         )}
+
+        {/* Existing invitations */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Eksisterende invitasjoner</CardTitle>
+            <CardDescription>
+              Alle som har blitt invitert til dette prosjektet
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {invitationsLoading ? (
+              <LoadingState message="Laster invitasjoner..." />
+            ) : invitations && invitations.length > 0 ? (
+              <div className="space-y-3">
+                {invitations.map((inv) => {
+                  const statusConfig = STATUS_CONFIG[inv.status] || STATUS_CONFIG.pending;
+                  const isExpired = inv.expires_at && new Date(inv.expires_at) < new Date();
+                  const effectiveStatus = isExpired && inv.status === "pending" ? "expired" : inv.status;
+                  const effectiveConfig = STATUS_CONFIG[effectiveStatus] || statusConfig;
+                  const isUserInvite = !!(inv as { invited_user_id?: string | null }).invited_user_id;
+
+                  return (
+                    <div
+                      key={inv.id}
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        {isUserInvite ? (
+                          <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        ) : (
+                          <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        )}
+                        <div className="min-w-0">
+                          <p className="font-medium text-foreground truncate">
+                            {isUserInvite ? "Plattforminvitasjon" : inv.email}
+                          </p>
+                          <div className="flex items-center gap-2 flex-wrap mt-1">
+                            <Badge variant={effectiveConfig.variant} className="text-xs">
+                              {effectiveConfig.label}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {ACCESS_LABELS[inv.access as AccessLevel]}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {format(new Date(inv.invited_at), "d. MMM yyyy", { locale: nb })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-1 flex-shrink-0">
+                        {inv.status === "pending" && !isExpired && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <Ban className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Tilbakekall invitasjon?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Invitasjonen vil bli ugyldig. Du kan sende en ny invitasjon senere.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleRevoke(inv.id)}>
+                                  Tilbakekall
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                        {!isUserInvite && (inv.status === "revoked" || effectiveStatus === "expired") && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => handleRegenerate(inv.email || "")}
+                            title="Send ny invitasjon"
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Ingen invitasjoner ennå
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </main>
     </div>
   );
