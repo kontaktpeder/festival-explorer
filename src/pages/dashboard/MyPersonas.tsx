@@ -175,8 +175,10 @@ export default function MyPersonas() {
                           )}
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>
-                        {persona.is_public ? "Skjul" : "Gjør synlig"}
+                      <TooltipContent className="max-w-[200px]">
+                        {persona.is_public
+                          ? "Profilen er synlig – andre kan finne deg og se deg i krediteringer. Klikk for å skjule."
+                          : "Gjør profilen synlig slik at musikere, arrangører og publikum kan finne deg på plattformen."}
                       </TooltipContent>
                     </Tooltip>
                     

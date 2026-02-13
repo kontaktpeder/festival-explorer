@@ -28,6 +28,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { UnifiedTimelineManager } from "@/components/dashboard/UnifiedTimelineManager";
 import { PERSONA_EVENT_TYPE_OPTIONS, VENUE_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
 import { useUpdateTeamMember } from "@/hooks/useEntityMutations";
+import { ProjectCreditFlow } from "@/components/dashboard/ProjectCreditFlow";
 import { SocialLinksEditor } from "@/components/ui/SocialLinksEditor";
 import { 
   UserPlus, 
@@ -77,19 +78,7 @@ const ACCESS_LABELS: Record<AccessLevel, string> = {
   viewer: "Se",
 };
 
-function EntityTeamPublicToggle({ memberId, isPublic }: { memberId: string; isPublic: boolean }) {
-  const updateTeamMember = useUpdateTeamMember();
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-[11px] text-muted-foreground">Vis bak prosjektet</span>
-      <Switch
-        checked={isPublic}
-        onCheckedChange={() => updateTeamMember.mutate({ id: memberId, isPublic: !isPublic })}
-        disabled={updateTeamMember.isPending}
-      />
-    </div>
-  );
-}
+// EntityTeamPublicToggle replaced by ProjectCreditFlow
 
 export default function EntityEdit() {
   const { id } = useParams<{ id: string }>();
@@ -575,7 +564,13 @@ export default function EntityEdit() {
                       </div>
                     </div>
                     {canManagePersonas && (
-                      <EntityTeamPublicToggle memberId={member.id} isPublic={member.is_public} />
+                      <ProjectCreditFlow
+                        memberId={member.id}
+                        entityName={entityWithAccess?.name ?? ""}
+                        personaId={persona?.id}
+                        personaSlug={persona?.slug}
+                        isPublic={!!member.is_public}
+                      />
                     )}
                   </div>
                 );

@@ -216,10 +216,10 @@ export default function CreateProfileWizard() {
           <div className="flex items-center justify-between p-3 rounded-lg bg-card/60 border border-border/30">
             <div className="flex-1 min-w-0 mr-3">
               <Label htmlFor="public-switch" className="text-sm font-medium cursor-pointer">
-                Offentlig profil (anbefalt)
+                Bli funnet på plattformen (anbefalt)
               </Label>
               <p className="text-[11px] text-muted-foreground/70 mt-0.5">
-                Offentlige profiler kan vises i lineup, credits og søk.
+                GIGGEN besøkes av musikere, arrangører og publikum som er ute etter å ta kontakt. Synlige profiler kan finnes, vises i krediteringer (bak prosjektet, bak scenen) og i søk.
               </p>
             </div>
             <Switch
@@ -231,7 +231,7 @@ export default function CreateProfileWizard() {
 
           {!isPublic && (
             <p className="text-[10px] text-muted-foreground/50 text-center">
-              Privat profil er kun synlig for arrangører du jobber med.
+              Privat profil er kun synlig for deg inntil du slår på «Bli funnet».
             </p>
           )}
         </div>

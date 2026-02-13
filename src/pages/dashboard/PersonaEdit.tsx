@@ -275,15 +275,21 @@ export default function PersonaEdit() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-0">
-        {/* Visibility Toggle - Always visible at top */}
-        <div className="flex items-center justify-between py-4 border-b border-accent/20">
+        {/* Bli funnet på plattformen */}
+        <div className="py-4 border-b border-accent/20 space-y-3">
           <div>
-            <p className="font-medium">Offentlig profil</p>
-            <p className="text-sm text-muted-foreground">
-              {isPublic ? "Alle kan se" : "Kun du"}
-            </p>
+            <p className="font-medium">Bli funnet på plattformen</p>
           </div>
-          <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            GIGGEN besøkes av musikere, arrangører og publikum som er ute etter å ta kontakt. Når profilen din er synlig, kan de finne deg, se hva du gjør og hvem du er. Bruk litt tid på å gjøre den attraktiv – da skiller du deg ut og folk blir bedre kjent med deg når de klikker seg inn.
+          </p>
+          <p className="text-xs text-muted-foreground/70">
+            {isPublic ? "Profilen din er synlig og kan vises i krediteringer og søk." : "Kun du ser profilen. Slå på for å la andre finne deg."}
+          </p>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="persona-public" className="text-sm cursor-pointer">Vis profilen min</Label>
+            <Switch id="persona-public" checked={isPublic} onCheckedChange={setIsPublic} />
+          </div>
         </div>
 
         {/* Grunnleggende */}
