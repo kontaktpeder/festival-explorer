@@ -15,7 +15,8 @@ import { getAuthenticatedUser } from "@/lib/admin-helpers";
 import { cleanupSignedUrlCache } from "@/lib/media-helpers";
 import { generateSlug } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { EntityPersonaBindingsEditor } from "@/components/admin/EntityPersonaBindingsEditor";
+import { Switch } from "@/components/ui/switch";
+import { useUpdateTeamMember } from "@/hooks/useEntityMutations";
 import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
 
@@ -31,6 +32,20 @@ const ACCESS_LABELS: Record<AccessLevel, string> = {
   editor: "Rediger",
   viewer: "Se",
 };
+
+function TeamPublicToggle({ memberId, isPublic }: { memberId: string; isPublic: boolean }) {
+  const updateTeamMember = useUpdateTeamMember();
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-xs text-muted-foreground">Offentlig</span>
+      <Switch
+        checked={isPublic}
+        onCheckedChange={() => updateTeamMember.mutate({ id: memberId, isPublic: !isPublic })}
+        disabled={updateTeamMember.isPending}
+      />
+    </div>
+  );
+}
 
 export default function AdminEntityEdit() {
   const { id } = useParams<{ id: string }>();
@@ -384,13 +399,6 @@ export default function AdminEntityEdit() {
         </div>
       </form>
 
-      {/* Persona Bindings section (only for existing entities) */}
-      {!isNew && entity && (
-        <div className="mt-8 pt-6 border-t border-border">
-          <EntityPersonaBindingsEditor entityId={entity.id} entityName={entity.name} />
-        </div>
-      )}
-
       {/* Team section (only for existing entities) */}
       {!isNew && (
         <div className="mt-8 pt-6 border-t border-border">
@@ -452,9 +460,7 @@ export default function AdminEntityEdit() {
                       <Badge variant={member.access === 'owner' ? 'default' : 'secondary'}>
                         {ACCESS_LABELS[member.access as AccessLevel] || member.access}
                       </Badge>
-                      {member.is_public && (
-                        <Badge variant="outline" className="text-xs">Offentlig</Badge>
-                      )}
+                      <TeamPublicToggle memberId={member.id} isPublic={member.is_public} />
                     </div>
                   </div>
                 );

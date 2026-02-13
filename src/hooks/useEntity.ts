@@ -19,23 +19,49 @@ export function useEntity(slug: string) {
       if (error) throw error;
       if (!entity) return null;
 
-      // Get public team members
+      // Get public team members (no profile join – use personas instead)
       const { data: team, error: teamError } = await supabase
         .from("entity_team")
-        .select(`
-          *,
-          profile:profiles(*)
-        `)
+        .select("*")
         .eq("entity_id", entity.id)
         .eq("is_public", true)
         .is("left_at", null);
 
       if (teamError) throw teamError;
+      if (!team || team.length === 0) {
+        return { ...entity, team: [] } as EntityWithTeam;
+      }
 
-      return {
-        ...entity,
-        team: (team || []) as EntityTeam[],
-      } as EntityWithTeam;
+      const userIds = team.map(t => t.user_id);
+
+      // Fetch persona bindings for this entity
+      const { data: bindings } = await supabase
+        .from("entity_persona_bindings")
+        .select("persona_id, role_label")
+        .eq("entity_id", entity.id);
+
+      const bindingPersonaIds = (bindings || []).map(b => b.persona_id);
+
+      // Fetch personas for team members (bound or fallback)
+      const { data: personas } = await supabase
+        .from("personas")
+        .select("id, user_id, name, slug, avatar_url, category_tags, is_public")
+        .or(`user_id.in.(${userIds.join(",")}),id.in.(${bindingPersonaIds.join(",")})`);
+
+      const teamWithPersona = team.map(member => {
+        const boundBinding = (bindings || []).find(b => {
+          const p = (personas || []).find(p => p.id === b.persona_id);
+          return p?.user_id === member.user_id;
+        });
+        const boundPersona = boundBinding
+          ? (personas || []).find(p => p.id === boundBinding.persona_id)
+          : null;
+        const fallbackPersona = (personas || []).find(p => p.user_id === member.user_id);
+        const persona = boundPersona || fallbackPersona || null;
+        return { ...member, persona, bindingRoleLabel: boundBinding?.role_label ?? null };
+      });
+
+      return { ...entity, team: teamWithPersona } as EntityWithTeam;
     },
     enabled: !!slug,
   });
