@@ -1,6 +1,6 @@
 import { useParams, Link, Navigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getPublicUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -164,30 +164,30 @@ export default function EntityInvite() {
   const isLoading = entityLoading || accessLoading;
   const canInvite = isMasterAdmin || userAccess === "admin" || userAccess === "owner";
 
-  // Persona search handler
-  const handlePersonaSearch = useCallback(async (query: string) => {
-    const q = query.trim();
-    if (q.length < 2) {
-      setPersonaResults([]);
-      return;
-    }
-    setPersonaSearching(true);
-    try {
+  // Load all available public personas (excluding current user and existing team)
+  const { data: allAvailablePersonas, isLoading: personasLoading } = useQuery({
+    queryKey: ["available-personas-for-invite", id, existingTeamUserIds, currentUser?.id],
+    queryFn: async () => {
       const excluded = [...(existingTeamUserIds || [])];
       if (currentUser?.id) excluded.push(currentUser.id);
 
       const { data, error } = await supabase.rpc("search_public_personas", {
-        p_query: q,
+        p_query: null,
         p_exclude_user_ids: excluded,
       });
       if (error) throw error;
-      setPersonaResults((data || []) as PersonaSearchResult[]);
-    } catch {
-      setPersonaResults([]);
-    } finally {
-      setPersonaSearching(false);
-    }
-  }, [existingTeamUserIds, currentUser?.id]);
+      return (data || []) as PersonaSearchResult[];
+    },
+    enabled: !!id && !!currentUser?.id,
+  });
+
+  // Filter personas locally based on search query
+  const filteredPersonas = useMemo(() => {
+    const list = allAvailablePersonas || [];
+    const q = personaQuery.trim().toLowerCase();
+    if (q.length < 2) return list;
+    return list.filter((p) => p.name.toLowerCase().includes(q));
+  }, [allAvailablePersonas, personaQuery]);
 
   // Redirect if no access (after all hooks)
   if (!isLoading && !canInvite) {
@@ -373,27 +373,23 @@ export default function EntityInvite() {
               <Label>Søk etter navn (offentlige profiler)</Label>
               <Input
                 value={personaQuery}
-                onChange={(e) => {
-                  setPersonaQuery(e.target.value);
-                  handlePersonaSearch(e.target.value);
-                }}
-                placeholder="Skriv navn..."
+                onChange={(e) => setPersonaQuery(e.target.value)}
+                placeholder="Filtrer etter navn..."
               />
             </div>
 
-            {personaSearching && (
-              <p className="text-xs text-muted-foreground">Søker...</p>
+            {personasLoading && (
+              <p className="text-xs text-muted-foreground">Laster profiler...</p>
             )}
-            {personaResults.length > 0 && !selectedPersona && (
+            {!personasLoading && filteredPersonas.length > 0 && !selectedPersona && (
               <div className="border border-border rounded-lg divide-y divide-border max-h-60 overflow-y-auto">
-                {personaResults.map((p) => (
+                {filteredPersonas.map((p) => (
                   <button
                     key={p.id}
                     type="button"
                     className="w-full flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors text-left"
                     onClick={() => {
                       setSelectedPersona(p);
-                      setPersonaResults([]);
                     }}
                   >
                     <PersonaAvatar avatarUrl={p.avatar_url} name={p.name} />
@@ -409,9 +405,11 @@ export default function EntityInvite() {
                 ))}
               </div>
             )}
-            {personaQuery.length >= 2 && personaResults.length === 0 && !personaSearching && !selectedPersona && (
+            {!personasLoading && filteredPersonas.length === 0 && !selectedPersona && (
               <p className="text-xs text-muted-foreground">
-                Ingen offentlige profiler funnet med det navnet. Kun profiler som har «Bli funnet på plattformen» slått på, kan søkes opp her.
+                {(allAvailablePersonas || []).length === 0
+                  ? "Ingen offentlige profiler tilgjengelig. Kun profiler som har «Bli funnet på plattformen» slått på, vises her."
+                  : "Ingen profiler matcher søket ditt."}
               </p>
             )}
 
