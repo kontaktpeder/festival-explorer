@@ -27,6 +27,7 @@ const CREDIT_INTRO =
 
 interface ProjectCreditFlowProps {
   memberId: string;
+  entityId?: string | null;
   entityName: string;
   personaId?: string | null;
   personaSlug?: string | null;
@@ -35,6 +36,7 @@ interface ProjectCreditFlowProps {
 
 export function ProjectCreditFlow({
   memberId,
+  entityId,
   entityName,
   personaId,
   personaSlug,
@@ -135,24 +137,34 @@ export function ProjectCreditFlow({
               </p>
               {personaId ? (
                 <Button asChild variant="default" size="sm" className="w-full">
-                  <Link to={`/dashboard/personas/${personaId}`}>
+                  <Link
+                    to={`/dashboard/personas/${personaId}${entityId ? `?fromCredit=1&entityId=${encodeURIComponent(entityId)}&entityName=${encodeURIComponent(entityName)}` : ""}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     Åpne min profil
                   </Link>
                 </Button>
               ) : null}
             </div>
 
-            <div className="space-y-2 border-t pt-4">
-              <p className="text-sm text-muted-foreground">
-                Når du er fornøyd, kan du krediteres for dette prosjektet.
-              </p>
-              <Button
-                variant="outline"
-                onClick={handleConfirmCredit}
-                disabled={updateTeamMember.isPending}
-              >
-                {updateTeamMember.isPending ? "Krediterer..." : "Krediter meg"}
-              </Button>
+            <div className="border-t border-border pt-4 mt-4">
+              <div className="rounded-lg border-2 border-accent/40 bg-accent/10 p-4 space-y-3">
+                <p className="text-sm font-semibold text-foreground">
+                  Ferdig med å sjekke?
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Klikk nedenfor for å krediteres for prosjektet. Du vil da vises under «Bak prosjektet» på prosjektsiden.
+                </p>
+                <Button
+                  className="w-full"
+                  size="sm"
+                  onClick={handleConfirmCredit}
+                  disabled={updateTeamMember.isPending}
+                >
+                  {updateTeamMember.isPending ? "Krediterer..." : "Krediter meg"}
+                </Button>
+              </div>
             </div>
           </div>
         </DialogContent>

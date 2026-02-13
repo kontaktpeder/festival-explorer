@@ -566,6 +566,7 @@ export default function EntityEdit() {
                     {canManagePersonas && (
                       <ProjectCreditFlow
                         memberId={member.id}
+                        entityId={entityWithAccess?.id}
                         entityName={entityWithAccess?.name ?? ""}
                         personaId={persona?.id}
                         personaSlug={persona?.slug}
