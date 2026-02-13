@@ -2142,6 +2142,17 @@ export type Database = {
         Returns: Json
       }
       reset_checkin_atomic: { Args: { p_ticket_id: string }; Returns: Json }
+      search_public_personas: {
+        Args: { p_exclude_user_ids?: string[]; p_query: string }
+        Returns: {
+          avatar_url: string
+          category_tags: string[]
+          id: string
+          name: string
+          slug: string
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       access_level: "owner" | "admin" | "editor" | "viewer"
