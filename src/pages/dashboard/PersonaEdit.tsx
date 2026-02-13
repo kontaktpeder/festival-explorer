@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,7 +37,12 @@ import { LOCATION_TYPE_OPTIONS, type LocationType } from "@/types/location";
 export default function PersonaEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const isEditing = !!id;
+
+  const fromCredit = searchParams.get("fromCredit") === "1";
+  const creditEntityId = searchParams.get("entityId");
+  const creditEntityName = searchParams.get("entityName") || "prosjektet";
   
   const { data: existingPersona, isLoading: isLoadingPersona } = usePersonaById(id);
   const createPersona = useCreatePersona();
@@ -274,6 +279,22 @@ export default function PersonaEdit() {
         </p>
       </div>
 
+      {fromCredit && creditEntityId && (
+        <div className="mb-4 p-4 rounded-lg border border-accent/40 bg-accent/10 space-y-2">
+          <p className="text-sm font-medium text-foreground">
+            Du sjekker profilen før kreditering for {decodeURIComponent(creditEntityName)}.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Kreditering gjøres på prosjektsiden. Når du er fornøyd med profilen, gå tilbake og klikk «Krediter meg» under Team.
+          </p>
+          <Button variant="outline" size="sm" asChild>
+            <Link to={`/dashboard/entities/${creditEntityId}/edit`}>
+              Tilbake til prosjektet
+            </Link>
+          </Button>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-0">
         {/* Bli funnet på plattformen */}
         <div className="py-4 border-b border-accent/20 space-y-3">
@@ -285,6 +306,9 @@ export default function PersonaEdit() {
           </p>
           <p className="text-xs text-muted-foreground/70">
             {isPublic ? "Profilen din er synlig og kan vises i krediteringer og søk." : "Kun du ser profilen. Slå på for å la andre finne deg."}
+          </p>
+          <p className="text-[11px] text-muted-foreground/60 mt-1">
+            Dette styrer om profilen kan finnes på GIGGEN. Å bli kreditert for et konkret prosjekt gjøres på prosjektsiden under Team.
           </p>
           <div className="flex items-center justify-between">
             <Label htmlFor="persona-public" className="text-sm cursor-pointer">Vis profilen min</Label>

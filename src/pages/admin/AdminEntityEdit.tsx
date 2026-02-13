@@ -451,6 +451,7 @@ export default function AdminEntityEdit() {
                       </Badge>
                       <ProjectCreditFlow
                         memberId={member.id}
+                        entityId={id}
                         entityName={entity?.name ?? ""}
                         personaId={(member.persona as any)?.id}
                         personaSlug={(member.persona as any)?.slug}
