@@ -210,25 +210,28 @@ export function useCreateInvitation() {
       access,
       roleLabels = [],
       invitedBy,
+      invitedUserId,
     }: {
       entityId: string;
-      email: string;
+      email?: string | null;
       access: AccessLevel;
       roleLabels?: string[];
       invitedBy: string;
+      invitedUserId?: string | null;
     }) => {
-      // Generate a random token
-      const token = crypto.randomUUID();
+      // Only generate token for email-based invitations
+      const token = invitedUserId ? null : crypto.randomUUID();
       
       const { data, error } = await supabase
         .from("access_invitations")
         .insert({
           entity_id: entityId,
-          email,
+          email: email ?? '',
           access,
           role_labels: roleLabels,
           token,
           invited_by: invitedBy,
+          invited_user_id: invitedUserId ?? null,
         })
         .select()
         .single();

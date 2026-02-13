@@ -1,6 +1,6 @@
 import { useParams, Link, Navigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getPublicUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,12 +22,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Link2, Copy, Check, UserPlus, Ban, RefreshCw, Mail } from "lucide-react";
+import { ArrowLeft, Link2, Copy, Check, UserPlus, Ban, RefreshCw, Mail, Search, User } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useEntityInvitations, useCreateInvitation, useRevokeInvitation } from "@/hooks/useInvitations";
 import type { AccessLevel } from "@/types/database";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 
 const ACCESS_OPTIONS: { value: Exclude<AccessLevel, "owner">; label: string; description: string }[] = [
   { value: "admin", label: "Administrer", description: "Full tilgang til å redigere og administrere" },
@@ -48,16 +50,43 @@ const ACCESS_LABELS: Record<AccessLevel, string> = {
   viewer: "Se",
 };
 
+interface PersonaSearchResult {
+  id: string;
+  user_id: string;
+  name: string;
+  slug: string;
+  avatar_url: string | null;
+  category_tags: string[] | null;
+}
+
+// Small helper for persona avatar with signed URL
+function PersonaAvatar({ avatarUrl, name }: { avatarUrl: string | null; name: string }) {
+  const signedUrl = useSignedMediaUrl(avatarUrl, "public");
+  return (
+    <Avatar className="h-8 w-8">
+      {signedUrl && <AvatarImage src={signedUrl} alt={name} />}
+      <AvatarFallback className="text-xs">{name.charAt(0).toUpperCase()}</AvatarFallback>
+    </Avatar>
+  );
+}
+
 export default function EntityInvite() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
 
+  // Email invitation state
   const [email, setEmail] = useState("");
   const [accessLevel, setAccessLevel] = useState<Exclude<AccessLevel, "owner">>("editor");
-  
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [prefillEmail, setPrefillEmail] = useState<string | null>(null);
+
+  // Persona search state
+  const [personaQuery, setPersonaQuery] = useState("");
+  const [personaResults, setPersonaResults] = useState<PersonaSearchResult[]>([]);
+  const [personaSearching, setPersonaSearching] = useState(false);
+  const [selectedPersona, setSelectedPersona] = useState<PersonaSearchResult | null>(null);
+  const [personaAccessLevel, setPersonaAccessLevel] = useState<Exclude<AccessLevel, "owner">>("editor");
 
   const createInvitation = useCreateInvitation();
   const revokeInvitation = useRevokeInvitation();
@@ -92,7 +121,6 @@ export default function EntityInvite() {
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
-
       const { data, error } = await supabase
         .from("entity_team")
         .select("access")
@@ -100,7 +128,6 @@ export default function EntityInvite() {
         .eq("user_id", user.id)
         .is("left_at", null)
         .maybeSingle();
-
       if (error) throw error;
       return data?.access as AccessLevel | null;
     },
@@ -116,42 +143,96 @@ export default function EntityInvite() {
     },
   });
 
+  // Get existing team member user_ids (to exclude from search)
+  const { data: existingTeamUserIds } = useQuery({
+    queryKey: ["entity-team-user-ids", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("entity_team")
+        .select("user_id")
+        .eq("entity_id", id!)
+        .is("left_at", null);
+      if (error) throw error;
+      return (data || []).map((r) => r.user_id);
+    },
+    enabled: !!id,
+  });
+
   // Fetch invitations for this entity
   const { data: invitations, isLoading: invitationsLoading, refetch: refetchInvitations } = useEntityInvitations(id);
 
   const isLoading = entityLoading || accessLoading;
   const canInvite = isMasterAdmin || userAccess === "admin" || userAccess === "owner";
 
-  // Redirect if no access
+  // Persona search handler
+  const handlePersonaSearch = useCallback(async (query: string) => {
+    if (query.length < 2) {
+      setPersonaResults([]);
+      return;
+    }
+    setPersonaSearching(true);
+    try {
+      const { data, error } = await supabase
+        .from("personas")
+        .select("id, user_id, name, slug, avatar_url, category_tags")
+        .ilike("name", `%${query}%`)
+        .eq("is_public", true)
+        .limit(20);
+      if (error) throw error;
+
+      // Exclude personas whose user_id is already in the team
+      const excluded = new Set(existingTeamUserIds || []);
+      if (currentUser?.id) excluded.add(currentUser.id);
+      const filtered = (data || []).filter((p) => !excluded.has(p.user_id));
+      setPersonaResults(filtered);
+    } catch {
+      setPersonaResults([]);
+    } finally {
+      setPersonaSearching(false);
+    }
+  }, [existingTeamUserIds, currentUser?.id]);
+
+  // Redirect if no access (after all hooks)
   if (!isLoading && !canInvite) {
     return <Navigate to="/dashboard" replace />;
   }
 
+  const handlePersonaInvite = async () => {
+    if (!selectedPersona || !id || !currentUser) return;
+
+    try {
+      await createInvitation.mutateAsync({
+        entityId: id,
+        access: personaAccessLevel,
+        roleLabels: [],
+        invitedBy: currentUser.id,
+        invitedUserId: selectedPersona.user_id,
+      });
+
+      toast({ title: `Invitasjon sendt til ${selectedPersona.name}` });
+      setSelectedPersona(null);
+      setPersonaQuery("");
+      setPersonaResults([]);
+      refetchInvitations();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Kunne ikke sende invitasjon";
+      toast({ title: "Feil", description: message, variant: "destructive" });
+    }
+  };
+
   const handleGenerate = async () => {
     const emailToUse = prefillEmail || email;
-    
-    // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(emailToUse)) {
-      toast({
-        title: "Ugyldig e-post",
-        description: "Skriv inn en gyldig e-postadresse",
-        variant: "destructive",
-      });
+      toast({ title: "Ugyldig e-post", description: "Skriv inn en gyldig e-postadresse", variant: "destructive" });
       return;
     }
-
     if (!id || !currentUser) {
-      toast({
-        title: "Feil",
-        description: "Mangler nødvendig informasjon",
-        variant: "destructive",
-      });
+      toast({ title: "Feil", description: "Mangler nødvendig informasjon", variant: "destructive" });
       return;
     }
 
     try {
-      // Rolle hentes automatisk fra personaens category_tags når de oppretter persona
       const created = await createInvitation.mutateAsync({
         entityId: id,
         email: emailToUse,
@@ -160,7 +241,6 @@ export default function EntityInvite() {
         invitedBy: currentUser.id,
       });
 
-      // Generate short invitation link using published URL
       const publishedUrl = getPublicUrl();
       const token = (created as { token?: string | null })?.token;
       const link = token
@@ -170,49 +250,34 @@ export default function EntityInvite() {
       setGeneratedLink(link);
       setPrefillEmail(null);
       refetchInvitations();
-
       toast({ title: "Invitasjon opprettet!" });
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Kunne ikke opprette invitasjon";
-      toast({
-        title: "Feil",
-        description: message,
-        variant: "destructive",
-      });
+      toast({ title: "Feil", description: message, variant: "destructive" });
     }
   };
 
   const handleCopy = async () => {
     if (!generatedLink) return;
-
     try {
       await navigator.clipboard.writeText(generatedLink);
       setCopied(true);
       toast({ title: "Lenke kopiert!" });
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast({
-        title: "Kunne ikke kopiere",
-        description: "Kopier lenken manuelt",
-        variant: "destructive",
-      });
+      toast({ title: "Kunne ikke kopiere", description: "Kopier lenken manuelt", variant: "destructive" });
     }
   };
 
   const handleRevoke = async (invitationId: string) => {
     if (!id) return;
-
     try {
       await revokeInvitation.mutateAsync({ id: invitationId, entityId: id });
       refetchInvitations();
       toast({ title: "Invitasjon tilbakekalt" });
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Kunne ikke tilbakekalle";
-      toast({
-        title: "Feil",
-        description: message,
-        variant: "destructive",
-      });
+      toast({ title: "Feil", description: message, variant: "destructive" });
     }
   };
 
@@ -220,7 +285,6 @@ export default function EntityInvite() {
     setPrefillEmail(invitationEmail);
     setEmail(invitationEmail);
     setGeneratedLink(null);
-    // Scroll to form
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   };
 
@@ -294,6 +358,7 @@ export default function EntityInvite() {
                   const isExpired = inv.expires_at && new Date(inv.expires_at) < new Date();
                   const effectiveStatus = isExpired && inv.status === "pending" ? "expired" : inv.status;
                   const effectiveConfig = STATUS_CONFIG[effectiveStatus] || statusConfig;
+                  const isUserInvite = !!(inv as { invited_user_id?: string | null }).invited_user_id;
 
                   return (
                     <div
@@ -301,9 +366,15 @@ export default function EntityInvite() {
                       className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        {isUserInvite ? (
+                          <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        ) : (
+                          <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        )}
                         <div className="min-w-0">
-                          <p className="font-medium text-foreground truncate">{inv.email}</p>
+                          <p className="font-medium text-foreground truncate">
+                            {isUserInvite ? "Plattforminvitasjon" : inv.email}
+                          </p>
                           <div className="flex items-center gap-2 flex-wrap mt-1">
                             <Badge variant={effectiveConfig.variant} className="text-xs">
                               {effectiveConfig.label}
@@ -330,7 +401,7 @@ export default function EntityInvite() {
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Tilbakekall invitasjon?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Invitasjonen til {inv.email} vil bli ugyldig. Du kan sende en ny invitasjon senere.
+                                  Invitasjonen vil bli ugyldig. Du kan sende en ny invitasjon senere.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
@@ -342,12 +413,12 @@ export default function EntityInvite() {
                             </AlertDialogContent>
                           </AlertDialog>
                         )}
-                        {(inv.status === "revoked" || effectiveStatus === "expired") && (
+                        {!isUserInvite && (inv.status === "revoked" || effectiveStatus === "expired") && (
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8"
-                            onClick={() => handleRegenerate(inv.email)}
+                            onClick={() => handleRegenerate(inv.email || "")}
                             title="Send ny invitasjon"
                           >
                             <RefreshCw className="h-4 w-4" />
@@ -366,11 +437,129 @@ export default function EntityInvite() {
           </CardContent>
         </Card>
 
-        {/* Generate new invitation */}
+        {/* Invite from platform (persona search) */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Search className="h-5 w-5" />
+              Inviter fra plattformen
+            </CardTitle>
+            <CardDescription>
+              Søk etter en profil på GIGGEN og send invitasjon. Vedkommende får invitasjonen i sin backstage.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Access level for persona invite */}
+            <div className="space-y-2">
+              <Label>Tilgangsnivå</Label>
+              <Select
+                value={personaAccessLevel}
+                onValueChange={(value) => setPersonaAccessLevel(value as Exclude<AccessLevel, "owner">)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ACCESS_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      <span className="font-medium">{option.label}</span>
+                      <span className="text-muted-foreground text-xs ml-2">– {option.description}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Search input */}
+            <div className="space-y-2">
+              <Label>Søk etter profil</Label>
+              <Input
+                value={personaQuery}
+                onChange={(e) => {
+                  setPersonaQuery(e.target.value);
+                  handlePersonaSearch(e.target.value);
+                }}
+                placeholder="Skriv navn..."
+              />
+            </div>
+
+            {/* Search results */}
+            {personaSearching && (
+              <p className="text-xs text-muted-foreground">Søker...</p>
+            )}
+            {personaResults.length > 0 && !selectedPersona && (
+              <div className="border border-border rounded-lg divide-y divide-border max-h-60 overflow-y-auto">
+                {personaResults.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className="w-full flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors text-left"
+                    onClick={() => {
+                      setSelectedPersona(p);
+                      setPersonaResults([]);
+                    }}
+                  >
+                    <PersonaAvatar avatarUrl={p.avatar_url} name={p.name} />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
+                      {p.category_tags && p.category_tags.length > 0 && (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {p.category_tags.join(", ")}
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            {personaQuery.length >= 2 && personaResults.length === 0 && !personaSearching && !selectedPersona && (
+              <p className="text-xs text-muted-foreground">Ingen profiler funnet.</p>
+            )}
+
+            {/* Selected persona confirmation */}
+            {selectedPersona && (
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border">
+                <div className="flex items-center gap-3">
+                  <PersonaAvatar avatarUrl={selectedPersona.avatar_url} name={selectedPersona.name} />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{selectedPersona.name}</p>
+                    {selectedPersona.category_tags && selectedPersona.category_tags.length > 0 && (
+                      <p className="text-xs text-muted-foreground">{selectedPersona.category_tags.join(", ")}</p>
+                    )}
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedPersona(null);
+                    setPersonaQuery("");
+                  }}
+                >
+                  Endre
+                </Button>
+              </div>
+            )}
+
+            {/* Send button */}
+            {selectedPersona && (
+              <Button
+                onClick={handlePersonaInvite}
+                disabled={createInvitation.isPending}
+                className="w-full"
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                {createInvitation.isPending ? "Sender..." : `Send invitasjon til ${selectedPersona.name}`}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Generate new email invitation */}
         <Card>
           <CardHeader>
             <CardTitle>
-              {prefillEmail ? `Ny invitasjon til ${prefillEmail}` : "Generer ny invitasjon"}
+              {prefillEmail ? `Ny invitasjon til ${prefillEmail}` : "Inviter via e-post"}
             </CardTitle>
             <CardDescription>
               Opprett en invitasjonslenke for å gi noen tilgang
@@ -385,9 +574,7 @@ export default function EntityInvite() {
                 type="email"
                 value={prefillEmail || email}
                 onChange={(e) => {
-                  if (prefillEmail) {
-                    setPrefillEmail(null);
-                  }
+                  if (prefillEmail) setPrefillEmail(null);
                   setEmail(e.target.value);
                 }}
                 placeholder="bruker@example.com"
@@ -398,10 +585,7 @@ export default function EntityInvite() {
                   variant="link"
                   size="sm"
                   className="h-auto p-0 text-xs"
-                  onClick={() => {
-                    setPrefillEmail(null);
-                    setEmail("");
-                  }}
+                  onClick={() => { setPrefillEmail(null); setEmail(""); }}
                 >
                   Bruk annen e-post
                 </Button>
@@ -423,16 +607,13 @@ export default function EntityInvite() {
                     <SelectItem key={option.value} value={option.value}>
                       <div>
                         <span className="font-medium">{option.label}</span>
-                        <span className="text-muted-foreground text-xs ml-2">
-                          – {option.description}
-                        </span>
+                        <span className="text-muted-foreground text-xs ml-2">– {option.description}</span>
                       </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-
 
             {/* Generate button */}
             <Button
