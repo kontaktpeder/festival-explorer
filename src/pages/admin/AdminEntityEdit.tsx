@@ -17,6 +17,7 @@ import { generateSlug } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useUpdateTeamMember } from "@/hooks/useEntityMutations";
+import { ProjectCreditFlow } from "@/components/dashboard/ProjectCreditFlow";
 import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
 
@@ -33,19 +34,7 @@ const ACCESS_LABELS: Record<AccessLevel, string> = {
   viewer: "Se",
 };
 
-function TeamPublicToggle({ memberId, isPublic }: { memberId: string; isPublic: boolean }) {
-  const updateTeamMember = useUpdateTeamMember();
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-xs text-muted-foreground">Offentlig</span>
-      <Switch
-        checked={isPublic}
-        onCheckedChange={() => updateTeamMember.mutate({ id: memberId, isPublic: !isPublic })}
-        disabled={updateTeamMember.isPending}
-      />
-    </div>
-  );
-}
+// TeamPublicToggle replaced by ProjectCreditFlow
 
 export default function AdminEntityEdit() {
   const { id } = useParams<{ id: string }>();
@@ -460,7 +449,13 @@ export default function AdminEntityEdit() {
                       <Badge variant={member.access === 'owner' ? 'default' : 'secondary'}>
                         {ACCESS_LABELS[member.access as AccessLevel] || member.access}
                       </Badge>
-                      <TeamPublicToggle memberId={member.id} isPublic={member.is_public} />
+                      <ProjectCreditFlow
+                        memberId={member.id}
+                        entityName={entity?.name ?? ""}
+                        personaId={(member.persona as any)?.id}
+                        personaSlug={(member.persona as any)?.slug}
+                        isPublic={member.is_public}
+                      />
                     </div>
                   </div>
                 );

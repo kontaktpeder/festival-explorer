@@ -40,10 +40,8 @@ export default function ProjectPage() {
   // Signed URL for public viewing
   const heroImageUrl = useSignedMediaUrl(entity?.hero_image_url, 'public');
 
-  // Public team members = entity_team.is_public + persona.is_public
-  const publicTeamMembers = (entity?.team || []).filter(
-    (m: any) => m.persona?.is_public
-  );
+  // Vises alle som er kreditert (entity_team.is_public); useEntity henter allerede kun disse
+  const publicTeamMembers = entity?.team ?? [];
 
   if (isLoading) {
     return (
