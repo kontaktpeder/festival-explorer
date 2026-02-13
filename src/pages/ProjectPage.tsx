@@ -22,7 +22,6 @@ function getPersonasSectionTitle(entityType: EntityType): string {
   }
 }
 import { useEntity } from "@/hooks/useEntity";
-import { useEntityPersonaBindings } from "@/hooks/usePersonaBindings";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
@@ -35,16 +34,15 @@ import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
 export default function ProjectPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: entity, isLoading, error } = useEntity(slug || "");
-  const { data: personaBindings } = useEntityPersonaBindings(entity?.id);
   const timelineSource = entity?.id ? { type: "entity" as const, id: entity.id } : undefined;
   const { data: timelineEvents } = useUnifiedTimelineEvents(timelineSource, { visibility: "public" });
   
   // Signed URL for public viewing
   const heroImageUrl = useSignedMediaUrl(entity?.hero_image_url, 'public');
 
-  // Filter to only show public bindings with public personas
-  const publicBindings = (personaBindings || []).filter(
-    (binding) => binding.is_public && binding.persona?.is_public
+  // Public team members = entity_team.is_public + persona.is_public
+  const publicTeamMembers = (entity?.team || []).filter(
+    (m: any) => m.persona?.is_public
   );
 
   if (isLoading) {
@@ -127,21 +125,24 @@ export default function ProjectPage() {
         </section>
       )}
 
-      {/* MED PÅ SCENEN – The people */}
-      {publicBindings.length > 0 && (
+      {/* MED PÅ SCENEN – The people (from entity_team.is_public + persona) */}
+      {publicTeamMembers.length > 0 && (
         <section className="py-16 md:py-28 px-6 md:px-12 border-t border-border/20">
           <h2 className="text-xs uppercase tracking-[0.25em] text-muted-foreground/60 mb-12 md:mb-16">
             {getPersonasSectionTitle(entity.type)}
           </h2>
 
           <div className="space-y-10 md:space-y-14">
-            {publicBindings.map((binding) => {
-              const persona = binding.persona;
+            {publicTeamMembers.map((member: any) => {
+              const persona = member.persona;
               if (!persona) return null;
+              const roleLabel = member.bindingRoleLabel
+                ?? (member.role_labels?.length ? member.role_labels.join(", ") : null)
+                ?? (persona.category_tags?.[0] || null);
 
               return (
                 <Link 
-                  key={binding.id} 
+                  key={member.id} 
                   to={`/p/${persona.slug}`}
                   className="group flex items-center gap-6 md:gap-8"
                 >
@@ -167,13 +168,9 @@ export default function ProjectPage() {
                     <div className="text-xl md:text-2xl font-medium text-foreground group-hover:text-primary transition-colors">
                       {persona.name}
                     </div>
-                    {(persona.category_tags && persona.category_tags.length > 0
-                      ? persona.category_tags[0]
-                      : binding.role_label) && (
+                    {roleLabel && (
                       <div className="text-sm md:text-base text-muted-foreground/70 font-light">
-                        {persona.category_tags && persona.category_tags.length > 0
-                          ? persona.category_tags[0]
-                          : binding.role_label}
+                        {roleLabel}
                       </div>
                     )}
                   </div>

@@ -27,13 +27,12 @@ import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerW
 import { LoadingState } from "@/components/ui/LoadingState";
 import { UnifiedTimelineManager } from "@/components/dashboard/UnifiedTimelineManager";
 import { PERSONA_EVENT_TYPE_OPTIONS, VENUE_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
-import { EntityPersonaBindingsEditor } from "@/components/admin/EntityPersonaBindingsEditor";
+import { useUpdateTeamMember } from "@/hooks/useEntityMutations";
 import { SocialLinksEditor } from "@/components/ui/SocialLinksEditor";
 import { 
   UserPlus, 
   ExternalLink, 
   Users, 
-  Sparkles, 
   Info, 
   Trash2,
   ChevronDown,
@@ -78,6 +77,20 @@ const ACCESS_LABELS: Record<AccessLevel, string> = {
   viewer: "Se",
 };
 
+function EntityTeamPublicToggle({ memberId, isPublic }: { memberId: string; isPublic: boolean }) {
+  const updateTeamMember = useUpdateTeamMember();
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-[11px] text-muted-foreground">Vis bak prosjektet</span>
+      <Switch
+        checked={isPublic}
+        onCheckedChange={() => updateTeamMember.mutate({ id: memberId, isPublic: !isPublic })}
+        disabled={updateTeamMember.isPending}
+      />
+    </div>
+  );
+}
+
 export default function EntityEdit() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -102,7 +115,6 @@ export default function EntityEdit() {
   const [locationOpen, setLocationOpen] = useState(false);
   const [socialOpen, setSocialOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
-  const [peopleOpen, setPeopleOpen] = useState(false);
   const [teamOpen, setTeamOpen] = useState(false);
   const [dangerOpen, setDangerOpen] = useState(false);
 
@@ -521,31 +533,12 @@ export default function EntityEdit() {
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Personer bak prosjektet */}
-        {canManagePersonas && (
-          <Collapsible open={peopleOpen} onOpenChange={setPeopleOpen}>
-            <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
-              <div className="flex items-center gap-3">
-                <Users className="h-4 w-4 text-accent" />
-                <span className="font-medium">Personer bak prosjektet</span>
-              </div>
-              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${peopleOpen ? "rotate-180" : ""}`} />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="py-5 border-b border-border/30">
-              <EntityPersonaBindingsEditor
-                entityId={entityWithAccess.id}
-                entityName={entityWithAccess.name}
-              />
-            </CollapsibleContent>
-          </Collapsible>
-        )}
-
-        {/* Team-medlemmer */}
+        {/* Team-medlemmer (med toggle for "Vis bak prosjektet") */}
         {teamMembers && teamMembers.length > 0 && (
           <Collapsible open={teamOpen} onOpenChange={setTeamOpen}>
             <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
               <div className="flex items-center gap-3">
-                <Sparkles className="h-4 w-4 text-accent" />
+                <Users className="h-4 w-4 text-accent" />
                 <span className="font-medium">Team</span>
                 <span className="text-xs text-muted-foreground">({teamMembers.length})</span>
               </div>
@@ -581,6 +574,9 @@ export default function EntityEdit() {
                         </div>
                       </div>
                     </div>
+                    {canManagePersonas && (
+                      <EntityTeamPublicToggle memberId={member.id} isPublic={member.is_public} />
+                    )}
                   </div>
                 );
               })}

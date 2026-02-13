@@ -173,6 +173,9 @@ export function useUpdateTeamMember() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["entity-edit", data.entity_id] });
+      queryClient.invalidateQueries({ queryKey: ["entity-team", data.entity_id] });
+      queryClient.invalidateQueries({ queryKey: ["admin-entity-team", data.entity_id] });
+      queryClient.invalidateQueries({ queryKey: ["entity"] });
     },
   });
 }
