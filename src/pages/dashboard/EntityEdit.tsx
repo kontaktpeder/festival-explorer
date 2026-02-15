@@ -328,9 +328,11 @@ export default function EntityEdit() {
       {
         onSuccess: async () => {
           setTransferTargetId(null);
-          // Refetch to ensure fresh data before navigating
+          // Refetch so UI shows correct role before redirect
           await queryClient.refetchQueries({ queryKey: ["dashboard-entity", id] });
           await queryClient.refetchQueries({ queryKey: ["entity-team", id] });
+          await queryClient.refetchQueries({ queryKey: ["my-entities"] });
+          await queryClient.refetchQueries({ queryKey: ["my-entities-filtered"] });
           toast({ title: "Eierskap overført", description: "Du er nå admin for dette prosjektet." });
           navigate("/dashboard", { replace: true });
         },
@@ -417,8 +419,13 @@ export default function EntityEdit() {
               {TYPE_ICONS[entityWithAccess.type as EntityType]} {TYPE_LABELS[entityWithAccess.type as EntityType]}
             </p>
             <p className="text-sm text-muted-foreground">
-              {entityWithAccess.is_published ? "Publisert" : "Utkast"} · {ACCESS_LABELS[userAccess]}
+              {entityWithAccess.is_published ? "Publisert" : "Utkast"} · Din rolle: {ACCESS_LABELS[userAccess]}
             </p>
+            {!isOwner && (userAccess === "admin" || userAccess === "editor") && (
+              <p className="text-xs text-muted-foreground/80 mt-0.5">
+                Du er ikke eier. Du kan forlate prosjektet eller bytte persona under Team.
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {entityWithAccess.is_published && (
@@ -658,7 +665,11 @@ export default function EntityEdit() {
                         <div>
                           <p className="font-medium text-sm">{displayName}</p>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">{ACCESS_LABELS[(isCurrentUser ? (entityWithAccess?.access ?? member.access) : member.access) as AccessLevel]}</span>
+                            {/* For current user, always show entityWithAccess.access so role is correct after ownership transfer */}
+                            <span className="text-xs text-muted-foreground">
+                              {ACCESS_LABELS[(isCurrentUser ? (entityWithAccess?.access ?? member.access) : member.access) as AccessLevel]}
+                              {isCurrentUser && !isOwner && " (din rolle)"}
+                            </span>
                             {roleLabel && (
                               <span className="text-xs text-accent">{roleLabel}</span>
                             )}
@@ -844,37 +855,42 @@ export default function EntityEdit() {
 
               {/* Leave project (for non-owners) */}
               {!isOwner && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="border-destructive/50 text-destructive hover:bg-destructive/10"
-                    >
-                      <LogOut className="h-3.5 w-3.5 mr-1.5" />
-                      Forlat prosjektet
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Forlat prosjektet?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Du vil miste tilgangen til "{formData.name}". En admin eller eier kan invitere deg tilbake senere.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Avbryt</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleLeaveProject}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        disabled={leaveEntity.isPending}
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    Du er ikke eier. Du kan når som helst forlate prosjektet.
+                  </p>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="border-destructive/50 text-destructive hover:bg-destructive/10"
                       >
-                        {leaveEntity.isPending ? "Forlater..." : "Forlat"}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                        <LogOut className="h-3.5 w-3.5 mr-1.5" />
+                        Forlat prosjektet
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Forlat prosjektet?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Du vil miste tilgangen til "{formData.name}". En admin eller eier kan invitere deg tilbake senere.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleLeaveProject}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          disabled={leaveEntity.isPending}
+                        >
+                          {leaveEntity.isPending ? "Forlater..." : "Forlat"}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               )}
 
               {/* Request deletion (for owner/editor) */}
