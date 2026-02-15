@@ -107,35 +107,6 @@ export function DualLineupSection({
       <PraktiskSection />
       <UtforskMerSection />
 
-      {/* Festival-team (Arrangør / Bak scenen) */}
-      {festivalTeam && (festivalTeam.hostRoles.length > 0 || festivalTeam.backstage.length > 0) && <section className="relative py-24 md:py-32 px-6 bg-black overflow-hidden">
-          {/* Subtle accent glow */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-accent/5 rounded-full blur-[120px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
-          
-          <div className="max-w-3xl mx-auto relative z-10">
-            <p className="uppercase tracking-[0.4em] mb-4 font-medium text-xl text-primary">
-              Festival-teamet
-            </p>
-            
-            <p className="text-base text-foreground/50 mb-12 max-w-lg leading-relaxed">
-              Bli kjent med dem som står bak festivalen, og som er med på å skape en historisk kveld.
-            </p>
-            
-            <div className="space-y-8">
-              {[...festivalTeam.hostRoles, ...festivalTeam.backstage].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0)).map((item: any, i: number) => {
-            const displayRole = item.role_label || getPersonaTypeLabel(item.persona?.type) || (item.persona?.category_tags && item.persona.category_tags[0]) || item.entity?.type || null;
-            return <div key={item.participant_id || i} className="flex flex-col gap-1.5 border-l-2 border-accent/30 pl-5">
-                      {displayRole && <p className="text-[10px] uppercase tracking-[0.3em] text-accent/70 font-semibold">
-                          {displayRole}
-                        </p>}
-                      <EventParticipantItem item={item} />
-                    </div>;
-          })}
-            </div>
-          </div>
-        </section>}
-
       <SocialSection />
       <FestivalFooter />
     </>;
