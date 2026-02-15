@@ -330,7 +330,7 @@ function StepVisibility({
             {isPublic && <Check className="h-4 w-4 text-accent shrink-0" />}
           </div>
           <p className="text-xs text-muted-foreground/70 mt-0.5">
-            Synlig for arrangører og andre brukere.
+            Synlig gjennom søk for alle i GIGGEN.
           </p>
         </button>
 
