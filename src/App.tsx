@@ -62,6 +62,7 @@ import AdminTimelineEventEdit from "./pages/admin/AdminTimelineEventEdit";
 import AdminTicketsDashboard from "./pages/admin/AdminTicketsDashboard";
 import AdminAccessRequests from "./pages/admin/AdminAccessRequests";
 import AdminAccessRequestDetail from "./pages/admin/AdminAccessRequestDetail";
+import AdminFestivalWorkspace from "./pages/admin/AdminFestivalWorkspace";
 
 // Redirect component for legacy /venue/:slug routes
 function VenueRedirect() {
@@ -121,6 +122,7 @@ const App = () => (
             <Route index element={<AdminDashboard />} />
             <Route path="festivals" element={<AdminFestivals />} />
             <Route path="festivals/:id" element={<AdminSections />} />
+            <Route path="festivals/:id/workspace" element={<AdminFestivalWorkspace />} />
             <Route path="festivals/:id/program" element={<AdminFestivalProgram />} />
             <Route path="events" element={<AdminEvents />} />
             <Route path="events/:id" element={<AdminEventEdit />} />

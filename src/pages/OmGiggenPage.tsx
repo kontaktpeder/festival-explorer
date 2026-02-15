@@ -190,7 +190,7 @@ export default function OmGiggenPage() {
                 to="/festival#lineup" 
                 className="text-orange-400 hover:text-orange-300 underline underline-offset-4 transition-colors"
               >
-                LINEUP
+                PÅ SCENEN
               </Link>
               , hvor festivalen skal holdes på{" "}
               <Link 
