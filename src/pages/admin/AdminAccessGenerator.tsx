@@ -122,9 +122,8 @@ export default function AdminAccessGenerator() {
       return { entityId: selectedEntity.id, label: selectedEntity.name };
     }
     if (inviteMode === "festival" && selectedFestival) {
-      // Festival invitations go through the festival's host entity or a dedicated mechanism
-      // For now, we pass festivalId context
-      return { entityId: selectedFestivalId, label: selectedFestival.name, festivalId: selectedFestivalId };
+      // Festival invitations bypass access_invitations – entityId is unused but required by interface
+      return { entityId: "festival", label: selectedFestival.name, festivalId: selectedFestivalId };
     }
     return null;
   })();
