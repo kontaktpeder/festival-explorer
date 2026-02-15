@@ -64,13 +64,18 @@ export default function ResetPassword() {
       return;
     }
     setLoading(true);
+    const TIMEOUT_MS = 15000;
     try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      const updatePromise = supabase.auth.updateUser({ password: newPassword });
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Forespørselen tok for lang tid. Sjekk nettforbindelsen og prøv igjen.")), TIMEOUT_MS)
+      );
+      const { error } = await Promise.race([updatePromise, timeoutPromise]);
       if (error) throw error;
       toast({ title: "Passord oppdatert", description: "Du kan nå logge inn med det nye passordet." });
       navigate("/admin/login", { replace: true });
     } catch (err: any) {
-      toast({ title: "Feil", description: err.message ?? "Kunne ikke oppdatere passord", variant: "destructive" });
+      toast({ title: "Feil", description: err?.message ?? "Kunne ikke oppdatere passord", variant: "destructive" });
     } finally {
       setLoading(false);
     }
