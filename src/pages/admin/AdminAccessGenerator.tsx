@@ -122,8 +122,12 @@ export default function AdminAccessGenerator() {
       return { entityId: selectedEntity.id, label: selectedEntity.name };
     }
     if (inviteMode === "festival" && selectedFestival) {
-      // Festival invitations bypass access_invitations – entityId is unused but required by interface
-      return { entityId: "festival", label: selectedFestival.name, festivalId: selectedFestivalId };
+      return {
+        entityId: "festival",
+        label: selectedFestival.name,
+        festivalId: selectedFestivalId,
+        newUserInviteEntityId: platformEntity?.id ?? null,
+      };
     }
     return null;
   })();
