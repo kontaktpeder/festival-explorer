@@ -243,6 +243,7 @@ export function useCreateInvitation() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["entity-invitations", variables.entityId] });
+      queryClient.invalidateQueries({ queryKey: ["my-pending-invitations"] });
     },
   });
 }
