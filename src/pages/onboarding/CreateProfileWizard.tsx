@@ -227,7 +227,7 @@ function StepName({
   return (
     <StepLayout
       title="Hva heter du?"
-      subtitle="Skriv navnet du bruker profesjonelt. Dette er deg som person."
+      subtitle="Skriv navnet du bruker profesjonelt, for rollen du har satt."
       primary={{ label: "Neste", onClick: onNext, disabled: !name.trim() }}
       secondary={{ label: "Tilbake", onClick: onBack }}
     >
