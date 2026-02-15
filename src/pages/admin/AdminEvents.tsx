@@ -141,7 +141,7 @@ export default function AdminEvents() {
                 <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
                   <Link to={`/admin/events/${event.id}/lineup`}>
                     <Users className="h-3.5 w-3.5 mr-1" />
-                    På scenen
+                    Medvirkende
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
@@ -201,7 +201,7 @@ export default function AdminEvents() {
             <AlertDialogDescription>
               Er du sikker på at du vil slette "{deleteTitle}"?
               <br /><br />
-              Dette vil permanent slette eventet og all tilknyttet data (lineup, festival-koblinger).
+              Dette vil permanent slette eventet og all tilknyttet data (medvirkende, festival-koblinger).
               <br /><br />
               <strong>Handlingen kan ikke angres.</strong>
             </AlertDialogDescription>

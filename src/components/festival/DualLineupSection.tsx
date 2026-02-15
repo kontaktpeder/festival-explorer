@@ -70,7 +70,7 @@ export function DualLineupSection({
         {/* Warm gradient background for entire section */}
         <div className="absolute inset-0 bg-gradient-to-b from-amber-950/20 via-orange-950/10 to-zinc-950 pointer-events-none" />
         
-        <LineupSectionHeader title="LINEUP" variant="festival" />
+        <LineupSectionHeader title="PÅ SCENEN" variant="festival" />
         
         {/* Artist poster blocks */}
         <div className="relative">

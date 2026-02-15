@@ -119,9 +119,9 @@ export default function AdminFestivals() {
                 </Button>
                 {canEdit(festival.id) && (
                   <Button asChild size="sm" className="h-auto px-3 py-1.5 text-xs md:text-sm bg-accent hover:bg-accent/90 text-accent-foreground border-accent">
-                    <Link to={`/admin/festivals/${festival.id}`}>
+                    <Link to={`/admin/festivals/${festival.id}/workspace`}>
                       <Settings className="h-3.5 w-3.5 mr-1" />
-                      Gå til festival-backstage
+                      Åpne festivalrom
                     </Link>
                   </Button>
                 )}
