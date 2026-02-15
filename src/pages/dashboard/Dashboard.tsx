@@ -3,6 +3,7 @@ import { Link, useNavigate, Navigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMyEntities, useMyEntitiesFilteredByPersona } from "@/hooks/useEntity";
+import { useFestivalIdsForPersona } from "@/hooks/useFestival";
 import { useSetEntityTeamPersona } from "@/hooks/useEntityMutations";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -100,8 +101,12 @@ export default function Dashboard() {
     enabled: !!hasBackstageAccess,
   });
   const { data: filteredEntities, isLoading: isLoadingFiltered } = useMyEntitiesFilteredByPersona(selectedPersonaId);
+  const { data: festivalIdsForPersona } = useFestivalIdsForPersona(selectedPersonaId);
   const entities = selectedPersonaId ? filteredEntities : allEntities;
   const isLoading = selectedPersonaId ? isLoadingFiltered : isLoadingAll;
+  const displayedFestivals = selectedPersonaId && festivalIdsForPersona
+    ? (myFestivals || []).filter((f) => festivalIdsForPersona.includes(f.id))
+    : (myFestivals || []);
 
   useEffect(() => {
     let isMounted = true;
@@ -201,7 +206,7 @@ export default function Dashboard() {
     const hostEntities = entities?.filter((e) => inferEntityKind(e) === "host") || [];
     const projectEntities = entities?.filter((e) => inferEntityKind(e) === "project") || [];
     const hasProjectAccess = hostEntities.length > 0 || projectEntities.length > 0;
-    const hasFestivalAccess = !!(hasBackstageAccess && myFestivals && myFestivals.length > 0);
+    const hasFestivalAccess = !!(hasBackstageAccess && displayedFestivals.length > 0);
     const hasAnyAccess = hasProjectAccess || hasFestivalAccess;
 
     return (
@@ -363,7 +368,7 @@ export default function Dashboard() {
             <section className="space-y-3 sm:space-y-4">
               <h2 className="text-base sm:text-xl font-semibold text-foreground">Festival-team du er med i</h2>
               <div className="space-y-3">
-                {myFestivals!.map((festival) => (
+                {displayedFestivals.map((festival) => (
                   <div
                     key={festival.id}
                     className="rounded-lg border border-border/30 bg-card/60 p-3 sm:p-4"
