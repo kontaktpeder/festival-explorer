@@ -100,7 +100,7 @@ export default function EntityEdit() {
   const [locationType, setLocationType] = useState<LocationType | "">("");
 
   // Collapsible states
-  const [basicOpen, setBasicOpen] = useState(true);
+  const [basicOpen, setBasicOpen] = useState(false);
   const [locationOpen, setLocationOpen] = useState(false);
   const [socialOpen, setSocialOpen] = useState(false);
   const [timelineOpen, setTimelineOpen] = useState(false);
@@ -396,6 +396,7 @@ export default function EntityEdit() {
                   cropMode="hero"
                   placeholder="Bytt"
                   useNaturalAspect
+                  hidePreview
                 />
               )}
             </div>
