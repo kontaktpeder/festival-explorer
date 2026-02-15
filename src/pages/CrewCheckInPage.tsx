@@ -3,7 +3,6 @@ import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, QrCode, Download, Loader2, AlertCircle, CheckCircle, Camera, X, User, Mail, Clock, PartyPopper } from "lucide-react";
 import { toast } from "sonner";
@@ -11,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { Html5Qrcode } from "html5-qrcode";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { BackstageShell } from "@/components/layout/BackstageShell";
 
 interface CheckInResult {
   success: boolean;
@@ -77,7 +77,6 @@ export default function CrewCheckInPage() {
           setIsAdmin(staffRole.role === "admin");
           setIsStaff(true);
         } else {
-          // Check festival-level scan permission
           const { data: canScan } = await supabase.rpc("can_scan_tickets_any");
           setIsStaff(canScan ?? false);
           setIsAdmin(false);
@@ -89,7 +88,6 @@ export default function CrewCheckInPage() {
     checkRole();
   }, []);
 
-  // Clear timeout on unmount
   useEffect(() => {
     return () => {
       if (resultTimeoutRef.current) {
@@ -98,7 +96,6 @@ export default function CrewCheckInPage() {
     };
   }, []);
 
-  // Format ticket code automatically (add dashes if missing)
   const formatTicketCode = useCallback((input: string): string => {
     let cleaned = input.replace(/[^A-Z0-9]/gi, '').toUpperCase();
     
@@ -117,13 +114,11 @@ export default function CrewCheckInPage() {
   }, []);
 
   const showResultScreen = useCallback((result: CheckInResult) => {
-    // Ensure we always have a valid result
     if (!result || typeof result !== 'object') {
       console.error("Invalid result passed to showResultScreen:", result);
       return;
     }
 
-    // Ensure result has required fields
     const validResult: CheckInResult = {
       success: result.success ?? false,
       result: result.result || 'error',
@@ -135,7 +130,6 @@ export default function CrewCheckInPage() {
     setCheckInResult(validResult);
     setShowResult(true);
     
-    // Clear any existing timeout (no auto-reset - user must click to dismiss)
     if (resultTimeoutRef.current) {
       clearTimeout(resultTimeoutRef.current);
       resultTimeoutRef.current = null;
@@ -161,11 +155,9 @@ export default function CrewCheckInPage() {
           }
         );
       } catch (networkError) {
-        // Network error - throw to be caught by onError
         throw new Error("Nettverksfeil. Sjekk internettforbindelsen.");
       }
 
-      // Always try to parse JSON, regardless of status code
       let data: CheckInResult;
       try {
         const text = await response.text();
@@ -174,17 +166,13 @@ export default function CrewCheckInPage() {
         }
         data = JSON.parse(text);
       } catch (parseError) {
-        // If JSON parsing fails, create a generic error result
         throw new Error("Kunne ikke lese respons fra server");
       }
 
-      // The API always returns a CheckInResult structure, even for errors (400, 404, etc.)
-      // We want to return this data so onSuccess can handle it and show the red screen
       if (data && typeof data === 'object' && 'result' in data) {
         return data as CheckInResult;
       }
 
-      // If data doesn't have the expected structure, create an error result
       return {
         success: false,
         result: "error",
@@ -193,15 +181,12 @@ export default function CrewCheckInPage() {
       } as CheckInResult;
     },
     onSuccess: (data) => {
-      // CRITICAL: Always show result - success or failure (already_used, refunded, etc.)
-      // This ensures the red screen is ALWAYS shown for already_used tickets
       console.log("Check-in result:", data);
       showResultScreen(data);
       
       if (data.success) {
         toast.success("Billett sjekket inn!");
       } else {
-        // Show toast for non-success results
         toast.error(data.error || "Kunne ikke sjekke inn billetten");
       }
       setTicketCode("");
@@ -212,7 +197,6 @@ export default function CrewCheckInPage() {
       console.error("Check-in error:", error);
       toast.error(error.message);
       setIsProcessingScan(false);
-      // Show error result overlay - this should be red
       showResultScreen({
         success: false,
         result: "error",
@@ -222,13 +206,7 @@ export default function CrewCheckInPage() {
     },
   });
 
-  // Queue-optimized scanner: start once and run continuously
-  // Camera only stops when explicitly closing scanner or leaving page
   useEffect(() => {
-    // Only start if:
-    // - showScanner is true
-    // - user is staff
-    // - we don't already have an active scanner
     if (showScanner && isStaff && !scannerRef.current) {
       const startScanner = async () => {
         try {
@@ -242,20 +220,14 @@ export default function CrewCheckInPage() {
               qrbox: { width: 250, height: 250 },
             },
             async (decodedText) => {
-              // HARD LOCK: prevents multiple requests per "scan round"
-              // This ref is synchronous - updated immediately before any async
               if (scanLockRef.current) return;
-              
-              // Extra safety: also check React state
               if (isProcessingScan || checkInMutation.isPending || showResult) {
                 return;
               }
               
-              // Lock immediately, before any async operations
               scanLockRef.current = true;
               setIsProcessingScan(true);
               
-              // Extract ticket code from URL if it's a full URL
               let code = decodedText;
               if (decodedText.includes("/t/")) {
                 code = decodedText.split("/t/")[1]?.split("?")[0] || decodedText;
@@ -263,28 +235,21 @@ export default function CrewCheckInPage() {
                 code = decodedText.split("/v/")[1]?.split("?")[0] || decodedText;
               }
               
-              // IMPORTANT: Don't stop/cancel scanner here - just send the code
-              // Camera keeps running in background
-              
               const formattedCode = formatTicketCode(code);
               if (formattedCode.match(/^GIGG-[A-Z0-9]{4}-[A-Z0-9]{4}$/)) {
                 checkInMutation.mutate({ code: formattedCode, method: "qr" });
               } else {
                 toast.error("Ugyldig billettkode format");
                 setIsProcessingScan(false);
-                // Unlock since no request was sent
                 scanLockRef.current = false;
               }
             },
-            () => {
-              // Ignore scanning errors (they happen continuously while scanning)
-            }
+            () => {}
           );
         } catch (err) {
           console.error("Scanner error:", err);
           setIsProcessingScan(false);
           
-          // Cleanup on error
           if (scannerRef.current) {
             scannerRef.current.stop().catch(() => {});
             try {
@@ -305,7 +270,6 @@ export default function CrewCheckInPage() {
       startScanner();
     }
 
-    // Cleanup: stop camera when leaving page or closing scanner
     return () => {
       if (scannerRef.current) {
         scannerRef.current.stop().catch(() => {});
@@ -316,10 +280,8 @@ export default function CrewCheckInPage() {
         }
         scannerRef.current = null;
       }
-      // Safety: release the lock if we leave the page
       scanLockRef.current = false;
     };
-    // Important: don't include checkInMutation in deps - only state that controls start/stop
   }, [showScanner, isStaff]);
 
   const searchMutation = useMutation({
@@ -430,8 +392,6 @@ export default function CrewCheckInPage() {
     setShowResult(false);
     setCheckInResult(null);
     setIsProcessingScan(false);
-    // Now one "scan round" is finished - open for next
-    // This is the ONLY place where the lock is released after a successful/failed request
     scanLockRef.current = false;
   };
 
@@ -446,14 +406,12 @@ export default function CrewCheckInPage() {
   if (!isStaff) {
     return (
       <div className="min-h-screen bg-background p-4 flex items-center justify-center">
-        <Card className="max-w-sm w-full text-center">
-          <CardContent className="pt-6 space-y-4">
-            <AlertCircle className="w-16 h-16 mx-auto text-muted-foreground" />
-            <h2 className="text-xl font-bold">Krever innlogging</h2>
-            <p className="text-muted-foreground">Du må ha crew- eller admin-tilgang.</p>
-            <Button onClick={() => navigate("/admin/login")}>Logg inn</Button>
-          </CardContent>
-        </Card>
+        <div className="max-w-sm w-full text-center space-y-4">
+          <AlertCircle className="w-16 h-16 mx-auto text-muted-foreground" />
+          <h2 className="text-xl font-bold">Krever innlogging</h2>
+          <p className="text-muted-foreground">Du må ha crew- eller admin-tilgang.</p>
+          <Button onClick={() => navigate("/admin/login")}>Logg inn</Button>
+        </div>
       </div>
     );
   }
@@ -466,138 +424,115 @@ export default function CrewCheckInPage() {
 
   return (
     <>
-      {/* Main view - always rendered */}
-      <div className="min-h-screen bg-background pb-safe-bottom">
-        {/* Mobile-optimized header */}
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border px-4 py-3 safe-top">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")} className="shrink-0">
-                <X className="w-5 h-5" />
-              </Button>
-              <h1 className="text-xl font-bold">Check-in</h1>
-            </div>
-            {isAdmin && (
-              <Button variant="ghost" size="sm" onClick={handleExportCSV}>
-                <Download className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <div className="p-4 space-y-4 max-w-lg mx-auto">
+      <BackstageShell
+        title="Check-in"
+        subtitle="Scan billetter"
+        backTo="/dashboard"
+        actions={
+          isAdmin ? (
+            <Button variant="ghost" size="sm" onClick={handleExportCSV}>
+              <Download className="w-4 h-4 mr-1.5" />
+              <span className="hidden sm:inline">Eksporter</span>
+            </Button>
+          ) : undefined
+        }
+      >
+        <div className="max-w-xl mx-auto space-y-6">
           {/* QR Scanner CTA */}
-          <Card className="border-primary/20 bg-primary/5">
-            <CardContent className="pt-4 pb-4">
-              <Button
-                onClick={() => setShowScanner(true)}
-                className="w-full h-14 text-base gap-3"
-                size="lg"
-                disabled={showScanner}
-              >
-                <Camera className="w-5 h-5" />
-                {showScanner ? "Scanner aktiv..." : "Åpne QR-scanner"}
-              </Button>
-            </CardContent>
-          </Card>
+          <Button
+            onClick={() => setShowScanner(true)}
+            className="w-full h-14 text-base gap-3"
+            size="lg"
+            disabled={showScanner}
+          >
+            <Camera className="w-5 h-5" />
+            {showScanner ? "Scanner aktiv..." : "Åpne QR-scanner"}
+          </Button>
 
           {/* Manual Entry */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <QrCode className="w-4 h-4" /> Manuell innsjekking
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="GIGG-XXXX-XXXX"
-                  value={ticketCode}
-                  onChange={handleTicketCodeChange}
-                  onBlur={handleTicketCodeBlur}
-                  onKeyDown={(e) => e.key === "Enter" && handleCheckIn()}
-                  className="font-mono text-base h-12"
-                />
-                <Button 
-                  onClick={handleCheckIn} 
-                  disabled={checkInMutation.isPending}
-                  size="lg"
-                  className="h-12 px-6"
-                >
-                  {checkInMutation.isPending ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    <CheckCircle />
-                  )}
-                </Button>
-              </div>
-
-              <p className="text-xs text-muted-foreground">
-                Skriv inn billettkoden. Format legges til automatisk.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <QrCode className="w-3.5 h-3.5" /> Manuell innsjekking
+            </h3>
+            <div className="flex gap-2">
+              <Input
+                placeholder="GIGG-XXXX-XXXX"
+                value={ticketCode}
+                onChange={handleTicketCodeChange}
+                onBlur={handleTicketCodeBlur}
+                onKeyDown={(e) => e.key === "Enter" && handleCheckIn()}
+                className="font-mono text-base h-12 bg-card/50 border-border/30"
+              />
+              <Button 
+                onClick={handleCheckIn} 
+                disabled={checkInMutation.isPending}
+                size="lg"
+                className="h-12 px-6"
+              >
+                {checkInMutation.isPending ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <CheckCircle />
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground/60">
+              Format legges til automatisk.
+            </p>
+          </div>
 
           {/* Search */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Search className="w-4 h-4" /> Søk
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Navn, e-post eller kode"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  className="h-12 text-base"
-                />
-                <Button 
-                  onClick={handleSearch} 
-                  disabled={searchMutation.isPending}
-                  size="lg"
-                  className="h-12 px-6"
-                >
-                  {searchMutation.isPending ? <Loader2 className="animate-spin" /> : <Search />}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Search className="w-3.5 h-3.5" /> Søk
+            </h3>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Navn, e-post eller kode"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                className="h-12 text-base bg-card/50 border-border/30"
+              />
+              <Button 
+                onClick={handleSearch} 
+                disabled={searchMutation.isPending}
+                size="lg"
+                className="h-12 px-6"
+              >
+                {searchMutation.isPending ? <Loader2 className="animate-spin" /> : <Search />}
+              </Button>
+            </div>
+          </div>
 
-          {/* Search Results - Touch-friendly list */}
+          {/* Search Results */}
           {searchResults.length > 0 && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">
-                  Resultater ({searchResults.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y divide-border">
-                  {searchResults.map((ticket) => (
-                    <div
-                      key={ticket.ticketCode}
-                      className="flex items-center justify-between p-4 active:bg-muted/50 cursor-pointer"
-                      onClick={() => navigate(`/v/${ticket.ticketCode}`)}
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium truncate">{ticket.buyerName}</p>
-                        <p className="text-sm font-mono text-muted-foreground">{ticket.ticketCode}</p>
-                        <p className="text-xs text-muted-foreground">{ticket.ticketType}</p>
-                      </div>
-                      <Badge className={`${statusColors[ticket.status]} text-white ml-3 flex-shrink-0`}>
-                        {ticket.status}
-                      </Badge>
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-muted-foreground">
+                Resultater ({searchResults.length})
+              </h3>
+              <div className="rounded-lg border border-border/30 bg-card/30 overflow-hidden divide-y divide-border/20">
+                {searchResults.map((ticket) => (
+                  <div
+                    key={ticket.ticketCode}
+                    className="flex items-center justify-between p-4 active:bg-muted/50 cursor-pointer transition-colors hover:bg-muted/30"
+                    onClick={() => navigate(`/v/${ticket.ticketCode}`)}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate">{ticket.buyerName}</p>
+                      <p className="text-sm font-mono text-muted-foreground">{ticket.ticketCode}</p>
+                      <p className="text-xs text-muted-foreground/60">{ticket.ticketType}</p>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    <Badge className={`${statusColors[ticket.status]} text-white ml-3 flex-shrink-0`}>
+                      {ticket.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
-      </div>
+      </BackstageShell>
 
       {/* Scanner overlay */}
       {showScanner && (
