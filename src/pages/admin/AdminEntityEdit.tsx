@@ -50,11 +50,13 @@ export default function AdminEntityEdit() {
     description: "",
     type: "solo" as EntityType,
     hero_image_url: "",
+    logo_url: "",
     address: "",
     city: "",
     is_published: false,
   });
   const [heroImageSettings, setHeroImageSettings] = useState<ImageSettings | null>(null);
+  const [logoImageSettings, setLogoImageSettings] = useState<ImageSettings | null>(null);
 
   // Fetch entity data
   const { data: entity, isLoading } = useQuery({
@@ -143,12 +145,13 @@ export default function AdminEntityEdit() {
         description: entity.description || "",
         type: entity.type || "solo",
         hero_image_url: entity.hero_image_url || "",
+        logo_url: (entity as any).logo_url || "",
         address: entity.address || "",
         city: entity.city || "",
         is_published: entity.is_published || false,
       });
-      // Parse hero_image_settings from JSONB
       setHeroImageSettings(parseImageSettings(entity.hero_image_settings) || null);
+      setLogoImageSettings(parseImageSettings((entity as any).logo_image_settings) || null);
     }
   }, [entity]);
 
@@ -165,6 +168,8 @@ export default function AdminEntityEdit() {
         description: formData.description || null,
         hero_image_url: formData.hero_image_url || null,
         hero_image_settings: heroImageSettings,
+        logo_url: formData.logo_url || null,
+        logo_image_settings: logoImageSettings,
         address: formData.address || null,
         city: formData.city || null,
         is_published: formData.is_published,
@@ -370,6 +375,22 @@ export default function AdminEntityEdit() {
             />
             <p className="text-xs text-muted-foreground">
               Velg bilde og juster fokuspunkt for beste visning
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Projektlogo</Label>
+            <InlineMediaPickerWithCrop
+              value={formData.logo_url}
+              imageSettings={logoImageSettings}
+              onChange={(url) => setFormData((prev) => ({ ...prev, logo_url: url }))}
+              onSettingsChange={setLogoImageSettings}
+              cropMode="avatar"
+              placeholder="Velg logo"
+              showAllForAdmin
+            />
+            <p className="text-xs text-muted-foreground">
+              Vises på festivalsiden i stedet for navn der det er satt.
             </p>
           </div>
 

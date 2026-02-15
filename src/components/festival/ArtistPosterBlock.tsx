@@ -29,6 +29,7 @@ interface ArtistPosterBlockProps {
     slug: string;
     tagline?: string | null;
     hero_image_url?: string | null;
+    logo_url?: string | null;
   };
   index: number;
   variant: "festival" | "boilerroom";
@@ -43,7 +44,11 @@ interface ArtistPosterBlockProps {
  */
 export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockProps) {
   const heroImageUrl = useSignedMediaUrl(artist.hero_image_url, 'public');
-  const artistLogo = artistLogos[artist.slug];
+  const logoUrlFromApi = useSignedMediaUrl(artist.logo_url ?? null, 'public');
+  // Priority: 1) logo from API, 2) static map from slug, 3) show name
+  const displayLogoUrl = logoUrlFromApi || artistLogos[artist.slug] || null;
+  // Only invert for the old static mast logo, not API logos
+  const shouldInvert = !logoUrlFromApi && artist.slug === "mast";
   const isEven = index % 2 === 0;
   const isMobile = useIsMobile();
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -111,16 +116,16 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
           "max-w-[85%] md:max-w-[70%]",
           !isMobile && "transition-all duration-500 group-hover:translate-y-[-10px]"
         )}>
-          {artistLogo ? (
+          {displayLogoUrl ? (
             <img
-              src={artistLogo}
+              src={displayLogoUrl}
               alt={artist.name}
               loading="lazy"
               decoding="async"
               className={cn(
                 "w-auto max-w-full h-auto max-h-32 md:max-h-48 object-contain drop-shadow-2xl",
                 !isMobile && "transition-all duration-500 group-hover:scale-105",
-                artist.slug === "mast" && "brightness-0 invert",
+                shouldInvert && "brightness-0 invert",
                 isEven ? "" : "ml-auto"
               )}
             />

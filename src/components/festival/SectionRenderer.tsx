@@ -56,6 +56,7 @@ interface SectionRendererProps {
     slug: string;
     tagline?: string | null;
     hero_image_url?: string | null;
+    logo_url?: string | null;
     event_slug?: string;
   }>;
   venue?: {

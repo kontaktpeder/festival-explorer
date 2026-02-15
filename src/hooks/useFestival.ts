@@ -124,7 +124,7 @@ export function useFestival(slug: string) {
           ? supabase.from("personas").select("id,name,slug,hero_image_url,is_public").in("id", Array.from(personaIdsFromParticipants))
           : Promise.resolve({ data: [] as any[] }),
         entityIdsFromParticipants.size > 0
-          ? supabase.from("entities").select("id,name,slug,tagline,hero_image_url,is_published,type").in("id", Array.from(entityIdsFromParticipants))
+          ? supabase.from("entities").select("id,name,slug,tagline,hero_image_url,logo_url,is_published,type").in("id", Array.from(entityIdsFromParticipants))
           : Promise.resolve({ data: [] as any[] }),
       ]);
 
@@ -220,6 +220,7 @@ export function useFestival(slug: string) {
         slug: string;
         tagline?: string | null;
         hero_image_url?: string | null;
+        logo_url?: string | null;
         event_slug: string;
       }> = [];
       
@@ -235,6 +236,7 @@ export function useFestival(slug: string) {
               slug: lineupItem.entity.slug,
               tagline: lineupItem.entity.tagline,
               hero_image_url: lineupItem.entity.hero_image_url,
+              logo_url: lineupItem.entity.logo_url ?? null,
               event_slug: eventSlug,
             });
           }
@@ -255,16 +257,17 @@ export function useFestival(slug: string) {
       if (allArtistIds.size > 0) {
         const { data: entities } = await supabase
           .from("entities")
-          .select("id, name, slug, tagline, type")
+          .select("id, name, slug, tagline, type, logo_url")
           .in("id", Array.from(allArtistIds))
           .eq("is_published", true);
         
-        sectionArtists = (entities || []).map((e) => ({
+        sectionArtists = (entities || []).map((e: any) => ({
           id: e.id,
           name: e.name,
           slug: e.slug,
           tagline: e.tagline,
           type: e.type,
+          logo_url: e.logo_url ?? null,
         }));
       }
 

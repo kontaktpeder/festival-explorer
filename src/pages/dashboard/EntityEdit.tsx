@@ -91,8 +91,10 @@ export default function EntityEdit() {
     tagline: "",
     description: "",
     hero_image_url: "",
+    logo_url: "",
   });
   const [heroImageSettings, setHeroImageSettings] = useState<ImageSettings | null>(null);
+  const [logoImageSettings, setLogoImageSettings] = useState<ImageSettings | null>(null);
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   
   // Location fields
@@ -204,8 +206,10 @@ export default function EntityEdit() {
         tagline: entityWithAccess.tagline || "",
         description: entityWithAccess.description || "",
         hero_image_url: entityWithAccess.hero_image_url || "",
+        logo_url: (entityWithAccess as any).logo_url || "",
       });
       setHeroImageSettings(parseImageSettings(entityWithAccess.hero_image_settings) || null);
+      setLogoImageSettings(parseImageSettings((entityWithAccess as any).logo_image_settings) || null);
       setSocialLinks(((entityWithAccess as any).social_links || []) as SocialLink[]);
       // Location fields
       setLocationName((entityWithAccess as any).location_name || "");
@@ -235,6 +239,8 @@ export default function EntityEdit() {
           description: formData.description || null,
           hero_image_url: formData.hero_image_url || null,
           hero_image_settings: heroImageSettings,
+          logo_url: formData.logo_url || null,
+          logo_image_settings: logoImageSettings,
           social_links: socialLinks,
           ...locationData,
         } as Record<string, unknown>)
@@ -396,6 +402,31 @@ export default function EntityEdit() {
                   cropMode="hero"
                   placeholder="Bytt"
                   useNaturalAspect
+                  hidePreview
+                />
+              )}
+            </div>
+
+            {/* Projektlogo */}
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10 border border-border/50 rounded-lg">
+                {formData.logo_url ? (
+                  <AvatarImage src={formData.logo_url} className="object-contain p-1" />
+                ) : null}
+                <AvatarFallback className="text-[10px] bg-secondary rounded-lg">LOGO</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <Label className="text-muted-foreground text-xs uppercase tracking-wide">Projektlogo</Label>
+                <p className="text-xs text-muted-foreground">Vises på festivalsiden i stedet for navn.</p>
+              </div>
+              {canEdit && (
+                <InlineMediaPickerWithCrop
+                  value={formData.logo_url}
+                  imageSettings={logoImageSettings}
+                  onChange={(url) => setFormData((prev) => ({ ...prev, logo_url: url }))}
+                  onSettingsChange={setLogoImageSettings}
+                  cropMode="avatar"
+                  placeholder="Velg logo"
                   hidePreview
                 />
               )}
