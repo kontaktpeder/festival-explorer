@@ -11,6 +11,10 @@ import bgOrangeDesktop from "@/assets/om-giggen-bg-orange-desktop.jpg";
 import bgDarkDesktop from "@/assets/om-giggen-bg-dark-desktop.jpg";
 import bgWarmDesktop from "@/assets/om-giggen-bg-warm-desktop.jpg";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
+import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 
 // Hook for scroll reveal animations
 function useScrollReveal() {
@@ -46,6 +50,60 @@ export default function OmGiggenPage() {
   const currentBgOrange = isMobile ? bgOrange : bgOrangeDesktop;
   const currentBgDark = isMobile ? bgDark : bgDarkDesktop;
   const currentBgWarm = isMobile ? bgWarm : bgWarmDesktop;
+
+  // Fetch festival team
+  const { data: festivalTeam } = useQuery({
+    queryKey: ["om-giggen-festival-team"],
+    queryFn: async () => {
+      const { data: participants } = await supabase
+        .from("festival_participants")
+        .select("*")
+        .eq("festival_id", "40000000-0000-0000-0000-000000000001")
+        .in("zone", ["host", "backstage"])
+        .eq("is_public", true);
+
+      if (!participants || participants.length === 0) return null;
+
+      const personaIds = participants.filter(p => p.participant_kind === "persona").map(p => p.participant_id);
+      const entityIds = participants.filter(p => p.participant_kind !== "persona").map(p => p.participant_id);
+
+      const [personasRes, entitiesRes] = await Promise.all([
+        personaIds.length > 0
+          ? supabase.from("personas").select("id,name,slug,avatar_url,is_public,category_tags,type").in("id", personaIds)
+          : Promise.resolve({ data: [] as any[] }),
+        entityIds.length > 0
+          ? supabase.from("entities").select("id,name,slug,hero_image_url,is_published,type").in("id", entityIds)
+          : Promise.resolve({ data: [] as any[] }),
+      ]);
+
+      const personaMap = new Map((personasRes.data || []).map((p: any) => [p.id, p]));
+      const entityMap = new Map((entitiesRes.data || []).map((e: any) => [e.id, e]));
+
+      const backstage: any[] = [];
+      const hostRoles: any[] = [];
+
+      participants.forEach(p => {
+        const resolved = p.participant_kind === "persona" ? personaMap.get(p.participant_id) : entityMap.get(p.participant_id);
+        if (!resolved) return;
+        if (p.participant_kind !== "persona" && resolved.is_published === false) return;
+        if (p.participant_kind === "persona" && resolved.is_public === false) return;
+
+        const item = {
+          participant_kind: p.participant_kind,
+          participant_id: p.participant_id,
+          entity: p.participant_kind !== "persona" ? resolved : null,
+          persona: p.participant_kind === "persona" ? resolved : null,
+          role_label: p.role_label,
+          sort_order: p.sort_order,
+        };
+
+        if (p.zone === "backstage") backstage.push(item);
+        else if (p.zone === "host") hostRoles.push(item);
+      });
+
+      return { backstage, hostRoles };
+    },
+  });
 
   // Scroll to top on mount + track scroll for arrow animation
   useEffect(() => {
@@ -359,6 +417,42 @@ export default function OmGiggenPage() {
           </div>
         </div>
       </section>
+
+      {/* Festival-team */}
+      {festivalTeam && (festivalTeam.hostRoles.length > 0 || festivalTeam.backstage.length > 0) && (
+        <section className="relative py-24 md:py-32 px-6 bg-black overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-accent/5 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
+          
+          <div className="max-w-3xl mx-auto relative z-10">
+            <p className="uppercase tracking-[0.4em] mb-4 font-medium text-xl text-primary">
+              Festival-teamet
+            </p>
+            
+            <p className="text-base text-foreground/50 mb-12 max-w-lg leading-relaxed">
+              Bli kjent med dem som står bak festivalen, og som er med på å skape en historisk kveld.
+            </p>
+            
+            <div className="space-y-8">
+              {[...festivalTeam.hostRoles, ...festivalTeam.backstage]
+                .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+                .map((item: any, i: number) => {
+                  const displayRole = item.role_label || getPersonaTypeLabel(item.persona?.type) || (item.persona?.category_tags && item.persona.category_tags[0]) || item.entity?.type || null;
+                  return (
+                    <div key={item.participant_id || i} className="flex flex-col gap-1.5 border-l-2 border-accent/30 pl-5">
+                      {displayRole && (
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-accent/70 font-semibold">
+                          {displayRole}
+                        </p>
+                      )}
+                      <EventParticipantItem item={item} />
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Footer */}
       <FestivalFooter />
