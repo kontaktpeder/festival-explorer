@@ -140,14 +140,19 @@ const App = () => (
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
-            <Route path="festivals" element={<AdminFestivals />} />
-            <Route path="festivals/:id" element={<AdminSections />} />
-            <Route path="festivals/:id/workspace" element={<AdminFestivalWorkspace />} />
-            <Route path="festivals/:id/program" element={<AdminFestivalProgram />} />
-            <Route path="events" element={<AdminEvents />} />
-            <Route path="events/:id" element={<AdminEventEdit />} />
-            <Route path="events/:id/lineup" element={<AdminEventLineup />} />
-            {/* New entities routes */}
+            {/* Festival-relaterte ruter → redirect til dashboard */}
+            <Route path="festivals" element={<Navigate to="/dashboard" replace />} />
+            <Route path="festivals/:id" element={<Navigate to="/dashboard" replace />} />
+            <Route path="festivals/:id/workspace" element={<Navigate to="/dashboard" replace />} />
+            <Route path="festivals/:id/program" element={<Navigate to="/dashboard" replace />} />
+            <Route path="events" element={<Navigate to="/dashboard" replace />} />
+            <Route path="events/:id" element={<Navigate to="/dashboard" replace />} />
+            <Route path="events/:id/lineup" element={<Navigate to="/dashboard" replace />} />
+            <Route path="media" element={<Navigate to="/dashboard" replace />} />
+            <Route path="tickets" element={<Navigate to="/dashboard" replace />} />
+            <Route path="timeline" element={<Navigate to="/dashboard" replace />} />
+            <Route path="timeline/:id" element={<Navigate to="/dashboard" replace />} />
+            {/* Plattform-funksjoner */}
             <Route path="entities" element={<AdminEntities />} />
             <Route path="entities/:id" element={<AdminEntityEdit />} />
             <Route path="access-generator" element={<AdminAccessGenerator />} />
@@ -156,15 +161,10 @@ const App = () => (
             <Route path="inbox/:id" element={<AdminInboxDetail />} />
             <Route path="access-requests" element={<AdminAccessRequests />} />
             <Route path="access-requests/:id" element={<AdminAccessRequestDetail />} />
-            {/* Legacy routes - redirect to entities in future */}
             <Route path="projects" element={<AdminProjects />} />
             <Route path="projects/:id" element={<AdminProjectEdit />} />
             <Route path="venues" element={<AdminVenues />} />
             <Route path="venues/:id" element={<AdminVenueEdit />} />
-            <Route path="media" element={<AdminMedia />} />
-            <Route path="tickets" element={<AdminTicketsDashboard />} />
-            <Route path="timeline" element={<AdminTimelineEvents />} />
-            <Route path="timeline/:id" element={<AdminTimelineEventEdit />} />
           </Route>
           
           <Route path="*" element={<NotFound />} />

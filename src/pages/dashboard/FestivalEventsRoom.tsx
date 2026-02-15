@@ -1,7 +1,8 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Music, ChevronRight } from "lucide-react";
+import { ArrowLeft, Music, ChevronRight, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/LoadingState";
 
 export default function FestivalEventsRoom() {
@@ -34,6 +35,15 @@ export default function FestivalEventsRoom() {
     enabled: !!id,
   });
 
+  const { data: canEdit } = useQuery({
+    queryKey: ["can-edit-events", id],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_edit_events", { p_festival_id: id });
+      return data ?? false;
+    },
+    enabled: !!id,
+  });
+
   if (isLoading) return <LoadingState message="Laster..." />;
   if (!festival || !id) return <p className="p-8 text-muted-foreground">Festival ikke funnet.</p>;
 
@@ -43,16 +53,26 @@ export default function FestivalEventsRoom() {
         className="sticky top-0 z-50 bg-background/60 backdrop-blur-xl border-b border-border/20"
         style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
       >
-        <div className="w-full px-4 sm:px-8 lg:px-12 py-3 flex items-center gap-3">
-          <button
-            onClick={() => navigate(`/dashboard/festival/${id}`)}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <span className="text-sm font-semibold tracking-tight text-foreground">
-            BACKSTAGE · Events
-          </span>
+        <div className="w-full px-4 sm:px-8 lg:px-12 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(`/dashboard/festival/${id}`)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <span className="text-sm font-semibold tracking-tight text-foreground">
+              BACKSTAGE · Events
+            </span>
+          </div>
+          {canEdit && (
+            <Button asChild size="sm" variant="outline">
+              <Link to={`/event-room/new?festival_id=${id}`}>
+                <Plus className="h-4 w-4 mr-1" />
+                Ny event
+              </Link>
+            </Button>
+          )}
         </div>
       </header>
 
