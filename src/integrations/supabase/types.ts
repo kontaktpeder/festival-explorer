@@ -345,6 +345,8 @@ export type Database = {
           location_lng: number | null
           location_name: string | null
           location_type: Database["public"]["Enums"]["location_type"] | null
+          logo_image_settings: Json | null
+          logo_url: string | null
           name: string
           slug: string
           social_links: Json | null
@@ -373,6 +375,8 @@ export type Database = {
           location_lng?: number | null
           location_name?: string | null
           location_type?: Database["public"]["Enums"]["location_type"] | null
+          logo_image_settings?: Json | null
+          logo_url?: string | null
           name: string
           slug: string
           social_links?: Json | null
@@ -401,6 +405,8 @@ export type Database = {
           location_lng?: number | null
           location_name?: string | null
           location_type?: Database["public"]["Enums"]["location_type"] | null
+          logo_image_settings?: Json | null
+          logo_url?: string | null
           name?: string
           slug?: string
           social_links?: Json | null
