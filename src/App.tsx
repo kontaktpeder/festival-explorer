@@ -33,6 +33,7 @@ import TermsPage from "./pages/TermsPage";
 import RequestAccess from "./pages/RequestAccess";
 import VerifyAccessEmail from "./pages/VerifyAccessEmail";
 import CreateProfileWizard from "./pages/onboarding/CreateProfileWizard";
+import ResetPassword from "./pages/ResetPassword";
 
 // Admin pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -99,6 +100,7 @@ const App = () => (
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
           <Route path="/i" element={<AcceptInvitation />} />
           <Route path="/onboarding/create-profile" element={<CreateProfileWizard />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/entities/:id/edit" element={<EntityEdit />} />
           <Route path="/dashboard/entities/:id/invite" element={<EntityInvite />} />

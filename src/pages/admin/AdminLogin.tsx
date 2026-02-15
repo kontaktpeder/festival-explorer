@@ -147,10 +147,16 @@ export default function AdminLogin() {
           </Button>
         </form>
 
-        <div className="text-center">
+        <div className="text-center space-y-2">
+          <Link
+            to="/reset-password"
+            className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Glemt passord?
+          </Link>
           <Link
             to="/request-access"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             Ingen konto? Be om tilgang
           </Link>
