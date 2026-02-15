@@ -40,6 +40,7 @@ export default function ProjectPage() {
   
   // Signed URL for public viewing
   const heroImageUrl = useSignedMediaUrl(entity?.hero_image_url, 'public');
+  const logoUrl = useSignedMediaUrl((entity as any)?.logo_url, 'public');
 
   // Vises alle som er kreditert (entity_team.is_public); useEntity henter allerede kun disse
   const publicTeamMembers = entity?.team ?? [];
@@ -104,13 +105,22 @@ export default function ProjectPage() {
       {(entity.description || locationDisplay || (entitySocialLinks && entitySocialLinks.length > 0)) && (
         <section className="py-20 md:py-32 px-6 md:px-12">
           <div className="max-w-2xl">
-            {/* Location */}
-            {locationDisplay && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground/60 mb-6">
-                <MapPin className="w-4 h-4" />
-                <span>{locationDisplay}</span>
-              </div>
-            )}
+            {/* Logo + Location */}
+            <div className="flex items-center gap-4 mb-6">
+              {logoUrl && (
+                <img
+                  src={logoUrl}
+                  alt={`${entity.name} logo`}
+                  className="h-10 w-10 md:h-12 md:w-12 rounded-lg object-cover ring-1 ring-border/10"
+                />
+              )}
+              {locationDisplay && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground/60">
+                  <MapPin className="w-4 h-4" />
+                  <span>{locationDisplay}</span>
+                </div>
+              )}
+            </div>
 
             {entity.description && (
               <p className="text-lg md:text-xl text-foreground/85 leading-relaxed whitespace-pre-line font-light">
