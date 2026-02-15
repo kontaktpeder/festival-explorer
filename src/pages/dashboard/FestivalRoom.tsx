@@ -225,9 +225,9 @@ export default function FestivalRoom() {
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4" />
         <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-accent-warm/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/4" />
         
-        <div className="relative w-full px-4 sm:px-8 lg:px-12 py-10 sm:py-16 lg:py-20">
+        <div className="relative w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-8">
           <div className="max-w-5xl">
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-2">
               <Badge
                 variant={festival.status === "published" ? "default" : "secondary"}
                 className="text-[10px] uppercase tracking-widest"
@@ -247,29 +247,29 @@ export default function FestivalRoom() {
 
       {/* Main content */}
       <main
-        className="w-full px-4 sm:px-8 lg:px-12 py-8 sm:py-10 space-y-10 sm:space-y-14"
+        className="w-full px-4 sm:px-8 lg:px-12 py-5 sm:py-6 space-y-6 sm:space-y-8"
         style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 2rem)" }}
       >
         {/* Module grid */}
         {visibleModules.length > 0 ? (
-          <section className="space-y-5">
+          <section className="space-y-3">
             <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
               Verktøy
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-3">
               {visibleModules.map((mod) => {
                 const Icon = mod.icon;
                 const inner = (
                   <div
                     key={mod.title}
-                    className={`group relative rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm p-5 sm:p-6 transition-all duration-300 ${
+                    className={`group relative rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm p-4 transition-all duration-300 ${
                       mod.disabled
                         ? "opacity-40 cursor-not-allowed"
                         : "hover:border-accent/30 hover:bg-card/80 hover:shadow-lg hover:shadow-accent/5 cursor-pointer"
                     }`}
                   >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className={`h-10 w-10 rounded-lg flex items-center justify-center transition-colors duration-300 ${
+                    <div className="flex items-start justify-between mb-3">
+                      <div className={`h-9 w-9 rounded-lg flex items-center justify-center transition-colors duration-300 ${
                         mod.disabled 
                           ? "bg-muted/50" 
                           : "bg-accent/10 group-hover:bg-accent/20"
@@ -320,7 +320,7 @@ export default function FestivalRoom() {
 
         {/* Events */}
         {canAccessEvents && festivalEvents && festivalEvents.length > 0 && (
-          <section className="space-y-5">
+          <section className="space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
                 Events
@@ -329,7 +329,7 @@ export default function FestivalRoom() {
                 {festivalEvents.length} event{festivalEvents.length !== 1 ? "s" : ""}
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
               {festivalEvents.map((fe: any) =>
                 fe.event ? (
                   <Link
