@@ -24,6 +24,7 @@ export type Database = {
           id: string
           invited_at: string
           invited_by: string
+          invited_persona_id: string | null
           invited_user_id: string | null
           role_labels: string[] | null
           status: string
@@ -38,6 +39,7 @@ export type Database = {
           id?: string
           invited_at?: string
           invited_by: string
+          invited_persona_id?: string | null
           invited_user_id?: string | null
           role_labels?: string[] | null
           status?: string
@@ -52,6 +54,7 @@ export type Database = {
           id?: string
           invited_at?: string
           invited_by?: string
+          invited_persona_id?: string | null
           invited_user_id?: string | null
           role_labels?: string[] | null
           status?: string
@@ -70,6 +73,13 @@ export type Database = {
             columns: ["invited_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_invitations_invited_persona_id_fkey"
+            columns: ["invited_persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
             referencedColumns: ["id"]
           },
           {
@@ -459,6 +469,7 @@ export type Database = {
           is_public: boolean
           joined_at: string
           left_at: string | null
+          persona_id: string | null
           role_labels: string[] | null
           user_id: string
         }
@@ -469,6 +480,7 @@ export type Database = {
           is_public?: boolean
           joined_at?: string
           left_at?: string | null
+          persona_id?: string | null
           role_labels?: string[] | null
           user_id: string
         }
@@ -479,6 +491,7 @@ export type Database = {
           is_public?: boolean
           joined_at?: string
           left_at?: string | null
+          persona_id?: string | null
           role_labels?: string[] | null
           user_id?: string
         }
@@ -488,6 +501,13 @@ export type Database = {
             columns: ["entity_id"]
             isOneToOne: false
             referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entity_team_persona_id_fkey"
+            columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
             referencedColumns: ["id"]
           },
           {
@@ -2005,6 +2025,7 @@ export type Database = {
           id: string
           invited_at: string
           invited_by: string
+          invited_persona_id: string | null
           invited_user_id: string | null
           role_labels: string[] | null
           status: string
@@ -2028,6 +2049,7 @@ export type Database = {
           id: string
           invited_at: string
           invited_by: string
+          invited_persona_id: string | null
           invited_user_id: string | null
           role_labels: string[] | null
           status: string
@@ -2102,6 +2124,7 @@ export type Database = {
         Returns: {
           access: Database["public"]["Enums"]["access_level"]
           entity_id: string
+          persona_id: string
         }[]
       }
       has_backstage_access: { Args: never; Returns: boolean }
@@ -2152,6 +2175,10 @@ export type Database = {
           slug: string
           user_id: string
         }[]
+      }
+      set_entity_team_persona: {
+        Args: { p_entity_id: string; p_persona_id: string }
+        Returns: undefined
       }
     }
     Enums: {

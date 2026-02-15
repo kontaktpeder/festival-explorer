@@ -91,12 +91,13 @@ export function useMyEntities() {
 
       if (entitiesError) throw entitiesError;
 
-      // Merge with access levels
+      // Merge with access levels and persona_id
       return (entities || []).map((entity) => {
-        const userEntity = userEntities.find((row: { entity_id: string; access: AccessLevel }) => row.entity_id === entity.id);
+        const userEntity = userEntities.find((row: { entity_id: string; access: AccessLevel; persona_id: string | null }) => row.entity_id === entity.id);
         return {
           ...entity,
           access: userEntity?.access || 'viewer',
+          persona_id: userEntity?.persona_id ?? null,
         } as EntityWithAccess;
       });
     },
@@ -233,25 +234,21 @@ export function useMyEntitiesFilteredByPersona(personaId: string | null) {
         if (entitiesError) throw entitiesError;
 
         return (entities || []).map((entity) => {
-          const userEntity = userEntities.find((row: { entity_id: string; access: AccessLevel }) => row.entity_id === entity.id);
+          const userEntity = userEntities.find((row: { entity_id: string; access: AccessLevel; persona_id: string | null }) => row.entity_id === entity.id);
           return {
             ...entity,
             access: userEntity?.access || 'viewer',
+            persona_id: userEntity?.persona_id ?? null,
           } as EntityWithAccess;
         });
       }
 
-      // Get entities where this persona is bound
-      const { data: bindings, error: bindingsError } = await supabase
-        .from("entity_persona_bindings")
-        .select("entity_id")
-        .eq("persona_id", personaId);
-
-      if (bindingsError) throw bindingsError;
-
-      // Filter to only show entities with persona bindings that user has access to
-      const boundEntityIds = (bindings || []).map(b => b.entity_id);
-      const filteredIds = userEntityIds.filter((id: string) => boundEntityIds.includes(id));
+      // Filter by persona_id from entity_team (set via invitation or manual assignment)
+      const filteredRows = userEntities.filter(
+        (row: { entity_id: string; access: AccessLevel; persona_id: string | null }) =>
+          row.persona_id === personaId
+      );
+      const filteredIds = filteredRows.map((row: { entity_id: string }) => row.entity_id);
 
       if (filteredIds.length === 0) return [];
 
@@ -266,10 +263,11 @@ export function useMyEntitiesFilteredByPersona(personaId: string | null) {
 
       // Merge with access levels
       return (entities || []).map((entity) => {
-        const userEntity = userEntities.find((row: { entity_id: string; access: AccessLevel }) => row.entity_id === entity.id);
+        const userEntity = userEntities.find((row: { entity_id: string; access: AccessLevel; persona_id: string | null }) => row.entity_id === entity.id);
         return {
           ...entity,
           access: userEntity?.access || 'viewer',
+          persona_id: userEntity?.persona_id ?? null,
         } as EntityWithAccess;
       });
     },
