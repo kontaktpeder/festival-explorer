@@ -37,7 +37,7 @@ export default function AdminLogin() {
             if (!isMounted) return;
             const isAdmin = await checkIsAdmin();
             const hasAccess = await checkHasBackstageAccess();
-            navigate(isAdmin ? "/admin" : hasAccess ? "/admin" : "/dashboard", { replace: true });
+            navigate("/dashboard", { replace: true });
           }, 0);
         } else {
           setChecking(false);
@@ -49,7 +49,7 @@ export default function AdminLogin() {
       if (!isMounted) return;
       if (session) {
         Promise.all([checkIsAdmin(), checkHasBackstageAccess()]).then(([isAdmin, hasAccess]) => {
-          if (isMounted) navigate((isAdmin || hasAccess) ? "/admin" : "/dashboard", { replace: true });
+          if (isMounted) navigate("/dashboard", { replace: true });
         });
       } else {
         setChecking(false);
@@ -78,21 +78,11 @@ export default function AdminLogin() {
         variant: "destructive",
       });
     } else if (data.user) {
-      const [isAdmin, hasAccess] = await Promise.all([checkIsAdmin(), checkHasBackstageAccess()]);
-
-      if (isAdmin || hasAccess) {
-        toast({
-          title: "Logget inn",
-          description: isAdmin ? "Velkommen til admin!" : "Velkommen til backstage!",
-        });
-        navigate("/admin");
-      } else {
-        toast({
-          title: "Logget inn",
-          description: "Velkommen til backstage!",
-        });
-        navigate("/dashboard");
-      }
+      toast({
+        title: "Logget inn",
+        description: "Velkommen til backstage!",
+      });
+      navigate("/dashboard");
     }
 
     setLoading(false);
