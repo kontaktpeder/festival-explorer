@@ -1298,6 +1298,7 @@ export type Database = {
       }
       personas: {
         Row: {
+          allow_team_credit: boolean
           available_for: string[]
           avatar_image_settings: Json | null
           avatar_url: string | null
@@ -1321,6 +1322,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          allow_team_credit?: boolean
           available_for?: string[]
           avatar_image_settings?: Json | null
           avatar_url?: string | null
@@ -1344,6 +1346,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          allow_team_credit?: boolean
           available_for?: string[]
           avatar_image_settings?: Json | null
           avatar_url?: string | null
@@ -2152,6 +2155,21 @@ export type Database = {
       }
       delete_user_safely: { Args: { p_user_id: string }; Returns: Json }
       generate_ticket_code: { Args: never; Returns: string }
+      get_entity_team_display_names: {
+        Args: { p_entity_id: string }
+        Returns: {
+          display_name: string
+          entity_team_id: string
+          user_id: string
+        }[]
+      }
+      get_festival_team_member_display_names: {
+        Args: { p_festival_id: string; p_zone?: string }
+        Returns: {
+          display_name: string
+          participant_id: string
+        }[]
+      }
       get_invitation_by_token: { Args: { p_token: string }; Returns: Json }
       get_my_festivals_as_team: {
         Args: never
