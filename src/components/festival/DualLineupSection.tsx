@@ -6,6 +6,7 @@ import { UtforskMerSection } from "./UtforskMerSection";
 import { SocialSection } from "./SocialSection";
 import { FestivalFooter } from "./FestivalFooter";
 import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
+import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 interface Artist {
   id: string;
   name: string;
@@ -122,7 +123,7 @@ export function DualLineupSection({
             
             <div className="space-y-8">
               {[...festivalTeam.hostRoles, ...festivalTeam.backstage].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0)).map((item: any, i: number) => {
-            const displayRole = item.role_label || item.persona?.category_tags && item.persona.category_tags[0] || item.entity?.type || null;
+            const displayRole = item.role_label || getPersonaTypeLabel(item.persona?.type) || (item.persona?.category_tags && item.persona.category_tags[0]) || item.entity?.type || null;
             return <div key={item.participant_id || i} className="flex flex-col gap-1.5 border-l-2 border-accent/30 pl-5">
                       {displayRole && <p className="text-[10px] uppercase tracking-[0.3em] text-accent/70 font-semibold">
                           {displayRole}

@@ -5,7 +5,7 @@
  * and the new model (host/project entity_kind + persona.type).
  */
 
-import type { EntityKind } from "@/types/database";
+import type { EntityKind, PersonaType } from "@/types/database";
 
 // ============================================
 // Entity Kind Helpers
@@ -99,6 +99,16 @@ export function getPersonaTypeLabel(type?: string | null): string | null {
   if (!type) return null;
   return PERSONA_TYPE_LABELS[type] ?? type;
 }
+
+/** All available persona types as structured options for Select/dropdown UI */
+const PERSONA_TYPES: PersonaType[] = [
+  "musician", "dj", "photographer", "video", "technician",
+  "organizer", "manager", "audience", "volunteer",
+];
+export const PERSONA_TYPE_OPTIONS: { value: PersonaType; label: string }[] = PERSONA_TYPES.map((value) => ({
+  value,
+  label: PERSONA_TYPE_LABELS[value] ?? value,
+}));
 
 /** Get a short description of what the persona can do, by type */
 export function getPersonaTypeDescription(type?: string | null): string {

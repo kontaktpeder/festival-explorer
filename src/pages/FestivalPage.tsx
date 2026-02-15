@@ -17,6 +17,7 @@ import { DualLineupSection } from "@/components/festival/DualLineupSection";
 import giggenLogo from "@/assets/giggen-logo.png";
 import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
 import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
+import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 
 export default function FestivalPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -375,6 +376,7 @@ export default function FestivalPage() {
                 .map((item: any, i: number) => {
                   const displayRole =
                     item.role_label ||
+                    getPersonaTypeLabel(item.persona?.type) ||
                     (item.persona?.category_tags && item.persona.category_tags[0]) ||
                     item.entity?.type ||
                     null;

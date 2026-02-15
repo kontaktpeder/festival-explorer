@@ -224,6 +224,7 @@ export function useUpdatePersona() {
       avatar_url?: string | null;
       avatar_image_settings?: { focal_x: number; focal_y: number; zoom?: number } | null;
       category_tags?: string[];
+      type?: string | null;
       is_public?: boolean;
     }) => {
       const { data, error } = await supabase
