@@ -169,7 +169,7 @@ function StepIntro({ onNext, onCancel }: { onNext: () => void; onCancel: () => v
       <div className="space-y-3">
         <p className="text-sm text-muted-foreground leading-relaxed">
           Her lager du din profesjonelle profil.<br />
-          Arrangører og festivaler bruker den for å finne og kreditere deg.
+          Arrangører, musikere og tilskuere bruker den for å finne deg.
         </p>
         <p className="text-xs text-muted-foreground/60">
           Det tar ca. 1 minutt. Du kan endre alt senere.
