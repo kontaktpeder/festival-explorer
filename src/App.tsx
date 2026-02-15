@@ -42,6 +42,10 @@ import FestivalSettingsRoom from "./pages/dashboard/FestivalSettingsRoom";
 import FestivalTeamRoom from "./pages/dashboard/FestivalTeamRoom";
 import FestivalEventsRoom from "./pages/dashboard/FestivalEventsRoom";
 import FestivalWorkspaceRoom from "./pages/dashboard/FestivalWorkspaceRoom";
+import VenueRoom from "./pages/dashboard/VenueRoom";
+import VenueEventsRoom from "./pages/dashboard/VenueEventsRoom";
+import VenueTeamRoom from "./pages/dashboard/VenueTeamRoom";
+import VenueSettingsRoom from "./pages/dashboard/VenueSettingsRoom";
 
 import EventRoomPage from "./pages/EventRoomPage";
 
@@ -74,7 +78,7 @@ import AdminAccessRequests from "./pages/admin/AdminAccessRequests";
 import AdminAccessRequestDetail from "./pages/admin/AdminAccessRequestDetail";
 import AdminFestivalWorkspace from "./pages/admin/AdminFestivalWorkspace";
 
-// Redirect component for legacy /venue/:slug routes
+// VenueRedirect removed - /venue/:slug now redirects to /project/:slug
 function VenueRedirect() {
   const { slug } = useParams<{ slug: string }>();
   return <Navigate to={`/project/${slug}`} replace />;
@@ -132,6 +136,10 @@ const App = () => (
             <Route path="/dashboard/festival/:id/team" element={<FestivalTeamRoom />} />
             <Route path="/dashboard/festival/:id/events" element={<FestivalEventsRoom />} />
             <Route path="/dashboard/festival/:id/workspace" element={<FestivalWorkspaceRoom />} />
+            <Route path="/dashboard/venue/:id" element={<VenueRoom />} />
+            <Route path="/dashboard/venue/:id/events" element={<VenueEventsRoom />} />
+            <Route path="/dashboard/venue/:id/team" element={<VenueTeamRoom />} />
+            <Route path="/dashboard/venue/:id/settings" element={<VenueSettingsRoom />} />
 
 
           <Route path="/p/:slug" element={<PersonaPage />} />

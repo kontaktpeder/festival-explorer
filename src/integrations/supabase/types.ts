@@ -2014,6 +2014,63 @@ export type Database = {
           },
         ]
       }
+      venue_staff: {
+        Row: {
+          can_access_media: boolean
+          can_edit_venue: boolean
+          can_manage_events: boolean
+          can_manage_staff: boolean
+          can_scan_tickets: boolean
+          can_view_ticket_stats: boolean
+          created_at: string
+          id: string
+          persona_id: string
+          role: string
+          venue_id: string
+        }
+        Insert: {
+          can_access_media?: boolean
+          can_edit_venue?: boolean
+          can_manage_events?: boolean
+          can_manage_staff?: boolean
+          can_scan_tickets?: boolean
+          can_view_ticket_stats?: boolean
+          created_at?: string
+          id?: string
+          persona_id: string
+          role?: string
+          venue_id: string
+        }
+        Update: {
+          can_access_media?: boolean
+          can_edit_venue?: boolean
+          can_manage_events?: boolean
+          can_manage_staff?: boolean
+          can_scan_tickets?: boolean
+          can_view_ticket_stats?: boolean
+          created_at?: string
+          id?: string
+          persona_id?: string
+          role?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_staff_persona_id_fkey"
+            columns: ["persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venue_staff_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       venues: {
         Row: {
           address: string | null
@@ -2137,6 +2194,7 @@ export type Database = {
         Args: { p_festival_id: string }
         Returns: boolean
       }
+      can_manage_venue: { Args: { p_venue_id: string }; Returns: boolean }
       can_scan_tickets_any: { Args: never; Returns: boolean }
       can_see_report_any: { Args: never; Returns: boolean }
       can_see_revenue_any: { Args: never; Returns: boolean }
@@ -2235,6 +2293,7 @@ export type Database = {
       is_staff: { Args: never; Returns: boolean }
       is_ticket_admin: { Args: never; Returns: boolean }
       is_venue_admin: { Args: { p_venue_id: string }; Returns: boolean }
+      is_venue_staff_member: { Args: { p_venue_id: string }; Returns: boolean }
       reserve_ticket_slot_atomic: {
         Args: {
           p_buyer_email: string

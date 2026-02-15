@@ -100,6 +100,51 @@ export default function Dashboard() {
     },
     enabled: !!hasBackstageAccess,
   });
+
+  // Venues the user owns or has staff access to
+  const { data: myVenues } = useQuery({
+    queryKey: ["dashboard-my-venues", currentUser?.id],
+    queryFn: async () => {
+      if (!currentUser?.id) return [];
+
+      // Owned venues
+      const { data: owned } = await supabase
+        .from("venues")
+        .select("id, name, slug, is_published, city")
+        .eq("created_by", currentUser.id)
+        .order("name");
+
+      // Staff venues via persona
+      const { data: personas } = await supabase
+        .from("personas")
+        .select("id")
+        .eq("user_id", currentUser.id);
+
+      const personaIds = (personas || []).map((p) => p.id);
+      const ownedIds = new Set((owned || []).map((v) => v.id));
+
+      let staffVenues: typeof owned = [];
+      if (personaIds.length > 0) {
+        const { data: staffRows } = await supabase
+          .from("venue_staff")
+          .select("venue_id")
+          .in("persona_id", personaIds);
+
+        const staffIds = (staffRows || []).map((s) => s.venue_id).filter((id) => !ownedIds.has(id));
+        if (staffIds.length > 0) {
+          const { data } = await supabase
+            .from("venues")
+            .select("id, name, slug, is_published, city")
+            .in("id", staffIds)
+            .order("name");
+          staffVenues = data || [];
+        }
+      }
+
+      return [...(owned || []), ...staffVenues];
+    },
+    enabled: !!currentUser?.id,
+  });
   const { data: filteredEntities, isLoading: isLoadingFiltered } = useMyEntitiesFilteredByPersona(selectedPersonaId);
   const { data: festivalIdsForPersona } = useFestivalIdsForPersona(selectedPersonaId);
   const entities = selectedPersonaId ? filteredEntities : allEntities;
@@ -209,7 +254,8 @@ export default function Dashboard() {
     const projectEntities = entities?.filter((e) => inferEntityKind(e) === "project") || [];
     const hasProjectAccess = hostEntities.length > 0 || projectEntities.length > 0;
     const hasFestivalAccess = !!(hasBackstageAccess && displayedFestivals.length > 0);
-    const hasAnyAccess = hasProjectAccess || hasFestivalAccess;
+    const hasVenueAccess = !!(myVenues && myVenues.length > 0);
+    const hasAnyAccess = hasProjectAccess || hasFestivalAccess || hasVenueAccess;
 
     return (
       <div className="min-h-[100svh] bg-background">
@@ -393,7 +439,48 @@ export default function Dashboard() {
             </section>
           )}
 
-          {/* Tom tilstand */}
+          {/* Venues */}
+          {hasVenueAccess && (
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+                  Venues
+                </h2>
+                <span className="text-[11px] text-muted-foreground/50">
+                  {myVenues!.length} venue{myVenues!.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+                {myVenues!.map((venue) => (
+                  <Link
+                    key={venue.id}
+                    to={`/dashboard/venue/${venue.id}`}
+                    className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
+                        <Building2 className="h-5 w-5 text-accent" />
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Badge
+                          variant={venue.is_published ? "default" : "secondary"}
+                          className="text-[10px]"
+                        >
+                          {venue.is_published ? "Publisert" : "Utkast"}
+                        </Badge>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                      </div>
+                    </div>
+                    <h3 className="text-sm font-semibold text-foreground mb-1">{venue.name}</h3>
+                    {venue.city && (
+                      <p className="text-[10px] text-muted-foreground/60">{venue.city}</p>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
           {!hasAnyAccess && !fromOnboarding && (
             <section className="py-16 text-center">
               <div className="max-w-md mx-auto space-y-3">
