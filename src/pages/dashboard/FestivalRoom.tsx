@@ -134,7 +134,7 @@ export default function FestivalRoom() {
       title: "Program",
       description: "Rekkefølge og programoversikt",
       icon: Calendar,
-      to: `/admin/festivals/${id}/program`,
+      to: `/dashboard/festival/${id}/program`,
       hidden: !canAccessEvents,
     },
     {
@@ -148,7 +148,7 @@ export default function FestivalRoom() {
       title: "Billettoversikt",
       description: "Status og statistikk",
       icon: Ticket,
-      to: "/admin/tickets",
+      to: `/dashboard/festival/${id}/tickets`,
       hidden: !p?.can_see_ticket_stats,
     },
     {
@@ -162,7 +162,7 @@ export default function FestivalRoom() {
       title: "Filbank",
       description: "Mediefiler og bilder",
       icon: FolderOpen,
-      to: "/admin/media",
+      to: `/dashboard/festival/${id}/media`,
       hidden: !p?.can_access_media,
     },
     {
@@ -176,7 +176,7 @@ export default function FestivalRoom() {
       title: "Innstillinger",
       description: "Seksjoner, tema og detaljer",
       icon: Settings,
-      to: `/admin/festivals/${id}`,
+      to: `/dashboard/festival/${id}/settings`,
       hidden: !p?.can_edit_festival,
     },
   ];
