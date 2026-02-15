@@ -281,6 +281,23 @@ export function useRevokeInvitation() {
   });
 }
 
+export function useSetEntityTeamPersona() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ entityId, personaId }: { entityId: string; personaId: string }) => {
+      const { error } = await supabase.rpc("set_entity_team_persona", {
+        p_entity_id: entityId,
+        p_persona_id: personaId,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-entities"] });
+      queryClient.invalidateQueries({ queryKey: ["my-entities-filtered"] });
+    },
+  });
+}
+
 export function useAcceptInvitation() {
   const queryClient = useQueryClient();
   return useMutation({
