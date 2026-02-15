@@ -21,6 +21,7 @@ import {
 import { PersonaSearchList } from "@/components/persona/PersonaSearchList";
 import { toast } from "sonner";
 import { useMyPersonas } from "@/hooks/usePersona";
+import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 import {
   useEntityPersonaBindings,
   useCreatePersonaBinding,
@@ -56,12 +57,11 @@ export function EntityPersonaBindingsEditor({
     (persona) => !bindings?.some((b) => b.persona_id === persona.id)
   );
 
-  // Get role from selected persona's category_tags
+  // Get role from persona's type (primary) or category_tags (fallback)
   const getPersonaRole = (personaId: string): string | undefined => {
     const persona = myPersonas?.find((p) => p.id === personaId);
-    return persona?.category_tags && persona.category_tags.length > 0
-      ? persona.category_tags[0]
-      : undefined;
+    return getPersonaTypeLabel(persona?.type) ?? 
+      (persona?.category_tags && persona.category_tags.length > 0 ? persona.category_tags[0] : undefined);
   };
 
   const handleAdd = async () => {
@@ -296,9 +296,8 @@ export function EntityPersonaBindingsEditor({
           onClick={async () => {
             try {
               // Get role from persona's category_tags
-              const roleFromPersona = singlePersona?.category_tags && singlePersona.category_tags.length > 0
-                ? singlePersona.category_tags[0]
-                : undefined;
+              const roleFromPersona = getPersonaTypeLabel(singlePersona?.type) ?? 
+                (singlePersona?.category_tags && singlePersona.category_tags.length > 0 ? singlePersona.category_tags[0] : undefined);
               await createBinding.mutateAsync({
                 entity_id: entityId,
                 persona_id: singlePersona!.id,

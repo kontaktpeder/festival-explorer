@@ -6,6 +6,7 @@ import type { SocialLink } from "@/types/social";
 import { formatEntityLocationDisplay, type LocationType } from "@/types/location";
 
 import { useUnifiedTimelineEvents } from "@/hooks/useUnifiedTimeline";
+import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 
 type EntityType = Database["public"]["Enums"]["entity_type"];
 
@@ -136,6 +137,7 @@ export default function ProjectPage() {
               if (!persona) return null;
               const roleLabel = member.bindingRoleLabel
                 ?? (member.role_labels?.length ? member.role_labels.join(", ") : null)
+                ?? getPersonaTypeLabel(persona.type)
                 ?? (persona.category_tags?.[0] || null);
 
               return (

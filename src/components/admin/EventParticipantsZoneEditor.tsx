@@ -7,6 +7,7 @@ import { Loader2, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PersonaSearchList } from "@/components/persona/PersonaSearchList";
 import type { Persona } from "@/types/database";
+import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 
 type Zone = "on_stage" | "backstage" | "host";
 
@@ -24,6 +25,7 @@ interface ResolvedRef {
   id: string;
   name: string;
   slug?: string | null;
+  type?: string | null;
   category_tags?: string[] | null;
 }
 
@@ -120,7 +122,7 @@ export function EventParticipantsZoneEditor({
     if (personaIds.length > 0) {
       const { data: pData } = await supabase
         .from("personas")
-        .select("id,name,slug,category_tags")
+        .select("id,name,slug,type,category_tags")
         .in("id", personaIds);
       (pData || []).forEach((p: any) => (map[p.id] = p));
     }
@@ -271,11 +273,11 @@ export function EventParticipantsZoneEditor({
                   <DebouncedRoleInput
                     initialValue={row.role_label || ""}
                     placeholder={
-                      resolved[row.participant_id]?.category_tags?.[0]
-                        ? `Rolle (standard: ${resolved[row.participant_id]?.category_tags?.[0]})`
+                      (getPersonaTypeLabel(resolved[row.participant_id]?.type) ?? resolved[row.participant_id]?.category_tags?.[0])
+                        ? `Rolle (standard: ${getPersonaTypeLabel(resolved[row.participant_id]?.type) ?? resolved[row.participant_id]?.category_tags?.[0]})`
                         : "Rolle (valgfritt)"
                     }
-                    fallbackRole={resolved[row.participant_id]?.category_tags?.[0]}
+                    fallbackRole={getPersonaTypeLabel(resolved[row.participant_id]?.type) ?? resolved[row.participant_id]?.category_tags?.[0]}
                     onSave={(v) => saveRoleLabel(row.id, v)}
                   />
                 </div>

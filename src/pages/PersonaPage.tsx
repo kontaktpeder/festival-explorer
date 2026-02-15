@@ -20,6 +20,7 @@ import type { SocialLink } from "@/types/social";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getAvailableForLabel, type AvailableForKey } from "@/types/availability";
+import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 import { formatLocationDisplay, type LocationType } from "@/types/location";
 
 const TYPE_ICONS: Record<EntityType, typeof User> = {
@@ -194,7 +195,16 @@ export default function PersonaPage() {
             {persona.name}
           </h1>
           
-          {/* Tags - subtle badges */}
+          {/* Primary role type */}
+          {(persona as any).type && (
+            <div className="mb-4">
+              <span className="px-5 py-2 rounded-full border border-accent/40 text-accent text-base font-medium">
+                {getPersonaTypeLabel((persona as any).type)}
+              </span>
+            </div>
+          )}
+
+          {/* Tags - subtle badges (sub-categories) */}
           {persona.category_tags && persona.category_tags.length > 0 && (
             <div className="flex flex-wrap justify-center gap-3 mb-6">
               {persona.category_tags.map((tag) => (
