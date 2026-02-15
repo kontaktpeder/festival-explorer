@@ -77,7 +77,7 @@ export function PersonaSelector() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    window.location.href = "/";
+    window.location.href = "/admin/login";
   };
 
   const selectedPersona = personas?.find(p => p.id === selectedPersonaId);
