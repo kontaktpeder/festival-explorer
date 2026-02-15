@@ -10,7 +10,7 @@ import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import type { ImageSettings } from "@/types/database";
-import { Music, Camera, Wrench, Building2, Check } from "lucide-react";
+import { Music, Camera, Wrench, Building2, Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import welcomeBg from "@/assets/giggen-welcome-bg.png";
 
@@ -65,12 +65,9 @@ export default function CreateProfileWizard() {
         is_public: isPublic,
         type: type || undefined,
       });
-      // Auto-add to any pending festival teams from invitation
       try {
         await supabase.rpc('add_pending_festival_teams_for_persona' as any, { p_persona_id: persona.id });
-      } catch (_) {
-        // Ignore – no pending invites is fine
-      }
+      } catch (_) {}
       localStorage.setItem("selectedPersonaId", persona.id);
       window.dispatchEvent(new Event(PERSONA_CHANGE_EVENT));
       navigate("/dashboard?from=onboarding");
@@ -83,15 +80,25 @@ export default function CreateProfileWizard() {
 
   return (
     <div className="min-h-[100svh] bg-background flex flex-col relative overflow-hidden">
-      {/* Background welcome image – only visible on intro step */}
+      {/* Ambient gradient glows */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-accent-warm/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+
+      {/* Background image – only on intro, positioned behind text area */}
       {step === 0 && <WelcomeBackground />}
-      {/* Top bar */}
-      <div className="relative z-10 w-full max-w-2xl mx-auto px-6 sm:px-10 pt-6 sm:pt-10 flex items-center justify-between">
-        <Link to="/" className="text-sm font-bold text-foreground tracking-tight">
-          GIGGEN <span className="text-muted-foreground/60 font-normal text-[10px]">BACKSTAGE</span>
-        </Link>
-        <ProgressDots current={step} total={stepCount} />
-      </div>
+
+      {/* Top bar – glassmorphism */}
+      <header
+        className="relative z-20 w-full bg-background/60 backdrop-blur-xl border-b border-border/20"
+        style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
+      >
+        <div className="w-full max-w-2xl mx-auto px-6 sm:px-10 py-3 flex items-center justify-between">
+          <Link to="/" className="text-sm font-semibold text-foreground tracking-tight">
+            GIGGEN <span className="text-muted-foreground/50 font-normal text-[10px] tracking-[0.15em]">BACKSTAGE</span>
+          </Link>
+          <ProgressDots current={step} total={stepCount} />
+        </div>
+      </header>
 
       {/* Content area */}
       <div className="relative z-10 flex-1 flex flex-col justify-center w-full max-w-2xl mx-auto px-6 sm:px-10">
@@ -139,13 +146,13 @@ function WelcomeBackground() {
 
   return (
     <div
-      className="absolute inset-0 z-0 transition-opacity duration-1000 ease-out"
-      style={{ opacity: loaded ? 0.12 : 0 }}
+      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-0 w-[280px] h-[280px] sm:w-[360px] sm:h-[360px] transition-opacity duration-[1200ms] ease-out pointer-events-none"
+      style={{ opacity: loaded ? 0.08 : 0 }}
     >
       <img
         src={welcomeBg}
         alt=""
-        className="w-full h-full object-cover scale-110 animate-[scale-in_1.5s_ease-out_forwards]"
+        className="w-full h-full object-contain animate-[scale-in_2s_ease-out_forwards]"
       />
     </div>
   );
@@ -196,13 +203,19 @@ function StepRole({
           <button
             key={t}
             onClick={() => setType(t)}
-            className={`w-full flex items-center gap-4 p-4 rounded-lg border text-left transition-all ${
+            className={`group w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-all duration-300 ${
               type === t
-                ? "border-accent bg-accent/10"
-                : "border-border/20 hover:border-border/40"
+                ? "border-accent/50 bg-accent/10 shadow-lg shadow-accent/5"
+                : "border-border/20 bg-card/40 backdrop-blur-sm hover:border-border/40 hover:bg-card/60"
             }`}
           >
-            <Icon className="h-5 w-5 text-muted-foreground shrink-0" />
+            <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-300 ${
+              type === t ? "bg-accent/20" : "bg-muted/50 group-hover:bg-accent/10"
+            }`}>
+              <Icon className={`h-5 w-5 transition-colors duration-300 ${
+                type === t ? "text-accent" : "text-muted-foreground group-hover:text-accent/70"
+              }`} />
+            </div>
             <div className="flex-1 min-w-0">
               <span className="text-sm font-medium text-foreground">{label}</span>
               <p className="text-xs text-muted-foreground/70">{desc}</p>
@@ -243,21 +256,21 @@ function StepName({
       secondary={{ label: "Tilbake", onClick: onBack }}
     >
       <div className="space-y-6">
-        <div>
+        <div className="rounded-xl border border-border/20 bg-card/40 backdrop-blur-sm p-5">
           <Label htmlFor="name" className="text-xs text-muted-foreground">Navn</Label>
           <Input
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Fullt navn"
-            className="mt-1.5 text-base"
+            className="mt-1.5 text-base bg-background/50 border-border/30"
           />
           <p className="text-[10px] text-muted-foreground/50 mt-1.5">
             Band og prosjekter legger du til senere.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 rounded-xl border border-border/20 bg-card/40 backdrop-blur-sm p-4">
           <Avatar className="h-12 w-12 ring-2 ring-border/30 shrink-0">
             {avatarUrl ? (
               <AvatarImage src={avatarUrl} style={getCroppedImageStyles(avatarImageSettings)} className="object-cover" />
@@ -314,7 +327,7 @@ function StepVisibility({
     >
       <div className="space-y-4">
         {/* Preview */}
-        <div className="flex items-center gap-3 p-3 rounded-lg bg-card/60 border border-border/20">
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-card/60 backdrop-blur-sm border border-border/20">
           <Avatar className="h-10 w-10 ring-2 ring-border/30 shrink-0">
             {avatarUrl ? <AvatarImage src={avatarUrl} style={getCroppedImageStyles(avatarImageSettings)} className="object-cover" /> : null}
             <AvatarFallback className="text-xs bg-muted text-muted-foreground">
@@ -330,8 +343,10 @@ function StepVisibility({
         {/* Visibility options */}
         <button
           onClick={() => setIsPublic(true)}
-          className={`w-full text-left p-3.5 rounded-lg border transition-all ${
-            isPublic ? "border-accent bg-accent/10" : "border-border/20 hover:border-border/40"
+          className={`group w-full text-left p-4 rounded-xl border transition-all duration-300 ${
+            isPublic
+              ? "border-accent/50 bg-accent/10 shadow-lg shadow-accent/5"
+              : "border-border/20 bg-card/40 backdrop-blur-sm hover:border-border/40 hover:bg-card/60"
           }`}
         >
           <div className="flex items-center justify-between">
@@ -345,8 +360,10 @@ function StepVisibility({
 
         <button
           onClick={() => setIsPublic(false)}
-          className={`w-full text-left p-3.5 rounded-lg border transition-all ${
-            !isPublic ? "border-accent bg-accent/10" : "border-border/20 hover:border-border/40"
+          className={`group w-full text-left p-4 rounded-xl border transition-all duration-300 ${
+            !isPublic
+              ? "border-accent/50 bg-accent/10 shadow-lg shadow-accent/5"
+              : "border-border/20 bg-card/40 backdrop-blur-sm hover:border-border/40 hover:bg-card/60"
           }`}
         >
           <div className="flex items-center justify-between">
@@ -379,12 +396,12 @@ function StepLayout({
   showLegal?: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-8 py-8 sm:py-12">
+    <div className="flex flex-col gap-8 py-8 sm:py-12 animate-fade-in">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">{title}</h1>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight leading-[1.1]">{title}</h1>
         {subtitle && (
-          <p className="text-sm text-muted-foreground/70 mt-1.5 leading-relaxed">{subtitle}</p>
+          <p className="text-sm text-muted-foreground/70 mt-2 leading-relaxed">{subtitle}</p>
         )}
       </div>
 
@@ -404,9 +421,10 @@ function StepLayout({
           size="sm"
           onClick={primary.onClick}
           disabled={primary.disabled}
-          className="sm:h-10 sm:px-6 font-semibold"
+          className="sm:h-10 sm:px-6 font-semibold group"
         >
           {primary.label}
+          <ChevronRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform duration-300" />
         </Button>
       </div>
 
