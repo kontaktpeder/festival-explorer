@@ -195,8 +195,10 @@ export default function Dashboard() {
     );
   }
 
-  // Simple onboarding: redirect new users (0 personas) to wizard
-  if (USE_SIMPLE_ONBOARDING && !isLoadingPersonas && personas && personas.length === 0) {
+  // Simple onboarding: redirect new users (0 personas AND no display name) to wizard
+  // Existing users who already completed onboarding should never be redirected here
+  const isNewUser = !currentUser.displayName && personas?.length === 0;
+  if (USE_SIMPLE_ONBOARDING && !isLoadingPersonas && personas && isNewUser) {
     return <Navigate to="/onboarding/create-profile" replace />;
   }
 
