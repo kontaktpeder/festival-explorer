@@ -16,6 +16,7 @@ type FestivalZone = "backstage" | "host" | "crew" | "other";
 
 interface FestivalParticipantPermissions {
   can_edit_festival: boolean;
+  can_edit_events: boolean;
   can_access_media: boolean;
   can_scan_tickets: boolean;
   can_see_ticket_stats: boolean;
@@ -33,6 +34,7 @@ interface FestivalParticipantRow {
   role_label: string | null;
   sort_order: number;
   can_edit_festival?: boolean;
+  can_edit_events?: boolean;
   can_access_media?: boolean;
   can_scan_tickets?: boolean;
   can_see_ticket_stats?: boolean;
@@ -130,7 +132,7 @@ export function FestivalParticipantsZoneEditor({
     setLoading(true);
     const { data, error } = await supabase
       .from("festival_participants")
-      .select("id, festival_id, zone, participant_kind, participant_id, role_label, sort_order, can_edit_festival, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue")
+      .select("id, festival_id, zone, participant_kind, participant_id, role_label, sort_order, can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue")
       .eq("festival_id", festivalId)
       .eq("zone", zone)
       .order("sort_order", { ascending: true });
@@ -196,6 +198,7 @@ export function FestivalParticipantsZoneEditor({
       role_label: null,
       sort_order: nextSort,
       can_edit_festival: false,
+      can_edit_events: false,
       can_access_media: false,
       can_scan_tickets: false,
       can_see_ticket_stats: false,
@@ -366,6 +369,7 @@ export function FestivalParticipantsZoneEditor({
                     <div className="grid grid-cols-2 gap-2">
                        {([
                         { key: "can_edit_festival", label: "Redigere festival" },
+                        { key: "can_edit_events", label: "Redigere events" },
                         { key: "can_access_media", label: "Filbank" },
                         { key: "can_scan_tickets", label: "Skanne billetter" },
                         { key: "can_see_ticket_stats", label: "Se billettstatistikk" },
@@ -379,6 +383,7 @@ export function FestivalParticipantsZoneEditor({
                             onCheckedChange={(v) =>
                               savePermissions(row.id, {
                                 can_edit_festival: !!row.can_edit_festival,
+                                can_edit_events: !!row.can_edit_events,
                                 can_access_media: !!row.can_access_media,
                                 can_scan_tickets: !!row.can_scan_tickets,
                                 can_see_ticket_stats: !!row.can_see_ticket_stats,

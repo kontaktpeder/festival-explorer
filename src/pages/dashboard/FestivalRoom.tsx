@@ -58,6 +58,7 @@ export default function FestivalRoom() {
       if (isAdmin) {
         return {
           can_edit_festival: true,
+          can_edit_events: true,
           can_access_media: true,
           can_scan_tickets: true,
           can_see_ticket_stats: true,
@@ -81,7 +82,7 @@ export default function FestivalRoom() {
       const { data: fp } = await supabase
         .from("festival_participants")
         .select(
-          "can_edit_festival, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue"
+          "can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue"
         )
         .eq("festival_id", id!)
         .eq("participant_kind", "persona")
@@ -92,6 +93,7 @@ export default function FestivalRoom() {
       // Merge permissions from all matching entries (OR logic)
       return {
         can_edit_festival: fp.some((f) => f.can_edit_festival),
+        can_edit_events: fp.some((f) => f.can_edit_events),
         can_access_media: fp.some((f) => f.can_access_media),
         can_scan_tickets: fp.some((f) => f.can_scan_tickets),
         can_see_ticket_stats: fp.some((f) => f.can_see_ticket_stats),
@@ -135,20 +137,22 @@ export default function FestivalRoom() {
 
   const p = permissions;
 
+  const canAccessEvents = p?.can_edit_festival || p?.can_edit_events;
+
   const modules: ModuleCard[] = [
     {
       title: "Program",
       description: "Se festivalens program og rekkefølge",
       icon: Calendar,
       to: `/admin/festivals/${id}/program`,
-      hidden: !p?.can_edit_festival,
+      hidden: !canAccessEvents,
     },
     {
       title: "Events",
       description: `${festivalEvents?.length || 0} events i festivalen`,
       icon: Music,
       to: `/admin/festivals/${id}/program`,
-      hidden: !p?.can_edit_festival,
+      hidden: !canAccessEvents,
     },
     {
       title: "Scan billetter",
@@ -307,7 +311,7 @@ export default function FestivalRoom() {
         )}
 
         {/* Events list (only if can edit) */}
-        {p?.can_edit_festival && festivalEvents && festivalEvents.length > 0 && (
+        {canAccessEvents && festivalEvents && festivalEvents.length > 0 && (
           <div className="space-y-2">
             <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
               Events i festivalen

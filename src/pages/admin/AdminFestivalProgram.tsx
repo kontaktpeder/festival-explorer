@@ -21,10 +21,13 @@ export default function AdminFestivalProgram() {
 
   // Check edit permission
   const { data: canEditProgram } = useQuery({
-    queryKey: ["can-edit-festival", id],
+    queryKey: ["can-edit-festival-program-or-events", id],
     queryFn: async () => {
-      const { data } = await supabase.rpc("can_edit_festival", { p_festival_id: id });
-      return data ?? false;
+      const [festival, events] = await Promise.all([
+        supabase.rpc("can_edit_festival", { p_festival_id: id }),
+        supabase.rpc("can_edit_events", { p_festival_id: id }),
+      ]);
+      return (festival.data ?? false) || (events.data ?? false);
     },
     enabled: !!id,
   });
