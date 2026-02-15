@@ -424,17 +424,27 @@ export default function EventRoomPage() {
         </div>
 
         {/* Hero image */}
-        <div className="space-y-1.5">
-          <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Hero-bilde</Label>
+        <div className="flex items-center gap-3">
+          {formData.hero_image_url && (
+            <img
+              src={formData.hero_image_url}
+              alt="Hero"
+              className="h-10 w-14 rounded object-cover border border-border/30"
+            />
+          )}
+          <div className="flex-1 min-w-0">
+            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Hero-bilde</Label>
+          </div>
           <InlineMediaPickerWithCrop
             value={formData.hero_image_url}
             imageSettings={heroImageSettings}
             onChange={(url) => setFormData((prev) => ({ ...prev, hero_image_url: url }))}
             onSettingsChange={setHeroImageSettings}
             cropMode="hero"
-            placeholder="Velg hero-bilde"
+            placeholder="Bytt"
             showAllForAdmin
             useNaturalAspect
+            hidePreview
           />
         </div>
 
