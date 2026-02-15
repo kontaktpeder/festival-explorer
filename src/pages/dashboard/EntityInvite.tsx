@@ -1,6 +1,7 @@
 import { useParams, Link, Navigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
+import { ContextualInviteModal } from "@/components/invite/ContextualInviteModal";
 import { supabase } from "@/integrations/supabase/client";
 import { getPublicUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -87,6 +88,7 @@ export default function EntityInvite() {
   const [personaSearching, setPersonaSearching] = useState(false);
   const [selectedPersona, setSelectedPersona] = useState<PersonaSearchResult | null>(null);
   const [personaAccessLevel, setPersonaAccessLevel] = useState<Exclude<AccessLevel, "owner">>("editor");
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
   const createInvitation = useCreateInvitation();
   const revokeInvitation = useRevokeInvitation();
@@ -329,14 +331,29 @@ export default function EntityInvite() {
 
         {/* Title */}
         <div className="space-y-2">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
-            <UserPlus className="h-7 w-7" />
-            Inviter til {entity.name}
-          </h1>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
+              <UserPlus className="h-7 w-7" />
+              Inviter til {entity.name}
+            </h1>
+            <Button onClick={() => setInviteModalOpen(true)} className="gap-2">
+              <UserPlus className="h-4 w-4" />
+              Hurtiginvitasjon
+            </Button>
+          </div>
           <p className="text-muted-foreground">
             Inviter noen som allerede er på GIGGEN, eller send en tilgangslenke på e-post.
           </p>
         </div>
+
+        {entity && (
+          <ContextualInviteModal
+            open={inviteModalOpen}
+            onOpenChange={setInviteModalOpen}
+            target={{ entityId: entity.id, label: entity.name }}
+            onSuccess={() => refetchInvitations()}
+          />
+        )}
 
         {/* Invite from platform (persona search) */}
         <Card>
