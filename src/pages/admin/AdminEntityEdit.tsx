@@ -95,14 +95,20 @@ export default function AdminEntityEdit() {
         .select("persona_id, role_label")
         .eq("entity_id", id!);
 
-      // Fetch personas for all team members (and any bound personas)
+      // Fetch personas for all team members (and any bound personas + team persona_ids)
       const bindingPersonaIds = (bindings || []).map(b => b.persona_id);
-      const allPersonaFilter = [...new Set([...userIds, ...bindingPersonaIds])];
+      const teamPersonaIds = (teamData || []).map(m => m.persona_id).filter(Boolean) as string[];
+      const allPersonaIds = [...new Set([...bindingPersonaIds, ...teamPersonaIds])];
       
+      const orClauses = [`user_id.in.(${userIds.join(",")})`];
+      if (allPersonaIds.length > 0) {
+        orClauses.push(`id.in.(${allPersonaIds.join(",")})`);
+      }
+
       const { data: personas } = await supabase
         .from("personas")
         .select("id, user_id, name, avatar_url, slug")
-        .or(`user_id.in.(${userIds.join(",")}),id.in.(${bindingPersonaIds.join(",")})`);
+        .or(orClauses.join(","));
 
       return (teamData || []).map(member => {
         // Prefer persona bound to this entity
@@ -116,8 +122,12 @@ export default function AdminEntityEdit() {
         const fallbackPersona = (personas || []).find(p => p.user_id === member.user_id);
         const persona = boundPersona || fallbackPersona || null;
         const bindingRoleLabel = boundBinding?.role_label || null;
+        // Persona linked via entity_team.persona_id
+        const representationPersona = member.persona_id
+          ? (personas || []).find(p => p.id === member.persona_id)
+          : null;
         
-        return { ...member, persona, bindingRoleLabel };
+        return { ...member, persona, bindingRoleLabel, representationPersona };
       });
     },
     enabled: !isNew,
@@ -416,6 +426,7 @@ export default function AdminEntityEdit() {
                 const displayName = persona?.name || "Persona ikke satt";
                 const avatarUrl = persona?.avatar_url;
                 const roleLabel = member.bindingRoleLabel || (member.role_labels?.length > 0 ? member.role_labels.join(", ") : null);
+                const repPersona = member.representationPersona as { id: string; name: string } | null;
 
                 return (
                   <div
@@ -443,6 +454,9 @@ export default function AdminEntityEdit() {
                         ) : (
                           <p className="text-xs text-muted-foreground italic">Ingen rolle satt</p>
                         )}
+                        <p className="text-[10px] text-muted-foreground/60">
+                          Representert som: {repPersona?.name ?? "—"}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">

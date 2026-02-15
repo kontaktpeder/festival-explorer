@@ -3,6 +3,8 @@ import { Link, useNavigate, Navigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMyEntities, useMyEntitiesFilteredByPersona } from "@/hooks/useEntity";
+import { useSetEntityTeamPersona } from "@/hooks/useEntityMutations";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -58,6 +60,7 @@ const ACCESS_DESCRIPTIONS: Record<AccessLevel, string> = {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const setEntityTeamPersona = useSetEntityTeamPersona();
   const [searchParams] = useSearchParams();
   const fromOnboarding = searchParams.get("from") === "onboarding";
   const selectedPersonaId = useSelectedPersonaId();
@@ -280,37 +283,75 @@ export default function Dashboard() {
                 {hostEntities.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-[11px] sm:text-sm text-muted-foreground font-medium">Dine scener</p>
-                    {hostEntities.map((entity) => (
-                      <Link
-                        key={entity.id}
-                        to={`/dashboard/entities/${entity.id}/edit`}
-                        className="group flex items-center justify-between p-3 sm:p-4 rounded-lg bg-card/60 hover:bg-card/80 border border-border/30 hover:border-border/50 transition-all"
-                      >
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors truncate">{entity.name}</p>
-                          <p className="text-[10px] sm:text-xs text-muted-foreground/70">{ACCESS_DESCRIPTIONS[entity.access]}</p>
+                    {hostEntities.map((entity) => {
+                      const needsPersonaLink = !selectedPersonaId && !entity.persona_id;
+                      return (
+                        <div key={entity.id} className="rounded-lg bg-card/60 border border-border/30 hover:border-border/50 transition-all">
+                          <Link
+                            to={`/dashboard/entities/${entity.id}/edit`}
+                            className="group flex items-center justify-between p-3 sm:p-4"
+                          >
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors truncate">{entity.name}</p>
+                              <p className="text-[10px] sm:text-xs text-muted-foreground/70">{ACCESS_DESCRIPTIONS[entity.access]}</p>
+                            </div>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors shrink-0" />
+                          </Link>
+                          {needsPersonaLink && personas && personas.length > 0 && (
+                            <div className="px-3 sm:px-4 pb-3 pt-0" onClick={(e) => e.stopPropagation()}>
+                              <p className="text-[10px] text-muted-foreground mb-1">Representert som</p>
+                              <Select onValueChange={(value) => setEntityTeamPersona.mutate({ entityId: entity.id, personaId: value })}>
+                                <SelectTrigger className="h-8 text-xs">
+                                  <SelectValue placeholder="Velg persona..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {personas.map((p) => (
+                                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
                         </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors shrink-0" />
-                      </Link>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
                 {projectEntities.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-[11px] sm:text-sm text-muted-foreground font-medium">Dine prosjekter</p>
-                    {projectEntities.map((entity) => (
-                      <Link
-                        key={entity.id}
-                        to={`/dashboard/entities/${entity.id}/edit`}
-                        className="group flex items-center justify-between p-3 sm:p-4 rounded-lg bg-card/60 hover:bg-card/80 border border-border/30 hover:border-border/50 transition-all"
-                      >
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors truncate">{entity.name}</p>
-                          <p className="text-[10px] sm:text-xs text-muted-foreground/70">{ACCESS_DESCRIPTIONS[entity.access]}</p>
+                    {projectEntities.map((entity) => {
+                      const needsPersonaLink = !selectedPersonaId && !entity.persona_id;
+                      return (
+                        <div key={entity.id} className="rounded-lg bg-card/60 border border-border/30 hover:border-border/50 transition-all">
+                          <Link
+                            to={`/dashboard/entities/${entity.id}/edit`}
+                            className="group flex items-center justify-between p-3 sm:p-4"
+                          >
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors truncate">{entity.name}</p>
+                              <p className="text-[10px] sm:text-xs text-muted-foreground/70">{ACCESS_DESCRIPTIONS[entity.access]}</p>
+                            </div>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors shrink-0" />
+                          </Link>
+                          {needsPersonaLink && personas && personas.length > 0 && (
+                            <div className="px-3 sm:px-4 pb-3 pt-0" onClick={(e) => e.stopPropagation()}>
+                              <p className="text-[10px] text-muted-foreground mb-1">Representert som</p>
+                              <Select onValueChange={(value) => setEntityTeamPersona.mutate({ entityId: entity.id, personaId: value })}>
+                                <SelectTrigger className="h-8 text-xs">
+                                  <SelectValue placeholder="Velg persona..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {personas.map((p) => (
+                                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
                         </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors shrink-0" />
-                      </Link>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
