@@ -108,57 +108,15 @@ export function PersonaSelector() {
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64 bg-popover">
-        <DropdownMenuLabel className="text-xs text-muted-foreground">
-          Bytt profil
-        </DropdownMenuLabel>
-
-        {!isLoading && hasPersonas && (
-          <>
-            {personas.map((persona) => (
-              <DropdownMenuItem 
-                key={persona.id}
-                onClick={() => handleSelect(persona.id)}
-              >
-                <Avatar className="h-4 w-4 mr-2">
-                  <AvatarImage src={persona.avatar_url || undefined} />
-                  <AvatarFallback className="text-[8px]">
-                    {persona.name.substring(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="truncate flex-1">{persona.name}</span>
-                {selectedPersonaId === persona.id && (
-                  <Badge variant="secondary" className="ml-auto text-xs">Aktiv</Badge>
-                )}
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link to="/dashboard/personas/new">
-                <Plus className="h-4 w-4 mr-2" />
-                Opprett ny profil
-              </Link>
-            </DropdownMenuItem>
-          </>
-        )}
-
-        {!hasPersonas && !isLoading && (
-          <DropdownMenuItem asChild className="bg-accent/10 hover:bg-accent/20">
-            <Link to="/dashboard/personas/new" className="flex items-center">
-              <Sparkles className="h-4 w-4 mr-2 text-accent" />
-              <span className="font-medium">Opprett din første profil</span>
-            </Link>
-          </DropdownMenuItem>
-        )}
-        
-        <DropdownMenuSeparator />
-        
+      <DropdownMenuContent align="end" className="w-56 bg-popover">
         <DropdownMenuItem asChild>
           <Link to="/dashboard/settings">
             <Settings className="h-4 w-4 mr-2" />
             Innstillinger
           </Link>
         </DropdownMenuItem>
+        
+        <DropdownMenuSeparator />
         
         <DropdownMenuItem onClick={handleLogout} className="text-destructive">
           <LogOut className="h-4 w-4 mr-2" />
