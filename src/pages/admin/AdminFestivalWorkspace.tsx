@@ -45,15 +45,7 @@ export default function AdminFestivalWorkspace() {
     enabled: !!id,
   });
 
-  if (isLoading) {
-    return <LoadingState message="Laster festivalrom..." />;
-  }
-
-  if (!festival) {
-    return <div className="text-muted-foreground">Festival ikke funnet.</div>;
-  }
-
-  // Check permissions
+  // Check permissions - must be before any early returns to respect React hook rules
   const { data: canEditEvents } = useQuery({
     queryKey: ["can-edit-events", id],
     queryFn: async () => {
@@ -71,6 +63,14 @@ export default function AdminFestivalWorkspace() {
     },
     enabled: !!id,
   });
+
+  if (isLoading) {
+    return <LoadingState message="Laster festivalrom..." />;
+  }
+
+  if (!festival) {
+    return <div className="text-muted-foreground">Festival ikke funnet.</div>;
+  }
 
   const canAccessEvents = canEditFestival || canEditEvents;
 
