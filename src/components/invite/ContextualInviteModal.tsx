@@ -40,6 +40,8 @@ export interface ContextualInviteTarget {
   label: string;
   eventId?: string | null;
   festivalId?: string | null;
+  /** For festival: entityId to use for email invitations (e.g. platform entity) */
+  newUserInviteEntityId?: string | null;
 }
 
 interface ContextualInviteModalProps {
@@ -210,9 +212,12 @@ export function ContextualInviteModal({
     const links: { email: string; link: string }[] = [];
     const publishedUrl = getPublicUrl();
     try {
+      const entityIdForInvite = isFestival && target.newUserInviteEntityId
+        ? target.newUserInviteEntityId
+        : target.entityId;
       for (const emailAddr of validEmails) {
         const created = await createInvitation.mutateAsync({
-          entityId: target.entityId,
+          entityId: entityIdForInvite,
           email: emailAddr,
           access: accessLevel,
           roleLabels: [],
@@ -221,7 +226,7 @@ export function ContextualInviteModal({
         const token = (created as { token?: string | null })?.token;
         const link = token
           ? `${publishedUrl}/i?t=${encodeURIComponent(token)}`
-          : `${publishedUrl}/accept-invitation?email=${encodeURIComponent(emailAddr)}&entity_id=${target.entityId}`;
+          : `${publishedUrl}/accept-invitation?email=${encodeURIComponent(emailAddr)}&entity_id=${entityIdForInvite}`;
         links.push({ email: emailAddr, link });
       }
       setGeneratedLinks(links);
@@ -304,26 +309,27 @@ export function ContextualInviteModal({
             <UserPlus className="h-5 w-5" />
             Inviter til {target.label}
           </DialogTitle>
-          <DialogDescription>
+        <DialogDescription>
             {isFestival
-              ? "Legg til en eksisterende bruker i festival-teamet."
+              ? "Inviter ny bruker via e-post (plattformlenke), eller legg til en eksisterende bruker i festival-teamet."
               : "Inviter ny bruker via e-post eller en som allerede er på GIGGEN."}
           </DialogDescription>
         </DialogHeader>
 
         {step === "choose" && (
-          <div className={`grid ${isFestival ? "grid-cols-1" : "grid-cols-2"} gap-3 pt-2`}>
-            {!isFestival && (
-              <Button
-                variant="outline"
-                className="flex flex-col items-center gap-2 h-auto py-6"
-                onClick={() => setStep("new")}
-              >
-                <Mail className="h-6 w-6" />
-                <span className="font-medium">Ny bruker</span>
-                <span className="text-xs text-muted-foreground">Send lenke på e-post</span>
-              </Button>
-            )}
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <Button
+              variant="outline"
+              className="flex flex-col items-center gap-2 h-auto py-6"
+              onClick={() => setStep("new")}
+              disabled={isFestival && !target.newUserInviteEntityId}
+            >
+              <Mail className="h-6 w-6" />
+              <span className="font-medium">Ny bruker</span>
+              <span className="text-xs text-muted-foreground">
+                {isFestival ? "Send plattformlenke på e-post" : "Send lenke på e-post"}
+              </span>
+            </Button>
             <Button
               variant="outline"
               className="flex flex-col items-center gap-2 h-auto py-6"
@@ -331,7 +337,9 @@ export function ContextualInviteModal({
             >
               <Users className="h-6 w-6" />
               <span className="font-medium">Eksisterende bruker</span>
-              <span className="text-xs text-muted-foreground">Får melding i dashboard</span>
+              <span className="text-xs text-muted-foreground">
+                {isFestival ? "Legg til i festival-teamet" : "Får melding i dashboard"}
+              </span>
             </Button>
           </div>
         )}
@@ -342,6 +350,12 @@ export function ContextualInviteModal({
               <ArrowLeft className="h-4 w-4" />
               Tilbake
             </Button>
+
+            {isFestival && (
+              <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded-md">
+                Du genererer en plattformlenke. Når personen har registrert seg og opprettet profil, kan du legge dem til i festival-teamet under «Eksisterende bruker».
+              </p>
+            )}
 
             <div className="space-y-2">
               <Label>Tilgangsnivå</Label>
