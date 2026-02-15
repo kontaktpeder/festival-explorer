@@ -12,7 +12,7 @@ import SearchPage from "./pages/SearchPage";
 import OmGiggenPage from "./pages/OmGiggenPage";
 import AcceptInvitation from "./pages/AcceptInvitation";
 import Dashboard from "./pages/dashboard/Dashboard";
-import MyPersonas from "./pages/dashboard/MyPersonas";
+// MyPersonas page removed - profile management moved to dashboard cards
 import PersonaEdit from "./pages/dashboard/PersonaEdit";
 import EntityEdit from "./pages/dashboard/EntityEdit";
 import EntityInvite from "./pages/dashboard/EntityInvite";
@@ -113,7 +113,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/entities/:id/edit" element={<EntityEdit />} />
           <Route path="/dashboard/entities/:id/invite" element={<EntityInvite />} />
-          <Route path="/dashboard/personas" element={<MyPersonas />} />
+          <Route path="/dashboard/personas" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard/personas/new" element={<PersonaEdit />} />
           <Route path="/dashboard/personas/:id" element={<PersonaEdit />} />
           <Route path="/dashboard/settings" element={<Settings />} />

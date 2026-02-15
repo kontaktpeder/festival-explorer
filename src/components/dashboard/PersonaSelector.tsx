@@ -108,25 +108,13 @@ export function PersonaSelector() {
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64">
+      <DropdownMenuContent align="end" className="w-64 bg-popover">
         <DropdownMenuLabel className="text-xs text-muted-foreground">
-          Du handler som
+          Bytt profil
         </DropdownMenuLabel>
-        
-        <DropdownMenuItem onClick={() => handleSelect(null)}>
-          <User className="h-4 w-4 mr-2" />
-          Min profil (privat)
-          {!selectedPersonaId && (
-            <Badge variant="secondary" className="ml-auto text-xs">Aktiv</Badge>
-          )}
-        </DropdownMenuItem>
 
         {!isLoading && hasPersonas && (
           <>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Offentlige profiler
-            </DropdownMenuLabel>
             {personas.map((persona) => (
               <DropdownMenuItem 
                 key={persona.id}
@@ -139,20 +127,21 @@ export function PersonaSelector() {
                   </AvatarFallback>
                 </Avatar>
                 <span className="truncate flex-1">{persona.name}</span>
-                {!persona.is_public && (
-                  <Badge variant="outline" className="ml-1 text-[10px]">Privat</Badge>
-                )}
                 {selectedPersonaId === persona.id && (
                   <Badge variant="secondary" className="ml-auto text-xs">Aktiv</Badge>
                 )}
               </DropdownMenuItem>
             ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to="/dashboard/personas/new">
+                <Plus className="h-4 w-4 mr-2" />
+                Opprett ny profil
+              </Link>
+            </DropdownMenuItem>
           </>
         )}
 
-        <DropdownMenuSeparator />
-        
-        {/* CTA for personas - enten opprett første eller administrer */}
         {!hasPersonas && !isLoading && (
           <DropdownMenuItem asChild className="bg-accent/10 hover:bg-accent/20">
             <Link to="/dashboard/personas/new" className="flex items-center">
@@ -162,22 +151,7 @@ export function PersonaSelector() {
           </DropdownMenuItem>
         )}
         
-        {hasPersonas && (
-          <>
-            <DropdownMenuItem asChild>
-              <Link to="/dashboard/personas">
-                <User className="h-4 w-4 mr-2" />
-                Mine profiler
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/dashboard/personas/new">
-                <Plus className="h-4 w-4 mr-2" />
-                Opprett ny profil
-              </Link>
-            </DropdownMenuItem>
-          </>
-        )}
+        <DropdownMenuSeparator />
         
         <DropdownMenuItem asChild>
           <Link to="/dashboard/settings">

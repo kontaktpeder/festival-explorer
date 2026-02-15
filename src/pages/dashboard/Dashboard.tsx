@@ -25,7 +25,7 @@ import type { EntityType, AccessLevel } from "@/types/database";
 import { inferEntityKind } from "@/lib/role-model-helpers";
 import type { Json } from "@/integrations/supabase/types";
 import { ActivePersonaCard } from "@/components/dashboard/ActivePersonaCard";
-import { LockedModules } from "@/components/dashboard/LockedModules";
+// LockedModules removed
 import { PendingInvitations } from "@/components/dashboard/PendingInvitations";
 // Helper component for entity hero image with signed URL
 function EntityHeroImage({
@@ -212,8 +212,10 @@ export default function Dashboard() {
     return (
       <div className="min-h-[100svh] pb-[env(safe-area-inset-bottom)]">
         {/* Header */}
-        <header className="border-b border-border/30 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-          <div className="max-w-3xl mx-auto px-3 sm:px-6 py-2.5 sm:py-4 flex items-center justify-between">
+        <header className="border-b border-border/20 bg-background/60 backdrop-blur-xl sticky top-0 z-50"
+          style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
+        >
+          <div className="w-full px-4 sm:px-8 lg:px-12 py-2.5 sm:py-4 flex items-center justify-between">
             <Link to="/" className="text-sm sm:text-lg font-bold text-foreground tracking-tight">
               GIGGEN <span className="text-muted-foreground/70 font-normal text-[10px] sm:text-base">BACKSTAGE</span>
             </Link>
@@ -223,7 +225,7 @@ export default function Dashboard() {
 
         {USE_PERSONA_MODUS_BAR && <PersonaModusBar />}
 
-        <main className="max-w-3xl mx-auto px-3 sm:px-6 py-4 sm:py-10 space-y-5 sm:space-y-8">
+        <main className="w-full px-4 sm:px-8 lg:px-12 py-4 sm:py-10 space-y-5 sm:space-y-8 max-w-5xl mx-auto">
           <ActivePersonaCard persona={activePersona} />
 
           {/* Pending invitations */}
@@ -424,11 +426,7 @@ export default function Dashboard() {
             </section>
           )}
 
-          <LockedModules
-            projectEntities={projectEntities}
-            hostEntities={hostEntities}
-            selectedPersona={activePersona}
-          />
+          {/* LockedModules removed */}
 
           {/* Preview as team toggle (admin only) */}
           {isAdmin && (
@@ -494,8 +492,10 @@ export default function Dashboard() {
   return (
     <div className="min-h-[100svh] pb-[env(safe-area-inset-bottom)]">
       {/* Header */}
-      <header className="border-b border-border/30 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-3xl mx-auto px-3 sm:px-6 py-2.5 sm:py-4 flex items-center justify-between">
+      <header className="border-b border-border/20 bg-background/60 backdrop-blur-xl sticky top-0 z-50"
+        style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
+      >
+        <div className="w-full px-4 sm:px-8 lg:px-12 py-2.5 sm:py-4 flex items-center justify-between">
           <Link to="/" className="text-sm sm:text-lg font-bold text-foreground tracking-tight">
             GIGGEN <span className="text-muted-foreground/70 font-normal text-[10px] sm:text-base">BACKSTAGE</span>
           </Link>
@@ -506,7 +506,7 @@ export default function Dashboard() {
       {/* Persona modus bar (below header) */}
       {USE_PERSONA_MODUS_BAR && <PersonaModusBar />}
 
-      <main className="max-w-3xl mx-auto px-3 sm:px-6 py-4 sm:py-10 space-y-5 sm:space-y-12">
+      <main className="w-full px-4 sm:px-8 lg:px-12 py-4 sm:py-10 space-y-5 sm:space-y-12 max-w-5xl mx-auto">
         {/* Welcome */}
         <div className="flex items-center gap-3 sm:gap-5">
           <Avatar className="h-11 w-11 sm:h-16 sm:w-16 md:h-20 md:w-20 border-2 border-border/50 shrink-0">
@@ -562,11 +562,6 @@ export default function Dashboard() {
                 Hvem du er som musiker, fotograf eller arrangør
               </p>
             </div>
-            {personas && personas.length > 0 && (
-              <Link to="/dashboard/personas" className="text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0">
-                Se alle →
-              </Link>
-            )}
           </div>
 
           {!isLoadingPersonas && personas && personas.length > 0 ? (
