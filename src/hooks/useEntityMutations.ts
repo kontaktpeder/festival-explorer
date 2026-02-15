@@ -292,7 +292,55 @@ export function useSetEntityTeamPersona() {
       });
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["my-entities"] });
+      queryClient.invalidateQueries({ queryKey: ["my-entities-filtered"] });
+      queryClient.invalidateQueries({ queryKey: ["entity-team", variables.entityId] });
+      queryClient.invalidateQueries({ queryKey: ["entity-edit", variables.entityId] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-entity", variables.entityId] });
+    },
+  });
+}
+
+export function useTransferEntityOwnership() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      entityId,
+      newOwnerEntityTeamId,
+    }: {
+      entityId: string;
+      newOwnerEntityTeamId: string;
+    }) => {
+      const { error } = await supabase.rpc("transfer_entity_ownership" as any, {
+        p_entity_id: entityId,
+        p_new_owner_entity_team_id: newOwnerEntityTeamId,
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["entity-edit", variables.entityId] });
+      queryClient.invalidateQueries({ queryKey: ["entity-team", variables.entityId] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-entity", variables.entityId] });
+      queryClient.invalidateQueries({ queryKey: ["my-entities"] });
+      queryClient.invalidateQueries({ queryKey: ["my-entities-filtered"] });
+    },
+  });
+}
+
+export function useLeaveEntity() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, entityId }: { id: string; entityId: string }) => {
+      const { error } = await supabase
+        .from("entity_team")
+        .update({ left_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["entity-edit", variables.entityId] });
+      queryClient.invalidateQueries({ queryKey: ["entity-team", variables.entityId] });
       queryClient.invalidateQueries({ queryKey: ["my-entities"] });
       queryClient.invalidateQueries({ queryKey: ["my-entities-filtered"] });
     },

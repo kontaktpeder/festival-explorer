@@ -27,7 +27,8 @@ import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerW
 import { LoadingState } from "@/components/ui/LoadingState";
 import { UnifiedTimelineManager } from "@/components/dashboard/UnifiedTimelineManager";
 import { PERSONA_EVENT_TYPE_OPTIONS, VENUE_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
-import { useUpdateTeamMember } from "@/hooks/useEntityMutations";
+import { useUpdateTeamMember, useSetEntityTeamPersona, useTransferEntityOwnership, useLeaveEntity, useRemoveTeamMember } from "@/hooks/useEntityMutations";
+import { useMyPersonas } from "@/hooks/usePersona";
 import { ProjectCreditFlow } from "@/components/dashboard/ProjectCreditFlow";
 import { SocialLinksEditor } from "@/components/ui/SocialLinksEditor";
 import { 
@@ -41,7 +42,9 @@ import {
   AlertTriangle,
   Building2,
   Link2,
-  MapPin
+  MapPin,
+  Shield,
+  LogOut
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
@@ -78,8 +81,6 @@ const ACCESS_LABELS: Record<AccessLevel, string> = {
   viewer: "Se",
 };
 
-// EntityTeamPublicToggle replaced by ProjectCreditFlow
-
 export default function EntityEdit() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -108,6 +109,28 @@ export default function EntityEdit() {
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [teamOpen, setTeamOpen] = useState(false);
   const [dangerOpen, setDangerOpen] = useState(false);
+
+  // Transfer ownership dialog state
+  const [transferTargetId, setTransferTargetId] = useState<string | null>(null);
+
+  // Current user
+  const { data: currentUser } = useQuery({
+    queryKey: ["current-user"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      return user;
+    },
+  });
+
+  // My personas for persona selector
+  const { data: myPersonas } = useMyPersonas();
+
+  // Mutations
+  const updateTeamMember = useUpdateTeamMember();
+  const setEntityTeamPersona = useSetEntityTeamPersona();
+  const transferOwnership = useTransferEntityOwnership();
+  const leaveEntity = useLeaveEntity();
+  const removeTeamMember = useRemoveTeamMember();
 
   // Fetch entity with user's access level
   const { data: entityWithAccess, isLoading, error } = useQuery({
@@ -295,6 +318,40 @@ export default function EntityEdit() {
     }
   };
 
+  const handleTransferOwnership = () => {
+    if (!transferTargetId || !id) return;
+    transferOwnership.mutate(
+      { entityId: id, newOwnerEntityTeamId: transferTargetId },
+      {
+        onSuccess: () => {
+          toast({ title: "Eierskap overført", description: "Du er nå admin for dette prosjektet." });
+          setTransferTargetId(null);
+        },
+        onError: (err: Error) => {
+          toast({ title: "Feil", description: err.message, variant: "destructive" });
+        },
+      }
+    );
+  };
+
+  const handleLeaveProject = () => {
+    if (!id || !currentUser) return;
+    const myTeamRow = teamMembers?.find(m => m.user_id === currentUser.id);
+    if (!myTeamRow) return;
+    leaveEntity.mutate(
+      { id: myTeamRow.id, entityId: id },
+      {
+        onSuccess: () => {
+          toast({ title: "Du har forlatt prosjektet" });
+          navigate("/dashboard");
+        },
+        onError: (err: Error) => {
+          toast({ title: "Feil", description: err.message, variant: "destructive" });
+        },
+      }
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -312,6 +369,7 @@ export default function EntityEdit() {
   const canEdit = ["editor", "admin", "owner"].includes(userAccess);
   const canInvite = ["admin", "owner"].includes(userAccess);
   const canManagePersonas = ["admin", "owner"].includes(userAccess);
+  const isOwner = userAccess === "owner";
   const isViewer = userAccess === "viewer";
 
   const typeConfig = {
@@ -321,6 +379,13 @@ export default function EntityEdit() {
   };
 
   const heroStyles = getCroppedImageStyles(heroImageSettings);
+
+  // Other members for ownership transfer
+  const otherMembers = teamMembers?.filter(m => m.user_id !== currentUser?.id) || [];
+  const hasOtherMembers = otherMembers.length > 0;
+
+  // Current user's team row
+  const myTeamRow = teamMembers?.find(m => m.user_id === currentUser?.id);
 
   return (
     <div className="container max-w-2xl px-4 sm:px-6 py-6 sm:py-8">
@@ -550,7 +615,7 @@ export default function EntityEdit() {
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Team-medlemmer (med toggle for "Vis bak prosjektet") */}
+        {/* Team-medlemmer */}
         {teamMembers && teamMembers.length > 0 && (
           <Collapsible open={teamOpen} onOpenChange={setTeamOpen}>
             <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
@@ -564,42 +629,90 @@ export default function EntityEdit() {
             <CollapsibleContent className="py-5 space-y-2 border-b border-border/30">
               {teamMembers.map((member) => {
                 const persona = member.persona as { id: string; name: string; avatar_url?: string; slug?: string } | null;
+                const isCurrentUser = member.user_id === currentUser?.id;
                 
                 const displayName = persona?.name || "Ingen navn";
                 const avatarUrl = persona?.avatar_url;
                 const roleLabel = member.bindingRoleLabel || (member.role_labels?.length > 0 ? member.role_labels.join(", ") : null);
                 
                 return (
-                  <div key={member.id} className="flex items-center justify-between py-2 border-b border-border/20 last:border-0">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
-                        {avatarUrl ? (
-                          <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
-                        ) : (
-                          <span className="text-xs font-medium text-muted-foreground">
-                            {displayName.charAt(0).toUpperCase()}
-                          </span>
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{displayName}</p>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">{ACCESS_LABELS[member.access as AccessLevel]}</span>
-                          {roleLabel && (
-                            <span className="text-xs text-accent">{roleLabel}</span>
+                  <div key={member.id} className="py-3 border-b border-border/20 last:border-0 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
+                          {avatarUrl ? (
+                            <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
+                          ) : (
+                            <span className="text-xs font-medium text-muted-foreground">
+                              {displayName.charAt(0).toUpperCase()}
+                            </span>
                           )}
                         </div>
+                        <div>
+                          <p className="font-medium text-sm">{displayName}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">{ACCESS_LABELS[member.access as AccessLevel]}</span>
+                            {roleLabel && (
+                              <span className="text-xs text-accent">{roleLabel}</span>
+                            )}
+                            {isCurrentUser && (
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">deg</Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {/* Role dropdown for other members (admin/owner only, not for owner role) */}
+                        {canManagePersonas && !isCurrentUser && member.access !== 'owner' && (
+                          <Select
+                            value={member.access}
+                            onValueChange={(value) => updateTeamMember.mutate({ id: member.id, access: value as AccessLevel })}
+                          >
+                            <SelectTrigger className="w-[120px] h-8 text-xs bg-transparent border-border/50">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="admin">Administrer</SelectItem>
+                              <SelectItem value="editor">Rediger</SelectItem>
+                              <SelectItem value="viewer">Se</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                        {canManagePersonas && (
+                          <ProjectCreditFlow
+                            memberId={member.id}
+                            entityId={entityWithAccess?.id}
+                            entityName={entityWithAccess?.name ?? ""}
+                            personaId={persona?.id}
+                            personaSlug={persona?.slug}
+                            isPublic={!!member.is_public}
+                          />
+                        )}
                       </div>
                     </div>
-                    {canManagePersonas && (
-                      <ProjectCreditFlow
-                        memberId={member.id}
-                        entityId={entityWithAccess?.id}
-                        entityName={entityWithAccess?.name ?? ""}
-                        personaId={persona?.id}
-                        personaSlug={persona?.slug}
-                        isPublic={!!member.is_public}
-                      />
+
+                    {/* Persona selector for current user's own row */}
+                    {isCurrentUser && myPersonas && myPersonas.length > 0 && id && (
+                      <div className="ml-11 flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">Representert som:</span>
+                        <Select
+                          value={member.persona_id || ""}
+                          onValueChange={(personaId) => {
+                            if (personaId) {
+                              setEntityTeamPersona.mutate({ entityId: id, personaId });
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="h-7 text-xs bg-transparent border-border/50 flex-1 max-w-[200px]">
+                            <SelectValue placeholder="Velg persona..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {myPersonas.map((p) => (
+                              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     )}
                   </div>
                 );
@@ -618,10 +731,119 @@ export default function EntityEdit() {
               </div>
               <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${dangerOpen ? "rotate-180" : ""}`} />
             </CollapsibleTrigger>
-            <CollapsibleContent className="py-5 border-b border-border/30">
-              <p className="text-sm text-muted-foreground mb-4">
+            <CollapsibleContent className="py-5 space-y-6 border-b border-border/30">
+              <p className="text-sm text-muted-foreground">
                 Handlinger her kan ikke angres uten hjelp fra administrator.
               </p>
+
+              {/* Transfer ownership (only for owner) */}
+              {isOwner && hasOtherMembers && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Overfør eierskap</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Velg et teammedlem som skal bli ny eier. Du vil bli admin.
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Select value={transferTargetId || ""} onValueChange={setTransferTargetId}>
+                      <SelectTrigger className="flex-1 h-9 text-sm bg-transparent border-border/50">
+                        <SelectValue placeholder="Velg nytt eier..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {otherMembers.map((m) => {
+                          const p = m.persona as { name: string } | null;
+                          return (
+                            <SelectItem key={m.id} value={m.id}>
+                              {p?.name || "Ukjent"} ({ACCESS_LABELS[m.access as AccessLevel]})
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={!transferTargetId || transferOwnership.isPending}
+                          className="border-destructive/50 text-destructive hover:bg-destructive/10"
+                        >
+                          {transferOwnership.isPending ? "Overfører..." : "Overfør"}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Overfør eierskap?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Det valgte teammedlemmet vil bli ny eier av prosjektet. Du vil bli admin. Denne handlingen kan ikke angres.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleTransferOwnership}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Bekreft overføring
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              )}
+
+              {isOwner && !hasOtherMembers && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Overfør eierskap</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Du er eneste medlem. Inviter noen til teamet før du kan overføre eierskap.
+                  </p>
+                </div>
+              )}
+
+              {/* Leave project (for non-owners) */}
+              {!isOwner && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="border-destructive/50 text-destructive hover:bg-destructive/10"
+                    >
+                      <LogOut className="h-3.5 w-3.5 mr-1.5" />
+                      Forlat prosjektet
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Forlat prosjektet?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Du vil miste tilgangen til "{formData.name}". En admin eller eier kan invitere deg tilbake senere.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleLeaveProject}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        disabled={leaveEntity.isPending}
+                      >
+                        {leaveEntity.isPending ? "Forlater..." : "Forlat"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+
+              {/* Request deletion (for owner/editor) */}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" size="sm" className="border-destructive/50 text-destructive hover:bg-destructive/10">
