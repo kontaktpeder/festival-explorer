@@ -158,8 +158,11 @@ export default function EntityEdit() {
 
       if (teamError) throw teamError;
       
+      // Always prefer entity_team.access; only fall back to created_by if no team row exists
       const isCreator = entity.created_by === user.id;
-      const access = teamMember?.access || (isCreator ? "owner" : null);
+      const access = teamMember != null
+        ? teamMember.access
+        : (isCreator ? "owner" : null);
 
       if (!access) {
         throw new Error("No access to this entity");
@@ -323,9 +326,13 @@ export default function EntityEdit() {
     transferOwnership.mutate(
       { entityId: id, newOwnerEntityTeamId: transferTargetId },
       {
-        onSuccess: () => {
-          toast({ title: "Eierskap overført", description: "Du er nå admin for dette prosjektet." });
+        onSuccess: async () => {
           setTransferTargetId(null);
+          // Refetch to ensure fresh data before navigating
+          await queryClient.refetchQueries({ queryKey: ["dashboard-entity", id] });
+          await queryClient.refetchQueries({ queryKey: ["entity-team", id] });
+          toast({ title: "Eierskap overført", description: "Du er nå admin for dette prosjektet." });
+          navigate("/dashboard", { replace: true });
         },
         onError: (err: Error) => {
           toast({ title: "Feil", description: err.message, variant: "destructive" });
