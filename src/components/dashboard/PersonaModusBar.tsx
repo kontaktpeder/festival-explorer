@@ -62,7 +62,7 @@ export function PersonaModusBar() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    window.location.href = "/";
+    window.location.href = "/admin/login";
   };
 
   const selectedPersona = personas?.find((p) => p.id === localSelectedId);

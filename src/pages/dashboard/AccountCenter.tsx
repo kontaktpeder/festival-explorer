@@ -137,7 +137,7 @@ export default function AccountCenter() {
     },
     onSuccess: () => {
       toast({ title: "Logget ut" });
-      window.location.href = "/";
+      window.location.href = "/admin/login";
     },
     onError: (error: Error) => {
       toast({ title: "Feil", description: error.message, variant: "destructive" });
