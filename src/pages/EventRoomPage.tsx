@@ -315,33 +315,33 @@ export default function EventRoomPage() {
     <div className="min-h-[100svh] bg-background">
       {/* Header */}
       <header
-        className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border/30 px-4 py-3"
-        style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0.75rem)" }}
+        className="sticky top-0 z-50 bg-background/60 backdrop-blur-xl border-b border-border/20"
+        style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
       >
-        <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-
-          <div className="flex-1 min-w-0 text-center">
-            <p className="text-sm font-semibold text-foreground truncate">
-              {isNew ? "Ny event" : formData.title || "Event"}
-            </p>
+        <div className="w-full px-4 sm:px-8 lg:px-12 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <span className="text-sm font-semibold tracking-tight text-foreground">
+              BACKSTAGE
+            </span>
             {festivalContext?.festival && (
-              <p className="text-[10px] text-muted-foreground truncate">
-                {(festivalContext.festival as any).name}
-              </p>
+              <span className="text-[10px] text-muted-foreground/60 hidden sm:inline">
+                / {(festivalContext.festival as any).name}
+              </span>
             )}
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
             {!isNew && event?.slug && (
-              <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+              <Button asChild variant="outline" size="sm" className="text-xs border-border/30 hover:border-accent/40">
                 <Link to={`/event/${event.slug}`} target="_blank">
-                  <ExternalLink className="h-4 w-4" />
+                  <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                  Se live
                 </Link>
               </Button>
             )}
@@ -358,240 +358,256 @@ export default function EventRoomPage() {
         </div>
       </header>
 
-      {/* Content */}
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-8 pb-[max(2rem,env(safe-area-inset-bottom))]">
-        {/* Status bar */}
-        <div className="flex items-center gap-2">
-          <Badge variant={formData.status === "published" ? "default" : "outline"} className="text-[10px]">
-            {formData.status === "published" ? "Publisert" : "Utkast"}
-          </Badge>
-          <Select
-            value={formData.status}
-            onValueChange={(v: "draft" | "published") => setFormData((prev) => ({ ...prev, status: v }))}
-          >
-            <SelectTrigger className="h-7 w-auto text-xs border-none bg-transparent shadow-none px-2">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="draft">Utkast</SelectItem>
-              <SelectItem value="published">Publisert</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Title */}
-        <div className="space-y-1">
-          <Input
-            value={formData.title}
-            onChange={(e) => handleTitleChange(e.target.value)}
-            placeholder="Tittel"
-            className="border-none bg-transparent text-xl font-bold shadow-none px-0 h-auto py-1 placeholder:text-muted-foreground/40 focus-visible:ring-0"
-            required
-          />
-          <p className="text-[10px] text-muted-foreground/50 font-mono">
-            /event/{formData.slug || "..."}
-          </p>
-        </div>
-
-        {/* Description */}
-        <div className="space-y-1">
-          <Textarea
-            value={formData.description}
-            onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-            placeholder="Beskrivelse..."
-            className="border-none bg-transparent shadow-none px-0 min-h-[80px] resize-none placeholder:text-muted-foreground/40 focus-visible:ring-0"
-            rows={3}
-          />
-        </div>
-
-        {/* Time */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Start</Label>
+      {/* Hero section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/8 via-background to-accent-warm/5" />
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4" />
+        <div className="relative w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-8">
+          <div className="max-w-5xl">
+            <div className="flex items-center gap-3 mb-2">
+              <Badge
+                variant={formData.status === "published" ? "default" : "secondary"}
+                className="text-[10px] uppercase tracking-widest"
+              >
+                {formData.status === "published" ? "Publisert" : "Utkast"}
+              </Badge>
+              <Select
+                value={formData.status}
+                onValueChange={(v: "draft" | "published") => setFormData((prev) => ({ ...prev, status: v }))}
+              >
+                <SelectTrigger className="h-6 w-auto text-[10px] border-none bg-transparent shadow-none px-1.5">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Utkast</SelectItem>
+                  <SelectItem value="published">Publisert</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <Input
-              type="datetime-local"
-              value={formData.start_at}
-              onChange={(e) => setFormData((prev) => ({ ...prev, start_at: e.target.value }))}
-              className="h-9 text-sm bg-muted/30 border-border/30"
+              value={formData.title}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              placeholder="Tittel"
+              className="border-none bg-transparent text-3xl sm:text-4xl lg:text-5xl font-bold shadow-none px-0 h-auto py-1 placeholder:text-muted-foreground/30 focus-visible:ring-0 tracking-tight"
               required
             />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Slutt</Label>
-            <Input
-              type="datetime-local"
-              value={formData.end_at}
-              onChange={(e) => setFormData((prev) => ({ ...prev, end_at: e.target.value }))}
-              className="h-9 text-sm bg-muted/30 border-border/30"
-            />
+            <p className="text-[10px] text-muted-foreground/40 font-mono mt-1">
+              /event/{formData.slug || "..."}
+            </p>
           </div>
         </div>
+      </section>
 
-        {/* Hero image */}
-        <div className="flex items-center gap-3">
-          {formData.hero_image_url && (
-            <img
-              src={formData.hero_image_url}
-              alt="Hero"
-              className="h-10 w-14 rounded object-cover border border-border/30"
-            />
-          )}
-          <div className="flex-1 min-w-0">
-            <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Hero-bilde</Label>
-          </div>
-          <InlineMediaPickerWithCrop
-            value={formData.hero_image_url}
-            imageSettings={heroImageSettings}
-            onChange={(url) => setFormData((prev) => ({ ...prev, hero_image_url: url }))}
-            onSettingsChange={setHeroImageSettings}
-            cropMode="hero"
-            placeholder="Bytt"
-            showAllForAdmin
-            useNaturalAspect
-            hidePreview
-          />
-        </div>
-
-        {/* Details (collapsible) */}
-        <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
-          <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full py-2">
-            {detailsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-            <span>Detaljer</span>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="space-y-4 pt-2">
-            {/* Venue */}
-            <div className="space-y-1.5">
-              <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Venue</Label>
-              <Popover open={venuePickerOpen} onOpenChange={setVenuePickerOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    className="w-full justify-between font-normal h-9 text-sm bg-muted/30 border-border/30"
-                  >
-                    {formData.venue_id
-                      ? venues?.find((v) => v.id === formData.venue_id)?.name
-                      : "Velg venue"}
-                    <ChevronsUpDown className="ml-2 h-3.5 w-3.5 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                  <Command>
-                    <CommandInput placeholder="Søk etter venue..." />
-                    <CommandList>
-                      <CommandEmpty>Ingen venue funnet.</CommandEmpty>
-                      <CommandGroup>
-                        <CommandItem
-                          value="__none__"
-                          onSelect={() => {
-                            setFormData((prev) => ({ ...prev, venue_id: "" }));
-                            setVenuePickerOpen(false);
-                          }}
-                        >
-                          <Check className={cn("mr-2 h-3.5 w-3.5", !formData.venue_id ? "opacity-100" : "opacity-0")} />
-                          Ingen venue
-                        </CommandItem>
-                        {venues?.map((venue) => (
-                          <CommandItem
-                            key={venue.id}
-                            value={venue.name}
-                            onSelect={() => {
-                              setFormData((prev) => ({ ...prev, venue_id: venue.id }));
-                              setVenuePickerOpen(false);
-                            }}
-                          >
-                            <Check className={cn("mr-2 h-3.5 w-3.5", formData.venue_id === venue.id ? "opacity-100" : "opacity-0")} />
-                            {venue.name}
-                            {venue.city && <span className="ml-2 text-muted-foreground text-xs">({venue.city})</span>}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            {/* City */}
-            <div className="space-y-1.5">
-              <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">By</Label>
-              <Input
-                value={formData.city}
-                onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
-                placeholder="Oslo"
-                className="h-9 text-sm bg-muted/30 border-border/30"
+      {/* Content */}
+      <main
+        className="w-full px-4 sm:px-8 lg:px-12 py-5 sm:py-6 pb-[max(2rem,env(safe-area-inset-bottom))]"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
+          {/* Left column: form fields */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Description */}
+            <div className="space-y-1">
+              <Textarea
+                value={formData.description}
+                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                placeholder="Beskrivelse..."
+                className="border-none bg-transparent shadow-none px-0 min-h-[80px] resize-none placeholder:text-muted-foreground/40 focus-visible:ring-0"
+                rows={3}
               />
             </div>
-          </CollapsibleContent>
-        </Collapsible>
 
-        {/* Separator */}
-        <div className="border-t border-border/30" />
-
-        {/* Medvirkende */}
-        {!isNew && id && (
-          <div className="space-y-4">
-            <h2 className="text-base font-semibold text-foreground">Medvirkende</h2>
-            <Tabs defaultValue="on_stage">
-              <TabsList className="w-full grid grid-cols-3 h-9">
-                <TabsTrigger value="on_stage" className="text-xs">På scenen</TabsTrigger>
-                <TabsTrigger value="backstage" className="text-xs">Bak scenen</TabsTrigger>
-                <TabsTrigger value="host" className="text-xs">Arrangør</TabsTrigger>
-              </TabsList>
-              <TabsContent value="on_stage" className="mt-4">
-                <EventParticipantsZoneEditor eventId={id} zone="on_stage" title="På scenen" />
-              </TabsContent>
-              <TabsContent value="backstage" className="mt-4">
-                <EventParticipantsZoneEditor eventId={id} zone="backstage" title="Bak scenen" />
-              </TabsContent>
-              <TabsContent value="host" className="mt-4">
-                <EventParticipantsZoneEditor eventId={id} zone="host" title="Arrangør" />
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
-
-        {/* Festival team (inherited, read-only) */}
-        {!isNew && festivalTeam && (festivalTeam.hostRoles.length > 0 || festivalTeam.backstage.length > 0) && (
-          <div className="space-y-3 pt-2 border-t border-border/30">
-            <div className="flex items-center gap-3">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <p className="text-xs font-semibold text-foreground">
-                  Festival-team ({festivalTeam.festival?.name})
-                </p>
-                <p className="text-[10px] text-muted-foreground">
-                  Arves fra festivalen
-                </p>
+            {/* Time */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Start</Label>
+                <Input
+                  type="datetime-local"
+                  value={formData.start_at}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, start_at: e.target.value }))}
+                  className="h-9 text-sm bg-muted/30 border-border/30"
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Slutt</Label>
+                <Input
+                  type="datetime-local"
+                  value={formData.end_at}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, end_at: e.target.value }))}
+                  className="h-9 text-sm bg-muted/30 border-border/30"
+                />
               </div>
             </div>
 
-            {festivalTeam.hostRoles.length > 0 && (
-              <div className="space-y-1.5">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Arrangør</p>
-                {festivalTeam.hostRoles.map((item: any, i: number) => (
-                  <div key={item.participant_id || i} className="flex items-center gap-2 text-sm">
-                    <span className="font-medium text-foreground">{item.persona?.name || item.entity?.name}</span>
-                    {item.role_label && <span className="text-xs text-muted-foreground">· {item.role_label}</span>}
-                  </div>
-                ))}
+            {/* Hero image */}
+            <div className="flex items-center gap-3">
+              {formData.hero_image_url && (
+                <img
+                  src={formData.hero_image_url}
+                  alt="Hero"
+                  className="h-10 w-14 rounded object-cover border border-border/30"
+                />
+              )}
+              <div className="flex-1 min-w-0">
+                <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Hero-bilde</Label>
+              </div>
+              <InlineMediaPickerWithCrop
+                value={formData.hero_image_url}
+                imageSettings={heroImageSettings}
+                onChange={(url) => setFormData((prev) => ({ ...prev, hero_image_url: url }))}
+                onSettingsChange={setHeroImageSettings}
+                cropMode="hero"
+                placeholder="Bytt"
+                showAllForAdmin
+                useNaturalAspect
+                hidePreview
+              />
+            </div>
+
+            {/* Details (collapsible) */}
+            <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
+              <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full py-2">
+                {detailsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                <span>Detaljer</span>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-4 pt-2">
+                {/* Venue */}
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Venue</Label>
+                  <Popover open={venuePickerOpen} onOpenChange={setVenuePickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-full justify-between font-normal h-9 text-sm bg-muted/30 border-border/30"
+                      >
+                        {formData.venue_id
+                          ? venues?.find((v) => v.id === formData.venue_id)?.name
+                          : "Velg venue"}
+                        <ChevronsUpDown className="ml-2 h-3.5 w-3.5 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Søk etter venue..." />
+                        <CommandList>
+                          <CommandEmpty>Ingen venue funnet.</CommandEmpty>
+                          <CommandGroup>
+                            <CommandItem
+                              value="__none__"
+                              onSelect={() => {
+                                setFormData((prev) => ({ ...prev, venue_id: "" }));
+                                setVenuePickerOpen(false);
+                              }}
+                            >
+                              <Check className={cn("mr-2 h-3.5 w-3.5", !formData.venue_id ? "opacity-100" : "opacity-0")} />
+                              Ingen venue
+                            </CommandItem>
+                            {venues?.map((venue) => (
+                              <CommandItem
+                                key={venue.id}
+                                value={venue.name}
+                                onSelect={() => {
+                                  setFormData((prev) => ({ ...prev, venue_id: venue.id }));
+                                  setVenuePickerOpen(false);
+                                }}
+                              >
+                                <Check className={cn("mr-2 h-3.5 w-3.5", formData.venue_id === venue.id ? "opacity-100" : "opacity-0")} />
+                                {venue.name}
+                                {venue.city && <span className="ml-2 text-muted-foreground text-xs">({venue.city})</span>}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                {/* City */}
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">By</Label>
+                  <Input
+                    value={formData.city}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
+                    placeholder="Oslo"
+                    className="h-9 text-sm bg-muted/30 border-border/30"
+                  />
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
+
+          {/* Right column: participants */}
+          <div className="space-y-6">
+            {/* Medvirkende */}
+            {!isNew && id && (
+              <div className="space-y-4">
+                <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+                  Medvirkende
+                </h2>
+                <Tabs defaultValue="on_stage">
+                  <TabsList className="w-full grid grid-cols-3 h-9">
+                    <TabsTrigger value="on_stage" className="text-xs">På scenen</TabsTrigger>
+                    <TabsTrigger value="backstage" className="text-xs">Bak scenen</TabsTrigger>
+                    <TabsTrigger value="host" className="text-xs">Arrangør</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="on_stage" className="mt-4">
+                    <EventParticipantsZoneEditor eventId={id} zone="on_stage" title="På scenen" />
+                  </TabsContent>
+                  <TabsContent value="backstage" className="mt-4">
+                    <EventParticipantsZoneEditor eventId={id} zone="backstage" title="Bak scenen" />
+                  </TabsContent>
+                  <TabsContent value="host" className="mt-4">
+                    <EventParticipantsZoneEditor eventId={id} zone="host" title="Arrangør" />
+                  </TabsContent>
+                </Tabs>
               </div>
             )}
 
-            {festivalTeam.backstage.length > 0 && (
-              <div className="space-y-1.5">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Bak scenen</p>
-                {festivalTeam.backstage.map((item: any, i: number) => (
-                  <div key={item.participant_id || i} className="flex items-center gap-2 text-sm">
-                    <span className="font-medium text-foreground">{item.persona?.name || item.entity?.name}</span>
-                    {item.role_label && <span className="text-xs text-muted-foreground">· {item.role_label}</span>}
+            {/* Festival team (inherited, read-only) */}
+            {!isNew && festivalTeam && (festivalTeam.hostRoles.length > 0 || festivalTeam.backstage.length > 0) && (
+              <div className="space-y-3 pt-4 border-t border-border/30">
+                <div className="flex items-center gap-3">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-xs font-semibold text-foreground">
+                      Festival-team ({festivalTeam.festival?.name})
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      Arves fra festivalen
+                    </p>
                   </div>
-                ))}
+                </div>
+
+                {festivalTeam.hostRoles.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Arrangør</p>
+                    {festivalTeam.hostRoles.map((item: any, i: number) => (
+                      <div key={item.participant_id || i} className="flex items-center gap-2 text-sm">
+                        <span className="font-medium text-foreground">{item.persona?.name || item.entity?.name}</span>
+                        {item.role_label && <span className="text-xs text-muted-foreground">· {item.role_label}</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {festivalTeam.backstage.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Bak scenen</p>
+                    {festivalTeam.backstage.map((item: any, i: number) => (
+                      <div key={item.participant_id || i} className="flex items-center gap-2 text-sm">
+                        <span className="font-medium text-foreground">{item.persona?.name || item.entity?.name}</span>
+                        {item.role_label && <span className="text-xs text-muted-foreground">· {item.role_label}</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      </main>
     </div>
   );
 }
