@@ -1,36 +1,41 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { CreateEditShell } from "@/components/layout/CreateEditShell";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCreatePersona } from "@/hooks/usePersona";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import type { ImageSettings } from "@/types/database";
-import { Music, Camera, Building2, Wrench } from "lucide-react";
+import { Music, Camera, Wrench, Building2, Check } from "lucide-react";
 import { toast } from "sonner";
 
 const PERSONA_CHANGE_EVENT = "personaChanged";
 
 const WIZARD_ROLES = [
-  { type: "musician", label: "Musiker / Artist", icon: Music, desc: "Musiker, band, soloartist eller DJ" },
-  { type: "photographer", label: "Fotograf / Video", icon: Camera, desc: "Foto, video eller innholdsproduksjon" },
-  { type: "technician", label: "Teknisk / Crew", icon: Wrench, desc: "Lyd, lys, scenearbeid eller crew" },
-  { type: "organizer", label: "Arrangør", icon: Building2, desc: "Festival, klubb eller arrangør" },
+  { type: "musician", label: "Musiker / Artist", icon: Music, desc: "Spiller i band, solo eller DJ" },
+  { type: "photographer", label: "Fotograf / Video", icon: Camera, desc: "Foto, video eller innhold" },
+  { type: "technician", label: "Teknisk / Crew", icon: Wrench, desc: "Lyd, lys eller scene" },
+  { type: "organizer", label: "Arrangør", icon: Building2, desc: "Venue, booking eller arrangør" },
 ] as const;
 
-function WizardWrapper({ children }: { children: React.ReactNode }) {
+function ProgressDots({ current, total }: { current: number; total: number }) {
   return (
-    <div className="min-h-[100svh] bg-background flex flex-col">
-      <div className="max-w-lg sm:max-w-xl mx-auto w-full px-4 sm:px-8 pt-4 sm:pt-6">
-        <Link to="/" className="text-sm sm:text-base font-bold text-foreground tracking-tight">
-          GIGGEN <span className="text-muted-foreground/70 font-normal text-[10px] sm:text-xs">BACKSTAGE</span>
-        </Link>
-      </div>
-      {children}
+    <div className="flex items-center gap-2.5">
+      {Array.from({ length: total }).map((_, i) => (
+        <div
+          key={i}
+          className={`h-1.5 rounded-full transition-all duration-300 ${
+            i === current
+              ? "w-8 bg-accent"
+              : i < current
+                ? "w-2 bg-accent/50"
+                : "w-2 bg-border/30"
+          }`}
+        />
+      ))}
     </div>
   );
 }
@@ -68,174 +73,317 @@ export default function CreateProfileWizard() {
 
   const stepCount = 4;
 
-  // — Step 0: Velkommen —
-  if (step === 0) {
-    return (
-      <WizardWrapper>
-        <CreateEditShell
-          title="Velkommen til GIGGEN Backstage"
-          subtitle="Rommet bak scenen – her viser du hvem du er, ikke hva du eier."
-          stepIndex={0}
-          stepCount={stepCount}
-          primaryAction={{ label: "Kom i gang", onClick: () => setStep(1) }}
-          secondaryAction={{ label: "Avbryt", onClick: () => navigate("/dashboard") }}
-        >
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Festivaler og arrangører setter sammen programmet.
-              Du fyller inn profilen din, så kan de finne deg.
-            </p>
-            <p className="text-xs text-muted-foreground/70">
-              Dette tar ca. 1 minutt. Du kan endre alt senere.
-            </p>
-          </div>
-        </CreateEditShell>
-      </WizardWrapper>
-    );
-  }
-
-  // — Step 1: Rolle —
-  if (step === 1) {
-    return (
-      <WizardWrapper>
-        <CreateEditShell
-          title="Hva gjør du?"
-          subtitle="Velg rollen som beskriver deg best. Du kan legge til flere senere."
-          stepIndex={1}
-          stepCount={stepCount}
-          primaryAction={{ label: "Neste", onClick: () => setStep(2), disabled: !type }}
-          secondaryAction={{ label: "Tilbake", onClick: () => setStep(0) }}
-        >
-          <div className="space-y-2.5 sm:space-y-3">
-            {WIZARD_ROLES.map(({ type: t, label, icon: Icon, desc }) => (
-              <button
-                key={t}
-                onClick={() => setType(t)}
-                className={`w-full flex items-center gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-lg border text-left transition-all ${
-                  type === t ? "border-accent bg-accent/10" : "border-border/30 hover:border-border/50"
-                }`}
-              >
-                <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <span className="text-sm sm:text-base font-medium text-foreground">{label}</span>
-                  <p className="text-[11px] sm:text-xs text-muted-foreground/70">{desc}</p>
-                </div>
-                {type === t && <span className="ml-auto text-xs text-accent shrink-0">Valgt</span>}
-              </button>
-            ))}
-          </div>
-        </CreateEditShell>
-      </WizardWrapper>
-    );
-  }
-
-  // — Step 2: Navn + bilde —
-  if (step === 2) {
-    return (
-      <WizardWrapper>
-        <CreateEditShell
-          title="Hva heter du?"
-          subtitle="Bruk navnet du ønsker å bli kreditert med profesjonelt. Dette er deg som person – ikke band- eller prosjektnavn."
-          stepIndex={2}
-          stepCount={stepCount}
-          primaryAction={{ label: "Neste", onClick: () => setStep(3), disabled: !name.trim() }}
-          secondaryAction={{ label: "Tilbake", onClick: () => setStep(1) }}
-        >
-          <div className="flex flex-col sm:flex-row sm:items-start gap-5">
-            {/* Name input */}
-            <div className="flex-1">
-              <Label htmlFor="name" className="text-xs">Navn</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Fullt navn"
-                className="mt-1 text-base"
-              />
-              <p className="text-[10px] text-muted-foreground/50 mt-1">
-                Eksempel: Peder August Halvorsen – band og prosjekter legger du til separat.
-              </p>
-            </div>
-
-            {/* Compact avatar picker */}
-            <div className="flex items-center gap-2.5 sm:pt-5">
-              <Avatar className="h-12 w-12 sm:h-14 sm:w-14 ring-2 ring-border/50 shrink-0">
-                {avatarUrl ? (
-                  <AvatarImage src={avatarUrl} style={getCroppedImageStyles(avatarImageSettings)} className="object-cover" />
-                ) : null}
-                <AvatarFallback className="text-sm bg-muted text-muted-foreground">
-                  {name ? name.charAt(0).toUpperCase() : "?"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <InlineMediaPickerWithCrop
-                  value={avatarUrl}
-                  imageSettings={avatarImageSettings}
-                  onChange={setAvatarUrl}
-                  onSettingsChange={setAvatarImageSettings}
-                  cropMode="avatar"
-                  placeholder="Bilde"
-                />
-                <p className="text-[9px] text-muted-foreground/40 mt-0.5">Valgfritt</p>
-              </div>
-            </div>
-          </div>
-        </CreateEditShell>
-      </WizardWrapper>
-    );
-  }
-
-  // — Step 3: Synlighet + bekreftelse —
   return (
-    <WizardWrapper>
-      <CreateEditShell
-        title="Synlighet"
-        subtitle="Bestem hvem som kan se profilen din."
-        stepIndex={3}
-        stepCount={stepCount}
-        primaryAction={{ label: "Opprett profil", onClick: handleCreate, disabled: createPersona.isPending }}
-        secondaryAction={{ label: "Tilbake", onClick: () => setStep(2) }}
-        showLegal
-      >
-        <div className="space-y-4">
-          {/* Preview card */}
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-card/60 border border-border/30">
-            <Avatar className="h-10 w-10 ring-2 ring-border/50 shrink-0">
-              {avatarUrl ? <AvatarImage src={avatarUrl} style={getCroppedImageStyles(avatarImageSettings)} className="object-cover" /> : null}
-              <AvatarFallback className="text-xs bg-muted text-muted-foreground">
-                {name.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+    <div className="min-h-[100svh] bg-background flex flex-col">
+      {/* Top bar */}
+      <div className="w-full max-w-2xl mx-auto px-6 sm:px-10 pt-6 sm:pt-10 flex items-center justify-between">
+        <Link to="/" className="text-sm font-bold text-foreground tracking-tight">
+          GIGGEN <span className="text-muted-foreground/60 font-normal text-[10px]">BACKSTAGE</span>
+        </Link>
+        <ProgressDots current={step} total={stepCount} />
+      </div>
+
+      {/* Content area */}
+      <div className="flex-1 flex flex-col justify-center w-full max-w-2xl mx-auto px-6 sm:px-10">
+        {step === 0 && <StepIntro onNext={() => setStep(1)} onCancel={() => navigate("/dashboard")} />}
+        {step === 1 && <StepRole type={type} setType={setType} onNext={() => setStep(2)} onBack={() => setStep(0)} />}
+        {step === 2 && (
+          <StepName
+            name={name}
+            setName={setName}
+            avatarUrl={avatarUrl}
+            setAvatarUrl={setAvatarUrl}
+            avatarImageSettings={avatarImageSettings}
+            setAvatarImageSettings={setAvatarImageSettings}
+            onNext={() => setStep(3)}
+            onBack={() => setStep(1)}
+          />
+        )}
+        {step === 3 && (
+          <StepVisibility
+            name={name}
+            type={type}
+            avatarUrl={avatarUrl}
+            avatarImageSettings={avatarImageSettings}
+            isPublic={isPublic}
+            setIsPublic={setIsPublic}
+            onFinish={handleCreate}
+            onBack={() => setStep(2)}
+            isPending={createPersona.isPending}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── Step 0: Intro ── */
+function StepIntro({ onNext, onCancel }: { onNext: () => void; onCancel: () => void }) {
+  return (
+    <StepLayout
+      title="Velkommen til GIGGEN Backstage"
+      primary={{ label: "Kom i gang", onClick: onNext }}
+      secondary={{ label: "Avbryt", onClick: onCancel }}
+    >
+      <div className="space-y-3">
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Her lager du din profesjonelle profil.<br />
+          Arrangører og festivaler bruker den for å finne og kreditere deg.
+        </p>
+        <p className="text-xs text-muted-foreground/60">
+          Det tar ca. 1 minutt. Du kan endre alt senere.
+        </p>
+      </div>
+    </StepLayout>
+  );
+}
+
+/* ── Step 1: Rolle ── */
+function StepRole({
+  type,
+  setType,
+  onNext,
+  onBack,
+}: {
+  type: string | null;
+  setType: (t: string) => void;
+  onNext: () => void;
+  onBack: () => void;
+}) {
+  return (
+    <StepLayout
+      title="Hva gjør du?"
+      subtitle="Velg det som passer best nå. Du kan legge til flere senere."
+      primary={{ label: "Neste", onClick: onNext, disabled: !type }}
+      secondary={{ label: "Tilbake", onClick: onBack }}
+    >
+      <div className="space-y-2.5">
+        {WIZARD_ROLES.map(({ type: t, label, icon: Icon, desc }) => (
+          <button
+            key={t}
+            onClick={() => setType(t)}
+            className={`w-full flex items-center gap-4 p-4 rounded-lg border text-left transition-all ${
+              type === t
+                ? "border-accent bg-accent/10"
+                : "border-border/20 hover:border-border/40"
+            }`}
+          >
+            <Icon className="h-5 w-5 text-muted-foreground shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">{name}</p>
-              <p className="text-xs text-muted-foreground">{type ? getPersonaTypeLabel(type) : "—"}</p>
+              <span className="text-sm font-medium text-foreground">{label}</span>
+              <p className="text-xs text-muted-foreground/70">{desc}</p>
             </div>
-          </div>
+            {type === t && <Check className="h-4 w-4 text-accent shrink-0" />}
+          </button>
+        ))}
+      </div>
+    </StepLayout>
+  );
+}
 
-          {/* Toggle */}
-          <div className="flex items-center justify-between p-3 rounded-lg bg-card/60 border border-border/30">
-            <div className="flex-1 min-w-0 mr-3">
-              <Label htmlFor="public-switch" className="text-sm font-medium cursor-pointer">
-                Bli funnet på plattformen (anbefalt)
-              </Label>
-              <p className="text-[11px] text-muted-foreground/70 mt-0.5">
-                GIGGEN besøkes av musikere, arrangører og publikum som er ute etter å ta kontakt. Synlige profiler kan finnes, vises i krediteringer (bak prosjektet, bak scenen) og i søk.
-              </p>
-            </div>
-            <Switch
-              id="public-switch"
-              checked={isPublic}
-              onCheckedChange={(v) => setIsPublic(v)}
+/* ── Step 2: Navn ── */
+function StepName({
+  name,
+  setName,
+  avatarUrl,
+  setAvatarUrl,
+  avatarImageSettings,
+  setAvatarImageSettings,
+  onNext,
+  onBack,
+}: {
+  name: string;
+  setName: (v: string) => void;
+  avatarUrl: string;
+  setAvatarUrl: (v: string) => void;
+  avatarImageSettings: ImageSettings | null;
+  setAvatarImageSettings: (v: ImageSettings | null) => void;
+  onNext: () => void;
+  onBack: () => void;
+}) {
+  return (
+    <StepLayout
+      title="Hva heter du?"
+      subtitle="Skriv navnet du bruker profesjonelt. Dette er deg som person."
+      primary={{ label: "Neste", onClick: onNext, disabled: !name.trim() }}
+      secondary={{ label: "Tilbake", onClick: onBack }}
+    >
+      <div className="space-y-6">
+        <div>
+          <Label htmlFor="name" className="text-xs text-muted-foreground">Navn</Label>
+          <Input
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Fullt navn"
+            className="mt-1.5 text-base"
+          />
+          <p className="text-[10px] text-muted-foreground/50 mt-1.5">
+            Band og prosjekter legger du til senere.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Avatar className="h-12 w-12 ring-2 ring-border/30 shrink-0">
+            {avatarUrl ? (
+              <AvatarImage src={avatarUrl} style={getCroppedImageStyles(avatarImageSettings)} className="object-cover" />
+            ) : null}
+            <AvatarFallback className="text-sm bg-muted text-muted-foreground">
+              {name ? name.charAt(0).toUpperCase() : "?"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <InlineMediaPickerWithCrop
+              value={avatarUrl}
+              imageSettings={avatarImageSettings}
+              onChange={setAvatarUrl}
+              onSettingsChange={setAvatarImageSettings}
+              cropMode="avatar"
+              placeholder="Profilbilde"
             />
+            <p className="text-[9px] text-muted-foreground/40 mt-0.5">Valgfritt</p>
           </div>
+        </div>
+      </div>
+    </StepLayout>
+  );
+}
 
-          {!isPublic && (
-            <p className="text-[10px] text-muted-foreground/50 text-center">
-              Privat profil er kun synlig for deg inntil du slår på «Bli funnet».
-            </p>
+/* ── Step 3: Synlighet ── */
+function StepVisibility({
+  name,
+  type,
+  avatarUrl,
+  avatarImageSettings,
+  isPublic,
+  setIsPublic,
+  onFinish,
+  onBack,
+  isPending,
+}: {
+  name: string;
+  type: string | null;
+  avatarUrl: string;
+  avatarImageSettings: ImageSettings | null;
+  isPublic: boolean;
+  setIsPublic: (v: boolean) => void;
+  onFinish: () => void;
+  onBack: () => void;
+  isPending: boolean;
+}) {
+  return (
+    <StepLayout
+      title="Hvem kan se profilen din?"
+      primary={{ label: "Fullfør", onClick: onFinish, disabled: isPending }}
+      secondary={{ label: "Tilbake", onClick: onBack }}
+      showLegal
+    >
+      <div className="space-y-4">
+        {/* Preview */}
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-card/60 border border-border/20">
+          <Avatar className="h-10 w-10 ring-2 ring-border/30 shrink-0">
+            {avatarUrl ? <AvatarImage src={avatarUrl} style={getCroppedImageStyles(avatarImageSettings)} className="object-cover" /> : null}
+            <AvatarFallback className="text-xs bg-muted text-muted-foreground">
+              {name.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground truncate">{name}</p>
+            <p className="text-xs text-muted-foreground">{type ? getPersonaTypeLabel(type) : "—"}</p>
+          </div>
+        </div>
+
+        {/* Visibility options */}
+        <button
+          onClick={() => setIsPublic(true)}
+          className={`w-full text-left p-3.5 rounded-lg border transition-all ${
+            isPublic ? "border-accent bg-accent/10" : "border-border/20 hover:border-border/40"
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-foreground">Offentlig</span>
+            {isPublic && <Check className="h-4 w-4 text-accent shrink-0" />}
+          </div>
+          <p className="text-xs text-muted-foreground/70 mt-0.5">
+            Synlig for arrangører og andre brukere.
+          </p>
+        </button>
+
+        <button
+          onClick={() => setIsPublic(false)}
+          className={`w-full text-left p-3.5 rounded-lg border transition-all ${
+            !isPublic ? "border-accent bg-accent/10" : "border-border/20 hover:border-border/40"
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-foreground">Kun via invitasjon</span>
+            {!isPublic && <Check className="h-4 w-4 text-accent shrink-0" />}
+          </div>
+          <p className="text-xs text-muted-foreground/70 mt-0.5">
+            Kun synlig når du er lagt til i et prosjekt eller event.
+          </p>
+        </button>
+      </div>
+    </StepLayout>
+  );
+}
+
+/* ── Shared layout shell ── */
+function StepLayout({
+  title,
+  subtitle,
+  children,
+  primary,
+  secondary,
+  showLegal = false,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+  primary: { label: string; onClick: () => void; disabled?: boolean };
+  secondary?: { label: string; onClick: () => void };
+  showLegal?: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-8 py-8 sm:py-12">
+      {/* Header */}
+      <div>
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">{title}</h1>
+        {subtitle && (
+          <p className="text-sm text-muted-foreground/70 mt-1.5 leading-relaxed">{subtitle}</p>
+        )}
+      </div>
+
+      {/* Content */}
+      <div>{children}</div>
+
+      {/* Actions */}
+      <div className="flex items-center justify-between pt-2">
+        <div>
+          {secondary && (
+            <Button variant="ghost" size="sm" onClick={secondary.onClick} className="text-muted-foreground/50 hover:text-muted-foreground">
+              {secondary.label}
+            </Button>
           )}
         </div>
-      </CreateEditShell>
-    </WizardWrapper>
+        <Button
+          size="sm"
+          onClick={primary.onClick}
+          disabled={primary.disabled}
+          className="sm:h-10 sm:px-6 font-semibold"
+        >
+          {primary.label}
+        </Button>
+      </div>
+
+      {showLegal && (
+        <p className="text-[10px] text-muted-foreground/40 text-center -mt-4">
+          Ved å fortsette godtar du våre{" "}
+          <Link to="/vilkar" className="underline hover:text-muted-foreground">vilkår</Link>
+          {" "}og{" "}
+          <Link to="/personvern" className="underline hover:text-muted-foreground">personvern</Link>.
+        </p>
+      )}
+    </div>
   );
 }
