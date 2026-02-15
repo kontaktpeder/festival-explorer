@@ -13,6 +13,8 @@ import {
   ExternalLink,
   FileText,
   ChevronRight,
+  Users,
+  LayoutGrid,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -131,10 +133,24 @@ export default function FestivalRoom() {
 
   const modules: ModuleCard[] = [
     {
+      title: "Team",
+      description: "Inviter og administrer festival-teamet",
+      icon: Users,
+      to: `/dashboard/festival/${id}/team`,
+      hidden: !p?.can_edit_festival,
+    },
+    {
       title: "Program",
       description: "Rekkefølge og programoversikt",
       icon: Calendar,
       to: `/dashboard/festival/${id}/program`,
+      hidden: !canAccessEvents,
+    },
+    {
+      title: "Events",
+      description: "Arrangementer i festivalen",
+      icon: Music,
+      to: `/dashboard/festival/${id}/events`,
       hidden: !canAccessEvents,
     },
     {
@@ -178,6 +194,13 @@ export default function FestivalRoom() {
       icon: Settings,
       to: `/dashboard/festival/${id}/settings`,
       hidden: !p?.can_edit_festival,
+    },
+    {
+      title: "Workspace",
+      description: "Snarveier og oversikt",
+      icon: LayoutGrid,
+      to: `/dashboard/festival/${id}/workspace`,
+      hidden: !canAccessEvents,
     },
   ];
 

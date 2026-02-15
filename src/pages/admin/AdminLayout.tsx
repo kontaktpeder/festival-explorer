@@ -93,14 +93,9 @@ export default function AdminLayout() {
 
   const allNavItems: NavItem[] = [
     { to: "/admin", icon: LayoutDashboard, label: "Dashboard", exact: true },
-    { to: "/admin/festivals", icon: Calendar, label: "Festivaler" },
-    { to: "/admin/events", icon: Music, label: "Events", showIf: !!(isAdmin || canEditEventsAny) },
-    { to: "/admin/entities", icon: Layers, label: "Entities", adminOnly: true },
+    { to: "/admin/entities", icon: Layers, label: "Prosjekter & venues", adminOnly: true },
     { to: "/admin/access-generator", icon: UserPlus, label: "Tilgang", adminOnly: true },
     { to: "/admin/timeline", icon: Clock, label: "Timeline", adminOnly: true },
-    { to: "/admin/media", icon: FolderOpen, label: "Filbank", showIf: !!(isAdmin || canAccessMedia) },
-    { to: "/admin/tickets", icon: Ticket, label: "Billetter", showIf: !!(isAdmin || canSeeTicketStats) },
-    { to: "/crew/checkin", icon: QrCode, label: "Scan billetter", showIf: !!(isAdmin || canScanTickets) },
     { to: "/admin/deletion-requests", icon: Trash2, label: "Sletting", adminOnly: true },
     { to: "/admin/inbox", icon: Inbox, label: "Inbox", adminOnly: true },
     { to: "/admin/access-requests", icon: UserPlus, label: "Forespørsler", adminOnly: true },
