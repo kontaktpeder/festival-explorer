@@ -37,6 +37,8 @@ interface InlineMediaPickerWithCropProps {
   showAllForAdmin?: boolean;
   /** Use image's natural aspect ratio instead of mode preset */
   useNaturalAspect?: boolean;
+  /** Hide the large image preview below the buttons */
+  hidePreview?: boolean;
 }
 
 export function InlineMediaPickerWithCrop({
@@ -49,6 +51,7 @@ export function InlineMediaPickerWithCrop({
   placeholder = "Velg bilde",
   showAllForAdmin = false,
   useNaturalAspect = false,
+  hidePreview = false,
 }: InlineMediaPickerWithCropProps) {
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
@@ -176,7 +179,7 @@ export function InlineMediaPickerWithCrop({
         )}
       </div>
 
-      {value && (
+      {value && !hidePreview && (
         <div 
           className="relative rounded-md overflow-hidden border border-border"
           style={previewAspect ? { aspectRatio: previewAspect } : {}}
