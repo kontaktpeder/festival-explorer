@@ -340,6 +340,7 @@ export interface EntityWithTeam extends Entity {
 
 export interface EntityWithAccess extends Entity {
   access: AccessLevel;
+  persona_id?: string | null;
 }
 
 // ============================================

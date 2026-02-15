@@ -204,6 +204,7 @@ export default function EntityInvite() {
         roleLabels: [],
         invitedBy: currentUser.id,
         invitedUserId: selectedPersona.user_id,
+        invitedPersonaId: selectedPersona.id,
       });
 
       toast({ title: `Invitasjon sendt til ${selectedPersona.name}` });

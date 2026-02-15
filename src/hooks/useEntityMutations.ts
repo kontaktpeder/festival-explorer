@@ -211,6 +211,7 @@ export function useCreateInvitation() {
       roleLabels = [],
       invitedBy,
       invitedUserId,
+      invitedPersonaId,
     }: {
       entityId: string;
       email?: string | null;
@@ -218,6 +219,7 @@ export function useCreateInvitation() {
       roleLabels?: string[];
       invitedBy: string;
       invitedUserId?: string | null;
+      invitedPersonaId?: string | null;
     }) => {
       // Only generate token for email-based invitations
       const token = invitedUserId ? null : crypto.randomUUID();
@@ -232,6 +234,7 @@ export function useCreateInvitation() {
           token,
           invited_by: invitedBy,
           invited_user_id: invitedUserId ?? null,
+          invited_persona_id: invitedPersonaId ?? null,
         })
         .select()
         .single();
