@@ -658,7 +658,7 @@ export default function EntityEdit() {
                         <div>
                           <p className="font-medium text-sm">{displayName}</p>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">{ACCESS_LABELS[member.access as AccessLevel]}</span>
+                            <span className="text-xs text-muted-foreground">{ACCESS_LABELS[(isCurrentUser ? (entityWithAccess?.access ?? member.access) : member.access) as AccessLevel]}</span>
                             {roleLabel && (
                               <span className="text-xs text-accent">{roleLabel}</span>
                             )}
@@ -710,12 +710,39 @@ export default function EntityEdit() {
                             }
                           }}
                         >
-                          <SelectTrigger className="h-7 text-xs bg-transparent border-border/50 flex-1 max-w-[200px]">
-                            <SelectValue placeholder="Velg persona..." />
+                          <SelectTrigger className="h-8 text-xs bg-transparent border-border/50 flex-1 max-w-[240px] gap-2">
+                            {(() => {
+                              const selected = myPersonas.find((p) => p.id === (member.persona_id || ""));
+                              return selected ? (
+                                <span className="flex items-center gap-2 min-w-0">
+                                  <span className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0">
+                                    {selected.avatar_url ? (
+                                      <img src={selected.avatar_url} alt={selected.name} className="h-full w-full object-cover" />
+                                    ) : (
+                                      <span className="text-[10px] font-medium text-muted-foreground">{selected.name.charAt(0).toUpperCase()}</span>
+                                    )}
+                                  </span>
+                                  <span className="truncate">{selected.name}</span>
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground">Velg persona...</span>
+                              );
+                            })()}
                           </SelectTrigger>
                           <SelectContent>
                             {myPersonas.map((p) => (
-                              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                              <SelectItem key={p.id} value={p.id}>
+                                <span className="flex items-center gap-2">
+                                  <span className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0">
+                                    {p.avatar_url ? (
+                                      <img src={p.avatar_url} alt={p.name} className="h-full w-full object-cover" />
+                                    ) : (
+                                      <span className="text-[10px] font-medium text-muted-foreground">{p.name.charAt(0).toUpperCase()}</span>
+                                    )}
+                                  </span>
+                                  <span>{p.name}</span>
+                                </span>
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
