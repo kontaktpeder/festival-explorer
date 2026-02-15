@@ -867,6 +867,7 @@ export type Database = {
         Row: {
           can_access_media: boolean | null
           can_create_internal_ticket: boolean | null
+          can_edit_events: boolean | null
           can_edit_festival: boolean | null
           can_scan_tickets: boolean | null
           can_see_report: boolean | null
@@ -885,6 +886,7 @@ export type Database = {
         Insert: {
           can_access_media?: boolean | null
           can_create_internal_ticket?: boolean | null
+          can_edit_events?: boolean | null
           can_edit_festival?: boolean | null
           can_scan_tickets?: boolean | null
           can_see_report?: boolean | null
@@ -903,6 +905,7 @@ export type Database = {
         Update: {
           can_access_media?: boolean | null
           can_create_internal_ticket?: boolean | null
+          can_edit_events?: boolean | null
           can_edit_festival?: boolean | null
           can_scan_tickets?: boolean | null
           can_see_report?: boolean | null
@@ -2065,6 +2068,9 @@ export type Database = {
       can_access_media_any: { Args: never; Returns: boolean }
       can_create_internal_ticket_any: { Args: never; Returns: boolean }
       can_edit_entity: { Args: { p_entity_id: string }; Returns: boolean }
+      can_edit_event: { Args: { p_event_id: string }; Returns: boolean }
+      can_edit_events: { Args: { p_festival_id: string }; Returns: boolean }
+      can_edit_events_any: { Args: never; Returns: boolean }
       can_edit_festival: { Args: { p_festival_id: string }; Returns: boolean }
       can_edit_festival_program: {
         Args: { p_festival_id: string }

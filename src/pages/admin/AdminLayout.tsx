@@ -71,6 +71,15 @@ export default function AdminLayout() {
     enabled: !!session && !isAdmin,
   });
 
+  const { data: canEditEventsAny } = useQuery({
+    queryKey: ["can-edit-events-any"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_edit_events_any");
+      return data ?? false;
+    },
+    enabled: !!session && !isAdmin,
+  });
+
   const isLoading = isLoadingSession || (!!session && isLoadingAccess);
 
   type NavItem = {
@@ -85,7 +94,7 @@ export default function AdminLayout() {
   const allNavItems: NavItem[] = [
     { to: "/admin", icon: LayoutDashboard, label: "Dashboard", exact: true },
     { to: "/admin/festivals", icon: Calendar, label: "Festivaler" },
-    { to: "/admin/events", icon: Music, label: "Events", adminOnly: true },
+    { to: "/admin/events", icon: Music, label: "Events", showIf: !!(isAdmin || canEditEventsAny) },
     { to: "/admin/entities", icon: Layers, label: "Entities", adminOnly: true },
     { to: "/admin/access-generator", icon: UserPlus, label: "Tilgang", adminOnly: true },
     { to: "/admin/timeline", icon: Clock, label: "Timeline", adminOnly: true },

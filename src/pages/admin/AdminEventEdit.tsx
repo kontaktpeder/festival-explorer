@@ -76,7 +76,18 @@ export default function AdminEventEdit() {
   // NEW ROLE MODEL STEP 1.2: Host-gating computed values
   const hostEntities = (myEntities ?? []).filter((e) => inferEntityKind(e) === "host");
   const eventHostId = event ? getEventHostId(event) : null;
-  const canEdit = isNew || isTicketAdmin || (!!eventHostId && hostEntities.some((h) => h.id === eventHostId));
+
+  // Check can_edit_event RPC (festival-level permission)
+  const { data: canEditEventRpc } = useQuery({
+    queryKey: ["can-edit-event", id],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_edit_event", { p_event_id: id });
+      return data ?? false;
+    },
+    enabled: !!id && !isNew,
+  });
+
+  const canEdit = isNew || isTicketAdmin || canEditEventRpc === true || (!!eventHostId && hostEntities.some((h) => h.id === eventHostId));
 
   // Fetch festival-team (inherited participants) for this event
   const { data: festivalTeam } = useQuery({

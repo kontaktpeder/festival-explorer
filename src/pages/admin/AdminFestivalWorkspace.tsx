@@ -53,18 +53,41 @@ export default function AdminFestivalWorkspace() {
     return <div className="text-muted-foreground">Festival ikke funnet.</div>;
   }
 
+  // Check permissions
+  const { data: canEditEvents } = useQuery({
+    queryKey: ["can-edit-events", id],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_edit_events", { p_festival_id: id });
+      return data ?? false;
+    },
+    enabled: !!id,
+  });
+
+  const { data: canEditFestival } = useQuery({
+    queryKey: ["can-edit-festival", id],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_edit_festival", { p_festival_id: id });
+      return data ?? false;
+    },
+    enabled: !!id,
+  });
+
+  const canAccessEvents = canEditFestival || canEditEvents;
+
   const modules: ModuleCard[] = [
     {
       title: "Program",
       description: "Administrer festivalens program og rekkefølge",
       icon: Calendar,
       to: `/admin/festivals/${id}/program`,
+      disabled: !canAccessEvents,
     },
     {
       title: "Events",
       description: `${festivalEvents?.length || 0} events i festivalen`,
       icon: Music,
       to: `/admin/festivals/${id}/program`,
+      disabled: !canAccessEvents,
     },
     {
       title: "Team",
@@ -89,6 +112,7 @@ export default function AdminFestivalWorkspace() {
       description: "Seksjoner, tema og detaljer",
       icon: Settings,
       to: `/admin/festivals/${id}`,
+      disabled: !canEditFestival,
     },
   ];
 
@@ -156,7 +180,7 @@ export default function AdminFestivalWorkspace() {
       </div>
 
       {/* Events quick list */}
-      {festivalEvents && festivalEvents.length > 0 && (
+      {canAccessEvents && festivalEvents && festivalEvents.length > 0 && (
         <div className="space-y-2">
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Events i festivalen
