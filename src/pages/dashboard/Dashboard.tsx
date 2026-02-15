@@ -391,8 +391,8 @@ export default function Dashboard() {
                       </p>
                     )}
                     <div className="flex flex-wrap gap-2">
-                      <Button asChild variant="default" size="sm" className="h-8 text-xs">
-                        <Link to={`/admin/festivals/${festival.id}`}>Rediger</Link>
+                      <Button asChild variant="default" size="sm" className="h-8 text-xs bg-accent text-accent-foreground hover:bg-accent/90">
+                        <Link to={`/dashboard/festival/${festival.id}`}>Åpne festivalrom</Link>
                       </Button>
                       <Button asChild variant="outline" size="sm" className="h-8 text-xs">
                         <Link to={`/admin/festivals/${festival.id}/program`}>Program</Link>
