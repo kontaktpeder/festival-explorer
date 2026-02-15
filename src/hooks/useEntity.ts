@@ -244,9 +244,10 @@ export function useMyEntitiesFilteredByPersona(personaId: string | null) {
       }
 
       // Filter by persona_id from entity_team (set via invitation or manual assignment)
+      // Also include rows where persona_id is null (owner/admin without assigned persona)
       const filteredRows = userEntities.filter(
         (row: { entity_id: string; access: AccessLevel; persona_id: string | null }) =>
-          row.persona_id === personaId
+          row.persona_id === personaId || row.persona_id == null
       );
       const filteredIds = filteredRows.map((row: { entity_id: string }) => row.entity_id);
 

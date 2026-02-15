@@ -2192,6 +2192,10 @@ export type Database = {
         Args: { p_entity_id: string; p_persona_id: string }
         Returns: undefined
       }
+      transfer_entity_ownership: {
+        Args: { p_entity_id: string; p_new_owner_entity_team_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       access_level: "owner" | "admin" | "editor" | "viewer"
