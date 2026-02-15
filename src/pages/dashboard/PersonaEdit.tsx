@@ -55,6 +55,7 @@ export default function PersonaEdit() {
   const [categoryTags, setCategoryTags] = useState<string[]>([]);
   const [personaType, setPersonaType] = useState<string>("");
   const [isPublic, setIsPublic] = useState(true);
+  const [allowTeamCredit, setAllowTeamCredit] = useState(true);
   const [customTag, setCustomTag] = useState("");
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   
@@ -149,6 +150,7 @@ export default function PersonaEdit() {
       setCategoryTags(existingPersona.category_tags || []);
       setPersonaType((existingPersona as any).type || "");
       setIsPublic(existingPersona.is_public);
+      setAllowTeamCredit((existingPersona as any).allow_team_credit ?? true);
       setSocialLinks(((existingPersona as any).social_links || []) as SocialLink[]);
       // New fields
       setAvailableFor(((existingPersona as any).available_for || []) as AvailableForKey[]);
@@ -203,6 +205,7 @@ export default function PersonaEdit() {
           category_tags: categoryTags,
           type: personaType || null,
           is_public: isPublic,
+          allow_team_credit: allowTeamCredit,
           social_links: socialLinks,
           available_for: availableFor,
           show_email: showEmail,
@@ -220,6 +223,7 @@ export default function PersonaEdit() {
           category_tags: categoryTags,
           type: personaType || undefined,
           is_public: isPublic,
+          allow_team_credit: allowTeamCredit,
           social_links: socialLinks.length > 0 ? socialLinks : undefined,
           available_for: availableFor,
           show_email: showEmail,
@@ -306,17 +310,31 @@ export default function PersonaEdit() {
             <p className="font-medium">Bli funnet på plattformen</p>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            GIGGEN besøkes av musikere, arrangører og publikum som er ute etter å ta kontakt. Når profilen din er synlig, kan de finne deg, se hva du gjør og hvem du er. Bruk litt tid på å gjøre den attraktiv – da skiller du deg ut og folk blir bedre kjent med deg når de klikker seg inn.
+            Når profilen din er synlig, kan hvem som helst finne deg i søk og utforske GIGGEN – musikere, arrangører og publikum kan ta kontakt og bli kjent med deg.
           </p>
           <p className="text-xs text-muted-foreground/70">
-            {isPublic ? "Profilen din er synlig og kan vises i krediteringer og søk." : "Kun du ser profilen. Slå på for å la andre finne deg."}
-          </p>
-          <p className="text-[11px] text-muted-foreground/60 mt-1">
-            Dette styrer om profilen kan finnes på GIGGEN. Å bli kreditert for et konkret prosjekt gjøres på prosjektsiden under Team.
+            {isPublic ? "Profilen din er synlig og kan finnes av alle." : "Kun du ser profilen. Slå på for å la andre finne deg."}
           </p>
           <div className="flex items-center justify-between">
-            <Label htmlFor="persona-public" className="text-sm cursor-pointer">Vis profilen min</Label>
+            <Label htmlFor="persona-public" className="text-sm cursor-pointer">Vis profilen min (synlig i søk)</Label>
             <Switch id="persona-public" checked={isPublic} onCheckedChange={setIsPublic} />
+          </div>
+        </div>
+
+        {/* Bli kreditert i team */}
+        <div className="py-4 border-b border-accent/20 space-y-3">
+          <div>
+            <p className="font-medium">Bli kreditert i team</p>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Der du er lagt til i et prosjekt eller festival-team, kan arrangør se navnet ditt i listen. Denne innstillingen styrer om navnet vises eller vises som «Skjult».
+          </p>
+          <p className="text-xs text-muted-foreground/70">
+            {allowTeamCredit ? "Navnet ditt vises i team-lister der du er lagt til." : "Du vises som «Skjult» i team-lister. Du kan fortsatt være med og ha tilgang."}
+          </p>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="persona-allow-credit" className="text-sm cursor-pointer">Vis navn i team der jeg er lagt til</Label>
+            <Switch id="persona-allow-credit" checked={allowTeamCredit} onCheckedChange={setAllowTeamCredit} />
           </div>
         </div>
 

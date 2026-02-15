@@ -163,6 +163,7 @@ export function useCreatePersona() {
       category_tags?: string[];
       type?: string;
       is_public?: boolean;
+      allow_team_credit?: boolean;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Ikke innlogget");
@@ -194,6 +195,7 @@ export function useCreatePersona() {
         avatar_image_settings: persona.avatar_image_settings || null,
         category_tags: persona.category_tags || [],
         is_public: persona.is_public ?? true,
+        allow_team_credit: persona.allow_team_credit ?? true,
         ...(persona.type && { type: persona.type }),
       };
 
@@ -226,6 +228,7 @@ export function useUpdatePersona() {
       category_tags?: string[];
       type?: string | null;
       is_public?: boolean;
+      allow_team_credit?: boolean;
     }) => {
       const { data, error } = await supabase
         .from("personas")

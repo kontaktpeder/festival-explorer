@@ -23,7 +23,7 @@ import { useUpdateTeamMember } from "@/hooks/useEntityMutations";
 import { User } from "lucide-react";
 
 const CREDIT_INTRO =
-  "Du vil nå vises under «Bak prosjektet» på prosjektsiden. GIGGEN besøkes av musikere, arrangører og publikum som er ute etter å ta kontakt. Ta gjerne et øyeblikk og sjekk at profilen din ser slik ut at du vil at andre skal bli kjent med deg – bilde, kort beskrivelse og rolle.";
+  "Du vil nå vises under «Bak prosjektet» på prosjektsiden. Dette handler om å bli kreditert på dette prosjektet – ikke om å være synlig i søk (det styrer du under profilen med «Vis profilen min»). Ta gjerne et øyeblikk og sjekk at profilen din ser bra ut.";
 
 interface ProjectCreditFlowProps {
   memberId: string;

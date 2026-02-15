@@ -99,6 +99,7 @@ export interface Persona {
   category_tags: string[];
   type?: PersonaType | null; // NEW ROLE MODEL STEP 1
   is_public: boolean;
+  allow_team_credit?: boolean; // default true; styrer visning i team-lister
   created_at: string;
   updated_at: string;
 }
