@@ -343,7 +343,7 @@ function StepVisibility({
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-foreground">Kun via invitasjon</span>
+            <span className="text-sm font-medium text-foreground">Kontrollert</span>
             {!isPublic && <Check className="h-4 w-4 text-accent shrink-0" />}
           </div>
           <p className="text-xs text-muted-foreground/70 mt-0.5">
