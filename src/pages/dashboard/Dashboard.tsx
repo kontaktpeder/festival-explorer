@@ -47,9 +47,9 @@ const TYPE_CONFIG: Record<EntityType, {
   icon: React.ReactNode;
   route: string;
 }> = {
-  venue: { label: "🏛️ Scene", icon: <Building2 className="h-5 w-5" />, route: "/project" },
-  solo: { label: "🎤 Artistprosjekt", icon: <User className="h-5 w-5" />, route: "/project" },
-  band: { label: "🎸 Band", icon: <Users className="h-5 w-5" />, route: "/project" },
+  venue: { label: "Scene", icon: <Building2 className="h-5 w-5" />, route: "/project" },
+  solo: { label: "Artistprosjekt", icon: <User className="h-5 w-5" />, route: "/project" },
+  band: { label: "Band", icon: <Users className="h-5 w-5" />, route: "/project" },
 };
 
 const ACCESS_DESCRIPTIONS: Record<AccessLevel, string> = {
@@ -232,7 +232,7 @@ export default function Dashboard() {
           {/* Onboarding confirmation */}
           {fromOnboarding && (
             <section className="p-4 sm:p-6 rounded-lg bg-accent/5 border border-accent/20 space-y-3 sm:space-y-4">
-              <h3 className="text-sm sm:text-base font-semibold text-accent">✓ Profil opprettet</h3>
+              <h3 className="text-sm sm:text-base font-semibold text-accent">Profil opprettet</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Dette er din profesjonelle profil på GIGGEN. Du kan når som helst endre den fra dashbordet.
               </p>

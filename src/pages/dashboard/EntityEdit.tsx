@@ -59,9 +59,9 @@ const TYPE_LABELS: Record<EntityType, string> = {
 };
 
 const TYPE_ICONS: Record<EntityType, string> = {
-  venue: "🏛️",
-  solo: "🎤",
-  band: "🎸",
+  venue: "",
+  solo: "",
+  band: "",
 };
 
 // Beskrivelser for header
