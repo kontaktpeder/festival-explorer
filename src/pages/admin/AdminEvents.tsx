@@ -138,16 +138,15 @@ export default function AdminEvents() {
               </div>
 
               <div className="flex flex-wrap gap-1.5 md:gap-2">
-                <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
-                  <Link to={`/admin/events/${event.id}/lineup`}>
-                    <Users className="h-3.5 w-3.5 mr-1" />
-                    Medvirkende
+                <Button asChild variant="default" size="sm" className="h-8 text-xs md:text-sm">
+                  <Link to={`/event-room/${event.id}`}>
+                    Åpne
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
                   <Link to={`/admin/events/${event.id}`}>
                     <Settings className="h-3.5 w-3.5 mr-1" />
-                    Rediger
+                    Avansert
                   </Link>
                 </Button>
                 <Button 

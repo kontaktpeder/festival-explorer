@@ -190,7 +190,7 @@ export default function AdminFestivalWorkspace() {
               fe.event ? (
                 <Link
                   key={fe.event_id}
-                  to={`/admin/events/${fe.event.id}`}
+                  to={`/event-room/${fe.event.id}`}
                   className="flex items-center gap-3 p-3 rounded-md border border-border hover:border-accent/30 transition-colors bg-card"
                 >
                   <Music className="h-4 w-4 text-muted-foreground shrink-0" />

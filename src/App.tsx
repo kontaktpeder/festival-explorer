@@ -35,6 +35,7 @@ import VerifyAccessEmail from "./pages/VerifyAccessEmail";
 import CreateProfileWizard from "./pages/onboarding/CreateProfileWizard";
 import ResetPassword from "./pages/ResetPassword";
 import FestivalRoom from "./pages/dashboard/FestivalRoom";
+import EventRoomPage from "./pages/EventRoomPage";
 
 // Admin pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -83,6 +84,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/festival" element={<FestivalPage />} />
           <Route path="/festival/:slug" element={<FestivalPage />} />
+          <Route path="/event-room/:id" element={<EventRoomPage />} />
           <Route path="/event/:slug" element={<EventPage />} />
           <Route path="/project/:slug" element={<ProjectPage />} />
           <Route path="/venue/:slug" element={<VenueRedirect />} />
