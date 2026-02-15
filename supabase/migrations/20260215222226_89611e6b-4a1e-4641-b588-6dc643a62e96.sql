@@ -1,0 +1,1 @@
+UPDATE entity_team SET role_labels = '{}' WHERE id = '615af9e2-bbca-4763-8bc3-20be5b2dc807';
