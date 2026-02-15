@@ -15,18 +15,33 @@ export default function ResetPassword() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sendingLink, setSendingLink] = useState(false);
-  const [hasSession, setHasSession] = useState<boolean | null>(null);
+  const [hasRecoverySession, setHasRecoverySession] = useState<boolean | null>(null);
+  const [linkError, setLinkError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const params = new URLSearchParams(hash.replace("#", ""));
+      const errorDesc = params.get("error_description");
+      if (errorDesc) {
+        setLinkError(errorDesc.replace(/\+/g, " "));
+        setHasRecoverySession(false);
+        window.history.replaceState(null, "", window.location.pathname);
+        return;
+      }
+    }
+
     let mounted = true;
     const check = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (mounted) setHasSession(!!session);
+      if (mounted) setHasRecoverySession(!!session);
     };
     check();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => check());
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (mounted) setHasRecoverySession(!!session);
+    });
     return () => {
       mounted = false;
       subscription.unsubscribe();
@@ -81,7 +96,7 @@ export default function ResetPassword() {
     }
   };
 
-  if (hasSession === null) {
+  if (hasRecoverySession === null) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -89,7 +104,51 @@ export default function ResetPassword() {
     );
   }
 
-  if (hasSession) {
+  if (linkError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              Lenken har utløpt
+            </CardTitle>
+            <CardDescription>
+              {linkError}. Be om en ny tilbakestillingslenke nedenfor.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form onSubmit={handleRequestLink} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">E-post</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="din@epost.no"
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={sendingLink}>
+                {sendingLink ? "Sender..." : "Send ny tilbakestillingslenke"}
+              </Button>
+            </form>
+            <div className="text-center">
+              <Link
+                to="/admin/login"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Tilbake til innlogging
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (hasRecoverySession) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-sm">
