@@ -373,35 +373,31 @@ export default function EntityEdit() {
           </CollapsibleTrigger>
           <CollapsibleContent className="py-5 space-y-5 border-b border-border/30">
             {/* Hero image section - inline like PersonaEdit avatar */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-              <Avatar className="h-20 w-20 border-2 border-accent/30 rounded-lg">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10 border border-border/50 rounded-lg">
                 <AvatarImage 
                   src={formData.hero_image_url || undefined} 
                   style={heroStyles}
                   className="object-cover"
                 />
-                <AvatarFallback className="text-xl bg-secondary rounded-lg">
+                <AvatarFallback className="text-xs bg-secondary rounded-lg">
                   {formData.name ? formData.name.substring(0, 2).toUpperCase() : "?"}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 w-full space-y-2">
+              <div className="flex-1 min-w-0">
                 <Label className="text-muted-foreground text-xs uppercase tracking-wide">Hero-bilde</Label>
-                {canEdit ? (
-                  <InlineMediaPickerWithCrop
-                    value={formData.hero_image_url}
-                    imageSettings={heroImageSettings}
-                    onChange={(url) => setFormData((prev) => ({ ...prev, hero_image_url: url }))}
-                    onSettingsChange={setHeroImageSettings}
-                    cropMode="hero"
-                    placeholder="Velg hero-bilde"
-                    useNaturalAspect
-                  />
-                ) : (
-                  formData.hero_image_url && (
-                    <p className="text-sm text-muted-foreground">Hero-bilde valgt</p>
-                  )
-                )}
               </div>
+              {canEdit && (
+                <InlineMediaPickerWithCrop
+                  value={formData.hero_image_url}
+                  imageSettings={heroImageSettings}
+                  onChange={(url) => setFormData((prev) => ({ ...prev, hero_image_url: url }))}
+                  onSettingsChange={setHeroImageSettings}
+                  cropMode="hero"
+                  placeholder="Bytt"
+                  useNaturalAspect
+                />
+              )}
             </div>
 
             <div className="space-y-2">
