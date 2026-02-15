@@ -468,7 +468,7 @@ export default function EventRoomPage() {
             <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
               <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full py-2">
                 {detailsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                <span>Detaljer</span>
+                <span>Venue</span>
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-4 pt-2">
                 {/* Venue */}
