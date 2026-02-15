@@ -2,10 +2,10 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
-import { Plus, Trash2, ArrowLeft, Eye, EyeOff, Star } from "lucide-react";
-import { EventPosterBlock } from "@/components/festival/EventPosterBlock";
+import { Plus, Trash2, Eye, EyeOff, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -192,77 +192,108 @@ export default function AdminFestivalProgram() {
         </div>
       )}
 
-      {/* Festival events list */}
-      <div className="space-y-4">
-        {festivalEvents?.map((fe) => {
-          const ev = fe.event;
-          if (!ev) return null;
+      {/* Festival events list - public accordion style */}
+      {festivalEvents && festivalEvents.length > 0 ? (
+        (() => {
+          // Group by day
+          const eventsByDay = festivalEvents.reduce((acc, fe) => {
+            if (!fe.event) return acc;
+            const day = format(new Date(fe.event.start_at), "EEEE d. MMM", { locale: nb });
+            if (!acc[day]) acc[day] = [];
+            acc[day].push(fe);
+            return acc;
+          }, {} as Record<string, typeof festivalEvents>);
+
           return (
-            <div
-              key={fe.event_id}
-              className={cn(
-                "relative rounded-lg overflow-hidden",
-                !fe.show_in_program && "opacity-50"
-              )}
-            >
-              {canEditProgram && (
-                <div className="absolute top-3 right-3 z-10 flex items-center gap-1">
-                  <Button
-                    variant={fe.is_featured ? "default" : "secondary"}
-                    size="icon"
-                    className="h-8 w-8 bg-black/60 hover:bg-black/80 border-0"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toggleIsFeatured.mutate({ eventId: fe.event_id, isFeatured: !fe.is_featured });
-                    }}
-                    title={fe.is_featured ? "Fjern fra featured" : "Sett som featured"}
-                  >
-                    <Star className={cn("h-4 w-4 text-white", fe.is_featured && "fill-current text-accent")} />
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    className="h-8 w-8 bg-black/60 hover:bg-black/80 border-0"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toggleShowInProgram.mutate({ eventId: fe.event_id, showInProgram: !fe.show_in_program });
-                    }}
-                    title={fe.show_in_program ? "Skjul fra program" : "Vis i program"}
-                  >
-                    {fe.show_in_program
-                      ? <Eye className="h-4 w-4 text-white" />
-                      : <EyeOff className="h-4 w-4 text-white/60" />}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    className="h-8 w-8 bg-black/60 hover:bg-black/80 border-0"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (confirm("Fjern fra festival?")) removeEvent.mutate(fe.event_id);
-                    }}
-                    title="Fjern fra festival"
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+            <div className="space-y-10">
+              {Object.entries(eventsByDay).map(([day, dayEvents], dayIndex) => (
+                <div key={day}>
+                  <div className="text-mono text-[10px] uppercase tracking-[0.2em] text-accent/60 mb-6">
+                    {day}
+                  </div>
+                  <div className="space-y-0">
+                    {dayEvents.map((fe) => {
+                      const ev = fe.event;
+                      if (!ev) return null;
+                      const startTime = new Date(ev.start_at);
+                      return (
+                        <div
+                          key={fe.event_id}
+                          className={cn(
+                            "py-5 border-b border-foreground/5 last:border-0 flex items-start gap-4",
+                            !fe.show_in_program && "opacity-40"
+                          )}
+                        >
+                          {/* Time */}
+                          <div className="flex-shrink-0 w-14 pt-1">
+                            <span className="text-mono text-xs text-foreground/40">
+                              {format(startTime, "HH:mm")}
+                            </span>
+                          </div>
+
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <Link to={`/event/${ev.slug}`} className="block group">
+                              <h3 className="text-display text-lg md:text-xl text-foreground/90 group-hover:text-accent transition-colors duration-300 leading-tight">
+                                {ev.title}
+                              </h3>
+                            </Link>
+                            {(ev as any).venue && (
+                              <p className="mt-1 text-xs text-foreground/30">
+                                {(ev as any).venue.name}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Admin actions */}
+                          {canEditProgram && (
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => toggleIsFeatured.mutate({ eventId: fe.event_id, isFeatured: !fe.is_featured })}
+                                title={fe.is_featured ? "Fjern fra featured" : "Sett som featured"}
+                              >
+                                <Star className={cn("h-3.5 w-3.5 text-foreground/30", fe.is_featured && "fill-current text-accent")} />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => toggleShowInProgram.mutate({ eventId: fe.event_id, showInProgram: !fe.show_in_program })}
+                                title={fe.show_in_program ? "Skjul fra program" : "Vis i program"}
+                              >
+                                {fe.show_in_program
+                                  ? <Eye className="h-3.5 w-3.5 text-foreground/30" />
+                                  : <EyeOff className="h-3.5 w-3.5 text-foreground/20" />}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => { if (confirm("Fjern fra festival?")) removeEvent.mutate(fe.event_id); }}
+                                title="Fjern fra festival"
+                              >
+                                <Trash2 className="h-3.5 w-3.5 text-destructive/60" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              )}
-              <EventPosterBlock
-                event={{ ...ev, venue: (ev as any).venue ?? null }}
-                compact
-                asDiv={canEditProgram}
-              />
+              ))}
             </div>
           );
-        })}
-
-        {festivalEvents?.length === 0 && (
-          <div className="text-center py-8 md:py-12 text-muted-foreground border border-dashed border-border rounded-lg">
-            <p className="text-sm">Ingen events i programmet ennå.</p>
-            <p className="text-xs mt-2">Velg en event fra listen over.</p>
-          </div>
-        )}
-      </div>
+        })()
+      ) : (
+        <div className="text-center py-8 md:py-12 text-muted-foreground border border-dashed border-border rounded-lg">
+          <p className="text-sm">Ingen events i programmet ennå.</p>
+          <p className="text-xs mt-2">Velg en event fra listen over.</p>
+        </div>
+      )}
     </div>
   );
 }
