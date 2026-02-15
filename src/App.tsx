@@ -35,6 +35,11 @@ import VerifyAccessEmail from "./pages/VerifyAccessEmail";
 import CreateProfileWizard from "./pages/onboarding/CreateProfileWizard";
 import ResetPassword from "./pages/ResetPassword";
 import FestivalRoom from "./pages/dashboard/FestivalRoom";
+import FestivalProgramRoom from "./pages/dashboard/FestivalProgramRoom";
+import FestivalTicketsRoom from "./pages/dashboard/FestivalTicketsRoom";
+import FestivalMediaRoom from "./pages/dashboard/FestivalMediaRoom";
+import FestivalSettingsRoom from "./pages/dashboard/FestivalSettingsRoom";
+
 import EventRoomPage from "./pages/EventRoomPage";
 
 // Admin pages
@@ -117,7 +122,12 @@ const App = () => (
           <Route path="/dashboard/contact-info" element={<Navigate to="/dashboard/account" replace />} />
             <Route path="/dashboard/privacy" element={<Privacy />} />
             <Route path="/dashboard/festival/:id" element={<FestivalRoom />} />
-          
+            <Route path="/dashboard/festival/:id/program" element={<FestivalProgramRoom />} />
+            <Route path="/dashboard/festival/:id/tickets" element={<FestivalTicketsRoom />} />
+            <Route path="/dashboard/festival/:id/media" element={<FestivalMediaRoom />} />
+            <Route path="/dashboard/festival/:id/settings" element={<FestivalSettingsRoom />} />
+
+
           <Route path="/p/:slug" element={<PersonaPage />} />
           
           {/* Admin routes */}
