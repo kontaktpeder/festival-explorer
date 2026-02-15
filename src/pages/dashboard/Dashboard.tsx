@@ -18,7 +18,7 @@ import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { parseImageSettings, type ImageSettings } from "@/types/database";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Users, Building2, Pencil, ExternalLink, User, ArrowRight, Eye, Sparkles, Plus, ChevronRight, ChevronDown, QrCode, Info, MapPin, Settings, Shield, Calendar } from "lucide-react";
+import { Users, Building2, ExternalLink, User, Eye, Sparkles, Plus, ChevronRight, ChevronDown, QrCode, Info, MapPin, Settings, Shield, Calendar } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CroppedImage } from "@/components/ui/CroppedImage";
 import type { EntityType, AccessLevel } from "@/types/database";
@@ -490,62 +490,56 @@ export default function Dashboard() {
   const canEdit = (access: AccessLevel) => ["editor", "admin", "owner"].includes(access);
 
   return (
-    <div className="min-h-[100svh] pb-[env(safe-area-inset-bottom)]">
-      {/* Header */}
-      <header className="border-b border-border/20 bg-background/60 backdrop-blur-xl sticky top-0 z-50"
+    <div className="min-h-[100svh] bg-background">
+      {/* Top bar */}
+      <header
+        className="sticky top-0 z-50 bg-background/60 backdrop-blur-xl border-b border-border/20"
         style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
       >
-        <div className="w-full px-4 sm:px-8 lg:px-12 py-2.5 sm:py-4 flex items-center justify-between">
-          <Link to="/" className="text-sm sm:text-lg font-bold text-foreground tracking-tight">
-            GIGGEN <span className="text-muted-foreground/70 font-normal text-[10px] sm:text-base">BACKSTAGE</span>
-          </Link>
+        <div className="w-full px-4 sm:px-8 lg:px-12 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link to="/" className="text-sm sm:text-lg font-bold text-foreground tracking-tight">
+              GIGGEN <span className="text-muted-foreground/70 font-normal text-[10px] sm:text-base">BACKSTAGE</span>
+            </Link>
+          </div>
           {!USE_PERSONA_MODUS_BAR && <PersonaSelector />}
         </div>
       </header>
 
-      {/* Persona modus bar (below header) */}
       {USE_PERSONA_MODUS_BAR && <PersonaModusBar />}
 
-      <main className="w-full px-4 sm:px-8 lg:px-12 py-4 sm:py-10 space-y-5 sm:space-y-12 max-w-5xl mx-auto">
-        {/* Welcome */}
-        <div className="flex items-center gap-3 sm:gap-5">
-          <Avatar className="h-11 w-11 sm:h-16 sm:w-16 md:h-20 md:w-20 border-2 border-border/50 shrink-0">
-            <AvatarImage src={profileAvatarUrl || undefined} style={profileAvatarStyles} className="object-cover" />
-            <AvatarFallback className="text-base sm:text-xl md:text-2xl bg-muted text-muted-foreground">
-              {(currentUser?.displayName || currentUser?.email || "U").charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-foreground tracking-tight truncate">
-              Hei, {userName}
-            </h1>
-            <p className="text-xs sm:text-base text-muted-foreground">Ditt rom før scenen.</p>
+      {/* Hero section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/8 via-background to-accent-warm/5" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-accent-warm/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/4" />
+
+        <div className="relative w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-8">
+          <div className="max-w-5xl flex items-center gap-4 sm:gap-5">
+            <Avatar className="h-14 w-14 sm:h-20 sm:w-20 border-2 border-border/50 shrink-0">
+              <AvatarImage src={profileAvatarUrl || undefined} style={profileAvatarStyles} className="object-cover" />
+              <AvatarFallback className="text-lg sm:text-2xl bg-muted text-muted-foreground">
+                {(currentUser?.displayName || currentUser?.email || "U").charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.1] truncate">
+                Hei, {userName}
+              </h1>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Ditt rom før scenen.</p>
+            </div>
           </div>
         </div>
+      </section>
 
-        {/* Info alert */}
-        <Alert className="bg-accent/5 border-accent/20 rounded-lg">
-          <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent shrink-0" />
-          <AlertDescription className="text-xs sm:text-sm text-muted-foreground">
-            <strong className="text-foreground">Du trenger ikke lage events.</strong>{" "}
-            Festivalen setter sammen programmet. Du fyller inn hvem du er og hva du jobber med.
-          </AlertDescription>
-        </Alert>
-
-        {/* Hint for connecting persona to projects */}
-        {personas && personas.length > 0 && allEntities && allEntities.length > 0 && (
-          <Alert className="bg-secondary/50 border-border/30 rounded-lg">
-            <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
-            <AlertDescription className="text-xs sm:text-sm">
-              <span className="font-medium text-foreground">Koble deg selv til prosjektene dine.</span>{" "}
-              Bruk seksjonen <span className="font-mono text-accent text-[11px] sm:text-sm">Personer bak prosjektet</span> for å legge deg til.
-            </AlertDescription>
-          </Alert>
-        )}
-
+      {/* Main content */}
+      <main
+        className="w-full px-4 sm:px-8 lg:px-12 py-5 sm:py-6 space-y-6 sm:space-y-8"
+        style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 2rem)" }}
+      >
         {/* Filter indicator */}
         {selectedPersonaId && (
-          <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="opacity-70">Filtrert etter profil</span>
             <button onClick={clearPersonaFilter} className="text-foreground/70 hover:text-foreground transition-colors underline underline-offset-2">
               Vis alt
@@ -553,166 +547,134 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Persona section */}
-        <section className="space-y-3 sm:space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-base sm:text-xl font-semibold text-foreground">Din profil</h2>
-              <p className="text-[11px] sm:text-sm text-muted-foreground mt-0.5">
-                Hvem du er som musiker, fotograf eller arrangør
-              </p>
-            </div>
-          </div>
+        {/* Pending invitations */}
+        <PendingInvitations />
 
+        {/* Persona section */}
+        <section className="space-y-3">
+          <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+            Din profil
+          </h2>
           {!isLoadingPersonas && personas && personas.length > 0 ? (
-            <div className="space-y-2 sm:space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
               {personas.map((persona) => (
                 <Link
                   key={persona.id}
                   to={`/dashboard/personas/${persona.id}`}
-                  className="group flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg bg-card/60 hover:bg-card/80 active:bg-card border border-border/30 hover:border-border/50 transition-all"
+                  className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
                 >
-                  <Avatar className="h-11 w-11 sm:h-14 sm:w-14 ring-2 ring-border/50 shrink-0">
-                    <AvatarImage src={persona.avatar_url || undefined} className="object-cover" />
-                    <AvatarFallback className="text-sm sm:text-base bg-muted text-muted-foreground font-medium">
-                      {persona.name.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm sm:text-base font-semibold text-foreground group-hover:text-accent transition-colors truncate">
-                      {persona.name}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      {persona.is_public ? (
-                        <Badge variant="secondary" className="text-[10px] sm:text-xs font-normal px-1.5 py-0">Offentlig</Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-[10px] sm:text-xs font-normal text-warning border-warning/30 px-1.5 py-0">Privat</Badge>
-                      )}
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10 ring-2 ring-border/50 shrink-0">
+                      <AvatarImage src={persona.avatar_url || undefined} className="object-cover" />
+                      <AvatarFallback className="text-sm bg-muted text-muted-foreground font-medium">
+                        {persona.name.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{persona.name}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        {persona.is_public ? (
+                          <Badge variant="secondary" className="text-[10px] font-normal px-1.5 py-0">Offentlig</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[10px] font-normal text-warning border-warning/30 px-1.5 py-0">Privat</Badge>
+                        )}
+                      </div>
                     </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300 shrink-0" />
                   </div>
-                  {/* Always visible on mobile, hover on desktop */}
-                  <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-accent transition-colors shrink-0" />
                 </Link>
               ))}
               <Link
                 to="/dashboard/personas/new"
-                className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg border-2 border-dashed border-border/20 hover:border-accent/40 active:border-accent/50 text-muted-foreground hover:text-accent transition-all"
+                className="group relative rounded-xl border-2 border-dashed border-border/20 hover:border-accent/40 p-5 transition-all duration-300"
               >
-                <div className="h-11 w-11 sm:h-14 sm:w-14 rounded-full border-2 border-dashed border-current flex items-center justify-center shrink-0">
-                  <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
-                </div>
-                <div>
-                  <p className="text-xs sm:text-sm font-medium">Legg til ny profil</p>
-                  <p className="text-[11px] sm:text-xs text-muted-foreground">For en annen rolle eller alias</p>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full border-2 border-dashed border-muted-foreground/30 group-hover:border-accent flex items-center justify-center transition-colors duration-300">
+                    <Plus className="h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors duration-300" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">Legg til ny profil</p>
+                    <p className="text-[11px] text-muted-foreground/60">For en annen rolle eller alias</p>
+                  </div>
                 </div>
               </Link>
             </div>
           ) : !isLoadingPersonas ? (
             <Link
               to="/dashboard/personas/new"
-              className="block p-4 sm:p-5 rounded-lg bg-card/60 hover:bg-card/80 active:bg-card border border-border/30 hover:border-border/50 transition-all group"
+              className="group relative rounded-xl border border-border/30 bg-card/40 p-6 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
             >
-              <div className="flex items-center gap-3 sm:gap-4">
-                <Avatar className="h-11 w-11 sm:h-14 sm:w-14 ring-2 ring-accent/20 shrink-0">
-                  <AvatarFallback className="bg-accent/10 text-accent">
-                    <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-foreground text-sm sm:text-base">Lag din profil</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Vis deg frem som musiker, fotograf eller DJ</p>
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
+                  <Sparkles className="h-5 w-5 text-accent" />
                 </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground">Lag din profil</p>
+                  <p className="text-xs text-muted-foreground">Vis deg frem som musiker, fotograf eller DJ</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300 shrink-0" />
               </div>
             </Link>
           ) : null}
         </section>
 
-        {/* NEW ROLE MODEL STEP 1.1: Split entities into hosts and projects */}
+        {/* Entities sections */}
         {(() => {
           const hostEntities = entities?.filter((e) => inferEntityKind(e) === "host") || [];
           const projectEntities = entities?.filter((e) => inferEntityKind(e) === "project") || [];
-          
+
           return (
             <>
-              {/* Host entities section (venues/organizers) */}
+              {/* Host entities (venues) */}
               {hostEntities.length > 0 && (
-                <section className="space-y-3 sm:space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-base sm:text-xl font-semibold text-foreground">
-                        {selectedPersonaId ? "Scener" : "Dine scener"}
-                      </h2>
-                      <p className="text-[11px] sm:text-sm text-muted-foreground mt-0.5">
-                        Spillested og arrangør
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 sm:space-y-3">
+                <section className="space-y-3">
+                  <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+                    {selectedPersonaId ? "Scener" : "Dine scener"}
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
                     {hostEntities.map((entity) => {
                       const typeConfig = TYPE_CONFIG[entity.type as EntityType];
                       return (
                         <Link
                           key={entity.id}
                           to={`/dashboard/entities/${entity.id}/edit`}
-                          className="group rounded-lg bg-card/60 hover:bg-card/80 active:bg-card border border-border/30 hover:border-border/50 transition-all overflow-hidden block"
+                          className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
                         >
-                          <div className="flex">
-                            <div className="relative w-16 sm:w-28 shrink-0 bg-secondary">
-                              {entity.hero_image_url ? (
-                                <EntityHeroImage imageUrl={entity.hero_image_url} imageSettings={entity.hero_image_settings} name={entity.name} />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <span className="text-xl sm:text-2xl font-bold text-muted-foreground/20">
-                                    {entity.name.charAt(0).toUpperCase()}
-                                  </span>
-                                </div>
-                              )}
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
+                              <Building2 className="h-5 w-5 text-accent" />
                             </div>
-                            <div className="flex-1 min-w-0 p-3 sm:p-4 flex flex-col justify-center">
-                              <div className="space-y-0.5 sm:space-y-1">
-                                <h3 className="text-sm sm:text-base font-semibold text-foreground truncate group-hover:text-accent transition-colors">
-                                  {entity.name}
-                                </h3>
-                                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                                  <Badge variant="secondary" className="text-[10px] sm:text-xs font-normal px-1.5 py-0">
-                                    {typeConfig.label}
-                                  </Badge>
-                                  {entity.city && (
-                                    <span className="flex items-center gap-0.5 text-[10px] sm:text-xs text-muted-foreground/70">
-                                      <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                                      {entity.city}
-                                    </span>
-                                  )}
-                                  {!entity.is_published && (
-                                    <Badge variant="outline" className="text-[10px] sm:text-xs font-normal text-warning border-warning/30 px-1.5 py-0">
-                                      Utkast
-                                    </Badge>
-                                  )}
-                                </div>
-                                <p className="text-[10px] sm:text-xs text-muted-foreground/70">
-                                  {ACCESS_DESCRIPTIONS[entity.access]}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center pr-2 sm:pr-3 shrink-0">
+                            <div className="flex items-center gap-1.5">
                               {entity.is_published && (
                                 <Button
                                   asChild
                                   variant="ghost"
                                   size="icon"
-                                  className="h-7 w-7 sm:h-8 sm:w-8"
+                                  className="h-7 w-7"
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   <Link to={`${typeConfig.route}/${entity.slug}`} target="_blank" onClick={(e) => e.stopPropagation()}>
-                                    <ExternalLink className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                                    <ExternalLink className="h-3.5 w-3.5" />
                                   </Link>
                                 </Button>
                               )}
-                              <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors" />
+                              <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
                             </div>
                           </div>
+                          <h3 className="text-sm font-semibold text-foreground mb-1 truncate">{entity.name}</h3>
+                          <div className="flex items-center gap-1.5">
+                            <Badge variant="secondary" className="text-[10px] font-normal px-1.5 py-0">{typeConfig.label}</Badge>
+                            {entity.city && (
+                              <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground/70">
+                                <MapPin className="h-2.5 w-2.5" />
+                                {entity.city}
+                              </span>
+                            )}
+                            {!entity.is_published && (
+                              <Badge variant="outline" className="text-[10px] font-normal text-warning border-warning/30 px-1.5 py-0">Utkast</Badge>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground/60 mt-1">{ACCESS_DESCRIPTIONS[entity.access]}</p>
                         </Link>
                       );
                     })}
@@ -720,171 +682,174 @@ export default function Dashboard() {
                 </section>
               )}
 
-              {/* Project entities section (artists/bands) */}
-              <section className="space-y-3 sm:space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-base sm:text-xl font-semibold text-foreground">
-                      {selectedPersonaId ? "Prosjekter" : "Dine prosjekter"}
-                    </h2>
-                    <p className="text-[11px] sm:text-sm text-muted-foreground mt-0.5">
-                      Artistprosjekt eller band
-                    </p>
-                  </div>
-                </div>
-
-          {projectEntities.length > 0 ? (
-            <div className="space-y-2 sm:space-y-3">
-              {projectEntities.map((entity) => {
-                const typeConfig = TYPE_CONFIG[entity.type as EntityType];
-                return (
-                  <Link
-                    key={entity.id}
-                    to={`/dashboard/entities/${entity.id}/edit`}
-                    className="group rounded-lg bg-card/60 hover:bg-card/80 active:bg-card border border-border/30 hover:border-border/50 transition-all overflow-hidden block"
-                  >
-                    <div className="flex">
-                      <div className="relative w-16 sm:w-28 shrink-0 bg-secondary">
-                        {entity.hero_image_url ? (
-                          <EntityHeroImage imageUrl={entity.hero_image_url} imageSettings={entity.hero_image_settings} name={entity.name} />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <span className="text-xl sm:text-2xl font-bold text-muted-foreground/20">
-                              {entity.name.charAt(0).toUpperCase()}
-                            </span>
+              {/* Project entities (artists/bands) */}
+              <section className="space-y-3">
+                <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+                  {selectedPersonaId ? "Prosjekter" : "Dine prosjekter"}
+                </h2>
+                {projectEntities.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+                    {projectEntities.map((entity) => {
+                      const typeConfig = TYPE_CONFIG[entity.type as EntityType];
+                      return (
+                        <Link
+                          key={entity.id}
+                          to={`/dashboard/entities/${entity.id}/edit`}
+                          className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
+                              {entity.type === "band" ? <Users className="h-5 w-5 text-accent" /> : <User className="h-5 w-5 text-accent" />}
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              {entity.is_published && (
+                                <Button
+                                  asChild
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <Link to={`${typeConfig.route}/${entity.slug}`} target="_blank" onClick={(e) => e.stopPropagation()}>
+                                    <ExternalLink className="h-3.5 w-3.5" />
+                                  </Link>
+                                </Button>
+                              )}
+                              <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                            </div>
                           </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0 p-3 sm:p-4 flex flex-col justify-center">
-                        <div className="space-y-0.5 sm:space-y-1">
-                          <h3 className="text-sm sm:text-base font-semibold text-foreground truncate group-hover:text-accent transition-colors">
-                            {entity.name}
-                          </h3>
-                          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                            <Badge variant="secondary" className="text-[10px] sm:text-xs font-normal px-1.5 py-0">
-                              {typeConfig.label}
-                            </Badge>
+                          <h3 className="text-sm font-semibold text-foreground mb-1 truncate">{entity.name}</h3>
+                          <div className="flex items-center gap-1.5">
+                            <Badge variant="secondary" className="text-[10px] font-normal px-1.5 py-0">{typeConfig.label}</Badge>
                             {entity.city && (
-                              <span className="flex items-center gap-0.5 text-[10px] sm:text-xs text-muted-foreground/70">
-                                <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                              <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground/70">
+                                <MapPin className="h-2.5 w-2.5" />
                                 {entity.city}
                               </span>
                             )}
                             {!entity.is_published && (
-                              <Badge variant="outline" className="text-[10px] sm:text-xs font-normal text-warning border-warning/30 px-1.5 py-0">
-                                Utkast
-                              </Badge>
+                              <Badge variant="outline" className="text-[10px] font-normal text-warning border-warning/30 px-1.5 py-0">Utkast</Badge>
                             )}
                           </div>
-                          <p className="text-[10px] sm:text-xs text-muted-foreground/70">
-                            {ACCESS_DESCRIPTIONS[entity.access]}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center pr-2 sm:pr-3 shrink-0">
-                        {entity.is_published && (
-                          <Button
-                            asChild
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 sm:h-8 sm:w-8"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Link to={`${typeConfig.route}/${entity.slug}`} target="_blank" onClick={(e) => e.stopPropagation()}>
-                              <ExternalLink className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                            </Link>
-                          </Button>
-                        )}
-                        <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors" />
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="p-4 sm:p-6 rounded-lg bg-card/60 border border-border/30 text-center space-y-2 sm:space-y-3">
-              {selectedPersonaId ? (
-                <>
-                  <p className="text-sm text-muted-foreground">Ingen prosjekter for denne profilen ennå.</p>
-                  <button onClick={clearPersonaFilter} className="text-xs sm:text-sm text-foreground/70 hover:text-foreground underline underline-offset-2 transition-colors">
-                    Se alle prosjekter
-                  </button>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm text-muted-foreground">Du er ikke med i noen prosjekter ennå.</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    Vil du starte noe?{" "}
-                    <a href="mailto:giggen.main@gmail.com" className="text-foreground/80 hover:text-foreground underline underline-offset-2 transition-colors">
-                      Ta kontakt
-                    </a>
-                  </p>
-                </>
-              )}
-            </div>
-          )}
-        </section>
+                          <p className="text-[10px] text-muted-foreground/60 mt-1">{ACCESS_DESCRIPTIONS[entity.access]}</p>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-border/30 bg-card/40 p-6 text-center space-y-2">
+                    {selectedPersonaId ? (
+                      <>
+                        <p className="text-sm text-muted-foreground">Ingen prosjekter for denne profilen ennå.</p>
+                        <button onClick={clearPersonaFilter} className="text-xs text-foreground/70 hover:text-foreground underline underline-offset-2 transition-colors">
+                          Se alle prosjekter
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm text-muted-foreground">Du er ikke med i noen prosjekter ennå.</p>
+                        <p className="text-xs text-muted-foreground">
+                          Vil du starte noe?{" "}
+                          <a href="mailto:giggen.main@gmail.com" className="text-foreground/80 hover:text-foreground underline underline-offset-2 transition-colors">
+                            Ta kontakt
+                          </a>
+                        </p>
+                      </>
+                    )}
+                  </div>
+                )}
+              </section>
             </>
           );
         })()}
 
-        {/* Admin/Crew Section */}
+        {/* Festivals */}
+        {hasBackstageAccess && displayedFestivals.length > 0 && (
+          <section className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+                Festival-team
+              </h2>
+              <span className="text-[11px] text-muted-foreground/50">
+                {displayedFestivals.length} festival{displayedFestivals.length !== 1 ? "er" : ""}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+              {displayedFestivals.map((festival) => (
+                <Link
+                  key={festival.id}
+                  to={`/dashboard/festival/${festival.id}`}
+                  className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
+                      <Calendar className="h-5 w-5 text-accent" />
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Badge
+                        variant={festival.status === "published" ? "default" : "secondary"}
+                        className="text-[10px]"
+                      >
+                        {festival.status === "published" ? "Publisert" : "Utkast"}
+                      </Badge>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                    </div>
+                  </div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">{festival.name}</h3>
+                  {festival.start_at && (
+                    <p className="text-[10px] text-muted-foreground/60">
+                      {new Date(festival.start_at).toLocaleDateString("nb-NO", { day: "numeric", month: "short", year: "numeric" })}
+                    </p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Admin/Crew */}
         {(isAdmin || isStaff) && (
-          <Collapsible open={adminSectionOpen} onOpenChange={setAdminSectionOpen}>
-            <CollapsibleTrigger className="w-full">
-              <div className="flex items-center justify-between p-3 sm:p-4 rounded-lg bg-card/40 hover:bg-card/60 active:bg-card/70 border border-border/20 transition-all">
-                <div className="flex items-center gap-2.5 sm:gap-3">
-                  <div className="p-1.5 sm:p-2 rounded-md bg-muted/50">
-                    <Shield className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
+          <section className="space-y-3">
+            <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+              {isAdmin ? "Admin & Crew" : "Crew-verktøy"}
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
+              {isAdmin && (
+                <Link to="/admin">
+                  <div className="group relative rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm p-4 hover:border-accent/30 hover:bg-card/80 hover:shadow-lg hover:shadow-accent/5 cursor-pointer transition-all duration-300">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
+                        <Settings className="h-5 w-5 text-accent" />
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-foreground mb-1">Admin Panel</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">Administrasjon og innhold</p>
                   </div>
-                  <div className="text-left">
-                    <p className="text-xs sm:text-sm font-medium text-foreground">
-                      {isAdmin ? "Admin & Crew" : "Crew-verktøy"}
-                    </p>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">
-                      {isAdmin ? "Administrasjon og billettskanning" : "Scan billetter på event"}
-                    </p>
+                </Link>
+              )}
+              {isStaff && (
+                <Link to="/crew/checkin">
+                  <div className="group relative rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm p-4 hover:border-accent/30 hover:bg-card/80 hover:shadow-lg hover:shadow-accent/5 cursor-pointer transition-all duration-300">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
+                        <QrCode className="h-5 w-5 text-accent" />
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-foreground mb-1">Check-in</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">Scan og billettkontroll</p>
                   </div>
-                </div>
-                <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${adminSectionOpen ? "rotate-180" : ""}`} />
-              </div>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <div className="mt-2 sm:mt-3 space-y-2">
-                {isAdmin && (
-                  <Link to="/admin" className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg bg-card/60 hover:bg-card/80 active:bg-card border border-border/30 hover:border-border/50 transition-all group">
-                    <div className="p-2 sm:p-2.5 rounded-md bg-accent/10 group-hover:bg-accent/20 transition-colors">
-                      <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm font-medium text-foreground">Admin Panel</p>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">Administrer festival, artister og innhold</p>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary transition-colors shrink-0" />
-                  </Link>
-                )}
-                {isStaff && (
-                  <Link to="/crew/checkin" className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg bg-card/60 hover:bg-card/80 active:bg-card border border-border/30 hover:border-border/50 transition-all group">
-                    <div className="p-2 sm:p-2.5 rounded-md bg-accent/10 group-hover:bg-accent/20 transition-colors">
-                      <QrCode className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm font-medium text-foreground">Check-in billetter</p>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">Scan QR-kode eller søk etter billetter</p>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors shrink-0" />
-                  </Link>
-                )}
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
+                </Link>
+              )}
+            </div>
+          </section>
         )}
 
         {/* Passive CTA */}
         {entities && entities.length > 0 && (
           <div className="text-center pt-1 pb-4">
-            <p className="text-xs sm:text-sm text-muted-foreground/70">
+            <p className="text-xs text-muted-foreground/70">
               Vil du starte noe nytt?{" "}
               <a className="text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors" href="mailto:giggen.main@gmail.com">
                 Ta kontakt
