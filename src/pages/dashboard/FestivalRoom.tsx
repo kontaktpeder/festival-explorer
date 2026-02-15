@@ -12,10 +12,10 @@ import {
   Ticket,
   ExternalLink,
   FileText,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { LoadingState } from "@/components/ui/LoadingState";
 
 interface ModuleCard {
@@ -44,16 +44,12 @@ export default function FestivalRoom() {
     enabled: !!id,
   });
 
-  // Fetch user's permissions for this festival
   const { data: permissions } = useQuery({
     queryKey: ["festival-room-permissions", id],
     queryFn: async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
-      // Check if user is admin first
       const { data: isAdmin } = await supabase.rpc("is_admin");
       if (isAdmin) {
         return {
@@ -68,17 +64,14 @@ export default function FestivalRoom() {
         };
       }
 
-      // Get user's personas
       const { data: personas } = await supabase
         .from("personas")
         .select("id")
         .eq("user_id", user.id);
 
       if (!personas || personas.length === 0) return null;
-
       const personaIds = personas.map((p) => p.id);
 
-      // Find the user's festival_participants entry
       const { data: fp } = await supabase
         .from("festival_participants")
         .select(
@@ -90,7 +83,6 @@ export default function FestivalRoom() {
 
       if (!fp || fp.length === 0) return null;
 
-      // Merge permissions from all matching entries (OR logic)
       return {
         can_edit_festival: fp.some((f) => f.can_edit_festival),
         can_edit_events: fp.some((f) => f.can_edit_events),
@@ -105,7 +97,6 @@ export default function FestivalRoom() {
     enabled: !!id,
   });
 
-  // Fetch events linked to this festival
   const { data: festivalEvents } = useQuery({
     queryKey: ["festival-room-events", id],
     queryFn: async () => {
@@ -136,21 +127,13 @@ export default function FestivalRoom() {
   }
 
   const p = permissions;
-
   const canAccessEvents = p?.can_edit_festival || p?.can_edit_events;
 
   const modules: ModuleCard[] = [
     {
       title: "Program",
-      description: "Se festivalens program og rekkefølge",
+      description: "Rekkefølge og programoversikt",
       icon: Calendar,
-      to: `/admin/festivals/${id}/program`,
-      hidden: !canAccessEvents,
-    },
-    {
-      title: "Events",
-      description: `${festivalEvents?.length || 0} events i festivalen`,
-      icon: Music,
       to: `/admin/festivals/${id}/program`,
       hidden: !canAccessEvents,
     },
@@ -163,7 +146,7 @@ export default function FestivalRoom() {
     },
     {
       title: "Billettoversikt",
-      description: "Se billettstatus og statistikk",
+      description: "Status og statistikk",
       icon: Ticket,
       to: "/admin/tickets",
       hidden: !p?.can_see_ticket_stats,
@@ -177,14 +160,14 @@ export default function FestivalRoom() {
     },
     {
       title: "Filbank",
-      description: "Mediefiler for festivalen",
+      description: "Mediefiler og bilder",
       icon: FolderOpen,
       to: "/admin/media",
       hidden: !p?.can_access_media,
     },
     {
       title: "Rapport",
-      description: "Festivalrapport og sammendrag",
+      description: "Sammendrag og innsikt",
       icon: BarChart3,
       disabled: true,
       hidden: !p?.can_see_report,
@@ -200,137 +183,176 @@ export default function FestivalRoom() {
 
   const visibleModules = modules.filter((m) => !m.hidden);
 
+  const dateStr = festival.start_at
+    ? new Date(festival.start_at).toLocaleDateString("nb-NO", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : null;
+
   return (
-    <div className="min-h-[100svh] pb-[env(safe-area-inset-bottom)]">
-      {/* Header */}
-      <header className="border-b border-border/30 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-3xl mx-auto px-3 sm:px-6 py-2.5 sm:py-4 flex items-center justify-between">
-          <Link to="/" className="text-sm sm:text-lg font-bold text-foreground tracking-tight">
-            GIGGEN <span className="text-muted-foreground/70 font-normal text-[10px] sm:text-base">BACKSTAGE</span>
-          </Link>
-          <Button asChild variant="ghost" size="sm" className="text-xs">
+    <div className="min-h-[100svh] bg-background">
+      {/* Top bar */}
+      <header
+        className="sticky top-0 z-50 bg-background/60 backdrop-blur-xl border-b border-border/20"
+        style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
+      >
+        <div className="w-full px-4 sm:px-8 lg:px-12 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <span className="text-sm font-semibold tracking-tight text-foreground">
+              BACKSTAGE
+            </span>
+          </div>
+          <Button asChild variant="outline" size="sm" className="text-xs border-border/30 hover:border-accent/40">
             <Link to={`/festival/${festival.slug}`} target="_blank">
-              <ExternalLink className="h-3.5 w-3.5 mr-1" />
+              <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
               Se live
             </Link>
           </Button>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-3 sm:px-6 py-4 sm:py-8 space-y-5 sm:space-y-6">
-        {/* Back + title */}
-        <div className="space-y-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate("/dashboard")}
-            className="text-xs text-muted-foreground -ml-2"
-          >
-            <ArrowLeft className="h-3.5 w-3.5 mr-1" />
-            Tilbake til dashbord
-          </Button>
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">{festival.name}</h1>
-            <Badge
-              variant={festival.status === "published" ? "default" : "secondary"}
-              className="text-[10px] shrink-0"
-            >
-              {festival.status === "published" ? "Publisert" : "Utkast"}
-            </Badge>
+      {/* Hero section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/8 via-background to-accent-warm/5" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-accent-warm/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/4" />
+        
+        <div className="relative w-full px-4 sm:px-8 lg:px-12 py-10 sm:py-16 lg:py-20">
+          <div className="max-w-5xl">
+            <div className="flex items-center gap-3 mb-4">
+              <Badge
+                variant={festival.status === "published" ? "default" : "secondary"}
+                className="text-[10px] uppercase tracking-widest"
+              >
+                {festival.status === "published" ? "Publisert" : "Utkast"}
+              </Badge>
+              {dateStr && (
+                <span className="text-xs text-muted-foreground">{dateStr}</span>
+              )}
+            </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.1]">
+              {festival.name}
+            </h1>
           </div>
-          {festival.start_at && (
-            <p className="text-xs text-muted-foreground">
-              {new Date(festival.start_at).toLocaleDateString("nb-NO", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })}
-              {festival.end_at &&
-                ` – ${new Date(festival.end_at).toLocaleDateString("nb-NO", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })}`}
-            </p>
-          )}
         </div>
+      </section>
 
-        {/* Module cards */}
+      {/* Main content */}
+      <main
+        className="w-full px-4 sm:px-8 lg:px-12 py-8 sm:py-10 space-y-10 sm:space-y-14"
+        style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 2rem)" }}
+      >
+        {/* Module grid */}
         {visibleModules.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {visibleModules.map((mod) => {
-              const Icon = mod.icon;
-              const content = (
-                <Card
-                  className={`transition-colors ${
-                    mod.disabled
-                      ? "opacity-50 cursor-not-allowed"
-                      : "hover:border-accent/40 cursor-pointer"
-                  }`}
-                >
-                  <CardHeader className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-md bg-accent/10 flex items-center justify-center shrink-0">
-                        <Icon className="h-4 w-4 text-accent" />
+          <section className="space-y-5">
+            <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+              Verktøy
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+              {visibleModules.map((mod) => {
+                const Icon = mod.icon;
+                const inner = (
+                  <div
+                    key={mod.title}
+                    className={`group relative rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm p-5 sm:p-6 transition-all duration-300 ${
+                      mod.disabled
+                        ? "opacity-40 cursor-not-allowed"
+                        : "hover:border-accent/30 hover:bg-card/80 hover:shadow-lg hover:shadow-accent/5 cursor-pointer"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className={`h-10 w-10 rounded-lg flex items-center justify-center transition-colors duration-300 ${
+                        mod.disabled 
+                          ? "bg-muted/50" 
+                          : "bg-accent/10 group-hover:bg-accent/20"
+                      }`}>
+                        <Icon className={`h-5 w-5 transition-colors duration-300 ${
+                          mod.disabled ? "text-muted-foreground" : "text-accent"
+                        }`} />
                       </div>
-                      <div className="min-w-0">
-                        <CardTitle className="text-sm font-semibold">
-                          {mod.title}
-                          {mod.disabled && (
-                            <span className="ml-2 text-[10px] font-normal text-muted-foreground">
-                              Kommer snart
-                            </span>
-                          )}
-                        </CardTitle>
-                        <CardDescription className="text-xs mt-0.5">
-                          {mod.description}
-                        </CardDescription>
-                      </div>
+                      {!mod.disabled && (
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                      )}
                     </div>
-                  </CardHeader>
-                </Card>
-              );
+                    <h3 className="text-sm font-semibold text-foreground mb-1">
+                      {mod.title}
+                      {mod.disabled && (
+                        <span className="ml-2 text-[10px] font-normal text-muted-foreground/60">
+                          Kommer snart
+                        </span>
+                      )}
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {mod.description}
+                    </p>
+                  </div>
+                );
 
-              if (mod.disabled || !mod.to) return <div key={mod.title}>{content}</div>;
-              return (
-                <Link key={mod.title} to={mod.to}>
-                  {content}
-                </Link>
-              );
-            })}
-          </div>
+                if (mod.disabled || !mod.to) return <div key={mod.title}>{inner}</div>;
+                return (
+                  <Link key={mod.title} to={mod.to}>
+                    {inner}
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
         ) : (
-          <div className="p-6 rounded-lg bg-card/60 border border-border/30 text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Du har ingen aktive verktøy for denne festivalen ennå.
-            </p>
-            <p className="text-[11px] text-muted-foreground/50">
-              Kontakt festivalsjefen for å få tilgang til flere funksjoner.
-            </p>
-          </div>
+          <section className="py-16 text-center">
+            <div className="max-w-md mx-auto space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Du har ingen aktive verktøy for denne festivalen ennå.
+              </p>
+              <p className="text-[11px] text-muted-foreground/50">
+                Kontakt festivalsjefen for å få tilgang til flere funksjoner.
+              </p>
+            </div>
+          </section>
         )}
 
-        {/* Events list (only if can edit) */}
+        {/* Events */}
         {canAccessEvents && festivalEvents && festivalEvents.length > 0 && (
-          <div className="space-y-2">
-            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Events i festivalen
-            </h2>
-            <div className="space-y-1.5">
+          <section className="space-y-5">
+            <div className="flex items-center justify-between">
+              <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+                Events
+              </h2>
+              <span className="text-[11px] text-muted-foreground/50">
+                {festivalEvents.length} event{festivalEvents.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {festivalEvents.map((fe: any) =>
                 fe.event ? (
                   <Link
                     key={fe.event_id}
                     to={`/event-room/${fe.event.id}`}
-                    className="flex items-center gap-3 p-3 rounded-md border border-border/30 hover:border-accent/30 transition-colors bg-card/60"
+                    className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
                   >
-                    <Music className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className="text-sm font-medium truncate">{fe.event.title}</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center shrink-0 transition-colors duration-300">
+                          <Music className="h-4 w-4 text-accent" />
+                        </div>
+                        <span className="text-sm font-medium text-foreground truncate">
+                          {fe.event.title}
+                        </span>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300 shrink-0 ml-2" />
+                    </div>
                   </Link>
                 ) : null
               )}
             </div>
-          </div>
+          </section>
         )}
       </main>
     </div>
