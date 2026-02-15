@@ -34,6 +34,7 @@ import RequestAccess from "./pages/RequestAccess";
 import VerifyAccessEmail from "./pages/VerifyAccessEmail";
 import CreateProfileWizard from "./pages/onboarding/CreateProfileWizard";
 import ResetPassword from "./pages/ResetPassword";
+import FestivalRoom from "./pages/dashboard/FestivalRoom";
 
 // Admin pages
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -112,7 +113,8 @@ const App = () => (
           <Route path="/dashboard/settings/change-password" element={<ChangePassword />} />
           <Route path="/dashboard/account" element={<AccountCenter />} />
           <Route path="/dashboard/contact-info" element={<Navigate to="/dashboard/account" replace />} />
-          <Route path="/dashboard/privacy" element={<Privacy />} />
+            <Route path="/dashboard/privacy" element={<Privacy />} />
+            <Route path="/dashboard/festival/:id" element={<FestivalRoom />} />
           
           <Route path="/p/:slug" element={<PersonaPage />} />
           
