@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, QrCode, Download, Loader2, AlertCircle, CheckCircle, Camera, X, User, Mail, Clock, PartyPopper } from "lucide-react";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Html5Qrcode } from "html5-qrcode";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -57,6 +57,9 @@ export default function CrewCheckInPage() {
   // Synchronous scan lock - prevents multiple requests per "scan round"
   const scanLockRef = useRef(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const festivalId = searchParams.get("festival");
+  const backTo = festivalId ? `/dashboard/festival/${festivalId}` : "/dashboard";
   const [deviceId] = useState(() =>
     typeof crypto !== "undefined" && crypto.randomUUID
       ? crypto.randomUUID()
@@ -427,7 +430,7 @@ export default function CrewCheckInPage() {
       <BackstageShell
         title="Check-in"
         subtitle="Scan billetter"
-        backTo="/dashboard"
+        backTo={backTo}
         actions={
           isAdmin ? (
             <Button variant="ghost" size="sm" onClick={handleExportCSV}>

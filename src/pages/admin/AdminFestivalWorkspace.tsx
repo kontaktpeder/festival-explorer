@@ -99,7 +99,7 @@ export default function AdminFestivalWorkspace() {
       title: "Scan billetter",
       description: "Innsjekk og billettkontroll",
       icon: QrCode,
-      to: "/crew/checkin",
+      to: `/crew/checkin?festival=${id}`,
     },
     {
       title: "Filbank",
