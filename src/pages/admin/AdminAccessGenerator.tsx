@@ -1,15 +1,11 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Link2, UserPlus, Check, Globe } from "lucide-react";
+import { UserPlus, Globe } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { getAuthenticatedUser } from "@/lib/admin-helpers";
-import { getPublicUrl } from "@/lib/utils";
-import { useCreateInvitation } from "@/hooks/useInvitations";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEntityTypes, usePlatformEntity } from "@/hooks/useEntityTypes";
@@ -17,7 +13,8 @@ import { getEntityTypeConfig, getDefaultEntityTypeConfig } from "@/lib/entity-ty
 import { EntityTypeIcon } from "@/components/ui/EntityTypeIcon";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { EntityType, AccessLevel, Entity } from "@/types/database";
+import type { AccessLevel, Entity } from "@/types/database";
+import { ContextualInviteModal } from "@/components/invite/ContextualInviteModal";
 
 type InviteMode = "platform" | "entity";
 
@@ -29,7 +26,6 @@ const ACCESS_OPTIONS: { value: Exclude<AccessLevel, 'owner'>; label: string; des
 
 export default function AdminAccessGenerator() {
   const { toast } = useToast();
-  const createInvitation = useCreateInvitation();
   const [searchParams] = useSearchParams();
 
   // Read URL params for preselection
@@ -42,9 +38,7 @@ export default function AdminAccessGenerator() {
   const [entityType, setEntityType] = useState<string>("solo");
   const [selectedEntityId, setSelectedEntityId] = useState<string>(initialEntityId || "");
   const [accessLevel, setAccessLevel] = useState<Exclude<AccessLevel, 'owner'>>("admin");
-  const [email, setEmail] = useState("");
-  const [generatedLink, setGeneratedLink] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [initialEntityLoaded, setInitialEntityLoaded] = useState(!initialEntityId);
 
   // Load entity types from database
@@ -59,7 +53,6 @@ export default function AdminAccessGenerator() {
       const config = getEntityTypeConfig(type, entityTypes);
       if (config) return config;
     }
-    // Safe fallback - treat unknown types as solo
     const safeType = (type === 'venue' || type === 'solo' || type === 'band') ? type : 'solo';
     return getDefaultEntityTypeConfig(safeType);
   };
@@ -104,102 +97,16 @@ export default function AdminAccessGenerator() {
 
   const selectedEntity = entities?.find((e) => e.id === selectedEntityId);
 
-  const handleGenerate = async () => {
-    // Validate email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast({ 
-        title: "Ugyldig e-post", 
-        description: "Skriv inn en gyldig e-postadresse", 
-        variant: "destructive" 
-      });
-      return;
-    }
+  const inviteTarget =
+    inviteMode === "platform" && platformEntity
+      ? { entityId: platformEntity.id, label: "GIGGEN-plattformen" }
+      : inviteMode === "entity" && selectedEntity
+        ? { entityId: selectedEntity.id, label: selectedEntity.name }
+        : null;
 
-    // For entity mode, require selected entity
-    if (inviteMode === "entity" && !selectedEntityId) {
-      toast({ 
-        title: "Feil", 
-        description: "Velg en entity", 
-        variant: "destructive" 
-      });
-      return;
-    }
+  const canOpenInvite = !!inviteTarget;
 
-    // For platform mode, require platform entity
-    if (inviteMode === "platform" && !platformEntity) {
-      toast({ 
-        title: "Feil", 
-        description: "Platform-entity ikke funnet. Kontakt administrator.", 
-        variant: "destructive" 
-      });
-      return;
-    }
-
-    try {
-      const user = await getAuthenticatedUser();
-
-      // Get entity ID - either selected or platform
-      const entityIdToUse = inviteMode === "platform" 
-        ? platformEntity!.id 
-        : selectedEntityId;
-
-      // Rolle hentes automatisk fra personaens category_tags når de oppretter persona
-      const created = await createInvitation.mutateAsync({
-        entityId: entityIdToUse,
-        email,
-        access: accessLevel,
-        roleLabels: [],
-        invitedBy: user.id,
-      });
-
-      // Generate short invitation link using published URL + token
-      const publishedUrl = getPublicUrl();
-      const token = (created as { token?: string | null })?.token;
-      const link = token
-        ? `${publishedUrl}/i?t=${encodeURIComponent(token)}`
-        : `${publishedUrl}/accept-invitation?email=${encodeURIComponent(email)}&entity_id=${entityIdToUse}`;
-
-      setGeneratedLink(link);
-
-      toast({ title: "Invitasjon opprettet!" });
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Kunne ikke opprette invitasjon";
-      toast({ 
-        title: "Feil", 
-        description: message, 
-        variant: "destructive" 
-      });
-    }
-  };
-
-  const handleCopy = async () => {
-    if (!generatedLink) return;
-    
-    try {
-      await navigator.clipboard.writeText(generatedLink);
-      setCopied(true);
-      toast({ title: "Lenke kopiert!" });
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast({ 
-        title: "Kunne ikke kopiere", 
-        description: "Kopier lenken manuelt", 
-        variant: "destructive" 
-      });
-    }
-  };
-
-  const resetForm = () => {
-    setSelectedEntityId("");
-    setEmail("");
-    setGeneratedLink(null);
-    setCopied(false);
-  };
-
-  const canGenerate = email && (inviteMode === "platform" ? !!platformEntity : !!selectedEntityId);
-
-  // Filter entity types for entity mode (exclude system types if any)
+  // Filter entity types for entity mode
   const selectableEntityTypes = entityTypes?.filter(et => et.is_enabled) || [];
 
   return (
@@ -345,9 +252,9 @@ export default function AdminAccessGenerator() {
       {/* Invitation details */}
       <Card>
         <CardHeader>
-          <CardTitle>Invitasjonsdetaljer</CardTitle>
+          <CardTitle>Inviter</CardTitle>
           <CardDescription>
-            Velg tilgangsnivå og mottakers e-post
+            Velg tilgangsnivå, så åpne invitasjonsflyten. Der kan du sende lenke til ny bruker eller invitere eksisterende bruker.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -376,70 +283,24 @@ export default function AdminAccessGenerator() {
             </Select>
           </div>
 
-
-          {/* Email */}
-          <div className="space-y-2">
-            <Label htmlFor="email">E-postadresse</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="bruker@example.com"
-            />
-          </div>
-
-          {/* Generate button */}
           <Button
-            onClick={handleGenerate}
-            disabled={!canGenerate || createInvitation.isPending}
-            className="w-full"
+            onClick={() => setInviteModalOpen(true)}
+            disabled={!canOpenInvite}
+            className="w-full gap-2"
           >
-            <Link2 className="h-4 w-4 mr-2" />
-            {createInvitation.isPending ? "Genererer..." : "Generer invitasjonslenke"}
+            <UserPlus className="h-4 w-4" />
+            Åpne invitasjonsflyt
           </Button>
         </CardContent>
       </Card>
 
-      {/* Result */}
-      {generatedLink && (
-        <Card className="border-accent/30 bg-accent/5">
-          <CardHeader>
-            <CardTitle className="text-accent-foreground flex items-center gap-2">
-              <Check className="h-5 w-5" />
-              Invitasjonslenke generert!
-            </CardTitle>
-            <CardDescription>
-              Kopier lenken og send den til {email}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <Input
-                value={generatedLink}
-                readOnly
-                className="font-mono text-sm"
-              />
-              <Button
-                onClick={handleCopy}
-                variant={copied ? "default" : "outline"}
-                className="flex-shrink-0"
-              >
-                {copied ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Mottakeren kan bruke denne lenken for å opprette konto eller logge inn og få tilgang.
-            </p>
-            <Button variant="outline" onClick={resetForm} className="w-full">
-              Generer ny invitasjon
-            </Button>
-          </CardContent>
-        </Card>
+      {inviteTarget && (
+        <ContextualInviteModal
+          open={inviteModalOpen}
+          onOpenChange={setInviteModalOpen}
+          target={inviteTarget}
+          accessLevel={accessLevel}
+        />
       )}
     </div>
   );
