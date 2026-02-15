@@ -141,7 +141,7 @@ export default function FestivalRoom() {
       title: "Scan billetter",
       description: "Innsjekk og billettkontroll",
       icon: QrCode,
-      to: "/crew/checkin",
+      to: `/crew/checkin?festival=${id}`,
       hidden: !p?.can_scan_tickets,
     },
     {
