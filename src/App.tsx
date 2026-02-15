@@ -39,6 +39,9 @@ import FestivalProgramRoom from "./pages/dashboard/FestivalProgramRoom";
 import FestivalTicketsRoom from "./pages/dashboard/FestivalTicketsRoom";
 import FestivalMediaRoom from "./pages/dashboard/FestivalMediaRoom";
 import FestivalSettingsRoom from "./pages/dashboard/FestivalSettingsRoom";
+import FestivalTeamRoom from "./pages/dashboard/FestivalTeamRoom";
+import FestivalEventsRoom from "./pages/dashboard/FestivalEventsRoom";
+import FestivalWorkspaceRoom from "./pages/dashboard/FestivalWorkspaceRoom";
 
 import EventRoomPage from "./pages/EventRoomPage";
 
@@ -126,6 +129,9 @@ const App = () => (
             <Route path="/dashboard/festival/:id/tickets" element={<FestivalTicketsRoom />} />
             <Route path="/dashboard/festival/:id/media" element={<FestivalMediaRoom />} />
             <Route path="/dashboard/festival/:id/settings" element={<FestivalSettingsRoom />} />
+            <Route path="/dashboard/festival/:id/team" element={<FestivalTeamRoom />} />
+            <Route path="/dashboard/festival/:id/events" element={<FestivalEventsRoom />} />
+            <Route path="/dashboard/festival/:id/workspace" element={<FestivalWorkspaceRoom />} />
 
 
           <Route path="/p/:slug" element={<PersonaPage />} />
