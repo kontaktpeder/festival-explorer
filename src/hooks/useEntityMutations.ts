@@ -212,6 +212,7 @@ export function useCreateInvitation() {
       invitedBy,
       invitedUserId,
       invitedPersonaId,
+      festivalId,
     }: {
       entityId: string;
       email?: string | null;
@@ -220,6 +221,7 @@ export function useCreateInvitation() {
       invitedBy: string;
       invitedUserId?: string | null;
       invitedPersonaId?: string | null;
+      festivalId?: string | null;
     }) => {
       // Only generate token for email-based invitations
       const token = invitedUserId ? null : crypto.randomUUID();
@@ -235,7 +237,8 @@ export function useCreateInvitation() {
           invited_by: invitedBy,
           invited_user_id: invitedUserId ?? null,
           invited_persona_id: invitedPersonaId ?? null,
-        })
+          festival_id: festivalId ?? null,
+        } as any)
         .select()
         .single();
       if (error) throw error;

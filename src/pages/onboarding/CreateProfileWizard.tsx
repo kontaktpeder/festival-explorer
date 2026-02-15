@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -63,6 +64,12 @@ export default function CreateProfileWizard() {
         is_public: isPublic,
         type: type || undefined,
       });
+      // Auto-add to any pending festival teams from invitation
+      try {
+        await supabase.rpc('add_pending_festival_teams_for_persona' as any, { p_persona_id: persona.id });
+      } catch (_) {
+        // Ignore – no pending invites is fine
+      }
       localStorage.setItem("selectedPersonaId", persona.id);
       window.dispatchEvent(new Event(PERSONA_CHANGE_EVENT));
       navigate("/dashboard?from=onboarding");
