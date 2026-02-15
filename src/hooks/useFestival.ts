@@ -5,6 +5,25 @@ import type { Festival, FestivalEvent, Event, EventEntity, Entity, Venue } from 
 // Re-export entity hooks for convenience
 export { useEntity, useMyEntities, useAdminEntities, usePublishedEntitiesByType } from "./useEntity";
 
+/** Festival IDs where a specific persona is a team member (host/backstage) */
+export function useFestivalIdsForPersona(personaId: string | null) {
+  return useQuery({
+    queryKey: ["festival-ids-for-persona", personaId],
+    queryFn: async () => {
+      if (!personaId) return [];
+      const { data, error } = await supabase
+        .from("festival_participants")
+        .select("festival_id")
+        .eq("participant_id", personaId)
+        .eq("participant_kind", "persona")
+        .in("zone", ["host", "backstage"]);
+      if (error) throw error;
+      return [...new Set((data || []).map((r) => r.festival_id))];
+    },
+    enabled: !!personaId,
+  });
+}
+
 export function useFestival(slug: string) {
   return useQuery({
     queryKey: ["festival", slug],
