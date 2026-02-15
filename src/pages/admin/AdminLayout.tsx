@@ -95,7 +95,6 @@ export default function AdminLayout() {
     { to: "/admin", icon: LayoutDashboard, label: "Dashboard", exact: true },
     { to: "/admin/entities", icon: Layers, label: "Prosjekter & venues", adminOnly: true },
     { to: "/admin/access-generator", icon: UserPlus, label: "Tilgang", adminOnly: true },
-    { to: "/admin/timeline", icon: Clock, label: "Timeline", adminOnly: true },
     { to: "/admin/deletion-requests", icon: Trash2, label: "Sletting", adminOnly: true },
     { to: "/admin/inbox", icon: Inbox, label: "Inbox", adminOnly: true },
     { to: "/admin/access-requests", icon: UserPlus, label: "Forespørsler", adminOnly: true },
