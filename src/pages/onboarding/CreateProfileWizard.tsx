@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import type { ImageSettings } from "@/types/database";
 import { Music, Camera, Wrench, Building2, Check } from "lucide-react";
 import { toast } from "sonner";
+import welcomeBg from "@/assets/giggen-welcome-bg.png";
 
 const PERSONA_CHANGE_EVENT = "personaChanged";
 
@@ -81,9 +82,11 @@ export default function CreateProfileWizard() {
   const stepCount = 4;
 
   return (
-    <div className="min-h-[100svh] bg-background flex flex-col">
+    <div className="min-h-[100svh] bg-background flex flex-col relative overflow-hidden">
+      {/* Background welcome image – only visible on intro step */}
+      {step === 0 && <WelcomeBackground />}
       {/* Top bar */}
-      <div className="w-full max-w-2xl mx-auto px-6 sm:px-10 pt-6 sm:pt-10 flex items-center justify-between">
+      <div className="relative z-10 w-full max-w-2xl mx-auto px-6 sm:px-10 pt-6 sm:pt-10 flex items-center justify-between">
         <Link to="/" className="text-sm font-bold text-foreground tracking-tight">
           GIGGEN <span className="text-muted-foreground/60 font-normal text-[10px]">BACKSTAGE</span>
         </Link>
@@ -91,7 +94,7 @@ export default function CreateProfileWizard() {
       </div>
 
       {/* Content area */}
-      <div className="flex-1 flex flex-col justify-center w-full max-w-2xl mx-auto px-6 sm:px-10">
+      <div className="relative z-10 flex-1 flex flex-col justify-center w-full max-w-2xl mx-auto px-6 sm:px-10">
         {step === 0 && <StepIntro onNext={() => setStep(1)} onCancel={() => navigate("/dashboard")} />}
         {step === 1 && <StepRole type={type} setType={setType} onNext={() => setStep(2)} onBack={() => setStep(0)} />}
         {step === 2 && (
@@ -120,6 +123,30 @@ export default function CreateProfileWizard() {
           />
         )}
       </div>
+    </div>
+  );
+}
+
+/* ── Welcome Background ── */
+function WelcomeBackground() {
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = welcomeBg;
+    img.onload = () => setLoaded(true);
+  }, []);
+
+  return (
+    <div
+      className="absolute inset-0 z-0 transition-opacity duration-1000 ease-out"
+      style={{ opacity: loaded ? 0.12 : 0 }}
+    >
+      <img
+        src={welcomeBg}
+        alt=""
+        className="w-full h-full object-cover scale-110 animate-[scale-in_1.5s_ease-out_forwards]"
+      />
     </div>
   );
 }
