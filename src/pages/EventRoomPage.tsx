@@ -250,14 +250,12 @@ export default function EventRoomPage() {
         if (error) throw error;
         return data;
       } else {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from("events")
           .update(payload as never)
-          .eq("id", id)
-          .select()
-          .single();
+          .eq("id", id);
         if (error) throw error;
-        return data;
+        return null;
       }
     },
     onSuccess: (data) => {
