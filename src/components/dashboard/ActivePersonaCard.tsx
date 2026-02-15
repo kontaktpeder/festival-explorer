@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
-import { Pencil, ChevronDown } from "lucide-react";
+import { Pencil, ChevronDown, Plus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,30 +68,35 @@ export function ActivePersonaCard({ persona }: ActivePersonaCardProps) {
             Rediger profil
           </Link>
         </Button>
-        {personas && personas.length > 1 && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                Bytt
-                <ChevronDown className="h-3 w-3 ml-1" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
-                Velg profil
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {personas.map((p) => (
-                <DropdownMenuItem key={p.id} onClick={() => handleSelect(p.id)}>
-                  <span className="truncate flex-1">{p.name}</span>
-                  {selectedPersonaId === p.id && (
-                    <Badge variant="secondary" className="ml-auto text-[10px]">Aktiv</Badge>
-                  )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              Bytt
+              <ChevronDown className="h-3 w-3 ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 bg-popover">
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              Velg profil
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {personas?.map((p) => (
+              <DropdownMenuItem key={p.id} onClick={() => handleSelect(p.id)}>
+                <span className="truncate flex-1">{p.name}</span>
+                {selectedPersonaId === p.id && (
+                  <Badge variant="secondary" className="ml-auto text-[10px]">Aktiv</Badge>
+                )}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to="/dashboard/personas/new">
+                <Plus className="h-4 w-4 mr-2" />
+                Opprett ny profil
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
