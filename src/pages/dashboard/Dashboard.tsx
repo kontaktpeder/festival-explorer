@@ -305,32 +305,44 @@ export default function Dashboard() {
                   <Link
                     key={entity.id}
                     to={`/dashboard/entities/${entity.id}/edit`}
-                    className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
+                    className="group relative rounded-xl border border-border/30 bg-card/40 overflow-hidden hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
                   >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
-                        <Building2 className="h-5 w-5 text-accent" />
+                    {entity.hero_image_url ? (
+                      <div className="relative h-24 sm:h-28 w-full overflow-hidden">
+                        <EntityHeroImage imageUrl={entity.hero_image_url} imageSettings={entity.hero_image_settings} name={entity.name} />
+                        <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                    ) : (
+                      <div className="h-24 sm:h-28 w-full bg-secondary/30 flex items-center justify-center">
+                        <Building2 className="h-8 w-8 text-muted-foreground/20" />
+                      </div>
+                    )}
+                    <div className="p-4">
+                      <h3 className="text-sm font-semibold text-foreground mb-1 truncate">{entity.name}</h3>
+                      <p className="text-xs text-muted-foreground">{ACCESS_DESCRIPTIONS[entity.access]}</p>
                     </div>
-                    <h3 className="text-sm font-semibold text-foreground mb-1 truncate">{entity.name}</h3>
-                    <p className="text-xs text-muted-foreground">{ACCESS_DESCRIPTIONS[entity.access]}</p>
                   </Link>
                 ))}
                 {projectEntities.map((entity) => (
                   <Link
                     key={entity.id}
                     to={`/dashboard/entities/${entity.id}/edit`}
-                    className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
+                    className="group relative rounded-xl border border-border/30 bg-card/40 overflow-hidden hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
                   >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
-                        {entity.type === "band" ? <Users className="h-5 w-5 text-accent" /> : <User className="h-5 w-5 text-accent" />}
+                    {entity.hero_image_url ? (
+                      <div className="relative h-24 sm:h-28 w-full overflow-hidden">
+                        <EntityHeroImage imageUrl={entity.hero_image_url} imageSettings={entity.hero_image_settings} name={entity.name} />
+                        <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                    ) : (
+                      <div className="h-24 sm:h-28 w-full bg-secondary/30 flex items-center justify-center">
+                        {entity.type === "band" ? <Users className="h-8 w-8 text-muted-foreground/20" /> : <User className="h-8 w-8 text-muted-foreground/20" />}
+                      </div>
+                    )}
+                    <div className="p-4">
+                      <h3 className="text-sm font-semibold text-foreground mb-1 truncate">{entity.name}</h3>
+                      <p className="text-xs text-muted-foreground">{ACCESS_DESCRIPTIONS[entity.access]}</p>
                     </div>
-                    <h3 className="text-sm font-semibold text-foreground mb-1 truncate">{entity.name}</h3>
-                    <p className="text-xs text-muted-foreground">{ACCESS_DESCRIPTIONS[entity.access]}</p>
                   </Link>
                 ))}
               </div>
