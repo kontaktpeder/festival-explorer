@@ -170,7 +170,7 @@ function StepRole({
   return (
     <StepLayout
       title="Hva gjør du?"
-      subtitle="Velg det som passer best nå. Du kan legge til flere senere."
+      subtitle="Rollen du velger, gir deg tilgang til relevante verktøy for ditt felt. Senere kan du lage flere profiler med ulike roller."
       primary={{ label: "Neste", onClick: onNext, disabled: !type }}
       secondary={{ label: "Tilbake", onClick: onBack }}
     >
