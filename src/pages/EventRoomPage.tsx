@@ -262,7 +262,13 @@ export default function EventRoomPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-events"] });
       queryClient.invalidateQueries({ queryKey: ["admin-event", id] });
       toast({ title: isNew ? "Event opprettet" : "Event oppdatert" });
-      if (isNew && data) navigate(`/event-room/${data.id}`);
+      if (isNew && data) {
+        navigate(`/event-room/${data.id}`);
+      } else if (festivalContext?.festival_id) {
+        navigate(`/dashboard/festival/${festivalContext.festival_id}`);
+      } else {
+        navigate(-1);
+      }
     },
     onError: (error: Error) => {
       toast({ title: "Feil", description: error.message, variant: "destructive" });
