@@ -210,31 +210,45 @@ export default function Dashboard() {
     const hasAnyAccess = hasProjectAccess || hasFestivalAccess;
 
     return (
-      <div className="min-h-[100svh] pb-[env(safe-area-inset-bottom)]">
-        {/* Header */}
-        <header className="border-b border-border/20 bg-background/60 backdrop-blur-xl sticky top-0 z-50"
+      <div className="min-h-[100svh] bg-background">
+        {/* Top bar */}
+        <header
+          className="sticky top-0 z-50 bg-background/60 backdrop-blur-xl border-b border-border/20"
           style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
         >
-          <div className="w-full px-4 sm:px-8 lg:px-12 py-2.5 sm:py-4 flex items-center justify-between">
+          <div className="w-full px-4 sm:px-8 lg:px-12 py-3 flex items-center justify-between">
             <Link to="/" className="text-sm sm:text-lg font-bold text-foreground tracking-tight">
               GIGGEN <span className="text-muted-foreground/70 font-normal text-[10px] sm:text-base">BACKSTAGE</span>
             </Link>
-            {!USE_PERSONA_MODUS_BAR && <PersonaSelector />}
+            <PersonaSelector />
           </div>
         </header>
 
-        {USE_PERSONA_MODUS_BAR && <PersonaModusBar />}
+        {/* Hero section */}
+        <section className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-accent/8 via-background to-accent-warm/5" />
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4" />
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-accent-warm/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/4" />
 
-        <main className="w-full px-4 sm:px-8 lg:px-12 py-4 sm:py-10 space-y-5 sm:space-y-8 max-w-5xl mx-auto">
-          <ActivePersonaCard persona={activePersona} />
+          <div className="relative w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-8">
+            <div className="max-w-5xl">
+              <ActivePersonaCard persona={activePersona} />
+            </div>
+          </div>
+        </section>
 
+        {/* Main content */}
+        <main
+          className="w-full px-4 sm:px-8 lg:px-12 py-5 sm:py-6 space-y-6 sm:space-y-8"
+          style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 2rem)" }}
+        >
           {/* Pending invitations */}
           <PendingInvitations />
 
           {/* Onboarding confirmation */}
           {fromOnboarding && (
-            <section className="p-4 sm:p-6 rounded-lg bg-accent/5 border border-accent/20 space-y-3 sm:space-y-4">
-              <h3 className="text-sm sm:text-base font-semibold text-accent">Profil opprettet</h3>
+            <section className="rounded-xl border border-accent/20 bg-accent/5 p-4 sm:p-6 space-y-3">
+              <h3 className="text-sm font-semibold text-accent">Profil opprettet</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Dette er din profesjonelle profil på GIGGEN. Du kan når som helst endre den fra dashbordet.
               </p>
@@ -244,7 +258,7 @@ export default function Dashboard() {
                   <p className="text-xs text-muted-foreground">
                     <strong className="text-foreground">Neste steg:</strong> Vent på invitasjon fra festival eller arrangør – eller be om tilgang til et prosjekt.
                   </p>
-                  <Button asChild size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90 sm:h-10 sm:px-5 sm:text-sm font-semibold">
+                  <Button asChild size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold">
                     <Link to="/request-access">Be om tilgang</Link>
                   </Button>
                 </div>
@@ -275,212 +289,148 @@ export default function Dashboard() {
                   </a>
                 </div>
               )}
-
-              <p className="text-[11px] text-muted-foreground/50 pt-2">
-                Du kan redigere profilen din og be om tilgang, men det er festivalen og arrangørene som oppretter prosjekter og program.
-              </p>
             </section>
           )}
 
-          {/* Prosjekter du er med i */}
+          {/* Prosjekter */}
           {hasProjectAccess && (
-            <section className="space-y-3 sm:space-y-4">
-              <h2 className="text-base sm:text-xl font-semibold text-foreground">Prosjekter du er med i</h2>
-              <div className="space-y-4">
-                {hostEntities.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-[11px] sm:text-sm text-muted-foreground font-medium">Dine scener</p>
-                    {hostEntities.map((entity) => {
-                      const needsPersonaLink = !selectedPersonaId && !entity.persona_id;
-                      return (
-                        <div key={entity.id} className="rounded-lg bg-card/60 border border-border/30 hover:border-border/50 transition-all">
-                          <Link
-                            to={`/dashboard/entities/${entity.id}/edit`}
-                            className="group flex items-center justify-between p-3 sm:p-4"
-                          >
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors truncate">{entity.name}</p>
-                              <p className="text-[10px] sm:text-xs text-muted-foreground/70">{ACCESS_DESCRIPTIONS[entity.access]}</p>
-                            </div>
-                            <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors shrink-0" />
-                          </Link>
-                          {needsPersonaLink && personas && personas.length > 0 && (
-                            <div className="px-3 sm:px-4 pb-3 pt-0" onClick={(e) => e.stopPropagation()}>
-                              <p className="text-[10px] text-muted-foreground mb-1">Representert som</p>
-                              <Select onValueChange={(value) => setEntityTeamPersona.mutate({ entityId: entity.id, personaId: value })}>
-                                <SelectTrigger className="h-8 text-xs">
-                                  <SelectValue placeholder="Velg persona..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {personas.map((p) => (
-                                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                {projectEntities.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-[11px] sm:text-sm text-muted-foreground font-medium">Dine prosjekter</p>
-                    {projectEntities.map((entity) => {
-                      const needsPersonaLink = !selectedPersonaId && !entity.persona_id;
-                      return (
-                        <div key={entity.id} className="rounded-lg bg-card/60 border border-border/30 hover:border-border/50 transition-all">
-                          <Link
-                            to={`/dashboard/entities/${entity.id}/edit`}
-                            className="group flex items-center justify-between p-3 sm:p-4"
-                          >
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors truncate">{entity.name}</p>
-                              <p className="text-[10px] sm:text-xs text-muted-foreground/70">{ACCESS_DESCRIPTIONS[entity.access]}</p>
-                            </div>
-                            <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent transition-colors shrink-0" />
-                          </Link>
-                          {needsPersonaLink && personas && personas.length > 0 && (
-                            <div className="px-3 sm:px-4 pb-3 pt-0" onClick={(e) => e.stopPropagation()}>
-                              <p className="text-[10px] text-muted-foreground mb-1">Representert som</p>
-                              <Select onValueChange={(value) => setEntityTeamPersona.mutate({ entityId: entity.id, personaId: value })}>
-                                <SelectTrigger className="h-8 text-xs">
-                                  <SelectValue placeholder="Velg persona..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {personas.map((p) => (
-                                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+            <section className="space-y-3">
+              <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+                Prosjekter du er med i
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+                {hostEntities.map((entity) => (
+                  <Link
+                    key={entity.id}
+                    to={`/dashboard/entities/${entity.id}/edit`}
+                    className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
+                        <Building2 className="h-5 w-5 text-accent" />
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-foreground mb-1 truncate">{entity.name}</h3>
+                    <p className="text-xs text-muted-foreground">{ACCESS_DESCRIPTIONS[entity.access]}</p>
+                  </Link>
+                ))}
+                {projectEntities.map((entity) => (
+                  <Link
+                    key={entity.id}
+                    to={`/dashboard/entities/${entity.id}/edit`}
+                    className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
+                        {entity.type === "band" ? <Users className="h-5 w-5 text-accent" /> : <User className="h-5 w-5 text-accent" />}
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-foreground mb-1 truncate">{entity.name}</h3>
+                    <p className="text-xs text-muted-foreground">{ACCESS_DESCRIPTIONS[entity.access]}</p>
+                  </Link>
+                ))}
               </div>
             </section>
           )}
 
-          {/* Festival-team du er med i */}
+          {/* Festival-team */}
           {hasFestivalAccess && (
-            <section className="space-y-3 sm:space-y-4">
-              <h2 className="text-base sm:text-xl font-semibold text-foreground">Festival-team du er med i</h2>
-              <div className="space-y-3">
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+                  Festival-team
+                </h2>
+                <span className="text-[11px] text-muted-foreground/50">
+                  {displayedFestivals.length} festival{displayedFestivals.length !== 1 ? "er" : ""}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
                 {displayedFestivals.map((festival) => (
-                  <div
+                  <Link
                     key={festival.id}
-                    className="rounded-lg border border-border/30 bg-card/60 p-3 sm:p-4"
+                    to={`/dashboard/festival/${festival.id}`}
+                    className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
                   >
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 className="text-sm font-semibold text-foreground">{festival.name}</h3>
-                      <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full shrink-0 ${
-                          festival.status === "published" ? "bg-green-500/15 text-green-600" : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {festival.status === "published" ? "Publisert" : "Utkast"}
-                      </span>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
+                        <Calendar className="h-5 w-5 text-accent" />
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Badge
+                          variant={festival.status === "published" ? "default" : "secondary"}
+                          className="text-[10px]"
+                        >
+                          {festival.status === "published" ? "Publisert" : "Utkast"}
+                        </Badge>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                      </div>
                     </div>
+                    <h3 className="text-sm font-semibold text-foreground mb-1">{festival.name}</h3>
                     {festival.start_at && (
-                      <p className="text-[10px] sm:text-xs text-muted-foreground mb-3">
+                      <p className="text-[10px] text-muted-foreground/60">
                         {new Date(festival.start_at).toLocaleDateString("nb-NO", { day: "numeric", month: "short", year: "numeric" })}
-                        {festival.end_at &&
-                          ` – ${new Date(festival.end_at).toLocaleDateString("nb-NO", { day: "numeric", month: "short", year: "numeric" })}`}
                       </p>
                     )}
-                    <div className="flex flex-wrap gap-2">
-                      <Button asChild variant="default" size="sm" className="h-8 text-xs bg-accent text-accent-foreground hover:bg-accent/90">
-                        <Link to={`/dashboard/festival/${festival.id}`}>Åpne festivalrom</Link>
-                      </Button>
-                      <Button asChild variant="outline" size="sm" className="h-8 text-xs">
-                        <Link to={`/admin/festivals/${festival.id}/program`}>Program</Link>
-                      </Button>
-                      <Button asChild variant="ghost" size="sm" className="h-8 text-xs">
-                        <Link to={`/festival/${festival.slug}`} target="_blank">
-                          Se live →
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </section>
           )}
 
           {/* Tom tilstand */}
-          {!hasAnyAccess && (
-            <section className="space-y-3">
-              <div className="p-4 sm:p-6 rounded-lg bg-card/60 border border-border/30 text-center space-y-3">
+          {!hasAnyAccess && !fromOnboarding && (
+            <section className="py-16 text-center">
+              <div className="max-w-md mx-auto space-y-3">
                 <p className="text-sm text-muted-foreground">Du har ingen tilgang ennå.</p>
                 <Button asChild variant="outline" size="sm">
                   <Link to="/request-access">Be om tilgang</Link>
                 </Button>
                 <p className="text-[11px] text-muted-foreground/50">
-                  Du kan redigere profilen din og be om tilgang. Festivalen og arrangørene oppretter prosjekter og program.
+                  Festivalen og arrangørene oppretter prosjekter og program.
                 </p>
               </div>
             </section>
           )}
 
-          {/* LockedModules removed */}
-
-          {/* Preview as team toggle (admin only) */}
-          {isAdmin && (
-            <div className="space-y-2">
-              <Button
-                variant={previewAsTeam ? "default" : "outline"}
-                size="sm"
-                onClick={() => setPreviewAsTeam(!previewAsTeam)}
-                className="w-full"
-              >
-                <Eye className="h-4 w-4 mr-1.5" />
-                {previewAsTeam ? "Tilbake til admin-visning" : "Vis som festivalsjef"}
-              </Button>
-              {previewAsTeam && (
-                <div className="bg-accent/10 border border-accent/30 rounded-lg px-3 py-2 text-xs text-accent">
-                  Forhåndsvisning: Du ser dashboardet slik en festivalsjef ville sett det.
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Admin/Crew */}
-          {!previewAsTeam && (isAdmin || isStaff) && (
-            <Collapsible open={adminSectionOpen} onOpenChange={setAdminSectionOpen}>
-              <CollapsibleTrigger className="w-full">
-                <div className="flex items-center justify-between p-3 sm:p-4 rounded-lg bg-card/40 hover:bg-card/60 border border-border/20 transition-all">
-                  <div className="flex items-center gap-2.5">
-                    <Shield className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-xs sm:text-sm font-medium text-foreground">
-                      {isAdmin ? "Admin & Crew" : "Crew-verktøy"}
-                    </span>
-                  </div>
-                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${adminSectionOpen ? "rotate-180" : ""}`} />
-                </div>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="mt-2 space-y-2">
-                  {isAdmin && (
-                    <Link to="/admin" className="flex items-center gap-3 p-3 rounded-lg bg-card/60 hover:bg-card/80 border border-border/30 transition-all group">
-                      <Settings className="h-4 w-4 text-accent" />
-                      <span className="text-sm font-medium text-foreground">Admin Panel</span>
-                      <ChevronRight className="h-4 w-4 ml-auto text-muted-foreground/30 group-hover:text-accent transition-colors" />
-                    </Link>
-                  )}
-                  {isStaff && (
-                    <Link to="/crew/checkin" className="flex items-center gap-3 p-3 rounded-lg bg-card/60 hover:bg-card/80 border border-border/30 transition-all group">
-                      <QrCode className="h-4 w-4 text-accent" />
-                      <span className="text-sm font-medium text-foreground">Check-in billetter</span>
-                      <ChevronRight className="h-4 w-4 ml-auto text-muted-foreground/30 group-hover:text-accent transition-colors" />
-                    </Link>
-                  )}
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
+          {(isAdmin || isStaff) && (
+            <section className="space-y-3">
+              <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+                {isAdmin ? "Admin & Crew" : "Crew-verktøy"}
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
+                {isAdmin && (
+                  <Link to="/admin">
+                    <div className="group relative rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm p-4 hover:border-accent/30 hover:bg-card/80 hover:shadow-lg hover:shadow-accent/5 cursor-pointer transition-all duration-300">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
+                          <Settings className="h-5 w-5 text-accent" />
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                      </div>
+                      <h3 className="text-sm font-semibold text-foreground mb-1">Admin Panel</h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed">Administrasjon</p>
+                    </div>
+                  </Link>
+                )}
+                {isStaff && (
+                  <Link to="/crew/checkin">
+                    <div className="group relative rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm p-4 hover:border-accent/30 hover:bg-card/80 hover:shadow-lg hover:shadow-accent/5 cursor-pointer transition-all duration-300">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
+                          <QrCode className="h-5 w-5 text-accent" />
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                      </div>
+                      <h3 className="text-sm font-semibold text-foreground mb-1">Check-in</h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed">Scan og billettkontroll</p>
+                    </div>
+                  </Link>
+                )}
+              </div>
+            </section>
           )}
         </main>
       </div>

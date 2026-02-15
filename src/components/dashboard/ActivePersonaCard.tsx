@@ -40,37 +40,38 @@ export function ActivePersonaCard({ persona }: ActivePersonaCardProps) {
   };
 
   return (
-    <div className="p-4 rounded-lg bg-card/60 border border-border/30 space-y-3">
-      <div className="flex items-center gap-3">
-        <Avatar className="h-12 w-12 ring-2 ring-border/50 shrink-0">
-          {imageUrl ? (
-            <AvatarImage src={imageUrl} className="object-cover" />
-          ) : null}
-          <AvatarFallback className="text-sm bg-muted text-muted-foreground font-medium">
-            {persona.name.substring(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1 min-w-0">
-          <p className="text-[11px] text-muted-foreground">Du handler som</p>
-          <p className="text-sm font-semibold text-foreground truncate">{persona.name}</p>
+    <div className="flex items-center gap-4">
+      <Avatar className="h-14 w-14 sm:h-16 sm:w-16 ring-2 ring-border/50 shrink-0">
+        {imageUrl ? (
+          <AvatarImage src={imageUrl} className="object-cover" />
+        ) : null}
+        <AvatarFallback className="text-base sm:text-lg bg-muted text-muted-foreground font-medium">
+          {persona.name.substring(0, 2).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] text-muted-foreground/60">Du handler som</p>
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground tracking-tight truncate">
+          {persona.name}
+        </h1>
+        <div className="flex items-center gap-2 mt-1">
           {typeLabel && (
-            <Badge variant="secondary" className="text-[10px] font-normal px-1.5 py-0 mt-0.5">
+            <Badge variant="secondary" className="text-[10px] font-normal px-1.5 py-0">
               {typeLabel}
             </Badge>
           )}
         </div>
       </div>
-
-      <div className="flex items-center gap-2">
-        <Button asChild variant="outline" size="sm" className="flex-1">
+      <div className="flex items-center gap-2 shrink-0">
+        <Button asChild variant="outline" size="sm" className="border-border/30 hover:border-accent/40">
           <Link to={`/dashboard/personas/${persona.id}`}>
             <Pencil className="h-3 w-3 mr-1.5" />
-            Rediger profil
+            <span className="hidden sm:inline">Rediger</span>
           </Link>
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
               Bytt
               <ChevronDown className="h-3 w-3 ml-1" />
             </Button>
@@ -82,6 +83,12 @@ export function ActivePersonaCard({ persona }: ActivePersonaCardProps) {
             <DropdownMenuSeparator />
             {personas?.map((p) => (
               <DropdownMenuItem key={p.id} onClick={() => handleSelect(p.id)}>
+                <Avatar className="h-4 w-4 mr-2">
+                  <AvatarImage src={p.avatar_url || undefined} />
+                  <AvatarFallback className="text-[8px]">
+                    {p.name.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
                 <span className="truncate flex-1">{p.name}</span>
                 {selectedPersonaId === p.id && (
                   <Badge variant="secondary" className="ml-auto text-[10px]">Aktiv</Badge>
