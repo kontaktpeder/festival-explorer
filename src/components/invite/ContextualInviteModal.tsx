@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCreateInvitation } from "@/hooks/useInvitations";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getPublicUrl } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -77,8 +77,51 @@ export function ContextualInviteModal({
   onSuccess,
 }: ContextualInviteModalProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const createInvitation = useCreateInvitation();
   const [step, setStep] = useState<InviteStep>("choose");
+
+  const isFestival = !!target.festivalId;
+
+  // Festival participant mutation – used instead of access_invitations for festivals
+  const addFestivalParticipant = useMutation({
+    mutationFn: async ({
+      festivalId,
+      personaId,
+      zone,
+      roleLabel,
+    }: {
+      festivalId: string;
+      personaId: string;
+      zone: string;
+      roleLabel?: string;
+    }) => {
+      const { data, error } = await supabase
+        .from("festival_participants")
+        .insert({
+          festival_id: festivalId,
+          participant_id: personaId,
+          participant_kind: "persona",
+          zone,
+          role_label: roleLabel ?? null,
+          is_public: zone !== "backstage",
+          can_edit_festival: zone === "host",
+          can_edit_events: zone === "host" || zone === "backstage",
+          can_access_media: true,
+          can_scan_tickets: zone === "host" || zone === "backstage",
+        })
+        .select()
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      if (target.festivalId) {
+        queryClient.invalidateQueries({ queryKey: ["festival-participants", target.festivalId] });
+        queryClient.invalidateQueries({ queryKey: ["admin-festival-events", target.festivalId] });
+      }
+    },
+  });
 
   // New user state
   const [emails, setEmails] = useState<string[]>([""]);
@@ -99,6 +142,7 @@ export function ContextualInviteModal({
     enabled: open,
   });
 
+  // For entity-based invitations, check existing team members
   const { data: existingTeamUserIds } = useQuery({
     queryKey: ["entity-team-user-ids", target.entityId],
     queryFn: async () => {
@@ -110,7 +154,22 @@ export function ContextualInviteModal({
       if (error) throw error;
       return (data || []).map((r: { user_id: string }) => r.user_id);
     },
-    enabled: open && !!target.entityId,
+    enabled: open && !!target.entityId && !isFestival,
+  });
+
+  // For festival invitations, check existing festival participants
+  const { data: existingFestivalPersonaIds } = useQuery({
+    queryKey: ["festival-participant-persona-ids", target.festivalId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("festival_participants")
+        .select("participant_id")
+        .eq("festival_id", target.festivalId!)
+        .eq("participant_kind", "persona");
+      if (error) throw error;
+      return (data || []).map((r: { participant_id: string }) => r.participant_id);
+    },
+    enabled: open && isFestival,
   });
 
   const excludedUserIds = [...(existingTeamUserIds || [])];
@@ -187,14 +246,30 @@ export function ContextualInviteModal({
     if (!currentUser) return;
     setSendingIds((prev) => new Set(prev).add(persona.id));
     try {
-      await createInvitation.mutateAsync({
-        entityId: target.entityId,
-        access: accessLevel,
-        invitedBy: currentUser.id,
-        invitedUserId: persona.user_id,
-        invitedPersonaId: persona.id,
-      });
-      toast({ title: `Invitasjon sendt til ${persona.name}` });
+      if (isFestival && target.festivalId) {
+        // Check if persona is already a participant
+        if (existingFestivalPersonaIds?.includes(persona.id)) {
+          toast({ title: `${persona.name} er allerede med i festival-teamet`, variant: "destructive" });
+          return;
+        }
+        // Festival: insert into festival_participants directly
+        await addFestivalParticipant.mutateAsync({
+          festivalId: target.festivalId,
+          personaId: persona.id,
+          zone: "backstage",
+        });
+        toast({ title: `${persona.name} lagt til i festival-teamet` });
+      } else {
+        // Entity: use access_invitations
+        await createInvitation.mutateAsync({
+          entityId: target.entityId,
+          access: accessLevel,
+          invitedBy: currentUser.id,
+          invitedUserId: persona.user_id,
+          invitedPersonaId: persona.id,
+        });
+        toast({ title: `Invitasjon sendt til ${persona.name}` });
+      }
       onSuccess?.();
     } catch (e: unknown) {
       toast({ title: "Kunne ikke sende invitasjon", description: String(e), variant: "destructive" });
@@ -230,21 +305,25 @@ export function ContextualInviteModal({
             Inviter til {target.label}
           </DialogTitle>
           <DialogDescription>
-            Inviter ny bruker via e-post eller en som allerede er på GIGGEN.
+            {isFestival
+              ? "Legg til en eksisterende bruker i festival-teamet."
+              : "Inviter ny bruker via e-post eller en som allerede er på GIGGEN."}
           </DialogDescription>
         </DialogHeader>
 
         {step === "choose" && (
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            <Button
-              variant="outline"
-              className="flex flex-col items-center gap-2 h-auto py-6"
-              onClick={() => setStep("new")}
-            >
-              <Mail className="h-6 w-6" />
-              <span className="font-medium">Ny bruker</span>
-              <span className="text-xs text-muted-foreground">Send lenke på e-post</span>
-            </Button>
+          <div className={`grid ${isFestival ? "grid-cols-1" : "grid-cols-2"} gap-3 pt-2`}>
+            {!isFestival && (
+              <Button
+                variant="outline"
+                className="flex flex-col items-center gap-2 h-auto py-6"
+                onClick={() => setStep("new")}
+              >
+                <Mail className="h-6 w-6" />
+                <span className="font-medium">Ny bruker</span>
+                <span className="text-xs text-muted-foreground">Send lenke på e-post</span>
+              </Button>
+            )}
             <Button
               variant="outline"
               className="flex flex-col items-center gap-2 h-auto py-6"
@@ -333,18 +412,25 @@ export function ContextualInviteModal({
               Tilbake
             </Button>
 
-            <div className="space-y-2">
-              <Label>Tilgangsnivå</Label>
-              <select
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                value={accessLevel}
-                onChange={(e) => setAccessLevel(e.target.value as Exclude<AccessLevel, "owner">)}
-              >
-                {ACCESS_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            </div>
+            {!isFestival && (
+              <div className="space-y-2">
+                <Label>Tilgangsnivå</Label>
+                <select
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  value={accessLevel}
+                  onChange={(e) => setAccessLevel(e.target.value as Exclude<AccessLevel, "owner">)}
+                >
+                  {ACCESS_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {isFestival && (
+              <p className="text-xs text-muted-foreground">
+                Personen legges til i backstage-teamet. Tillatelser kan justeres etterpå.
+              </p>
+            )}
 
             <div className="space-y-2">
               <Label>Søk etter profil</Label>
