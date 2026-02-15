@@ -321,12 +321,15 @@ export function useTransferEntityOwnership() {
       });
       if (error) throw error;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["entity-edit", variables.entityId] });
       queryClient.invalidateQueries({ queryKey: ["entity-team", variables.entityId] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-entity", variables.entityId] });
       queryClient.invalidateQueries({ queryKey: ["my-entities"] });
       queryClient.invalidateQueries({ queryKey: ["my-entities-filtered"] });
+      // Refetch so dashboard shows correct role immediately after redirect
+      await queryClient.refetchQueries({ queryKey: ["my-entities"] });
+      await queryClient.refetchQueries({ queryKey: ["my-entities-filtered"] });
     },
   });
 }
