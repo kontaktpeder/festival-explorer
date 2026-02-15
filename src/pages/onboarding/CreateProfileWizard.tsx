@@ -84,8 +84,7 @@ export default function CreateProfileWizard() {
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-accent-warm/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/4 pointer-events-none" />
 
-      {/* Background image – only on intro, positioned behind text area */}
-      {step === 0 && <WelcomeBackground />}
+      {/* No background overlay */}
 
       {/* Top bar – glassmorphism */}
       <header
@@ -134,30 +133,6 @@ export default function CreateProfileWizard() {
   );
 }
 
-/* ── Welcome Background ── */
-function WelcomeBackground() {
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    const img = new Image();
-    img.src = welcomeBg;
-    img.onload = () => setLoaded(true);
-  }, []);
-
-  return (
-    <div
-      className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-0 w-[280px] h-[280px] sm:w-[360px] sm:h-[360px] transition-opacity duration-[1200ms] ease-out pointer-events-none"
-      style={{ opacity: loaded ? 0.08 : 0 }}
-    >
-      <img
-        src={welcomeBg}
-        alt=""
-        className="w-full h-full object-contain animate-[scale-in_2s_ease-out_forwards]"
-      />
-    </div>
-  );
-}
-
 /* ── Step 0: Intro ── */
 function StepIntro({ onNext, onCancel }: { onNext: () => void; onCancel: () => void }) {
   return (
@@ -165,6 +140,7 @@ function StepIntro({ onNext, onCancel }: { onNext: () => void; onCancel: () => v
       title="Velkommen til GIGGEN Backstage"
       primary={{ label: "Kom i gang", onClick: onNext }}
       secondary={{ label: "Avbryt", onClick: onCancel }}
+      icon={<img src={welcomeBg} alt="" className="h-16 w-16 sm:h-20 sm:w-20 object-contain opacity-80" />}
     >
       <div className="space-y-3">
         <p className="text-sm text-muted-foreground leading-relaxed">
@@ -387,6 +363,7 @@ function StepLayout({
   primary,
   secondary,
   showLegal = false,
+  icon,
 }: {
   title: string;
   subtitle?: string;
@@ -394,11 +371,13 @@ function StepLayout({
   primary: { label: string; onClick: () => void; disabled?: boolean };
   secondary?: { label: string; onClick: () => void };
   showLegal?: boolean;
+  icon?: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-8 py-8 sm:py-12 animate-fade-in">
       {/* Header */}
       <div>
+        {icon && <div className="mb-4">{icon}</div>}
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight leading-[1.1]">{title}</h1>
         {subtitle && (
           <p className="text-sm text-muted-foreground/70 mt-2 leading-relaxed">{subtitle}</p>
