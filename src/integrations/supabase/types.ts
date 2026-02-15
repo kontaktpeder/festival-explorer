@@ -21,6 +21,7 @@ export type Database = {
           email: string | null
           entity_id: string
           expires_at: string
+          festival_id: string | null
           id: string
           invited_at: string
           invited_by: string
@@ -36,6 +37,7 @@ export type Database = {
           email?: string | null
           entity_id: string
           expires_at?: string
+          festival_id?: string | null
           id?: string
           invited_at?: string
           invited_by: string
@@ -51,6 +53,7 @@ export type Database = {
           email?: string | null
           entity_id?: string
           expires_at?: string
+          festival_id?: string | null
           id?: string
           invited_at?: string
           invited_by?: string
@@ -66,6 +69,13 @@ export type Database = {
             columns: ["entity_id"]
             isOneToOne: false
             referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_invitations_festival_id_fkey"
+            columns: ["festival_id"]
+            isOneToOne: false
+            referencedRelation: "festivals"
             referencedColumns: ["id"]
           },
           {
@@ -1185,6 +1195,42 @@ export type Database = {
           },
         ]
       }
+      pending_festival_team_invites: {
+        Row: {
+          created_at: string | null
+          festival_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          festival_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          festival_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_festival_team_invites_festival_id_fkey"
+            columns: ["festival_id"]
+            isOneToOne: false
+            referencedRelation: "festivals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_festival_team_invites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       persona_timeline_events: {
         Row: {
           city: string | null
@@ -2031,6 +2077,7 @@ export type Database = {
           email: string | null
           entity_id: string
           expires_at: string
+          festival_id: string | null
           id: string
           invited_at: string
           invited_by: string
@@ -2055,6 +2102,7 @@ export type Database = {
           email: string | null
           entity_id: string
           expires_at: string
+          festival_id: string | null
           id: string
           invited_at: string
           invited_by: string
@@ -2070,6 +2118,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      add_pending_festival_teams_for_persona: {
+        Args: { p_persona_id: string }
+        Returns: number
       }
       can_access_media_any: { Args: never; Returns: boolean }
       can_create_internal_ticket_any: { Args: never; Returns: boolean }

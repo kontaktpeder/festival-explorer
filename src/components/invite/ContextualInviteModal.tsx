@@ -222,6 +222,7 @@ export function ContextualInviteModal({
           access: accessLevel,
           roleLabels: [],
           invitedBy: currentUser!.id,
+          festivalId: isFestival && target.festivalId ? target.festivalId : undefined,
         });
         const token = (created as { token?: string | null })?.token;
         const link = token
