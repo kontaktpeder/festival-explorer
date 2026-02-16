@@ -111,7 +111,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
               {/* Left: Backstage link */}
               <Link
                 to={session ? "/dashboard" : "/admin/login"}
-                className="text-foreground/60 hover:text-foreground font-medium text-xs uppercase tracking-wider transition-colors pt-2"
+                className="text-foreground/60 hover:text-foreground font-bold text-sm uppercase tracking-wider transition-colors pt-2"
               >
                 Backstage
               </Link>
@@ -139,7 +139,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
               {/* Right: CTA button */}
               <Link
                 to="/tickets"
-                className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-5 py-2 text-sm transition-all shadow-lg"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-7 py-3 text-base transition-all shadow-lg"
               >
                 Kjøp billett
               </Link>
@@ -191,7 +191,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
                 {/* Right: Only Backstage */}
                 <Link
                   to={session ? "/dashboard" : "/admin/login"}
-                  className="text-foreground/60 font-medium text-[10px] uppercase tracking-wider"
+                  className="text-foreground/60 font-bold text-xs uppercase tracking-wider"
                 >
                   Backstage
                 </Link>
@@ -226,7 +226,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
             >
               <Link
                 to="/tickets"
-                className="pointer-events-auto bg-accent text-accent-foreground font-bold rounded-full px-5 py-2.5 text-xs shadow-lg"
+                 className="pointer-events-auto bg-accent text-accent-foreground font-black rounded-full px-6 py-3 text-sm shadow-lg"
               >
                 Kjøp billett
               </Link>
@@ -284,7 +284,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
             {/* Primary CTA - desktop only */}
             <Link
               to="/tickets"
-              className="hidden md:block bg-accent hover:bg-accent/90 text-accent-foreground font-bold rounded-full px-4 py-2 text-sm transition-all"
+              className="hidden md:block bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-7 py-3 text-base transition-all"
             >
               Kjøp billett
             </Link>
@@ -292,7 +292,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
             {/* Secondary: Backstage */}
             <Link
               to={session ? "/dashboard" : "/admin/login"}
-              className="text-foreground/60 hover:text-foreground font-medium text-[10px] md:text-xs uppercase tracking-wider transition-colors"
+              className="text-foreground/60 hover:text-foreground font-bold text-xs md:text-sm uppercase tracking-wider transition-colors"
             >
               Backstage
             </Link>
@@ -310,7 +310,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
         >
           <Link
             to="/tickets"
-            className="pointer-events-auto bg-accent text-accent-foreground font-bold rounded-full px-5 py-2.5 text-xs shadow-lg"
+            className="pointer-events-auto bg-accent text-accent-foreground font-black rounded-full px-6 py-3 text-sm shadow-lg"
           >
             Kjøp billett
           </Link>
