@@ -23,7 +23,7 @@ export function ShareImageSection({
           Del
         </h2>
         <p className="text-sm text-muted-foreground/40 mb-6">
-          Lag et bilde og del!
+          Lag et bilde du kan laste ned, eller dele med venner og kolleger.
         </p>
         <Button
           onClick={() => setModalOpen(true)}
