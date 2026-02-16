@@ -32,6 +32,7 @@ import { UnifiedTimeline } from "@/components/ui/UnifiedTimeline";
 import { EntitySocialLinks } from "@/components/ui/EntitySocialLinks";
 import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
 import { ShareButton, type ShareConfig } from "@/components/share/ShareButton";
+import { ShareImageSection } from "@/components/share/ShareImageSection";
 import { getShareCopy } from "@/lib/share-copy";
 
 export default function ProjectPage() {
@@ -150,6 +151,15 @@ export default function ProjectPage() {
           </div>
         </section>
       )}
+
+      {/* Del – bilde med bakgrunn, tittel, tagline, logo */}
+      <ShareImageSection
+        slug={entity.slug}
+        heroImageUrl={heroImageUrl ?? null}
+        logoUrl={logoUrl ?? null}
+        title={entity.name}
+        tagline={entity.tagline ?? null}
+      />
 
       {/* MED PÅ SCENEN – The people (from entity_team.is_public + persona) */}
       {publicTeamMembers.length > 0 && (

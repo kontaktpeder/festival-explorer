@@ -12,6 +12,7 @@ import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
 import { ShareButton } from "@/components/share/ShareButton";
+import { ShareImageSection } from "@/components/share/ShareImageSection";
 import { getShareCopy } from "@/lib/share-copy";
 import { UnifiedTimeline } from "@/components/ui/UnifiedTimeline";
 import { VENUE_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
@@ -115,6 +116,15 @@ export default function VenuePage() {
           </div>
         </section>
       )}
+
+      {/* Del – bilde med bakgrunn, tittel */}
+      <ShareImageSection
+        slug={venue.slug}
+        heroImageUrl={heroImageUrl ?? null}
+        logoUrl={null}
+        title={venue.name}
+        tagline={venue.description?.slice(0, 120) ?? null}
+      />
 
       {/* 4. KOMMENDE EVENTS – Programmert */}
       {venue.upcomingEvents && venue.upcomingEvents.length > 0 && (
