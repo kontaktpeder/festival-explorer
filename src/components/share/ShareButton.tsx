@@ -55,7 +55,6 @@ export function ShareButton({
       try {
         await navigator.share({
           title: config.shareTitle,
-          text: config.shareText,
           url,
         });
       } catch (err) {
@@ -66,6 +65,7 @@ export function ShareButton({
       setSharing(false);
       return;
     }
+    // Desktop fallback: expand card
     setExpanded(true);
   };
 
