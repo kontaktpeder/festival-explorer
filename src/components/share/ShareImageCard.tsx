@@ -135,37 +135,37 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
         {/* Lag 2: Hero forgrunn */}
         {heroUrl && <ShareHeroForeground src={heroUrl} />}
 
-        {/* Topp-gradient – myk overgang (speilet bunn) */}
+        {/* Topp-gradient – myk overgang */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0) 65%)",
+              "linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 25%, rgba(0,0,0,0) 50%)",
             pointerEvents: "none",
             zIndex: 3,
           }}
         />
 
-        {/* Bunn-gradient – kortere, mer lys i bildet */}
+        {/* Bunn-gradient – kortere */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.75) 15%, rgba(0,0,0,0.15) 40%, transparent 75%)",
+              "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 12%, rgba(0,0,0,0.05) 35%, transparent 55%)",
             pointerEvents: "none",
             zIndex: 3,
           }}
         />
 
-        {/* Svak hjørne-vignette – fokus i midten */}
+        {/* Svak hjørne-vignette */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             background:
-              "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.35) 100%)",
+              "radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.25) 100%)",
             pointerEvents: "none",
             zIndex: 3,
           }}
