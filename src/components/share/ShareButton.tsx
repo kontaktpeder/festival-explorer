@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Share2, Loader2, Check, Link2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -19,20 +18,12 @@ export type ShareConfig = {
   shareTitle: string;
 };
 
-const FALLBACK_SOCIAL_HINT = "Lim inn lenken i Instagram, TikTok eller hvor du vil dele.";
-
 export function ShareButton({
   config,
   className,
-  variant = "outline",
-  size = "icon",
-  showLabel = false,
 }: {
   config: ShareConfig;
   className?: string;
-  variant?: "outline" | "ghost" | "secondary";
-  size?: "icon" | "sm" | "default";
-  showLabel?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -80,50 +71,61 @@ export function ShareButton({
 
   return (
     <>
-      <Button
-        variant={variant}
-        size={size}
+      <button
         onClick={handleShare}
-        className={cn("gap-2", className)}
+        className={cn(
+          "inline-flex items-center gap-2 px-4 py-2 rounded-sm",
+          "text-xs font-medium uppercase tracking-wider",
+          "bg-accent/10 text-accent border border-accent/30",
+          "hover:bg-accent/20 hover:border-accent/50",
+          "transition-all duration-300",
+          "backdrop-blur-sm",
+          className
+        )}
       >
         {sharing ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <Loader2 className="w-3.5 h-3.5 animate-spin" />
         ) : (
-          <Share2 className="w-4 h-4" />
+          <Share2 className="w-3.5 h-3.5" />
         )}
-        {showLabel && <span>Del</span>}
-      </Button>
+        <span>Del</span>
+      </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm bg-card border-accent/20">
           <DialogHeader>
-            <DialogTitle>Del</DialogTitle>
+            <DialogTitle className="text-sm uppercase tracking-widest text-foreground/80">Del</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 pt-2">
             <p className="text-sm text-muted-foreground">
-              {FALLBACK_SOCIAL_HINT}
+              Lim inn lenken i Instagram, TikTok eller hvor du vil dele.
             </p>
 
             <div className="flex justify-center">
-              <Button
-                variant="secondary"
-                size="sm"
+              <button
                 onClick={handleCopyLink}
-                className="gap-2"
+                className={cn(
+                  "inline-flex items-center gap-2 px-5 py-2.5 rounded-sm",
+                  "text-xs font-medium uppercase tracking-wider",
+                  "transition-all duration-300",
+                  copied
+                    ? "bg-accent/20 text-accent border border-accent/40"
+                    : "bg-accent text-accent-foreground hover:brightness-110",
+                )}
               >
                 {copied ? (
                   <>
-                    <Check className="w-4 h-4" />
+                    <Check className="w-3.5 h-3.5" />
                     Kopiert
                   </>
                 ) : (
                   <>
-                    <Link2 className="w-4 h-4" />
+                    <Link2 className="w-3.5 h-3.5" />
                     Kopier lenke
                   </>
                 )}
-              </Button>
+              </button>
             </div>
           </div>
         </DialogContent>

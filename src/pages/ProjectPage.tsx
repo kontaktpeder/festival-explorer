@@ -92,9 +92,6 @@ export default function ProjectPage() {
             slug: entity.slug,
             ...getShareCopy("project", entity.name),
           }}
-          variant="secondary"
-          size="sm"
-          showLabel
         />
       </div>
 

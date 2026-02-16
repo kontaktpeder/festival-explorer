@@ -105,9 +105,6 @@ export default function FestivalPage() {
               slug: festival.slug,
               ...getShareCopy("festival", festival.name),
             }}
-            variant="secondary"
-            size="sm"
-            showLabel
           />
         </div>
 
@@ -240,9 +237,6 @@ export default function FestivalPage() {
             slug: festival.slug,
             ...getShareCopy("festival", festival.name),
           }}
-          variant="secondary"
-          size="sm"
-          showLabel
         />
       </div>
 

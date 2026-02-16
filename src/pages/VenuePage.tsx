@@ -66,9 +66,6 @@ export default function VenuePage() {
             slug: venue.slug,
             ...getShareCopy("venue", venue.name),
           }}
-          variant="secondary"
-          size="sm"
-          showLabel
         />
       </div>
 
