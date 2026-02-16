@@ -7,6 +7,7 @@ import { formatEntityLocationDisplay, type LocationType } from "@/types/location
 
 import { useUnifiedTimelineEvents } from "@/hooks/useUnifiedTimeline";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
+import { TeamCreditsSection } from "@/components/ui/TeamCreditsSection";
 
 type EntityType = Database["public"]["Enums"]["entity_type"];
 
@@ -149,61 +150,19 @@ export default function ProjectPage() {
         })}
       />
 
-      {/* MED PÅ SCENEN – The people (from entity_team.is_public + persona) */}
+      {/* MED PÅ SCENEN / BAK PROSJEKTET – The people */}
       {publicTeamMembers.length > 0 && (
-        <section className="py-16 md:py-28 px-6 md:px-12 border-t border-border/20">
-          <h2 className="text-xs uppercase tracking-[0.25em] text-muted-foreground/60 mb-12 md:mb-16">
-            {getPersonasSectionTitle(entity.type)}
-          </h2>
-
-          <div className="space-y-10 md:space-y-14">
-            {publicTeamMembers.map((member: any) => {
-              const persona = member.persona;
-              if (!persona) return null;
-              const roleLabel = member.bindingRoleLabel
-                ?? (member.role_labels?.length ? member.role_labels.join(", ") : null)
-                ?? getPersonaTypeLabel(persona.type)
-                ?? (persona.category_tags?.[0] || null);
-
-              return (
-                <Link 
-                  key={member.id} 
-                  to={`/p/${persona.slug}`}
-                  className="group flex items-center gap-6 md:gap-8"
-                >
-                  {/* Large avatar */}
-                  <div className="w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden bg-secondary/50 flex-shrink-0 ring-1 ring-border/10">
-                    {persona.avatar_url ? (
-                      <img
-                        src={persona.avatar_url}
-                        alt={persona.name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/30">
-                        <span className="text-2xl md:text-3xl font-display font-bold text-muted-foreground/30">
-                          {persona.name.charAt(0)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Name and role */}
-                  <div className="space-y-1">
-                    <div className="text-xl md:text-2xl font-medium text-foreground group-hover:text-primary transition-colors">
-                      {persona.name}
-                    </div>
-                    {roleLabel && (
-                      <div className="text-sm md:text-base text-muted-foreground/70 font-light">
-                        {roleLabel}
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
+        <TeamCreditsSection
+          title={getPersonasSectionTitle(entity.type)}
+          members={publicTeamMembers.map((member: any) => ({
+            persona: member.persona,
+            entity: member.entity,
+            role_label: null,
+            bindingRoleLabel: member.bindingRoleLabel,
+            role_labels: member.role_labels,
+          }))}
+          className="py-16 md:py-28 px-6 md:px-12 border-t border-border/20"
+        />
       )}
 
       {/* HISTORIEN – The journey - only show if events exist */}

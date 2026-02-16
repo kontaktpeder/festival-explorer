@@ -11,6 +11,7 @@ import { LineupItem } from "@/components/ui/LineupItem";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
+import { TeamCreditsSection } from "@/components/ui/TeamCreditsSection";
 import { EventZoneTabs } from "@/components/festival/EventZoneTabs";
 import { USE_ZONE_TABS_ON_EVENT } from "@/lib/ui-features";
 
@@ -178,7 +179,7 @@ export default function EventPage() {
             );
           })()}
 
-          {/* Festival-team: backstage + arrangør samlet */}
+          {/* Festival-team: backstage + arrangør samlet, flat liste */}
           {(() => {
             const bs = (event as any).backstage || { festival: [], event: [] };
             const bsEventKeys = new Set((bs.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
@@ -190,34 +191,8 @@ export default function EventPage() {
             const hrFiltered = (hr.festival || []).filter((p: any) => !hrEventKeys.has(`${p.participant_kind}:${p.participant_id}`));
             const hrAll = [...hrFiltered, ...(hr.event || [])];
 
-            if (bsAll.length === 0 && hrAll.length === 0) return null;
-            return (
-              <section className="py-16 md:py-24 border-t border-border/20">
-                <div className="max-w-2xl mx-auto px-6">
-                  <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
-                    Festival-team
-                  </h2>
-                  <div className="space-y-8">
-                    {hrAll.length > 0 && (
-                      <div className="space-y-4">
-                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Arrangør</p>
-                        {hrAll.map((item: any, i: number) => (
-                          <EventParticipantItem key={item.participant_id || i} item={item} />
-                        ))}
-                      </div>
-                    )}
-                    {bsAll.length > 0 && (
-                      <div className="space-y-4">
-                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Bak scenen</p>
-                        {bsAll.map((item: any, i: number) => (
-                          <EventParticipantItem key={item.participant_id || i} item={item} />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </section>
-            );
+            const allMembers = [...hrAll, ...bsAll];
+            return <TeamCreditsSection title="Festival-team" members={allMembers} />;
           })()}
         </>
       )}
