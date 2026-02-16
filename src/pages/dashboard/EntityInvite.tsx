@@ -19,8 +19,7 @@ import {
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useCreateInvitation } from "@/hooks/useInvitations";
 import type { AccessLevel } from "@/types/database";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
+import { InviteExistingUserStep } from "@/components/invite/InviteExistingUserStep";
 
 const ACCESS_OPTIONS: { value: Exclude<AccessLevel, "owner">; label: string }[] = [
   { value: "admin", label: "Administrer" },
@@ -29,25 +28,6 @@ const ACCESS_OPTIONS: { value: Exclude<AccessLevel, "owner">; label: string }[] 
 ];
 
 type InviteStep = "choose" | "new" | "existing";
-
-interface PersonaOption {
-  id: string;
-  user_id: string;
-  name: string;
-  slug: string;
-  avatar_url: string | null;
-  category_tags: string[] | null;
-}
-
-function PersonaAvatar({ avatarUrl, name }: { avatarUrl: string | null; name: string }) {
-  const signedUrl = useSignedMediaUrl(avatarUrl, "public");
-  return (
-    <Avatar className="h-9 w-9">
-      {signedUrl && <AvatarImage src={signedUrl} alt={name} />}
-      <AvatarFallback className="text-xs bg-muted text-muted-foreground">{name.charAt(0).toUpperCase()}</AvatarFallback>
-    </Avatar>
-  );
-}
 
 export default function EntityInvite() {
   const { id } = useParams<{ id: string }>();
@@ -61,9 +41,7 @@ export default function EntityInvite() {
   const [generatedLinks, setGeneratedLinks] = useState<{ email: string; link: string }[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
-  // Existing user state
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sendingIds, setSendingIds] = useState<Set<string>>(new Set());
+  // (existing user state removed – handled by InviteExistingUserStep)
 
   const createInvitation = useCreateInvitation();
 
@@ -130,19 +108,6 @@ export default function EntityInvite() {
   });
 
   const excludedUserIds = [...(existingTeamUserIds || [])];
-
-  const { data: searchResults = [], isLoading: searchLoading } = useQuery({
-    queryKey: ["invite-search-personas", searchQuery, excludedUserIds],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("search_public_personas", {
-        p_query: searchQuery.trim() || "",
-        p_exclude_user_ids: excludedUserIds,
-      });
-      if (error) throw error;
-      return (data || []) as PersonaOption[];
-    },
-    enabled: step === "existing",
-  });
 
   const isLoading = entityLoading || accessLoading;
   const canInvite = isMasterAdmin || userAccess === "admin" || userAccess === "owner";
@@ -219,36 +184,11 @@ export default function EntityInvite() {
     }
   };
 
-  const handleSendToExisting = async (persona: PersonaOption) => {
-    if (!currentUser) return;
-    setSendingIds((prev) => new Set(prev).add(persona.id));
-    try {
-      await createInvitation.mutateAsync({
-        entityId: entity.id,
-        access: accessLevel,
-        invitedBy: currentUser.id,
-        invitedUserId: persona.user_id,
-        invitedPersonaId: persona.id,
-      });
-      toast({ title: `Invitasjon sendt til ${persona.name}` });
-    } catch (e: unknown) {
-      toast({ title: "Kunne ikke sende invitasjon", description: String(e), variant: "destructive" });
-    } finally {
-      setSendingIds((prev) => {
-        const next = new Set(prev);
-        next.delete(persona.id);
-        return next;
-      });
-    }
-  };
-
   const resetFlow = () => {
     setStep("choose");
     setEmails([""]);
     setGeneratedLinks([]);
-    setSearchQuery("");
     setCopiedIndex(null);
-    setSendingIds(new Set());
   };
 
   // --- Render ---
@@ -343,57 +283,12 @@ export default function EntityInvite() {
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <Input
-                  placeholder="Søk etter navn..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="text-base"
-                />
-              </div>
-
-              {searchLoading && (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                </div>
-              )}
-
-              {!searchLoading && searchResults.length > 0 && (
-                <div className="border border-border rounded-lg divide-y divide-border max-h-72 overflow-y-auto">
-                  {searchResults.map((p) => {
-                    const sending = sendingIds.has(p.id);
-                    return (
-                      <div key={p.id} className="flex items-center justify-between p-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <PersonaAvatar avatarUrl={p.avatar_url} name={p.name} />
-                          <div className="min-w-0">
-                            <span className="text-sm font-medium text-foreground truncate block">{p.name}</span>
-                            {p.category_tags && p.category_tags.length > 0 && (
-                              <span className="text-xs text-muted-foreground truncate block">
-                                {p.category_tags.slice(0, 2).join(", ")}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          disabled={sending}
-                          onClick={() => handleSendToExisting(p)}
-                        >
-                          {sending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Inviter"}
-                        </Button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {!searchLoading && searchResults.length === 0 && searchQuery.trim() && (
-                <p className="text-sm text-muted-foreground text-center py-6">
-                  Ingen profiler funnet.
-                </p>
-              )}
+              <InviteExistingUserStep
+                entityId={entity.id}
+                excludedUserIds={excludedUserIds}
+                accessLevel={accessLevel}
+                submitLabel="Inviter"
+              />
             </div>
           )}
 

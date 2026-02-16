@@ -5,8 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Loader2, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { PersonaSearchList } from "@/components/persona/PersonaSearchList";
-import type { Persona } from "@/types/database";
+import { PersonaSearchPicker } from "@/components/persona/PersonaSearchPicker";
+import { usePersonaSearch, type PersonaOption } from "@/hooks/usePersonaSearch";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 
 type Zone = "on_stage" | "backstage" | "host";
@@ -94,8 +94,7 @@ export function EventParticipantsZoneEditor({
   const [resolved, setResolved] = useState<Record<string, ResolvedRef>>({});
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [personaResults, setPersonaResults] = useState<Persona[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchTriggered, setSearchTriggered] = useState(false);
 
   const loadRows = useCallback(async () => {
     setLoading(true);
@@ -134,24 +133,17 @@ export function EventParticipantsZoneEditor({
     void loadRows();
   }, [loadRows]);
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      setPersonaResults([]);
-      return;
-    }
-    setSearchLoading(true);
-    const { data, error } = await supabase
-      .from("personas")
-      .select("id,user_id,name,slug,bio,avatar_url,category_tags,is_public,created_at,updated_at")
-      .ilike("name", `%${searchQuery}%`)
-      .limit(20);
+  const { data: personaResults = [], isLoading: searchLoading } = usePersonaSearch({
+    query: searchQuery,
+    mode: "all",
+    enabled: searchTriggered && !!searchQuery.trim(),
+  });
 
-    if (error) toast.error("Søk feilet");
-    else setPersonaResults((data || []) as Persona[]);
-    setSearchLoading(false);
+  const handleSearch = () => {
+    setSearchTriggered(true);
   };
 
-  const handleAdd = async (persona: { id: string; name: string; slug?: string | null }) => {
+  const handleAdd = async (persona: PersonaOption) => {
     if (rows.find((r) => r.participant_id === persona.id)) {
       toast.error("Allerede lagt til");
       return;
@@ -173,8 +165,8 @@ export function EventParticipantsZoneEditor({
       return;
     }
     toast.success("Lagt til");
-    setPersonaResults([]);
     setSearchQuery("");
+    setSearchTriggered(false);
     void loadRows();
   };
 
@@ -226,33 +218,21 @@ export function EventParticipantsZoneEditor({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Search */}
-        <div className="flex gap-2">
-          <Input
-            placeholder="Søk etter person..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && void handleSearch()}
-            className="text-base"
-          />
-          <Button onClick={() => void handleSearch()} disabled={searchLoading}>
-            {searchLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Søk
-          </Button>
-        </div>
-
-        {personaResults.length > 0 && (
-          <div className="border border-border rounded-md max-h-64 overflow-y-auto">
-            <PersonaSearchList
-              personas={personaResults}
-              onSelect={(id) => {
-                const persona = personaResults.find((p) => p.id === id);
-                if (persona) handleAdd({ id: persona.id, name: persona.name, slug: persona.slug });
-              }}
-              placeholder="Filtrer resultater..."
-              emptyMessage="Ingen personer funnet"
-            />
-          </div>
-        )}
+        <PersonaSearchPicker
+          personas={personaResults}
+          isLoading={searchLoading}
+          searchQuery={searchQuery}
+          onSearchQueryChange={(v) => {
+            setSearchQuery(v);
+            if (!v.trim()) setSearchTriggered(false);
+          }}
+          onSelect={handleAdd}
+          showSearchButton
+          onSearchSubmit={handleSearch}
+          placeholder="Søk etter person..."
+          emptyMessage="Ingen personer funnet"
+          disabledIds={new Set(rows.map((r) => r.participant_id))}
+        />
 
         {/* List */}
         {loading ? (
