@@ -190,6 +190,25 @@ export default function EventPage() {
               </section>
             );
           })()}
+        </>
+      )}
+
+      {/* 6. PRAKTISK – Trygghet (optional section) */}
+      <section className="py-16 md:py-24 border-t border-border/20">
+        <div className="max-w-2xl mx-auto px-6">
+          <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
+            Praktisk
+          </h2>
+          
+          <div className="space-y-3 text-foreground/70">
+            <p className="font-light">Aldersgrense: 20 år</p>
+            <p className="font-light">Garderobe tilgjengelig</p>
+            {event.venue && (
+              <p className="font-light">{event.venue.address || event.venue.name}</p>
+            )}
+          </div>
+        </div>
+      </section>
 
           {/* Arrangør – festival-team + event-spesifikke (dedup: event overstyrer) */}
           {(() => {
@@ -200,9 +219,6 @@ export default function EventPage() {
             return (
               <section className="py-16 md:py-24 border-t border-border/20">
                 <div className="max-w-2xl mx-auto px-6">
-                  <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
-                    Arrangør
-                  </h2>
                   {filteredFestival.length > 0 && (
                     <div className="space-y-4 mb-6">
                       <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Festival-team</p>
@@ -225,25 +241,6 @@ export default function EventPage() {
               </section>
             );
           })()}
-        </>
-      )}
-
-      {/* 6. PRAKTISK – Trygghet (optional section) */}
-      <section className="py-16 md:py-24 border-t border-border/20">
-        <div className="max-w-2xl mx-auto px-6">
-          <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
-            Praktisk
-          </h2>
-          
-          <div className="space-y-3 text-foreground/70">
-            <p className="font-light">Aldersgrense: 20 år</p>
-            <p className="font-light">Garderobe tilgjengelig</p>
-            {event.venue && (
-              <p className="font-light">{event.venue.address || event.venue.name}</p>
-            )}
-          </div>
-        </div>
-      </section>
 
       {/* 7. STILLE AVSLUTNING – La kvelden henge */}
       <section className="py-24 md:py-40">
