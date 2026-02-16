@@ -27,7 +27,7 @@ export function ShareImageSection({
         </p>
         <Button
           onClick={() => setModalOpen(true)}
-          className="bg-accent text-accent-foreground hover:bg-accent/90"
+          className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full"
         >
           <Send className="w-4 h-4 mr-2" />
           Del
