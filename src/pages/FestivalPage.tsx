@@ -20,6 +20,7 @@ import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 import { ShareButton } from "@/components/share/ShareButton";
 import { getShareCopy } from "@/lib/share-copy";
+import shareCardFestival from "@/assets/share-card-festival.png";
 
 export default function FestivalPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -104,6 +105,7 @@ export default function FestivalPage() {
               title: festival.name,
               slug: festival.slug,
               ...getShareCopy("festival", festival.name),
+              previewImage: shareCardFestival,
             }}
           />
         </div>
@@ -236,6 +238,7 @@ export default function FestivalPage() {
             title: festival.name,
             slug: festival.slug,
             ...getShareCopy("festival", festival.name),
+            previewImage: shareCardFestival,
           }}
         />
       </div>
