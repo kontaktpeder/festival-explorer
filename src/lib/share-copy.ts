@@ -18,7 +18,7 @@ export function getShareCopy(
     case "festival":
       return {
         shareTitle: "GIGGEN Festival",
-        shareText: "Én kveld. Flere scener. Live + Boiler Room. Bli med 👇",
+        shareText: "Bli med på vårens høydepunkt! LIVE musikk og BOILER ROOM!",
       };
     default:
       return {
