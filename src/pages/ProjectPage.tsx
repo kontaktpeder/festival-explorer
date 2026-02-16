@@ -34,6 +34,7 @@ import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
 import { ShareButton, type ShareConfig } from "@/components/share/ShareButton";
 import { ShareImageSection } from "@/components/share/ShareImageSection";
 import { getShareCopy } from "@/lib/share-copy";
+import { shareModelFromProject } from "@/lib/share-model";
 
 export default function ProjectPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -155,10 +156,12 @@ export default function ProjectPage() {
       {/* Del – bilde med bakgrunn, tittel, tagline, logo */}
       <ShareImageSection
         slug={entity.slug}
-        heroImageUrl={heroImageUrl ?? null}
-        logoUrl={logoUrl ?? null}
-        title={entity.name}
-        tagline={entity.tagline ?? null}
+        shareModel={shareModelFromProject({
+          slug: entity.slug,
+          title: entity.name,
+          tagline: entity.tagline ?? null,
+          heroImageUrl: heroImageUrl ?? null,
+        })}
       />
 
       {/* MED PÅ SCENEN – The people (from entity_team.is_public + persona) */}

@@ -14,6 +14,7 @@ import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
 import { ShareButton } from "@/components/share/ShareButton";
 import { ShareImageSection } from "@/components/share/ShareImageSection";
 import { getShareCopy } from "@/lib/share-copy";
+import { shareModelFromVenue } from "@/lib/share-model";
 import { UnifiedTimeline } from "@/components/ui/UnifiedTimeline";
 import { VENUE_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
 
@@ -120,10 +121,12 @@ export default function VenuePage() {
       {/* Del – bilde med bakgrunn, tittel */}
       <ShareImageSection
         slug={venue.slug}
-        heroImageUrl={heroImageUrl ?? null}
-        logoUrl={null}
-        title={venue.name}
-        tagline={venue.description?.slice(0, 120) ?? null}
+        shareModel={shareModelFromVenue({
+          slug: venue.slug,
+          name: venue.name,
+          description: venue.description ?? null,
+          heroImageUrl: heroImageUrl ?? null,
+        })}
       />
 
       {/* 4. KOMMENDE EVENTS – Programmert */}

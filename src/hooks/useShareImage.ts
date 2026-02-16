@@ -1,18 +1,18 @@
 import { useRef, useCallback, useState } from "react";
 import html2canvas from "html2canvas";
-import type { ShareImageFormat } from "@/components/share/ShareImageCard";
+import type { ShareVariant } from "@/types/share";
 
 export function useShareImage() {
-  const linkCardRef = useRef<HTMLDivElement>(null);
   const storyCardRef = useRef<HTMLDivElement>(null);
+  const linkCardRef = useRef<HTMLDivElement>(null);
   const [generating, setGenerating] = useState(false);
 
-  const getRef = (format: ShareImageFormat) =>
-    format === "link" ? linkCardRef : storyCardRef;
+  const getRef = (variant: ShareVariant) =>
+    variant === "link" ? linkCardRef : storyCardRef;
 
   const generateBlob = useCallback(
-    async (format: ShareImageFormat): Promise<Blob | null> => {
-      const ref = getRef(format);
+    async (variant: ShareVariant): Promise<Blob | null> => {
+      const ref = getRef(variant);
       if (!ref.current) return null;
       setGenerating(true);
       try {
@@ -41,11 +41,10 @@ export function useShareImage() {
   );
 
   const download = useCallback(
-    async (format: ShareImageFormat, filenameBase: string) => {
-      const blob = await generateBlob(format);
+    async (variant: ShareVariant, filenameBase: string) => {
+      const blob = await generateBlob(variant);
       if (!blob) return;
-      const ext = format === "link" ? "-link" : "-story";
-      const filename = `${filenameBase}${ext}.png`;
+      const filename = `${filenameBase}-${variant}.png`;
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -57,11 +56,10 @@ export function useShareImage() {
   );
 
   const share = useCallback(
-    async (format: ShareImageFormat, filenameBase: string) => {
-      const blob = await generateBlob(format);
+    async (variant: ShareVariant, filenameBase: string) => {
+      const blob = await generateBlob(variant);
       if (!blob) return;
-      const ext = format === "link" ? "-link" : "-story";
-      const filename = `${filenameBase}${ext}.png`;
+      const filename = `${filenameBase}-${variant}.png`;
       const file = new File([blob], filename, { type: "image/png" });
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         try {
@@ -70,21 +68,15 @@ export function useShareImage() {
           if ((err as Error).name !== "AbortError") console.warn("Share failed", err);
         }
       } else {
-        // Fallback to download
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        a.click();
-        URL.revokeObjectURL(url);
+        await download(variant, filenameBase);
       }
     },
-    [generateBlob]
+    [generateBlob, download]
   );
 
   return {
-    linkCardRef,
     storyCardRef,
+    linkCardRef,
     generating,
     generateBlob,
     download,
