@@ -195,10 +195,10 @@ export default function VenueRoom() {
             </span>
           </div>
           <Button asChild variant="outline" size="sm" className="text-xs border-border/30 hover:border-accent/40">
-            <Link to={`/venue/${venue.slug}`} target="_blank">
+            <a href={`https://giggn.lovable.app/venue/${venue.slug}`} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
               {venue.is_published ? "Se live" : "Forhåndsvisning"}
-            </Link>
+            </a>
           </Button>
         </div>
       </header>
