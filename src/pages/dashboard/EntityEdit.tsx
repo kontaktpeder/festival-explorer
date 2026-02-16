@@ -631,139 +631,134 @@ export default function EntityEdit() {
 
         {/* Team-medlemmer */}
         {teamMembers && teamMembers.length > 0 && (
-          <Collapsible open={teamOpen} onOpenChange={setTeamOpen}>
-            <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
-              <div className="flex items-center gap-3">
-                <Users className="h-4 w-4 text-accent" />
-                <span className="font-medium">Team</span>
-                <span className="text-xs text-muted-foreground">({teamMembers.length})</span>
-              </div>
-              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${teamOpen ? "rotate-180" : ""}`} />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="py-5 space-y-2 border-b border-border/30">
-              {teamMembers.map((member) => {
-                const persona = member.persona as { id: string; name: string; avatar_url?: string; slug?: string } | null;
-                const isCurrentUser = member.user_id === currentUser?.id;
-                
-                const displayName = persona?.name || "Ingen navn";
-                const avatarUrl = persona?.avatar_url;
-                const roleLabel = member.bindingRoleLabel || (member.role_labels?.length > 0 ? member.role_labels.join(", ") : null);
-                
-                return (
-                  <div key={member.id} className="py-3 border-b border-border/20 last:border-0 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
-                          {avatarUrl ? (
-                            <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
-                          ) : (
-                            <span className="text-xs font-medium text-muted-foreground">
-                              {displayName.charAt(0).toUpperCase()}
-                            </span>
+          <div className="py-5 space-y-2 border-b border-border/30">
+            <div className="flex items-center gap-3 mb-3">
+              <Users className="h-4 w-4 text-accent" />
+              <span className="font-medium">Team</span>
+              <span className="text-xs text-muted-foreground">({teamMembers.length})</span>
+            </div>
+            {teamMembers.map((member) => {
+              const persona = member.persona as { id: string; name: string; avatar_url?: string; slug?: string } | null;
+              const isCurrentUser = member.user_id === currentUser?.id;
+              
+              const displayName = persona?.name || "Ingen navn";
+              const avatarUrl = persona?.avatar_url;
+              const roleLabel = member.bindingRoleLabel || (member.role_labels?.length > 0 ? member.role_labels.join(", ") : null);
+              
+              return (
+                <div key={member.id} className="py-3 border-b border-border/20 last:border-0 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {avatarUrl ? (
+                          <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
+                        ) : (
+                          <span className="text-xs font-medium text-muted-foreground">
+                            {displayName.charAt(0).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{displayName}</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">
+                            {ACCESS_LABELS[(isCurrentUser ? (entityWithAccess?.access ?? member.access) : member.access) as AccessLevel]}
+                            {isCurrentUser && !isOwner && " (din rolle)"}
+                          </span>
+                          {roleLabel && (
+                            <span className="text-xs text-accent">{roleLabel}</span>
+                          )}
+                          {isCurrentUser && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">deg</Badge>
                           )}
                         </div>
-                        <div>
-                          <p className="font-medium text-sm">{displayName}</p>
-                          <div className="flex items-center gap-2">
-                            {/* For current user, always show entityWithAccess.access so role is correct after ownership transfer */}
-                            <span className="text-xs text-muted-foreground">
-                              {ACCESS_LABELS[(isCurrentUser ? (entityWithAccess?.access ?? member.access) : member.access) as AccessLevel]}
-                              {isCurrentUser && !isOwner && " (din rolle)"}
-                            </span>
-                            {roleLabel && (
-                              <span className="text-xs text-accent">{roleLabel}</span>
-                            )}
-                            {isCurrentUser && (
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">deg</Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {/* Role dropdown for other members (admin/owner only, not for owner role) */}
-                        {canManagePersonas && !isCurrentUser && member.access !== 'owner' && (
-                          <Select
-                            value={member.access}
-                            onValueChange={(value) => updateTeamMember.mutate({ id: member.id, access: value as AccessLevel })}
-                          >
-                            <SelectTrigger className="w-[120px] h-8 text-xs bg-transparent border-border/50">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="admin">Administrer</SelectItem>
-                              <SelectItem value="editor">Rediger</SelectItem>
-                              <SelectItem value="viewer">Se</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                        {canManagePersonas && (
-                          <ProjectCreditFlow
-                            memberId={member.id}
-                            entityId={entityWithAccess?.id}
-                            entityName={entityWithAccess?.name ?? ""}
-                            personaId={persona?.id}
-                            personaSlug={persona?.slug}
-                            isPublic={!!member.is_public}
-                          />
-                        )}
                       </div>
                     </div>
-
-                    {/* Persona selector for current user's own row */}
-                    {isCurrentUser && myPersonas && myPersonas.length > 0 && id && (
-                      <div className="ml-11 flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">Representert som:</span>
+                    <div className="flex items-center gap-2">
+                      {/* Role dropdown for other members (admin/owner only, not for owner role) */}
+                      {canManagePersonas && !isCurrentUser && member.access !== 'owner' && (
                         <Select
-                          value={member.persona_id || ""}
-                          onValueChange={(personaId) => {
-                            if (personaId) {
-                              setEntityTeamPersona.mutate({ entityId: id, personaId });
-                            }
-                          }}
+                          value={member.access}
+                          onValueChange={(value) => updateTeamMember.mutate({ id: member.id, access: value as AccessLevel })}
                         >
-                          <SelectTrigger className="h-8 text-xs bg-transparent border-border/50 flex-1 max-w-[240px] gap-2">
-                            {(() => {
-                              const selected = myPersonas.find((p) => p.id === (member.persona_id || ""));
-                              return selected ? (
-                                <span className="flex items-center gap-2 min-w-0">
-                                  <span className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0">
-                                    {selected.avatar_url ? (
-                                      <img src={selected.avatar_url} alt={selected.name} className="h-full w-full object-cover" />
-                                    ) : (
-                                      <span className="text-[10px] font-medium text-muted-foreground">{selected.name.charAt(0).toUpperCase()}</span>
-                                    )}
-                                  </span>
-                                  <span className="truncate">{selected.name}</span>
-                                </span>
-                              ) : (
-                                <span className="text-muted-foreground">Velg persona...</span>
-                              );
-                            })()}
+                          <SelectTrigger className="w-[120px] h-8 text-xs bg-transparent border-border/50">
+                            <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {myPersonas.map((p) => (
-                              <SelectItem key={p.id} value={p.id}>
-                                <span className="flex items-center gap-2">
-                                  <span className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0">
-                                    {p.avatar_url ? (
-                                      <img src={p.avatar_url} alt={p.name} className="h-full w-full object-cover" />
-                                    ) : (
-                                      <span className="text-[10px] font-medium text-muted-foreground">{p.name.charAt(0).toUpperCase()}</span>
-                                    )}
-                                  </span>
-                                  <span>{p.name}</span>
-                                </span>
-                              </SelectItem>
-                            ))}
+                            <SelectItem value="admin">Administrer</SelectItem>
+                            <SelectItem value="editor">Rediger</SelectItem>
+                            <SelectItem value="viewer">Se</SelectItem>
                           </SelectContent>
                         </Select>
-                      </div>
-                    )}
+                      )}
+                      {/* Credit flow – only for the current user's own row */}
+                      {isCurrentUser && (
+                        <ProjectCreditFlow
+                          memberId={member.id}
+                          entityId={entityWithAccess?.id}
+                          entityName={entityWithAccess?.name ?? ""}
+                          personaId={persona?.id}
+                          personaSlug={persona?.slug}
+                          isPublic={!!member.is_public}
+                        />
+                      )}
+                    </div>
                   </div>
-                );
-              })}
-            </CollapsibleContent>
-          </Collapsible>
+
+                  {/* Persona selector for current user's own row */}
+                  {isCurrentUser && myPersonas && myPersonas.length > 0 && id && (
+                    <div className="ml-11 flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">Representert som:</span>
+                      <Select
+                        value={member.persona_id || ""}
+                        onValueChange={(personaId) => {
+                          if (personaId) {
+                            setEntityTeamPersona.mutate({ entityId: id, personaId });
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="h-8 text-xs bg-transparent border-border/50 flex-1 max-w-[240px] gap-2">
+                          {(() => {
+                            const selected = myPersonas.find((p) => p.id === (member.persona_id || ""));
+                            return selected ? (
+                              <span className="flex items-center gap-2 min-w-0">
+                                <span className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0">
+                                  {selected.avatar_url ? (
+                                    <img src={selected.avatar_url} alt={selected.name} className="h-full w-full object-cover" />
+                                  ) : (
+                                    <span className="text-[10px] font-medium text-muted-foreground">{selected.name.charAt(0).toUpperCase()}</span>
+                                  )}
+                                </span>
+                                <span className="truncate">{selected.name}</span>
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">Velg persona...</span>
+                            );
+                          })()}
+                        </SelectTrigger>
+                        <SelectContent>
+                          {myPersonas.map((p) => (
+                            <SelectItem key={p.id} value={p.id}>
+                              <span className="flex items-center gap-2">
+                                <span className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0">
+                                  {p.avatar_url ? (
+                                    <img src={p.avatar_url} alt={p.name} className="h-full w-full object-cover" />
+                                  ) : (
+                                    <span className="text-[10px] font-medium text-muted-foreground">{p.name.charAt(0).toUpperCase()}</span>
+                                  )}
+                                </span>
+                                <span>{p.name}</span>
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
 
         {/* Farlig sone */}
