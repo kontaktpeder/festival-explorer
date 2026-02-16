@@ -16,20 +16,24 @@ export function useShareImage() {
   const [generating, setGenerating] = useState(false);
   const [blob, setBlob] = useState<Blob | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const prevUrlRef = useRef<string | null>(null);
 
-  // cleanup previewUrl on unmount or change
+  // cleanup on unmount
   useEffect(() => {
     return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
     };
-  }, [previewUrl]);
+  }, []);
 
   const generate = useCallback(
     async (preloadUrls: (string | null | undefined)[] = []): Promise<Blob | null> => {
-      if (!cardRef.current) return null;
+      if (!cardRef.current) {
+        console.warn("useShareImage.generate: cardRef is null");
+        return null;
+      }
       setGenerating(true);
       try {
-        // wait for portal mount + layout
+        // wait for layout
         await new Promise<void>((r) => requestAnimationFrame(() => r()));
         await new Promise<void>((r) => requestAnimationFrame(() => r()));
 
@@ -50,11 +54,12 @@ export function useShareImage() {
         );
 
         setBlob(out);
-        // revoke old, create new
-        setPreviewUrl((prev) => {
-          if (prev) URL.revokeObjectURL(prev);
-          return out ? URL.createObjectURL(out) : null;
-        });
+
+        // revoke old url, set new
+        if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
+        const newUrl = out ? URL.createObjectURL(out) : null;
+        prevUrlRef.current = newUrl;
+        setPreviewUrl(newUrl);
 
         return out;
       } catch (e) {
@@ -64,11 +69,11 @@ export function useShareImage() {
         setGenerating(false);
       }
     },
-    []
+    [] // stable – no deps needed, uses refs
   );
 
   const download = useCallback(
-    async (filenameBase: string) => {
+    (filenameBase: string) => {
       if (!blob) return;
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -83,7 +88,9 @@ export function useShareImage() {
   const share = useCallback(
     async (filenameBase: string) => {
       if (!blob) return;
-      const file = new File([blob], `${filenameBase}-instagram.png`, { type: "image/png" });
+      const file = new File([blob], `${filenameBase}-instagram.png`, {
+        type: "image/png",
+      });
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         try {
           await navigator.share({ files: [file], title: filenameBase });
@@ -92,7 +99,7 @@ export function useShareImage() {
           if ((err as Error).name === "AbortError") return;
         }
       }
-      await download(filenameBase);
+      download(filenameBase);
     },
     [blob, download]
   );
