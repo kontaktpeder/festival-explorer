@@ -70,7 +70,7 @@ export function ShareButton({
       <button
         onClick={handleShare}
         className={cn(
-          "inline-flex items-center gap-2 px-4 py-2 rounded-sm",
+          "inline-flex items-center gap-2 px-4 py-2 rounded-full",
           "text-xs font-medium uppercase tracking-wider",
           "bg-accent/10 text-accent border border-accent/30",
           "hover:bg-accent/20 hover:border-accent/50",
@@ -93,7 +93,7 @@ export function ShareButton({
   return (
     <div
       className={cn(
-        "w-64 rounded-sm overflow-hidden",
+        "w-64 rounded-2xl overflow-hidden",
         "bg-card/95 border border-accent/25 backdrop-blur-md",
         "shadow-lg animate-scale-in",
         className
