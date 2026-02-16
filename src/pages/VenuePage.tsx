@@ -103,18 +103,6 @@ export default function VenuePage() {
         </section>
       )}
 
-      {/* Del – bilde med bakgrunn, tittel */}
-      <ShareImageSection
-        slug={venue.slug}
-        shareModel={shareModelFromVenue({
-          slug: venue.slug,
-          name: venue.name,
-          description: venue.description ?? null,
-          heroImageUrl: heroImageUrl ?? null,
-          logoUrl: (venue as any).logo_url ?? null,
-        })}
-      />
-
       {/* 4. KOMMENDE EVENTS – Programmert */}
       {venue.upcomingEvents && venue.upcomingEvents.length > 0 && (
         <section className="py-20 md:py-32 border-t border-border/20">
@@ -174,6 +162,18 @@ export default function VenuePage() {
           </div>
         </section>
       )}
+
+      {/* Del – bilde med bakgrunn, tittel */}
+      <ShareImageSection
+        slug={venue.slug}
+        shareModel={shareModelFromVenue({
+          slug: venue.slug,
+          name: venue.name,
+          description: venue.description ?? null,
+          heroImageUrl: heroImageUrl ?? null,
+          logoUrl: (venue as any).logo_url ?? null,
+        })}
+      />
 
       {/* HISTORIKK – Tidslinje */}
       {venue.id && (
