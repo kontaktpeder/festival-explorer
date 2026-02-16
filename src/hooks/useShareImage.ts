@@ -11,12 +11,7 @@ function preloadImage(src: string): Promise<void> {
   });
 }
 
-export type UseShareImageOptions = {
-  setIsCapturing?: (capturing: boolean) => void;
-};
-
-export function useShareImage(options: UseShareImageOptions = {}) {
-  const { setIsCapturing } = options;
+export function useShareImage() {
   const cardRef = useRef<HTMLDivElement>(null);
   const [generating, setGenerating] = useState(false);
 
@@ -30,25 +25,26 @@ export function useShareImage(options: UseShareImageOptions = {}) {
       if (!cardRef.current) return null;
       setGenerating(true);
       try {
-        setIsCapturing?.(true);
         await new Promise<void>((r) => requestAnimationFrame(() => r()));
         await new Promise<void>((r) => requestAnimationFrame(() => r()));
+
         if (preloadUrls?.length) {
           await preloadForModel(preloadUrls);
         }
         if (typeof document !== "undefined" && document.fonts?.ready) {
           await document.fonts.ready;
         }
+
         const canvas = await html2canvas(cardRef.current, {
           backgroundColor: null,
           scale: 2,
           useCORS: true,
           allowTaint: false,
         });
-        return new Promise<Blob | null>((resolve) => {
+
+        return await new Promise<Blob | null>((resolve) => {
           canvas.toBlob(
             (blob) => {
-              setIsCapturing?.(false);
               setGenerating(false);
               if (!blob) {
                 console.error("html2canvas toBlob returned null – sjekk CORS på bilder");
@@ -59,13 +55,12 @@ export function useShareImage(options: UseShareImageOptions = {}) {
           );
         });
       } catch (e) {
-        setIsCapturing?.(false);
         setGenerating(false);
         console.error("Share image generation failed", e);
         return null;
       }
     },
-    [setIsCapturing, preloadForModel]
+    [preloadForModel]
   );
 
   const download = useCallback(

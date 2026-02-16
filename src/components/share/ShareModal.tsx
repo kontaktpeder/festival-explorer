@@ -10,6 +10,7 @@ import type { ShareModel } from "@/types/share";
 import { SHARE_WIDTH, SHARE_HEIGHT } from "@/types/share";
 import { useShareImage } from "@/hooks/useShareImage";
 import { ShareImageCard } from "./ShareImageCard";
+import { ShareCapturePortal } from "./ShareCapturePortal";
 
 type ShareModalProps = {
   open: boolean;
@@ -26,7 +27,7 @@ export function ShareModal({
   data,
   filenameBase,
 }: ShareModalProps) {
-  const [isCapturing, setIsCapturing] = useState(false);
+  const [captureMode, setCaptureMode] = useState(false);
 
   const {
     cardRef,
@@ -34,7 +35,7 @@ export function ShareModal({
     download,
     share,
     preloadForModel,
-  } = useShareImage({ setIsCapturing });
+  } = useShareImage();
 
   const preloadUrls = [
     data.brandBackgroundUrl,
@@ -49,18 +50,31 @@ export function ShareModal({
   }, [open, data, preloadForModel]);
 
   const handleShare = async () => {
-    await share(filenameBase, preloadUrls);
-    onOpenChange(false);
+    setCaptureMode(true);
+    try {
+      await new Promise<void>((r) => requestAnimationFrame(() => r()));
+      await new Promise<void>((r) => requestAnimationFrame(() => r()));
+      await share(filenameBase, preloadUrls);
+      onOpenChange(false);
+    } finally {
+      setCaptureMode(false);
+    }
   };
 
   const handleDownload = async () => {
-    await download(filenameBase, preloadUrls);
-    onOpenChange(false);
+    setCaptureMode(true);
+    try {
+      await new Promise<void>((r) => requestAnimationFrame(() => r()));
+      await new Promise<void>((r) => requestAnimationFrame(() => r()));
+      await download(filenameBase, preloadUrls);
+      onOpenChange(false);
+    } finally {
+      setCaptureMode(false);
+    }
   };
 
-  const scale = isCapturing ? 1 : PREVIEW_SCALE;
-  const wrapperW = isCapturing ? SHARE_WIDTH : SHARE_WIDTH * PREVIEW_SCALE;
-  const wrapperH = isCapturing ? SHARE_HEIGHT : SHARE_HEIGHT * PREVIEW_SCALE;
+  const wrapperW = SHARE_WIDTH * PREVIEW_SCALE;
+  const wrapperH = SHARE_HEIGHT * PREVIEW_SCALE;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -79,16 +93,18 @@ export function ShareModal({
           >
             <div
               style={{
-                transform: `scale(${scale})`,
+                transform: `scale(${PREVIEW_SCALE})`,
                 transformOrigin: "top left",
                 width: SHARE_WIDTH,
                 height: SHARE_HEIGHT,
               }}
             >
-              <ShareImageCard ref={cardRef} data={data} />
+              <ShareImageCard data={data} />
             </div>
           </div>
         </div>
+
+        <ShareCapturePortal data={data} captureRef={cardRef} enabled={captureMode} />
 
         <div className="flex gap-2 mt-4">
           <button
