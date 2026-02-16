@@ -31,6 +31,8 @@ import { StaticLogo } from "@/components/ui/StaticLogo";
 import { UnifiedTimeline } from "@/components/ui/UnifiedTimeline";
 import { EntitySocialLinks } from "@/components/ui/EntitySocialLinks";
 import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
+import { ShareButton, type ShareConfig } from "@/components/share/ShareButton";
+import { getShareCopy } from "@/lib/share-copy";
 
 export default function ProjectPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -80,6 +82,21 @@ export default function ProjectPage() {
     <PageLayout>
       {/* Static logo in header */}
       <StaticLogo />
+
+      {/* Share button */}
+      <div className="fixed bottom-4 right-4 z-40">
+        <ShareButton
+          config={{
+            pageType: "project",
+            title: entity.name,
+            slug: entity.slug,
+            ...getShareCopy("project", entity.name),
+          }}
+          variant="secondary"
+          size="sm"
+          showLabel
+        />
+      </div>
 
       {/* HERO – Full screen identity */}
       <HeroSection 
