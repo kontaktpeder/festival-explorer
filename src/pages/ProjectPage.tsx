@@ -91,6 +91,9 @@ export default function ProjectPage() {
             title: entity.name,
             slug: entity.slug,
             ...getShareCopy("project", entity.name),
+            heroImageUrl: heroImageUrl,
+            description: entity.description,
+            logoUrl: logoUrl,
           }}
         />
       </div>
