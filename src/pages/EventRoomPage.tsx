@@ -72,6 +72,8 @@ export default function EventRoomPage() {
     city: "",
     hero_image_url: "",
     status: "draft" as "draft" | "submitted" | "published",
+    age_limit: "",
+    cloakroom_available: null as boolean | null,
   });
   const [heroImageSettings, setHeroImageSettings] = useState<ImageSettings | null>(null);
   const [venuePickerOpen, setVenuePickerOpen] = useState(false);
@@ -223,6 +225,8 @@ export default function EventRoomPage() {
         city: event.city || "",
         hero_image_url: event.hero_image_url || "",
         status: event.status || "draft",
+        age_limit: (event as any).age_limit ?? "",
+        cloakroom_available: (event as any).cloakroom_available ?? null,
       });
       setHeroImageSettings(parseImageSettings(event.hero_image_settings) || null);
     }
@@ -239,6 +243,8 @@ export default function EventRoomPage() {
         hero_image_url: formData.hero_image_url || null,
         hero_image_settings: heroImageSettings,
         city: formData.city || null,
+        age_limit: formData.age_limit?.trim() || null,
+        cloakroom_available: formData.cloakroom_available,
       };
 
       if (isNew) {
@@ -470,7 +476,7 @@ export default function EventRoomPage() {
             <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
               <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full py-2">
                 {detailsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                <span>Venue</span>
+                <span>Venue & praktisk</span>
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-4 pt-2">
                 {/* Venue */}
@@ -535,6 +541,37 @@ export default function EventRoomPage() {
                     placeholder="Oslo"
                     className="h-9 text-sm bg-muted/30 border-border/30"
                   />
+                </div>
+
+                {/* Praktisk */}
+                <div className="space-y-3 pt-2 border-t border-border/30">
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Praktisk</p>
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Aldersgrense</Label>
+                    <Input
+                      value={formData.age_limit}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, age_limit: e.target.value }))}
+                      placeholder="F.eks. 18 år, 20 år"
+                      className="h-9 text-sm bg-muted/30 border-border/30"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="cloakroom_available"
+                      checked={formData.cloakroom_available === true}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          cloakroom_available: e.target.checked ? true : null,
+                        }))
+                      }
+                      className="h-4 w-4 rounded border-border"
+                    />
+                    <Label htmlFor="cloakroom_available" className="text-sm font-normal cursor-pointer">
+                      Garderobe tilgjengelig
+                    </Label>
+                  </div>
                 </div>
               </CollapsibleContent>
             </Collapsible>
