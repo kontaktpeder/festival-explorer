@@ -18,9 +18,6 @@ import giggenLogo from "@/assets/giggen-logo.png";
 import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
 import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
-import { ShareButton } from "@/components/share/ShareButton";
-import { getShareCopy } from "@/lib/share-copy";
-import shareCardFestival from "@/assets/share-card-festival.png";
 
 export default function FestivalPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -96,21 +93,6 @@ export default function FestivalPage() {
       <PageLayout>
         {/* Universal logo - heroMode for centered, larger logo */}
         <StaticLogo heroMode />
-
-        {/* Share button */}
-        <div className="fixed bottom-6 right-6 z-40">
-          <ShareButton
-            config={{
-              pageType: "festival",
-              title: festival.name,
-              slug: festival.slug,
-              ...getShareCopy("festival", festival.name),
-              previewImage: shareCardFestival,
-              heroImageUrl: heroImage,
-              description: festival.description,
-            }}
-          />
-        </div>
 
         {/* Render sections dynamisk */}
         {festival.sections.map((section) => {
@@ -231,21 +213,6 @@ export default function FestivalPage() {
     <PageLayout>
       {/* Universal logo - heroMode for centered, larger logo */}
       <StaticLogo heroMode />
-
-      {/* Share button */}
-      <div className="fixed bottom-6 right-6 z-40">
-        <ShareButton
-          config={{
-            pageType: "festival",
-            title: festival.name,
-            slug: festival.slug,
-            ...getShareCopy("festival", festival.name),
-            previewImage: shareCardFestival,
-            heroImageUrl: heroImage,
-            description: festival.description,
-          }}
-        />
-      </div>
 
       {/* SEKSJON 1: HERO - Fullskjerm, bg-fixed */}
       {/* Parse theme hero image settings for focal point */}
