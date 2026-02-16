@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, Share2, Download } from "lucide-react";
+import { Loader2, Send, Download } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import type { ShareModel } from "@/types/share";
 import { SHARE_WIDTH, SHARE_HEIGHT } from "@/types/share";
@@ -77,23 +75,18 @@ export function ShareModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Del</DialogTitle>
-          <DialogDescription>
-            Instagram innlegg (4:5) – forhåndsvisning nedenfor, deretter Del eller Last ned.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-sm p-0 bg-card border-accent/15 overflow-hidden">
+        <DialogTitle className="sr-only">Del {data.title}</DialogTitle>
 
-        {/* Preview: show the actual generated PNG */}
-        <div className="flex justify-center">
+        {/* Preview image */}
+        <div className="flex justify-center bg-black/40 p-6 pb-4">
           <div
             style={{
               width: PREVIEW_MAX_W,
               aspectRatio: `${SHARE_WIDTH} / ${SHARE_HEIGHT}`,
               backgroundColor: "#0a0a0a",
             }}
-            className="relative rounded-xl overflow-hidden"
+            className="relative rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/5"
           >
             {previewUrl ? (
               <img
@@ -113,45 +106,52 @@ export function ShareModal({
           </div>
         </div>
 
+        {/* Text + actions */}
+        <div className="px-6 pb-6 pt-2 space-y-5">
+          <p className="text-sm text-muted-foreground/60 text-center leading-relaxed">
+            Del <span className="text-foreground/90 font-medium">{data.title}</span> med dine venner og kolleger
+          </p>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                share(filenameBase);
+                onOpenChange(false);
+              }}
+              disabled={disabled}
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-accent text-accent-foreground text-sm font-medium disabled:opacity-60 transition-colors hover:bg-accent/90"
+            >
+              {generating ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+              Del
+            </button>
+            <button
+              onClick={() => {
+                download(filenameBase);
+                onOpenChange(false);
+              }}
+              disabled={disabled}
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg border border-accent/20 bg-transparent hover:bg-accent/10 text-foreground/80 text-sm font-medium disabled:opacity-60 transition-colors"
+            >
+              {generating ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              Last ned
+            </button>
+          </div>
+        </div>
+
         {/* Off-screen capture portal */}
         <ShareCapturePortal
           data={data}
           captureRef={cardRef}
           enabled={captureEnabled}
         />
-
-        <div className="flex gap-2 mt-4">
-          <button
-            onClick={() => {
-              share(filenameBase);
-              onOpenChange(false);
-            }}
-            disabled={disabled}
-            className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-accent text-accent-foreground font-medium disabled:opacity-60 transition-colors hover:bg-accent/90"
-          >
-            {generating ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Share2 className="w-4 h-4" />
-            )}
-            Del
-          </button>
-          <button
-            onClick={() => {
-              download(filenameBase);
-              onOpenChange(false);
-            }}
-            disabled={disabled}
-            className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg border border-border bg-card hover:bg-accent/10 text-foreground font-medium disabled:opacity-60 transition-colors"
-          >
-            {generating ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Download className="w-4 h-4" />
-            )}
-            Last ned
-          </button>
-        </div>
       </DialogContent>
     </Dialog>
   );
