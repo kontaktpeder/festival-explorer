@@ -22,8 +22,8 @@ export function ShareImageSection({
         <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-4">
           Del
         </h2>
-        <p className="text-sm text-muted-foreground/60 mb-6">
-          Lag et delingsbilde som Instagram-innlegg (4:5) og del eller last ned.
+        <p className="text-sm text-muted-foreground/40 mb-6">
+          Lag et bilde og del!
         </p>
         <Button
           onClick={() => setModalOpen(true)}
