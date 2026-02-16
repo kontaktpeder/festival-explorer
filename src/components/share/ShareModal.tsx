@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import type { ShareModel } from "@/types/share";
 import { SHARE_WIDTH, SHARE_HEIGHT } from "@/types/share";
+// SHARE_WIDTH/HEIGHT used for aspect-ratio calc
 import { useShareImage } from "@/hooks/useShareImage";
 import { ShareCapturePortal } from "./ShareCapturePortal";
 
@@ -73,7 +74,6 @@ export function ShareModal({
   }, [captureEnabled, generate, preloadUrls]);
 
   const disabled = generating || !blob;
-  const previewH = (PREVIEW_MAX_W / SHARE_WIDTH) * SHARE_HEIGHT;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -88,14 +88,18 @@ export function ShareModal({
         {/* Preview: show the actual generated PNG */}
         <div className="flex justify-center">
           <div
-            style={{ width: PREVIEW_MAX_W, height: previewH }}
-            className="relative overflow-hidden rounded-xl bg-muted"
+            style={{
+              width: PREVIEW_MAX_W,
+              aspectRatio: `${SHARE_WIDTH} / ${SHARE_HEIGHT}`,
+              backgroundColor: "#0a0a0a",
+            }}
+            className="relative rounded-xl overflow-hidden"
           >
             {previewUrl ? (
               <img
                 src={previewUrl}
                 alt="Forhåndsvisning av delingsbilde"
-                className="w-full h-full object-contain"
+                style={{ width: "100%", height: "100%", objectFit: "contain" }}
               />
             ) : (
               <div className="flex items-center justify-center w-full h-full">
