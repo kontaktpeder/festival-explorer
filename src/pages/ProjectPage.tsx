@@ -161,6 +161,7 @@ export default function ProjectPage() {
           title: entity.name,
           tagline: entity.tagline ?? null,
           heroImageUrl: heroImageUrl ?? null,
+          logoUrl: logoUrl ?? null,
         })}
       />
 

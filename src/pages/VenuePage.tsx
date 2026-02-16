@@ -126,6 +126,7 @@ export default function VenuePage() {
           name: venue.name,
           description: venue.description ?? null,
           heroImageUrl: heroImageUrl ?? null,
+          logoUrl: (venue as any).logo_url ?? null,
         })}
       />
 
