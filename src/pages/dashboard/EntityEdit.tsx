@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +22,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { UnifiedTimelineManager } from "@/components/dashboard/UnifiedTimelineManager";
@@ -31,20 +36,22 @@ import { useUpdateTeamMember, useSetEntityTeamPersona, useTransferEntityOwnershi
 import { useMyPersonas } from "@/hooks/usePersona";
 import { ProjectCreditFlow } from "@/components/dashboard/ProjectCreditFlow";
 import { SocialLinksEditor } from "@/components/ui/SocialLinksEditor";
-import { 
-  UserPlus, 
-  ExternalLink, 
-  Users, 
-  Info, 
+import {
+  UserPlus,
+  ExternalLink,
+  Users,
+  Info,
   Trash2,
-  ChevronDown,
   Clock,
   AlertTriangle,
   Building2,
   Link2,
   MapPin,
   Shield,
-  LogOut
+  LogOut,
+  ArrowLeft,
+  ChevronRight,
+  X,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
@@ -54,24 +61,10 @@ import { getPublicUrl } from "@/lib/utils";
 import type { SocialLink } from "@/types/social";
 import { LOCATION_TYPE_OPTIONS, type LocationType } from "@/types/location";
 
-// Tydeligere prosjekt-type labels
 const TYPE_LABELS: Record<EntityType, string> = {
   venue: "Scene",
   solo: "Artistprosjekt",
   band: "Band",
-};
-
-const TYPE_ICONS: Record<EntityType, string> = {
-  venue: "",
-  solo: "",
-  band: "",
-};
-
-// Beskrivelser for header
-const TYPE_SUBTITLES: Record<EntityType, string> = {
-  venue: "Din scene på GIGGEN",
-  solo: "Ditt artistprosjekt på GIGGEN",
-  band: "Ditt band på GIGGEN",
 };
 
 const ACCESS_LABELS: Record<AccessLevel, string> = {
@@ -80,6 +73,8 @@ const ACCESS_LABELS: Record<AccessLevel, string> = {
   editor: "Rediger",
   viewer: "Se",
 };
+
+type ActivePanel = null | "basic" | "location" | "social" | "timeline" | "danger";
 
 export default function EntityEdit() {
   const { id } = useParams<{ id: string }>();
@@ -98,22 +93,12 @@ export default function EntityEdit() {
   const [logoImageSettings, setLogoImageSettings] = useState<ImageSettings | null>(null);
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   
-  // Location fields
   const [locationName, setLocationName] = useState("");
   const [locationType, setLocationType] = useState<LocationType | "">("");
 
-  // Collapsible states
-  const [basicOpen, setBasicOpen] = useState(false);
-  const [locationOpen, setLocationOpen] = useState(false);
-  const [socialOpen, setSocialOpen] = useState(false);
-  const [timelineOpen, setTimelineOpen] = useState(false);
-  const [teamOpen, setTeamOpen] = useState(false);
-  const [dangerOpen, setDangerOpen] = useState(false);
-
-  // Transfer ownership dialog state
+  const [activePanel, setActivePanel] = useState<ActivePanel>(null);
   const [transferTargetId, setTransferTargetId] = useState<string | null>(null);
 
-  // Current user
   const { data: currentUser } = useQuery({
     queryKey: ["current-user"],
     queryFn: async () => {
@@ -122,17 +107,14 @@ export default function EntityEdit() {
     },
   });
 
-  // My personas for persona selector
   const { data: myPersonas } = useMyPersonas();
 
-  // Mutations
   const updateTeamMember = useUpdateTeamMember();
   const setEntityTeamPersona = useSetEntityTeamPersona();
   const transferOwnership = useTransferEntityOwnership();
   const leaveEntity = useLeaveEntity();
   const removeTeamMember = useRemoveTeamMember();
 
-  // Fetch entity with user's access level
   const { data: entityWithAccess, isLoading, error } = useQuery({
     queryKey: ["dashboard-entity", id],
     queryFn: async () => {
@@ -158,7 +140,6 @@ export default function EntityEdit() {
 
       if (teamError) throw teamError;
       
-      // Always prefer entity_team.access; only fall back to created_by if no team row exists
       const isCreator = entity.created_by === user.id;
       const access = teamMember != null
         ? teamMember.access
@@ -174,7 +155,6 @@ export default function EntityEdit() {
     retry: 1,
   });
 
-  // Fetch team members with personas (prefer entity-bound persona)
   const { data: teamMembers } = useQuery({
     queryKey: ["entity-team", id],
     queryFn: async () => {
@@ -190,7 +170,6 @@ export default function EntityEdit() {
       const userIds = (teamData || []).map(m => m.user_id);
       if (userIds.length === 0) return [];
 
-      // Fetch persona bindings for this entity
       const { data: bindings } = await supabase
         .from("entity_persona_bindings")
         .select("persona_id, role_label")
@@ -204,7 +183,6 @@ export default function EntityEdit() {
         .or(`user_id.in.(${userIds.join(",")}),id.in.(${bindingPersonaIds.join(",")})`);
       
       return (teamData || []).map(member => {
-        // Prefer persona bound to this entity
         const boundBinding = (bindings || []).find(b => {
           const p = (personasData || []).find(p => p.id === b.persona_id);
           return p?.user_id === member.user_id;
@@ -224,7 +202,6 @@ export default function EntityEdit() {
     enabled: !!id,
   });
 
-  // Populate form when entity data loads
   useEffect(() => {
     if (entityWithAccess) {
       setFormData({
@@ -237,46 +214,45 @@ export default function EntityEdit() {
       setHeroImageSettings(parseImageSettings(entityWithAccess.hero_image_settings) || null);
       setLogoImageSettings(parseImageSettings((entityWithAccess as any).logo_image_settings) || null);
       setSocialLinks(((entityWithAccess as any).social_links || []) as SocialLink[]);
-      // Location fields
       setLocationName((entityWithAccess as any).location_name || "");
       setLocationType((entityWithAccess as any).location_type || "");
     }
   }, [entityWithAccess]);
 
-  // Save mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
-      // Prepare location data
       const locationData = locationName.trim()
-        ? {
-            location_name: locationName.trim(),
-            location_type: locationType || null,
-          }
-        : {
-            location_name: null,
-            location_type: null,
-          };
+        ? { location_name: locationName.trim(), location_type: locationType || null }
+        : { location_name: null, location_type: null };
 
-      const { error } = await supabase
+      const updatePayload: Record<string, any> = {
+        name: formData.name,
+        tagline: formData.tagline || null,
+        description: formData.description || null,
+        hero_image_url: formData.hero_image_url || null,
+        hero_image_settings: heroImageSettings,
+        logo_url: formData.logo_url || null,
+        logo_image_settings: logoImageSettings,
+        social_links: socialLinks,
+        ...locationData,
+      };
+
+      const { data, error } = await supabase
         .from("entities")
-        .update({
-          name: formData.name,
-          tagline: formData.tagline || null,
-          description: formData.description || null,
-          hero_image_url: formData.hero_image_url || null,
-          hero_image_settings: heroImageSettings,
-          logo_url: formData.logo_url || null,
-          logo_image_settings: logoImageSettings,
-          social_links: socialLinks,
-          ...locationData,
-        } as Record<string, unknown>)
-        .eq("id", id);
+        .update(updatePayload)
+        .eq("id", id!)
+        .select()
+        .single();
       
       if (error) throw error;
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["dashboard-entity", id] });
+      queryClient.invalidateQueries({ queryKey: ["entity", data?.id] });
+      queryClient.invalidateQueries({ queryKey: ["entity-by-slug"] });
       queryClient.invalidateQueries({ queryKey: ["my-entities"] });
+      queryClient.invalidateQueries({ queryKey: ["my-entities-filtered"] });
       toast({ title: "Endringene er lagret" });
     },
     onError: (error: Error) => {
@@ -284,18 +260,13 @@ export default function EntityEdit() {
     },
   });
 
-  // Request deletion mutation
   const requestDeletion = useMutation({
     mutationFn: async () => {
-      if (!id) throw new Error("Ingen ID");
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Ikke innlogget");
-      
-      const { error } = await supabase.from("deletion_requests").insert({
-        entity_type: "entity",
-        entity_id: id,
-        requested_by: user.id,
-      });
+      const { error } = await supabase
+        .from("deletion_requests")
+        .insert({ entity_id: id!, entity_type: "entity", requested_by: user.id });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -306,20 +277,12 @@ export default function EntityEdit() {
     },
   });
 
-  // Redirect if no access
   useEffect(() => {
     if (error) {
       toast({ title: "Ingen tilgang", description: "Du har ikke tilgang til dette prosjektet.", variant: "destructive" });
       navigate("/dashboard");
     }
   }, [error, navigate, toast]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (canEdit) {
-      saveMutation.mutate();
-    }
-  };
 
   const handleTransferOwnership = () => {
     if (!transferTargetId || !id) return;
@@ -328,7 +291,6 @@ export default function EntityEdit() {
       {
         onSuccess: async () => {
           setTransferTargetId(null);
-          // Refetch so UI shows correct role before redirect
           await queryClient.refetchQueries({ queryKey: ["dashboard-entity", id] });
           await queryClient.refetchQueries({ queryKey: ["entity-team", id] });
           await queryClient.refetchQueries({ queryKey: ["my-entities"] });
@@ -363,15 +325,13 @@ export default function EntityEdit() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-[100svh] bg-background flex items-center justify-center">
         <LoadingState message="Laster..." />
       </div>
     );
   }
 
-  if (!entityWithAccess) {
-    return null;
-  }
+  if (!entityWithAccess) return null;
 
   const isVenue = entityWithAccess.type === "venue";
   const userAccess = entityWithAccess.access;
@@ -379,7 +339,6 @@ export default function EntityEdit() {
   const canInvite = ["admin", "owner"].includes(userAccess);
   const canManagePersonas = ["admin", "owner"].includes(userAccess);
   const isOwner = userAccess === "owner";
-  const isViewer = userAccess === "viewer";
 
   const typeConfig = {
     venue: { route: "/project" },
@@ -388,83 +347,301 @@ export default function EntityEdit() {
   };
 
   const heroStyles = getCroppedImageStyles(heroImageSettings);
-
-  // Other members for ownership transfer
   const otherMembers = teamMembers?.filter(m => m.user_id !== currentUser?.id) || [];
   const hasOtherMembers = otherMembers.length > 0;
 
-  // Current user's team row
-  const myTeamRow = teamMembers?.find(m => m.user_id === currentUser?.id);
+  const modules: { key: ActivePanel; title: string; description: string; icon: React.ElementType; danger?: boolean }[] = [
+    { key: "basic", title: "Grunnleggende", description: "Navn, bio, bilder og logo", icon: Building2 },
+    { key: "location", title: "Lokasjon", description: locationName || "Sted og type", icon: MapPin },
+    { key: "social", title: "Sosiale lenker", description: `${socialLinks.length} lenke${socialLinks.length !== 1 ? "r" : ""}`, icon: Link2 },
+    { key: "timeline", title: isVenue ? "Historien" : "Min reise", description: "Viktige hendelser og milepæler", icon: Clock },
+    ...(canEdit ? [{ key: "danger" as ActivePanel, title: "Farlig sone", description: "Eierskap, forlat, slett", icon: AlertTriangle, danger: true }] : []),
+  ];
 
   return (
-    <div className="container max-w-2xl px-4 sm:px-6 py-6 sm:py-8">
-      {/* Header - matching PersonaEdit */}
-      <div className="mb-6">
-        <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
-          GIGGEN BACKSTAGE
-        </p>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-          Rediger prosjekt
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          {TYPE_SUBTITLES[entityWithAccess.type as EntityType]}
-        </p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-0">
-        {/* Status row - similar to visibility toggle in PersonaEdit */}
-        <div className="flex items-center justify-between py-4 border-b border-accent/20">
-          <div>
-            <p className="font-medium flex items-center gap-2">
-              {TYPE_ICONS[entityWithAccess.type as EntityType]} {TYPE_LABELS[entityWithAccess.type as EntityType]}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {entityWithAccess.is_published ? "Publisert" : "Utkast"} · Din rolle: {ACCESS_LABELS[userAccess]}
-            </p>
-            {!isOwner && (userAccess === "admin" || userAccess === "editor") && (
-              <p className="text-xs text-muted-foreground/80 mt-0.5">
-                Du er ikke eier. Du kan forlate prosjektet eller bytte persona under Team.
-              </p>
-            )}
+    <div className="min-h-[100svh] bg-background">
+      {/* Sticky header – matching FestivalRoom */}
+      <header
+        className="sticky top-0 z-50 bg-background/60 backdrop-blur-xl border-b border-border/20"
+        style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
+      >
+        <div className="w-full px-4 sm:px-8 lg:px-12 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <span className="text-sm font-semibold tracking-tight text-foreground">
+              BACKSTAGE
+            </span>
           </div>
           <div className="flex items-center gap-2">
             {entityWithAccess.is_published && (
-              <Button asChild variant="ghost" size="sm" className="text-xs">
+              <Button asChild variant="outline" size="sm" className="text-xs border-border/30 hover:border-accent/40">
                 <a href={`${getPublicUrl()}${typeConfig[entityWithAccess.type as EntityType].route}/${entityWithAccess.slug}`} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-3.5 w-3.5 mr-1" />
-                  Se side
+                  <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                  Se live
                 </a>
               </Button>
             )}
             {canInvite && (
-              <Button asChild variant="ghost" size="sm" className="text-xs">
+              <Button asChild variant="outline" size="sm" className="text-xs border-border/30 hover:border-accent/40">
                 <Link to={`/dashboard/entities/${entityWithAccess.id}/invite`}>
-                  <UserPlus className="h-3.5 w-3.5 mr-1" />
+                  <UserPlus className="h-3.5 w-3.5 mr-1.5" />
                   Inviter
                 </Link>
               </Button>
             )}
           </div>
         </div>
+      </header>
 
-        {/* Grunnleggende - with hero image inline like PersonaEdit avatar */}
-        <Collapsible open={basicOpen} onOpenChange={setBasicOpen}>
-          <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
-            <div className="flex items-center gap-3">
-              <Building2 className="h-4 w-4 text-accent" />
-              <span className="font-medium">Grunnleggende</span>
+      {/* Hero section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/8 via-background to-accent-warm/5" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-accent-warm/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/4" />
+        
+        <div className="relative w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-8">
+          <div className="max-w-5xl">
+            <div className="flex items-center gap-3 mb-2">
+              <Badge
+                variant={entityWithAccess.is_published ? "default" : "secondary"}
+                className="text-[10px] uppercase tracking-widest"
+              >
+                {entityWithAccess.is_published ? "Publisert" : "Utkast"}
+              </Badge>
+              <span className="text-xs text-muted-foreground">
+                {TYPE_LABELS[entityWithAccess.type as EntityType]} · {ACCESS_LABELS[userAccess]}
+              </span>
             </div>
-            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${basicOpen ? "rotate-180" : ""}`} />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="py-5 space-y-5 border-b border-border/30">
-            {/* Hero image section - inline like PersonaEdit avatar */}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.1]">
+              {entityWithAccess.name}
+            </h1>
+            {entityWithAccess.tagline && (
+              <p className="text-sm sm:text-base text-muted-foreground mt-2 max-w-xl">
+                {entityWithAccess.tagline}
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Main content */}
+      <main
+        className="w-full px-4 sm:px-8 lg:px-12 py-5 sm:py-6 space-y-6 sm:space-y-8"
+        style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 2rem)" }}
+      >
+        {/* Team – always visible at the top */}
+        {teamMembers && teamMembers.length > 0 && (
+          <section className="space-y-3">
+            <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+              Team
+            </h2>
+            <div className="space-y-1">
+              {teamMembers.map((member) => {
+                const persona = member.persona as { id: string; name: string; avatar_url?: string; slug?: string } | null;
+                const isCurrentUser = member.user_id === currentUser?.id;
+                const displayName = persona?.name || "Ingen navn";
+                const avatarUrl = persona?.avatar_url;
+                const roleLabel = member.bindingRoleLabel || (member.role_labels?.length > 0 ? member.role_labels.join(", ") : null);
+
+                return (
+                  <div
+                    key={member.id}
+                    className="group relative rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm p-4 transition-all duration-300"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="h-9 w-9 rounded-lg bg-accent/10 flex items-center justify-center overflow-hidden shrink-0">
+                          {avatarUrl ? (
+                            <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
+                          ) : (
+                            <span className="text-xs font-medium text-accent">
+                              {displayName.charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-foreground truncate">{displayName}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">
+                              {ACCESS_LABELS[(isCurrentUser ? (entityWithAccess?.access ?? member.access) : member.access) as AccessLevel]}
+                            </span>
+                            {roleLabel && <span className="text-xs text-accent">{roleLabel}</span>}
+                            {isCurrentUser && (
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">deg</Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {canManagePersonas && !isCurrentUser && member.access !== 'owner' && (
+                          <Select
+                            value={member.access}
+                            onValueChange={(value) => updateTeamMember.mutate({ id: member.id, access: value as AccessLevel })}
+                          >
+                            <SelectTrigger className="w-[110px] h-8 text-xs bg-background border-border/50">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="admin">Administrer</SelectItem>
+                              <SelectItem value="editor">Rediger</SelectItem>
+                              <SelectItem value="viewer">Se</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                        {isCurrentUser && (
+                          <ProjectCreditFlow
+                            memberId={member.id}
+                            entityId={entityWithAccess?.id}
+                            entityName={entityWithAccess?.name ?? ""}
+                            personaId={persona?.id}
+                            personaSlug={persona?.slug}
+                            isPublic={!!member.is_public}
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    {isCurrentUser && myPersonas && myPersonas.length > 0 && id && (
+                      <div className="mt-3 ml-12 flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">Representert som:</span>
+                        <Select
+                          value={member.persona_id || ""}
+                          onValueChange={(personaId) => {
+                            if (personaId) {
+                              setEntityTeamPersona.mutate({ entityId: id, personaId });
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="h-8 text-xs bg-background border-border/50 flex-1 max-w-[240px] gap-2">
+                            {(() => {
+                              const selected = myPersonas.find((p) => p.id === (member.persona_id || ""));
+                              return selected ? (
+                                <span className="flex items-center gap-2 min-w-0">
+                                  <span className="h-5 w-5 rounded-lg bg-accent/10 flex items-center justify-center overflow-hidden shrink-0">
+                                    {selected.avatar_url ? (
+                                      <img src={selected.avatar_url} alt={selected.name} className="h-full w-full object-cover" />
+                                    ) : (
+                                      <span className="text-[10px] font-medium text-accent">{selected.name.charAt(0).toUpperCase()}</span>
+                                    )}
+                                  </span>
+                                  <span className="truncate">{selected.name}</span>
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground">Velg persona...</span>
+                              );
+                            })()}
+                          </SelectTrigger>
+                          <SelectContent>
+                            {myPersonas.map((p) => (
+                              <SelectItem key={p.id} value={p.id}>
+                                <span className="flex items-center gap-2">
+                                  <span className="h-5 w-5 rounded-lg bg-accent/10 flex items-center justify-center overflow-hidden shrink-0">
+                                    {p.avatar_url ? (
+                                      <img src={p.avatar_url} alt={p.name} className="h-full w-full object-cover" />
+                                    ) : (
+                                      <span className="text-[10px] font-medium text-accent">{p.name.charAt(0).toUpperCase()}</span>
+                                    )}
+                                  </span>
+                                  <span>{p.name}</span>
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Module grid */}
+        <section className="space-y-3">
+          <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+            Innstillinger
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-3">
+            {modules.map((mod) => {
+              const Icon = mod.icon;
+              return (
+                <button
+                  key={mod.key}
+                  onClick={() => setActivePanel(mod.key)}
+                  className={`group relative rounded-xl border bg-card/60 backdrop-blur-sm p-4 text-left transition-all duration-300 cursor-pointer ${
+                    mod.danger
+                      ? "border-destructive/20 hover:border-destructive/40 hover:bg-card/80"
+                      : "border-border/30 hover:border-accent/30 hover:bg-card/80 hover:shadow-lg hover:shadow-accent/5"
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className={`h-9 w-9 rounded-lg flex items-center justify-center transition-colors duration-300 ${
+                      mod.danger
+                        ? "bg-destructive/10 group-hover:bg-destructive/20"
+                        : "bg-accent/10 group-hover:bg-accent/20"
+                    }`}>
+                      <Icon className={`h-5 w-5 transition-colors duration-300 ${
+                        mod.danger ? "text-destructive/70" : "text-accent"
+                      }`} />
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                  </div>
+                  <h3 className={`text-sm font-semibold mb-1 ${mod.danger ? "text-destructive/70" : "text-foreground"}`}>
+                    {mod.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {mod.description}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Save button */}
+        {canEdit && (
+          <div className="pt-2">
+            <Button
+              onClick={() => saveMutation.mutate()}
+              disabled={saveMutation.isPending}
+              className="bg-accent hover:bg-accent/90 text-accent-foreground"
+            >
+              {saveMutation.isPending ? "Lagrer..." : "Lagre endringer"}
+            </Button>
+          </div>
+        )}
+
+        {/* Unpublished alert */}
+        {!entityWithAccess.is_published && (
+          <Alert className="bg-muted/50 border-border/30">
+            <Info className="h-4 w-4 text-muted-foreground" />
+            <AlertDescription className="text-sm text-muted-foreground">
+              <strong>Utkast:</strong> Dette prosjektet er ikke publisert ennå.
+              Kontakt en administrator for å få det publisert.
+            </AlertDescription>
+          </Alert>
+        )}
+      </main>
+
+      {/* Panel dialogs for each module */}
+      <Dialog open={activePanel === "basic"} onOpenChange={(o) => !o && setActivePanel(null)}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-accent" />
+              Grunnleggende
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 pt-2">
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 border border-border/50 rounded-lg">
-                <AvatarImage 
-                  src={formData.hero_image_url || undefined} 
-                  style={heroStyles}
-                  className="object-cover"
-                />
+                <AvatarImage src={formData.hero_image_url || undefined} style={heroStyles} className="object-cover" />
                 <AvatarFallback className="text-xs bg-secondary rounded-lg">
                   {formData.name ? formData.name.substring(0, 2).toUpperCase() : "?"}
                 </AvatarFallback>
@@ -485,13 +662,9 @@ export default function EntityEdit() {
                 />
               )}
             </div>
-
-            {/* Projektlogo */}
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 border border-border/50 rounded-lg">
-                {formData.logo_url ? (
-                  <AvatarImage src={formData.logo_url} className="object-contain p-1" />
-                ) : null}
+                {formData.logo_url ? <AvatarImage src={formData.logo_url} className="object-contain p-1" /> : null}
                 <AvatarFallback className="text-[10px] bg-secondary rounded-lg">LOGO</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
@@ -510,115 +683,79 @@ export default function EntityEdit() {
                 />
               )}
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-muted-foreground text-xs uppercase tracking-wide">Navn *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder={isVenue ? "Venue navn" : "Artist/band navn"}
-                disabled={!canEdit}
-                required={canEdit}
-                className="bg-transparent border-border/50 focus:border-accent"
-              />
+              <Label className="text-muted-foreground text-xs uppercase tracking-wide">Navn *</Label>
+              <Input value={formData.name} onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))} placeholder={isVenue ? "Venue navn" : "Artist/band navn"} disabled={!canEdit} required={canEdit} className="bg-background border-border/50 focus:border-accent" />
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="tagline" className="text-muted-foreground text-xs uppercase tracking-wide">Tagline</Label>
-              <Input
-                id="tagline"
-                value={formData.tagline}
-                onChange={(e) => setFormData((prev) => ({ ...prev, tagline: e.target.value }))}
-                placeholder="Kort beskrivelse (én linje)"
-                disabled={!canEdit}
-                className="bg-transparent border-border/50 focus:border-accent"
-              />
+              <Label className="text-muted-foreground text-xs uppercase tracking-wide">Tagline</Label>
+              <Input value={formData.tagline} onChange={(e) => setFormData((prev) => ({ ...prev, tagline: e.target.value }))} placeholder="Kort beskrivelse (én linje)" disabled={!canEdit} className="bg-background border-border/50 focus:border-accent" />
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-muted-foreground text-xs uppercase tracking-wide">Bio</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                placeholder="Full beskrivelse..."
-                rows={4}
-                disabled={!canEdit}
-                className="bg-transparent border-border/50 focus:border-accent resize-none"
-              />
+              <Label className="text-muted-foreground text-xs uppercase tracking-wide">Bio</Label>
+              <Textarea value={formData.description} onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))} placeholder="Full beskrivelse..." rows={4} disabled={!canEdit} className="bg-background border-border/50 focus:border-accent resize-none" />
             </div>
-          </CollapsibleContent>
-        </Collapsible>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-        {/* Lokasjon */}
-        <Collapsible open={locationOpen} onOpenChange={setLocationOpen}>
-          <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
-            <div className="flex items-center gap-3">
-              <MapPin className="h-4 w-4 text-accent" />
-              <span className="font-medium">Lokasjon</span>
-              {locationName && <span className="text-xs text-muted-foreground">({locationName})</span>}
-            </div>
-            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${locationOpen ? "rotate-180" : ""}`} />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="py-5 space-y-4 border-b border-border/30">
+      <Dialog open={activePanel === "location"} onOpenChange={(o) => !o && setActivePanel(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-accent" />
+              Lokasjon
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
             <p className="text-sm text-muted-foreground">
               {isVenue ? "Hvor ligger scenen?" : "Hvor er prosjektet basert?"}
             </p>
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <Label className="text-muted-foreground text-xs uppercase tracking-wide">Sted</Label>
-                <Input
-                  value={locationName}
-                  onChange={(e) => setLocationName(e.target.value)}
-                  placeholder="F.eks. Oslo, Norge eller Josefines gate 16"
-                  disabled={!canEdit}
-                  className="bg-transparent border-border/50 focus:border-accent"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-muted-foreground text-xs uppercase tracking-wide">Type (valgfritt)</Label>
-                <Select value={locationType || "none"} onValueChange={(val) => setLocationType(val === "none" ? "" : val as LocationType)} disabled={!canEdit}>
-                  <SelectTrigger className="w-full bg-transparent border-border/50">
-                    <SelectValue placeholder="Velg type..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Ikke valgt</SelectItem>
-                    {LOCATION_TYPE_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label className="text-muted-foreground text-xs uppercase tracking-wide">Sted</Label>
+              <Input value={locationName} onChange={(e) => setLocationName(e.target.value)} placeholder="F.eks. Oslo, Norge eller Josefines gate 16" disabled={!canEdit} className="bg-background border-border/50 focus:border-accent" />
             </div>
-          </CollapsibleContent>
-        </Collapsible>
+            <div className="space-y-2">
+              <Label className="text-muted-foreground text-xs uppercase tracking-wide">Type (valgfritt)</Label>
+              <Select value={locationType || "none"} onValueChange={(val) => setLocationType(val === "none" ? "" : val as LocationType)} disabled={!canEdit}>
+                <SelectTrigger className="w-full bg-background border-border/50">
+                  <SelectValue placeholder="Velg type..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Ikke valgt</SelectItem>
+                  {LOCATION_TYPE_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-        {/* Sosiale lenker */}
-        <Collapsible open={socialOpen} onOpenChange={setSocialOpen}>
-          <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
-            <div className="flex items-center gap-3">
-              <Link2 className="h-4 w-4 text-accent" />
-              <span className="font-medium">Sosiale lenker</span>
-              {socialLinks.length > 0 && <span className="text-xs text-muted-foreground">({socialLinks.length})</span>}
-            </div>
-            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${socialOpen ? "rotate-180" : ""}`} />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="py-5 border-b border-border/30">
+      <Dialog open={activePanel === "social"} onOpenChange={(o) => !o && setActivePanel(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="h-5 w-5 text-accent" />
+              Sosiale lenker
+            </DialogTitle>
+          </DialogHeader>
+          <div className="pt-2">
             <SocialLinksEditor links={socialLinks} onChange={setSocialLinks} disabled={!canEdit} />
-          </CollapsibleContent>
-        </Collapsible>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-        {/* Historien / Timeline */}
-        <Collapsible open={timelineOpen} onOpenChange={setTimelineOpen}>
-          <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-accent transition-colors">
-            <div className="flex items-center gap-3">
-              <Clock className="h-4 w-4 text-accent" />
-              <span className="font-medium">{isVenue ? "Historien" : "Min reise"}</span>
-            </div>
-            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${timelineOpen ? "rotate-180" : ""}`} />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="py-5 border-b border-border/30">
+      <Dialog open={activePanel === "timeline"} onOpenChange={(o) => !o && setActivePanel(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-accent" />
+              {isVenue ? "Historien" : "Min reise"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="pt-2">
             <UnifiedTimelineManager
               source={{ type: "entity", id: entityWithAccess.id }}
               canEdit={canEdit}
@@ -626,333 +763,140 @@ export default function EntityEdit() {
               title={isVenue ? "Historien" : "Tidslinje"}
               helperText={isVenue ? "Viktige hendelser i scenens historie" : "Viktige øyeblikk i prosjektets reise"}
             />
-          </CollapsibleContent>
-        </Collapsible>
-
-        {/* Team-medlemmer */}
-        {teamMembers && teamMembers.length > 0 && (
-          <div className="py-5 space-y-2 border-b border-border/30">
-            <div className="flex items-center gap-3 mb-3">
-              <Users className="h-4 w-4 text-accent" />
-              <span className="font-medium">Team</span>
-              <span className="text-xs text-muted-foreground">({teamMembers.length})</span>
-            </div>
-            {teamMembers.map((member) => {
-              const persona = member.persona as { id: string; name: string; avatar_url?: string; slug?: string } | null;
-              const isCurrentUser = member.user_id === currentUser?.id;
-              
-              const displayName = persona?.name || "Ingen navn";
-              const avatarUrl = persona?.avatar_url;
-              const roleLabel = member.bindingRoleLabel || (member.role_labels?.length > 0 ? member.role_labels.join(", ") : null);
-              
-              return (
-                <div key={member.id} className="py-3 border-b border-border/20 last:border-0 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
-                        {avatarUrl ? (
-                          <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
-                        ) : (
-                          <span className="text-xs font-medium text-muted-foreground">
-                            {displayName.charAt(0).toUpperCase()}
-                          </span>
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{displayName}</p>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">
-                            {ACCESS_LABELS[(isCurrentUser ? (entityWithAccess?.access ?? member.access) : member.access) as AccessLevel]}
-                            {isCurrentUser && !isOwner && " (din rolle)"}
-                          </span>
-                          {roleLabel && (
-                            <span className="text-xs text-accent">{roleLabel}</span>
-                          )}
-                          {isCurrentUser && (
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">deg</Badge>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {/* Role dropdown for other members (admin/owner only, not for owner role) */}
-                      {canManagePersonas && !isCurrentUser && member.access !== 'owner' && (
-                        <Select
-                          value={member.access}
-                          onValueChange={(value) => updateTeamMember.mutate({ id: member.id, access: value as AccessLevel })}
-                        >
-                          <SelectTrigger className="w-[120px] h-8 text-xs bg-transparent border-border/50">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="admin">Administrer</SelectItem>
-                            <SelectItem value="editor">Rediger</SelectItem>
-                            <SelectItem value="viewer">Se</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                      {/* Credit flow – only for the current user's own row */}
-                      {isCurrentUser && (
-                        <ProjectCreditFlow
-                          memberId={member.id}
-                          entityId={entityWithAccess?.id}
-                          entityName={entityWithAccess?.name ?? ""}
-                          personaId={persona?.id}
-                          personaSlug={persona?.slug}
-                          isPublic={!!member.is_public}
-                        />
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Persona selector for current user's own row */}
-                  {isCurrentUser && myPersonas && myPersonas.length > 0 && id && (
-                    <div className="ml-11 flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">Representert som:</span>
-                      <Select
-                        value={member.persona_id || ""}
-                        onValueChange={(personaId) => {
-                          if (personaId) {
-                            setEntityTeamPersona.mutate({ entityId: id, personaId });
-                          }
-                        }}
-                      >
-                        <SelectTrigger className="h-8 text-xs bg-transparent border-border/50 flex-1 max-w-[240px] gap-2">
-                          {(() => {
-                            const selected = myPersonas.find((p) => p.id === (member.persona_id || ""));
-                            return selected ? (
-                              <span className="flex items-center gap-2 min-w-0">
-                                <span className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0">
-                                  {selected.avatar_url ? (
-                                    <img src={selected.avatar_url} alt={selected.name} className="h-full w-full object-cover" />
-                                  ) : (
-                                    <span className="text-[10px] font-medium text-muted-foreground">{selected.name.charAt(0).toUpperCase()}</span>
-                                  )}
-                                </span>
-                                <span className="truncate">{selected.name}</span>
-                              </span>
-                            ) : (
-                              <span className="text-muted-foreground">Velg persona...</span>
-                            );
-                          })()}
-                        </SelectTrigger>
-                        <SelectContent>
-                          {myPersonas.map((p) => (
-                            <SelectItem key={p.id} value={p.id}>
-                              <span className="flex items-center gap-2">
-                                <span className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0">
-                                  {p.avatar_url ? (
-                                    <img src={p.avatar_url} alt={p.name} className="h-full w-full object-cover" />
-                                  ) : (
-                                    <span className="text-[10px] font-medium text-muted-foreground">{p.name.charAt(0).toUpperCase()}</span>
-                                  )}
-                                </span>
-                                <span>{p.name}</span>
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
           </div>
-        )}
+        </DialogContent>
+      </Dialog>
 
-        {/* Farlig sone */}
-        {canEdit && (
-          <Collapsible open={dangerOpen} onOpenChange={setDangerOpen}>
-            <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-border/30 hover:text-destructive transition-colors">
-              <div className="flex items-center gap-3">
-                <AlertTriangle className="h-4 w-4 text-destructive/70" />
-                <span className="font-medium text-destructive/70">Farlig sone</span>
-              </div>
-              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${dangerOpen ? "rotate-180" : ""}`} />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="py-5 space-y-6 border-b border-border/30">
-              <p className="text-sm text-muted-foreground">
-                Handlinger her kan ikke angres uten hjelp fra administrator.
-              </p>
+      <Dialog open={activePanel === "danger"} onOpenChange={(o) => !o && setActivePanel(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              Farlig sone
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 pt-2">
+            <p className="text-sm text-muted-foreground">
+              Handlinger her kan ikke angres uten hjelp fra administrator.
+            </p>
 
-              {/* Transfer ownership (only for owner) */}
-              {isOwner && hasOtherMembers && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Overfør eierskap</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Velg et teammedlem som skal bli ny eier. Du vil bli admin.
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Select value={transferTargetId || ""} onValueChange={setTransferTargetId}>
-                      <SelectTrigger className="flex-1 h-9 text-sm bg-transparent border-border/50">
-                        <SelectValue placeholder="Velg nytt eier..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {otherMembers.map((m) => {
-                          const p = m.persona as { name: string } | null;
-                          return (
-                            <SelectItem key={m.id} value={m.id}>
-                              {p?.name || "Ukjent"} ({ACCESS_LABELS[m.access as AccessLevel]})
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          disabled={!transferTargetId || transferOwnership.isPending}
-                          className="border-destructive/50 text-destructive hover:bg-destructive/10"
-                        >
-                          {transferOwnership.isPending ? "Overfører..." : "Overfør"}
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Overfør eierskap?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Det valgte teammedlemmet vil bli ny eier av prosjektet. Du vil bli admin. Denne handlingen kan ikke angres.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Avbryt</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={handleTransferOwnership}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Bekreft overføring
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+            {isOwner && hasOtherMembers && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Overfør eierskap</span>
                 </div>
-              )}
-
-              {isOwner && !hasOtherMembers && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Overfør eierskap</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Du er eneste medlem. Inviter noen til teamet før du kan overføre eierskap.
-                  </p>
-                </div>
-              )}
-
-              {/* Leave project (for non-owners) */}
-              {!isOwner && (
-                <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground">
-                    Du er ikke eier. Du kan når som helst forlate prosjektet.
-                  </p>
+                <p className="text-xs text-muted-foreground">
+                  Velg et teammedlem som skal bli ny eier. Du vil bli admin.
+                </p>
+                <div className="flex items-center gap-2">
+                  <Select value={transferTargetId || ""} onValueChange={setTransferTargetId}>
+                    <SelectTrigger className="flex-1 h-9 text-sm bg-background border-border/50">
+                      <SelectValue placeholder="Velg nytt eier..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {otherMembers.map((m) => {
+                        const p = m.persona as { name: string } | null;
+                        return (
+                          <SelectItem key={m.id} value={m.id}>
+                            {p?.name || "Ukjent"} ({ACCESS_LABELS[m.access as AccessLevel]})
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="border-destructive/50 text-destructive hover:bg-destructive/10"
-                      >
-                        <LogOut className="h-3.5 w-3.5 mr-1.5" />
-                        Forlat prosjektet
+                      <Button type="button" variant="outline" size="sm" disabled={!transferTargetId || transferOwnership.isPending} className="border-destructive/50 text-destructive hover:bg-destructive/10">
+                        {transferOwnership.isPending ? "Overfører..." : "Overfør"}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Forlat prosjektet?</AlertDialogTitle>
+                        <AlertDialogTitle>Overfør eierskap?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Du vil miste tilgangen til "{formData.name}". En admin eller eier kan invitere deg tilbake senere.
+                          Det valgte teammedlemmet vil bli ny eier av prosjektet. Du vil bli admin. Denne handlingen kan ikke angres.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Avbryt</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={handleLeaveProject}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          disabled={leaveEntity.isPending}
-                        >
-                          {leaveEntity.isPending ? "Forlater..." : "Forlat"}
+                        <AlertDialogAction onClick={handleTransferOwnership} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Bekreft overføring
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* Request deletion (for owner/editor) */}
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="border-destructive/50 text-destructive hover:bg-destructive/10">
-                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                    Be om sletting av prosjekt
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Be om sletting?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Dette vil sende en forespørsel til admin om å slette prosjektet "{formData.name}".
-                      <br /><br />
-                      Admin vil vurdere forespørselen og du vil få beskjed når den er behandlet.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Avbryt</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => requestDeletion.mutate()}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      disabled={requestDeletion.isPending}
-                    >
-                      {requestDeletion.isPending ? "Sender..." : "Send forespørsel"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </CollapsibleContent>
-          </Collapsible>
-        )}
+            {isOwner && !hasOtherMembers && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Overfør eierskap</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Du er eneste medlem. Inviter noen til teamet før du kan overføre eierskap.
+                </p>
+              </div>
+            )}
 
-        {/* Bottom buttons - matching PersonaEdit exactly */}
-        {canEdit && (
-          <div className="flex flex-col-reverse sm:flex-row gap-3 pt-8">
-            <Button
-              type="submit"
-              disabled={saveMutation.isPending}
-              className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground"
-            >
-              {saveMutation.isPending ? "Lagrer..." : "Lagre endringer"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate("/dashboard")}
-              className="sm:w-auto"
-            >
-              Avbryt
-            </Button>
+            {!isOwner && (
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Du er ikke eier. Du kan når som helst forlate prosjektet.
+                </p>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button type="button" variant="outline" size="sm" className="border-destructive/50 text-destructive hover:bg-destructive/10">
+                      <LogOut className="h-3.5 w-3.5 mr-1.5" />
+                      Forlat prosjektet
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Forlat prosjektet?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Du vil miste tilgangen til "{formData.name}". En admin eller eier kan invitere deg tilbake senere.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleLeaveProject} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={leaveEntity.isPending}>
+                        {leaveEntity.isPending ? "Forlater..." : "Forlat"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="border-destructive/50 text-destructive hover:bg-destructive/10">
+                  <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                  Be om sletting av prosjekt
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Be om sletting?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Dette vil sende en forespørsel til admin om å slette prosjektet "{formData.name}".
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => requestDeletion.mutate()} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={requestDeletion.isPending}>
+                    {requestDeletion.isPending ? "Sender..." : "Send forespørsel"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
-        )}
-      </form>
-
-      {/* Info alert at bottom */}
-      {!entityWithAccess.is_published && (
-        <Alert className="mt-8 bg-muted/50 border-border/30">
-          <Info className="h-4 w-4 text-muted-foreground" />
-          <AlertDescription className="text-sm text-muted-foreground">
-            <strong>Utkast:</strong> Dette prosjektet er ikke publisert ennå. 
-            Kontakt en administrator for å få det publisert.
-          </AlertDescription>
-        </Alert>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
