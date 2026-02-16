@@ -2,12 +2,13 @@ import { Link } from "react-router-dom";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { useEntityTypes } from "@/hooks/useEntityTypes";
 import { getEntityPublicRoute } from "@/lib/entity-types";
+import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // NEW ROLE MODEL STEP 1.2: Simple participant row (persona or entity)
 interface EventParticipantItemProps {
   item: {
-    persona?: { name: string; avatar_url?: string | null; slug?: string } | null;
+    persona?: { name: string; avatar_url?: string | null; slug?: string; type?: string | null } | null;
     entity?: { name: string; slug?: string | null; type?: string | null; hero_image_url?: string | null } | null;
     role_label?: string | null;
   };
@@ -18,7 +19,7 @@ export function EventParticipantItem({ item }: EventParticipantItemProps) {
   const rawImageUrl = item.persona?.avatar_url ?? item.entity?.hero_image_url ?? null;
   const imageUrl = useSignedMediaUrl(rawImageUrl, "public");
   const name = item.persona?.name ?? item.entity?.name ?? "";
-  const role = item.role_label;
+  const role = item.role_label || getPersonaTypeLabel(item.persona?.type) || null;
 
   const personaSlug = item.persona?.slug;
   const entitySlug = item.entity?.slug;
