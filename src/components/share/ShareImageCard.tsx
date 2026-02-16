@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, useCallback, useState } from "react";
 import shareGIcon from "@/assets/share-g-icon.png";
 import shareFallbackBg from "@/assets/share-fallback-bg.jpeg";
 import type { ShareModel } from "@/types/share";
@@ -19,6 +19,56 @@ const ACCENT_COLOR = "hsl(24, 100%, 55%)";
 type ShareImageCardProps = {
   data: ShareModel;
 };
+
+/**
+ * Hero forgrunn som respekterer aspect ratio uten object-fit.
+ * html2canvas ignorerer object-fit, så vi beregner contain-størrelse
+ * fra naturalWidth/naturalHeight og setter eksplisitt w/h på img.
+ */
+function ShareHeroForeground({ src }: { src: string }) {
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+
+  const onLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    const nw = img.naturalWidth;
+    const nh = img.naturalHeight;
+    if (!nw || !nh) return;
+    const r = nw / nh;
+    let w = SHARE_WIDTH;
+    let h = SHARE_HEIGHT;
+    if (r > SHARE_WIDTH / SHARE_HEIGHT) {
+      h = Math.round(SHARE_WIDTH / r);
+    } else {
+      w = Math.round(SHARE_HEIGHT * r);
+    }
+    setSize({ w, h });
+  }, []);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 2,
+      }}
+    >
+      <img
+        src={src}
+        alt=""
+        crossOrigin="anonymous"
+        onLoad={onLoad}
+        style={{
+          width: size ? size.w : SHARE_WIDTH,
+          height: size ? size.h : SHARE_HEIGHT,
+          objectFit: "cover",
+        }}
+      />
+    </div>
+  );
+}
 
 export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
   function ShareImageCard({ data }, ref) {
@@ -50,11 +100,11 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
                 inset: 0,
                 width: SHARE_WIDTH,
                 height: SHARE_HEIGHT,
-                objectFit: "contain",
+                objectFit: "cover",
                 objectPosition: "center",
                 filter: "blur(44px)",
-                opacity: 0.22,
-                transform: "scale(1.15)",
+                opacity: 0.18,
+                transform: "scale(1.1)",
               }}
             />
             <div
@@ -93,25 +143,10 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           />
         )}
 
-        {/* Lag 2: Hero forgrunn – contain, skarp */}
-        {heroUrl && (
-          <img
-            src={heroUrl}
-            alt=""
-            crossOrigin="anonymous"
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: SHARE_WIDTH,
-              height: SHARE_HEIGHT,
-              objectFit: "contain",
-              objectPosition: "center",
-              zIndex: 2,
-            }}
-          />
-        )}
+        {/* Lag 2: Hero forgrunn – contain uten object-fit (html2canvas-vennlig) */}
+        {heroUrl && <ShareHeroForeground src={heroUrl} />}
 
-        {/* Lag 3: Bunn-gradient – helflate, myk overgang, ingen hairline */}
+        {/* Lag 3: Bunn-gradient for lesbarhet */}
         <div
           style={{
             position: "absolute",
@@ -140,7 +175,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           }}
         />
 
-        {/* Tittel + tagline – top-left, fast bredde */}
+        {/* Tittel + tagline – top-left */}
         <div
           style={{
             position: "absolute",
