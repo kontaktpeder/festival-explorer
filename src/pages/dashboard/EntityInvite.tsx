@@ -130,7 +130,6 @@ export default function EntityInvite() {
   });
 
   const excludedUserIds = [...(existingTeamUserIds || [])];
-  if (currentUser?.id) excludedUserIds.push(currentUser.id);
 
   const { data: searchResults = [], isLoading: searchLoading } = useQuery({
     queryKey: ["invite-search-personas", searchQuery, excludedUserIds],
