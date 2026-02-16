@@ -139,8 +139,6 @@ export function ProjectCreditFlow({
                 <Button asChild variant="default" size="sm" className="w-full">
                   <Link
                     to={`/dashboard/personas/${personaId}${entityId ? `?fromCredit=1&entityId=${encodeURIComponent(entityId)}&entityName=${encodeURIComponent(entityName)}` : ""}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
                   >
                     Åpne min profil
                   </Link>
