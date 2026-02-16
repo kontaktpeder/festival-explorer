@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import FestivalPage from "./pages/FestivalPage";
 import EventPage from "./pages/EventPage";
@@ -47,6 +47,7 @@ import VenueEventsRoom from "./pages/dashboard/VenueEventsRoom";
 import VenueTeamRoom from "./pages/dashboard/VenueTeamRoom";
 import VenueSettingsRoom from "./pages/dashboard/VenueSettingsRoom";
 
+import VenuePage from "./pages/VenuePage";
 import EventRoomPage from "./pages/EventRoomPage";
 
 // Admin pages
@@ -76,13 +77,7 @@ import AdminTimelineEventEdit from "./pages/admin/AdminTimelineEventEdit";
 import AdminTicketsDashboard from "./pages/admin/AdminTicketsDashboard";
 import AdminAccessRequests from "./pages/admin/AdminAccessRequests";
 import AdminAccessRequestDetail from "./pages/admin/AdminAccessRequestDetail";
-import AdminFestivalWorkspace from "./pages/admin/AdminFestivalWorkspace";
-
-// VenueRedirect removed - /venue/:slug now redirects to /project/:slug
-function VenueRedirect() {
-  const { slug } = useParams<{ slug: string }>();
-  return <Navigate to={`/project/${slug}`} replace />;
-}
+import { PublicErrorBoundary } from "@/components/layout/PublicErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -92,6 +87,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <PublicErrorBoundary>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/festival" element={<FestivalPage />} />
@@ -99,7 +95,7 @@ const App = () => (
           <Route path="/event-room/:id" element={<EventRoomPage />} />
           <Route path="/event/:slug" element={<EventPage />} />
           <Route path="/project/:slug" element={<ProjectPage />} />
-          <Route path="/venue/:slug" element={<VenueRedirect />} />
+          <Route path="/venue/:slug" element={<VenuePage />} />
           <Route path="/om-giggen" element={<OmGiggenPage />} />
           {/* TODO: Reaktiver etter MVP - explore blir global navigasjon */}
           {/* <Route path="/explore" element={<ExplorePage />} /> */}
@@ -177,6 +173,7 @@ const App = () => (
           
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </PublicErrorBoundary>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
