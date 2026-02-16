@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Loader2, X, ChevronDown, Users, Trash2, User, Sparkles, Clock, Link2, MapPin, Briefcase } from "lucide-react";
+import { Loader2, X, ChevronDown, Users, Trash2, User, Sparkles, Clock, Link2, MapPin, Briefcase, Info } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Mail as MailIcon } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -305,37 +305,39 @@ export default function PersonaEdit() {
 
       <form onSubmit={handleSubmit} className="space-y-0">
         {/* Bli funnet på plattformen */}
-        <div className="py-4 border-b border-accent/20 space-y-3">
-          <div>
-            <p className="font-medium">Bli funnet på plattformen</p>
-          </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Når profilen din er synlig, kan hvem som helst finne deg i søk og utforske GIGGEN – musikere, arrangører og publikum kan ta kontakt og bli kjent med deg.
-          </p>
-          <p className="text-xs text-muted-foreground/70">
-            {isPublic ? "Profilen din er synlig og kan finnes av alle." : "Kun du ser profilen. Slå på for å la andre finne deg."}
-          </p>
+        <div className="py-4 border-b border-accent/20 space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="persona-public" className="text-sm cursor-pointer">Vis profilen min (synlig i søk)</Label>
+            <Label htmlFor="persona-public" className="text-sm cursor-pointer font-medium">Bli funnet på plattformen</Label>
             <Switch id="persona-public" checked={isPublic} onCheckedChange={setIsPublic} />
           </div>
+          <Collapsible>
+            <CollapsibleTrigger className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <Info className="h-3 w-3" />
+              <span>{isPublic ? "Synlig i søk" : "Kun synlig for deg"} · Les mer</span>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2 p-3 rounded-md bg-muted/50 border border-border/30 text-xs text-muted-foreground leading-relaxed space-y-1">
+              <p>Når profilen din er synlig, kan hvem som helst finne deg i søk og utforske GIGGEN – musikere, arrangører og publikum kan ta kontakt og bli kjent med deg.</p>
+              <p className="text-muted-foreground/70">{isPublic ? "Profilen din er synlig og kan finnes av alle." : "Kun du ser profilen. Slå på for å la andre finne deg."}</p>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
 
         {/* Bli kreditert i team */}
-        <div className="py-4 border-b border-accent/20 space-y-3">
-          <div>
-            <p className="font-medium">Bli kreditert i team</p>
-          </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Der du er lagt til i et prosjekt eller festival-team, kan arrangør se navnet ditt i listen. Denne innstillingen styrer om navnet vises eller vises som «Skjult».
-          </p>
-          <p className="text-xs text-muted-foreground/70">
-            {allowTeamCredit ? "Navnet ditt vises i team-lister der du er lagt til." : "Du vises som «Skjult» i team-lister. Du kan fortsatt være med og ha tilgang."}
-          </p>
+        <div className="py-4 border-b border-accent/20 space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="persona-allow-credit" className="text-sm cursor-pointer">Vis navn i team der jeg er lagt til</Label>
+            <Label htmlFor="persona-allow-credit" className="text-sm cursor-pointer font-medium">Bli kreditert i team</Label>
             <Switch id="persona-allow-credit" checked={allowTeamCredit} onCheckedChange={setAllowTeamCredit} />
           </div>
+          <Collapsible>
+            <CollapsibleTrigger className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <Info className="h-3 w-3" />
+              <span>{allowTeamCredit ? "Synlig i team-lister" : "Skjult i team-lister"} · Les mer</span>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-2 p-3 rounded-md bg-muted/50 border border-border/30 text-xs text-muted-foreground leading-relaxed space-y-1">
+              <p>Der du er lagt til i et prosjekt eller festival-team, kan arrangør se navnet ditt i listen. Denne innstillingen styrer om navnet vises eller vises som «Skjult».</p>
+              <p className="text-muted-foreground/70">{allowTeamCredit ? "Navnet ditt vises i team-lister der du er lagt til." : "Du vises som «Skjult» i team-lister. Du kan fortsatt være med og ha tilgang."}</p>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
 
         {/* Grunnleggende */}
