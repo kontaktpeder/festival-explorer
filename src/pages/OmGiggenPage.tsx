@@ -14,6 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
+import { TeamCreditsSection } from "@/components/ui/TeamCreditsSection";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 
 // Hook for scroll reveal animations
@@ -424,33 +425,12 @@ export default function OmGiggenPage() {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-accent/5 rounded-full blur-[120px] pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
           
-          <div className="max-w-3xl mx-auto relative z-10">
-            <p className="uppercase tracking-[0.4em] mb-4 font-medium text-xl text-primary">
-              Festival-teamet
-            </p>
-            
-            <p className="text-base text-foreground/50 mb-12 max-w-lg leading-relaxed">
-              Bli kjent med dem som står bak festivalen, og som er med på å skape en historisk kveld.
-            </p>
-            
-            <div className="space-y-8">
-              {[...festivalTeam.hostRoles, ...festivalTeam.backstage]
-                .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-                .map((item: any, i: number) => {
-                  const displayRole = item.role_label || getPersonaTypeLabel(item.persona?.type) || (item.persona?.category_tags && item.persona.category_tags[0]) || item.entity?.type || null;
-                  return (
-                    <div key={item.participant_id || i} className="flex flex-col gap-1.5 border-l-2 border-accent/30 pl-5">
-                      {displayRole && (
-                        <p className="text-[10px] uppercase tracking-[0.3em] text-accent/70 font-semibold">
-                          {displayRole}
-                        </p>
-                      )}
-                      <EventParticipantItem item={item} />
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
+          <TeamCreditsSection
+            title="Festival-teamet"
+            members={[...festivalTeam.hostRoles, ...festivalTeam.backstage]
+              .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))}
+            className="relative z-10 py-0 border-none"
+          />
         </section>
       )}
 
