@@ -11,7 +11,13 @@ function preloadImage(src: string): Promise<void> {
   });
 }
 
-export function useShareImage() {
+export type UseShareImageOptions = {
+  /** Sett true under capture slik at preview-container bruker scale(1) */
+  setIsCapturing?: (capturing: boolean) => void;
+};
+
+export function useShareImage(options: UseShareImageOptions = {}) {
+  const { setIsCapturing } = options;
   const cardRef = useRef<HTMLDivElement>(null);
   const [generating, setGenerating] = useState(false);
 
@@ -19,6 +25,8 @@ export function useShareImage() {
     if (!cardRef.current) return null;
     setGenerating(true);
     try {
+      setIsCapturing?.(true);
+      await new Promise<void>((r) => requestAnimationFrame(() => r()));
       if (typeof document !== "undefined" && document.fonts?.ready) {
         await document.fonts.ready;
       }
@@ -31,6 +39,7 @@ export function useShareImage() {
       return new Promise<Blob | null>((resolve) => {
         canvas.toBlob(
           (blob) => {
+            setIsCapturing?.(false);
             setGenerating(false);
             if (!blob) {
               console.error("html2canvas toBlob returned null – sjekk CORS på bilder");
@@ -41,11 +50,12 @@ export function useShareImage() {
         );
       });
     } catch (e) {
+      setIsCapturing?.(false);
       setGenerating(false);
       console.error("Share image generation failed", e);
       return null;
     }
-  }, []);
+  }, [setIsCapturing]);
 
   const preloadForModel = useCallback(async (urls: (string | null | undefined)[]) => {
     const valid = urls.filter((u): u is string => !!u);
