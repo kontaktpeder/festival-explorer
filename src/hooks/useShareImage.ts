@@ -1,6 +1,5 @@
 import { useRef, useCallback, useState } from "react";
 import html2canvas from "html2canvas";
-import type { ShareVariant } from "@/types/share";
 
 function preloadImage(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -13,48 +12,40 @@ function preloadImage(src: string): Promise<void> {
 }
 
 export function useShareImage() {
-  const storyCardRef = useRef<HTMLDivElement>(null);
-  const linkCardRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const [generating, setGenerating] = useState(false);
 
-  const getRef = (variant: ShareVariant) =>
-    variant === "link" ? linkCardRef : storyCardRef;
-
-  const generateBlob = useCallback(
-    async (variant: ShareVariant): Promise<Blob | null> => {
-      const ref = getRef(variant);
-      if (!ref.current) return null;
-      setGenerating(true);
-      try {
-        if (typeof document !== "undefined" && document.fonts?.ready) {
-          await document.fonts.ready;
-        }
-        const canvas = await html2canvas(ref.current, {
-          backgroundColor: null,
-          scale: 2,
-          useCORS: true,
-          allowTaint: false,
-        });
-        return new Promise<Blob | null>((resolve) => {
-          canvas.toBlob(
-            (blob) => {
-              setGenerating(false);
-              if (!blob) {
-                console.error("html2canvas toBlob returned null – check CORS on images");
-              }
-              resolve(blob ?? null);
-            },
-            "image/png"
-          );
-        });
-      } catch (e) {
-        setGenerating(false);
-        console.error("Share image generation failed", e);
-        return null;
+  const generateBlob = useCallback(async (): Promise<Blob | null> => {
+    if (!cardRef.current) return null;
+    setGenerating(true);
+    try {
+      if (typeof document !== "undefined" && document.fonts?.ready) {
+        await document.fonts.ready;
       }
-    },
-    []
-  );
+      const canvas = await html2canvas(cardRef.current, {
+        backgroundColor: null,
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+      });
+      return new Promise<Blob | null>((resolve) => {
+        canvas.toBlob(
+          (blob) => {
+            setGenerating(false);
+            if (!blob) {
+              console.error("html2canvas toBlob returned null – sjekk CORS på bilder");
+            }
+            resolve(blob ?? null);
+          },
+          "image/png"
+        );
+      });
+    } catch (e) {
+      setGenerating(false);
+      console.error("Share image generation failed", e);
+      return null;
+    }
+  }, []);
 
   const preloadForModel = useCallback(async (urls: (string | null | undefined)[]) => {
     const valid = urls.filter((u): u is string => !!u);
@@ -62,10 +53,10 @@ export function useShareImage() {
   }, []);
 
   const download = useCallback(
-    async (variant: ShareVariant, filenameBase: string) => {
-      const blob = await generateBlob(variant);
+    async (filenameBase: string) => {
+      const blob = await generateBlob();
       if (!blob) return;
-      const filename = `${filenameBase}-${variant}.png`;
+      const filename = `${filenameBase}-instagram.png`;
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -77,29 +68,28 @@ export function useShareImage() {
   );
 
   const share = useCallback(
-    async (variant: ShareVariant, filenameBase: string) => {
-      const blob = await generateBlob(variant);
+    async (filenameBase: string) => {
+      const blob = await generateBlob();
       if (!blob) return;
-      const filename = `${filenameBase}-${variant}.png`;
+      const filename = `${filenameBase}-instagram.png`;
       const file = new File([blob], filename, { type: "image/png" });
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         try {
           await navigator.share({ files: [file], title: filenameBase });
         } catch (err) {
           if ((err as Error).name !== "AbortError") {
-            await download(variant, filenameBase);
+            await download(filenameBase);
           }
         }
       } else {
-        await download(variant, filenameBase);
+        await download(filenameBase);
       }
     },
     [generateBlob, download]
   );
 
   return {
-    storyCardRef,
-    linkCardRef,
+    cardRef,
     generating,
     generateBlob,
     download,

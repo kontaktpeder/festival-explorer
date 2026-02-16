@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Loader2, Share2, Download } from "lucide-react";
 import {
   Dialog,
@@ -6,8 +6,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { ShareModel, ShareVariant } from "@/types/share";
-import { SHARE_DIMENSIONS } from "@/types/share";
+import type { ShareModel } from "@/types/share";
+import { SHARE_WIDTH, SHARE_HEIGHT } from "@/types/share";
 import { useShareImage } from "@/hooks/useShareImage";
 import { ShareImageCard } from "./ShareImageCard";
 
@@ -18,16 +18,16 @@ type ShareModalProps = {
   filenameBase: string;
 };
 
+const PREVIEW_SCALE = 0.22;
+
 export function ShareModal({
   open,
   onOpenChange,
   data,
   filenameBase,
 }: ShareModalProps) {
-  const [variant, setVariant] = useState<ShareVariant>("story");
   const {
-    storyCardRef,
-    linkCardRef,
+    cardRef,
     generating,
     download,
     share,
@@ -45,20 +45,17 @@ export function ShareModal({
   }, [open, data, preloadForModel]);
 
   const handleShare = async () => {
-    await share(variant, filenameBase);
+    await share(filenameBase);
     onOpenChange(false);
   };
 
   const handleDownload = async () => {
-    await download(variant, filenameBase);
+    await download(filenameBase);
     onOpenChange(false);
   };
 
-  // Calculate preview container dimensions
-  const dims = SHARE_DIMENSIONS[variant];
-  const previewScale = 0.22;
-  const previewW = dims.width * previewScale;
-  const previewH = dims.height * previewScale;
+  const previewW = SHARE_WIDTH * PREVIEW_SCALE;
+  const previewH = SHARE_HEIGHT * PREVIEW_SCALE;
 
   return (
     <>
@@ -68,39 +65,15 @@ export function ShareModal({
             <DialogTitle>Del</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground mb-4">
-            Velg format, se forhåndsvisning, deretter del eller last ned.
+            Instagram innlegg (4:5) – se forhåndsvisning, deretter del eller last ned.
           </p>
-
-          {/* Variant picker */}
-          <div className="flex gap-2 mb-4">
-            <button
-              onClick={() => setVariant("story")}
-              className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-medium border transition-colors ${
-                variant === "story"
-                  ? "bg-accent text-accent-foreground border-accent"
-                  : "border-border bg-card hover:bg-muted/50"
-              }`}
-            >
-              Story (9:16)
-            </button>
-            <button
-              onClick={() => setVariant("link")}
-              className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-medium border transition-colors ${
-                variant === "link"
-                  ? "bg-accent text-accent-foreground border-accent"
-                  : "border-border bg-card hover:bg-muted/50"
-              }`}
-            >
-              Link (4:5)
-            </button>
-          </div>
 
           {/* Scaled preview */}
           <div
             className="mx-auto mb-4 rounded-lg overflow-hidden border border-border/30"
             style={{ width: previewW, height: previewH }}
           >
-            <ShareImageCard variant={variant} data={data} preview />
+            <ShareImageCard data={data} preview />
           </div>
 
           {/* Actions */}
@@ -133,10 +106,9 @@ export function ShareModal({
         </DialogContent>
       </Dialog>
 
-      {/* Hidden full-res cards for html2canvas capture */}
+      {/* Hidden full-res card for html2canvas capture */}
       <div className="fixed -left-[9999px] -top-[9999px] pointer-events-none" aria-hidden="true">
-        <ShareImageCard ref={storyCardRef} variant="story" data={data} />
-        <ShareImageCard ref={linkCardRef} variant="link" data={data} />
+        <ShareImageCard ref={cardRef} data={data} />
       </div>
     </>
   );

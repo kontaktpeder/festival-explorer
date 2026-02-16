@@ -1,7 +1,7 @@
 import { getPublicUrl } from "@/lib/utils";
 import type { ShareModel } from "@/types/share";
 
-const TITLE_MAX = 28;
+const TITLE_MAX = 34;
 const SUBTITLE_MAX = 80;
 
 function truncate(str: string, max: number): string {
@@ -23,7 +23,7 @@ export function shareModelFromProject(params: {
     title: truncate(params.title, TITLE_MAX),
     subtitle: params.tagline ? truncate(params.tagline, SUBTITLE_MAX) : undefined,
     heroImageUrl: params.heroImageUrl ?? null,
-    cta: `Oppdag ${params.title} på GIGGEN`,
+    cta: "Les mer på giggen.org",
     url: `${base}/project/${params.slug}`,
     brandLogoUrl: params.brandLogoUrl,
     brandBackgroundUrl: params.brandBackgroundUrl,
@@ -45,7 +45,7 @@ export function shareModelFromVenue(params: {
     title: truncate(params.name, TITLE_MAX),
     subtitle: params.description ? truncate(params.description, SUBTITLE_MAX) : undefined,
     heroImageUrl: params.heroImageUrl ?? null,
-    cta: "Se program på GIGGEN",
+    cta: "Les mer på giggen.org",
     url: `${base}/venue/${params.slug}`,
     brandLogoUrl: params.brandLogoUrl,
     brandBackgroundUrl: params.brandBackgroundUrl,

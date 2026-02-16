@@ -23,7 +23,7 @@ export function ShareImageSection({
           Del
         </h2>
         <p className="text-sm text-muted-foreground/60 mb-6">
-          Lag et delingsbilde i story- eller link-format og del eller last ned.
+          Lag et delingsbilde som Instagram-innlegg (4:5) og del eller last ned.
         </p>
         <Button
           onClick={() => setModalOpen(true)}
