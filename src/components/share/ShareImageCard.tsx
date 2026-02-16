@@ -247,7 +247,8 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
             style={{
               fontSize: 36,
               fontWeight: 600,
-              color: "rgba(255,255,255,0.85)",
+              color: "rgba(255,255,255,0.92)",
+              letterSpacing: "0.06em",
               textShadow:
                 "0 2px 14px rgba(0,0,0,0.6), 0 0 30px rgba(255,255,255,0.08)",
             }}
