@@ -3,17 +3,20 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { VenueStaffEditor } from "@/components/venues/VenueStaffEditor";
+import { useSelectedPersonaId } from "@/components/dashboard/PersonaSelector";
 
 export default function VenueTeamRoom() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const selectedPersonaId = useSelectedPersonaId();
 
   const { data: venue, isLoading } = useQuery({
     queryKey: ["venue-room", id],
     queryFn: async () => {
       const { data } = await supabase
         .from("venues")
-        .select("id, name, slug")
+        .select("id, name, slug, created_by")
         .eq("id", id!)
         .single();
       return data;
@@ -21,8 +24,34 @@ export default function VenueTeamRoom() {
     enabled: !!id,
   });
 
+  // Check if user can manage staff
+  const { data: canEdit } = useQuery({
+    queryKey: ["venue-team-can-edit", id, venue?.created_by, selectedPersonaId],
+    queryFn: async () => {
+      if (!venue) return false;
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return false;
+      if (venue.created_by === user.id) return true;
+
+      const personaIds = selectedPersonaId ? [selectedPersonaId] : [];
+      if (personaIds.length === 0) return false;
+
+      const { data: staff } = await supabase
+        .from("venue_staff")
+        .select("can_manage_staff, can_edit_venue")
+        .eq("venue_id", id!)
+        .in("persona_id", personaIds);
+
+      return staff?.some((s) => s.can_manage_staff || s.can_edit_venue) ?? false;
+    },
+    enabled: !!id && !!venue,
+  });
+
   if (isLoading) return <LoadingState message="Laster..." />;
-  if (!venue || !id) return <p className="p-8 text-muted-foreground">Venue ikke funnet.</p>;
+  if (!venue || !id)
+    return <p className="p-8 text-muted-foreground">Scene ikke funnet.</p>;
 
   return (
     <div className="min-h-[100svh] bg-background">
@@ -43,13 +72,11 @@ export default function VenueTeamRoom() {
         </div>
       </header>
 
-      <main className="w-full px-4 sm:px-8 lg:px-12 py-5 sm:py-6">
+      <main className="w-full px-4 sm:px-8 lg:px-12 py-5 sm:py-6 max-w-2xl">
         <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium mb-4">
           Team for {venue.name}
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Inviter og administrer team (kommer snart).
-        </p>
+        <VenueStaffEditor venueId={id} canEdit={canEdit ?? false} />
       </main>
     </div>
   );
