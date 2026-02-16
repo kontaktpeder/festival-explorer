@@ -138,18 +138,6 @@ export default function ProjectPage() {
         </section>
       )}
 
-      {/* Del – bilde med bakgrunn, tittel, tagline, logo */}
-      <ShareImageSection
-        slug={entity.slug}
-        shareModel={shareModelFromProject({
-          slug: entity.slug,
-          title: entity.name,
-          tagline: entity.tagline ?? null,
-          heroImageUrl: heroImageUrl ?? null,
-          logoUrl: logoUrl ?? null,
-        })}
-      />
-
       {/* MED PÅ SCENEN / BAK PROSJEKTET – The people */}
       {publicTeamMembers.length > 0 && (
         <TeamCreditsSection
@@ -164,6 +152,18 @@ export default function ProjectPage() {
           className="py-16 md:py-28 px-6 md:px-12 border-t border-border/20"
         />
       )}
+
+      {/* Del – bilde med bakgrunn, tittel, tagline, logo */}
+      <ShareImageSection
+        slug={entity.slug}
+        shareModel={shareModelFromProject({
+          slug: entity.slug,
+          title: entity.name,
+          tagline: entity.tagline ?? null,
+          heroImageUrl: heroImageUrl ?? null,
+          logoUrl: logoUrl ?? null,
+        })}
+      />
 
       {/* HISTORIEN – The journey - only show if events exist */}
       {timelineEvents && timelineEvents.length > 0 && (
