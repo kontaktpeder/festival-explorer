@@ -1,4 +1,4 @@
-import { useRef, useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import html2canvas from "html2canvas";
 
 function preloadImage(src: string): Promise<void> {
@@ -14,26 +14,29 @@ function preloadImage(src: string): Promise<void> {
 export function useShareImage() {
   const cardRef = useRef<HTMLDivElement>(null);
   const [generating, setGenerating] = useState(false);
+  const [blob, setBlob] = useState<Blob | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const preloadForModel = useCallback(async (urls: (string | null | undefined)[]) => {
-    const valid = urls.filter((u): u is string => !!u);
-    await Promise.allSettled(valid.map(preloadImage));
-  }, []);
+  // cleanup previewUrl on unmount or change
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
-  const generateBlob = useCallback(
-    async (preloadUrls?: (string | null | undefined)[]): Promise<Blob | null> => {
+  const generate = useCallback(
+    async (preloadUrls: (string | null | undefined)[] = []): Promise<Blob | null> => {
       if (!cardRef.current) return null;
       setGenerating(true);
       try {
+        // wait for portal mount + layout
         await new Promise<void>((r) => requestAnimationFrame(() => r()));
         await new Promise<void>((r) => requestAnimationFrame(() => r()));
 
-        if (preloadUrls?.length) {
-          await preloadForModel(preloadUrls);
-        }
-        if (typeof document !== "undefined" && document.fonts?.ready) {
-          await document.fonts.ready;
-        }
+        const valid = preloadUrls.filter((u): u is string => !!u);
+        await Promise.allSettled(valid.map(preloadImage));
+
+        if (document.fonts?.ready) await document.fonts.ready;
 
         const canvas = await html2canvas(cardRef.current, {
           backgroundColor: null,
@@ -42,69 +45,57 @@ export function useShareImage() {
           allowTaint: false,
         });
 
-        return await new Promise<Blob | null>((resolve) => {
-          canvas.toBlob(
-            (blob) => {
-              setGenerating(false);
-              if (!blob) {
-                console.error("html2canvas toBlob returned null – sjekk CORS på bilder");
-              }
-              resolve(blob ?? null);
-            },
-            "image/png"
-          );
+        const out = await new Promise<Blob | null>((resolve) =>
+          canvas.toBlob((b) => resolve(b ?? null), "image/png")
+        );
+
+        setBlob(out);
+        // revoke old, create new
+        setPreviewUrl((prev) => {
+          if (prev) URL.revokeObjectURL(prev);
+          return out ? URL.createObjectURL(out) : null;
         });
+
+        return out;
       } catch (e) {
-        setGenerating(false);
         console.error("Share image generation failed", e);
         return null;
+      } finally {
+        setGenerating(false);
       }
     },
-    [preloadForModel]
+    []
   );
 
   const download = useCallback(
-    async (filenameBase: string, preloadUrls?: (string | null | undefined)[]) => {
-      const blob = await generateBlob(preloadUrls);
+    async (filenameBase: string) => {
       if (!blob) return;
-      const filename = `${filenameBase}-instagram.png`;
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = filename;
+      a.download = `${filenameBase}-instagram.png`;
       a.click();
       URL.revokeObjectURL(url);
     },
-    [generateBlob]
+    [blob]
   );
 
   const share = useCallback(
-    async (filenameBase: string, preloadUrls?: (string | null | undefined)[]) => {
-      const blob = await generateBlob(preloadUrls);
+    async (filenameBase: string) => {
       if (!blob) return;
-      const filename = `${filenameBase}-instagram.png`;
-      const file = new File([blob], filename, { type: "image/png" });
+      const file = new File([blob], `${filenameBase}-instagram.png`, { type: "image/png" });
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         try {
           await navigator.share({ files: [file], title: filenameBase });
+          return;
         } catch (err) {
-          if ((err as Error).name !== "AbortError") {
-            await download(filenameBase, preloadUrls);
-          }
+          if ((err as Error).name === "AbortError") return;
         }
-      } else {
-        await download(filenameBase, preloadUrls);
       }
+      await download(filenameBase);
     },
-    [generateBlob, download]
+    [blob, download]
   );
 
-  return {
-    cardRef,
-    generating,
-    generateBlob,
-    download,
-    share,
-    preloadForModel,
-  };
+  return { cardRef, generating, blob, previewUrl, generate, download, share };
 }

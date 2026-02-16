@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Loader2, Share2, Download } from "lucide-react";
 import {
   Dialog,
@@ -9,7 +9,6 @@ import {
 import type { ShareModel } from "@/types/share";
 import { SHARE_WIDTH, SHARE_HEIGHT } from "@/types/share";
 import { useShareImage } from "@/hooks/useShareImage";
-import { ShareImageCard } from "./ShareImageCard";
 import { ShareCapturePortal } from "./ShareCapturePortal";
 
 type ShareModalProps = {
@@ -19,7 +18,7 @@ type ShareModalProps = {
   filenameBase: string;
 };
 
-const PREVIEW_SCALE = 0.22;
+const PREVIEW_MAX_W = 280;
 
 export function ShareModal({
   open,
@@ -27,54 +26,37 @@ export function ShareModal({
   data,
   filenameBase,
 }: ShareModalProps) {
-  const [captureMode, setCaptureMode] = useState(false);
+  const [captureEnabled, setCaptureEnabled] = useState(false);
+  const { cardRef, generating, previewUrl, blob, generate, share, download } =
+    useShareImage();
 
-  const {
-    cardRef,
-    generating,
-    download,
-    share,
-    preloadForModel,
-  } = useShareImage();
+  const preloadUrls = useMemo(
+    () => [
+      data.brandBackgroundUrl,
+      data.brandLogoUrl,
+      data.heroImageUrl ?? null,
+      data.subjectLogoUrl ?? null,
+    ],
+    [data.brandBackgroundUrl, data.brandLogoUrl, data.heroImageUrl, data.subjectLogoUrl]
+  );
 
-  const preloadUrls = [
-    data.brandBackgroundUrl,
-    data.brandLogoUrl,
-    data.heroImageUrl ?? null,
-    data.subjectLogoUrl ?? null,
-  ];
-
+  // When modal opens: mount portal → generate PNG
   useEffect(() => {
-    if (!open || !data) return;
-    preloadForModel(preloadUrls).catch(() => {});
-  }, [open, data, preloadForModel]);
-
-  const handleShare = async () => {
-    setCaptureMode(true);
-    try {
-      await new Promise<void>((r) => requestAnimationFrame(() => r()));
-      await new Promise<void>((r) => requestAnimationFrame(() => r()));
-      await share(filenameBase, preloadUrls);
-      onOpenChange(false);
-    } finally {
-      setCaptureMode(false);
+    if (!open) {
+      setCaptureEnabled(false);
+      return;
     }
-  };
+    setCaptureEnabled(true);
+    // Small delay so portal mounts before generate reads cardRef
+    const timer = setTimeout(() => {
+      generate(preloadUrls);
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [open, generate, preloadUrls]);
 
-  const handleDownload = async () => {
-    setCaptureMode(true);
-    try {
-      await new Promise<void>((r) => requestAnimationFrame(() => r()));
-      await new Promise<void>((r) => requestAnimationFrame(() => r()));
-      await download(filenameBase, preloadUrls);
-      onOpenChange(false);
-    } finally {
-      setCaptureMode(false);
-    }
-  };
+  const disabled = generating || !blob;
 
-  const wrapperW = SHARE_WIDTH * PREVIEW_SCALE;
-  const wrapperH = SHARE_HEIGHT * PREVIEW_SCALE;
+  const previewH = (PREVIEW_MAX_W / SHARE_WIDTH) * SHARE_HEIGHT;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -86,30 +68,44 @@ export function ShareModal({
           Instagram innlegg (4:5) – forhåndsvisning nedenfor, deretter Del eller Last ned.
         </p>
 
+        {/* Preview: show the actual PNG */}
         <div className="flex justify-center">
           <div
-            style={{ width: wrapperW, height: wrapperH }}
-            className="relative overflow-hidden rounded-xl"
+            style={{ width: PREVIEW_MAX_W, height: previewH }}
+            className="relative overflow-hidden rounded-xl bg-muted"
           >
-            <div
-              style={{
-                transform: `scale(${PREVIEW_SCALE})`,
-                transformOrigin: "top left",
-                width: SHARE_WIDTH,
-                height: SHARE_HEIGHT,
-              }}
-            >
-              <ShareImageCard data={data} />
-            </div>
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="Forhåndsvisning av delingsbilde"
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <div className="flex items-center justify-center w-full h-full">
+                {generating ? (
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                ) : (
+                  <span className="text-xs text-muted-foreground">Ingen preview</span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
-        <ShareCapturePortal data={data} captureRef={cardRef} enabled={captureMode} />
+        {/* Off-screen capture portal */}
+        <ShareCapturePortal
+          data={data}
+          captureRef={cardRef}
+          enabled={captureEnabled}
+        />
 
         <div className="flex gap-2 mt-4">
           <button
-            onClick={handleShare}
-            disabled={generating}
+            onClick={() => {
+              share(filenameBase);
+              onOpenChange(false);
+            }}
+            disabled={disabled}
             className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-accent text-accent-foreground font-medium disabled:opacity-60 transition-colors hover:bg-accent/90"
           >
             {generating ? (
@@ -120,8 +116,11 @@ export function ShareModal({
             Del
           </button>
           <button
-            onClick={handleDownload}
-            disabled={generating}
+            onClick={() => {
+              download(filenameBase);
+              onOpenChange(false);
+            }}
+            disabled={disabled}
             className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg border border-border bg-card hover:bg-accent/10 text-foreground font-medium disabled:opacity-60 transition-colors"
           >
             {generating ? (
