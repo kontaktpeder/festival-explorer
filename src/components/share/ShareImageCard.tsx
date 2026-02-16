@@ -50,11 +50,11 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
                 inset: 0,
                 width: SHARE_WIDTH,
                 height: SHARE_HEIGHT,
-                objectFit: "cover",
+                objectFit: "contain",
                 objectPosition: "center",
                 filter: "blur(44px)",
-                opacity: 0.18,
-                transform: "scale(1.1)",
+                opacity: 0.22,
+                transform: "scale(1.15)",
               }}
             />
             <div
