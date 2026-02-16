@@ -106,6 +106,8 @@ export default function FestivalPage() {
               slug: festival.slug,
               ...getShareCopy("festival", festival.name),
               previewImage: shareCardFestival,
+              heroImageUrl: heroImage,
+              description: festival.description,
             }}
           />
         </div>
@@ -239,6 +241,8 @@ export default function FestivalPage() {
             slug: festival.slug,
             ...getShareCopy("festival", festival.name),
             previewImage: shareCardFestival,
+            heroImageUrl: heroImage,
+            description: festival.description,
           }}
         />
       </div>

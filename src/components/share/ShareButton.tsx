@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Share2, Loader2, Check, Link2, X } from "lucide-react";
+import { Share2, Loader2, Check, Link2, X, ImageDown } from "lucide-react";
 import { getPublicUrl, cn } from "@/lib/utils";
+import { generateStoryImage, extractFirstTwoSentences } from "@/lib/story-image-generator";
 
 export type SharePageType = "project" | "venue" | "festival";
 
@@ -12,6 +13,12 @@ export type ShareConfig = {
   shareTitle: string;
   /** Optional preview image (imported asset) */
   previewImage?: string;
+  /** Hero image URL for story generation */
+  heroImageUrl?: string | null;
+  /** Full description – first 2 sentences extracted automatically */
+  description?: string | null;
+  /** Entity/project logo URL */
+  logoUrl?: string | null;
 };
 
 export function ShareButton({
@@ -24,6 +31,7 @@ export function ShareButton({
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [generatingStory, setGeneratingStory] = useState(false);
 
   const baseUrl = getPublicUrl();
   const path =
@@ -64,6 +72,28 @@ export function ShareButton({
     }
   };
 
+  const handleDownloadStory = async () => {
+    setGeneratingStory(true);
+    try {
+      const desc = extractFirstTwoSentences(config.description);
+      const blob = await generateStoryImage({
+        heroImageUrl: config.heroImageUrl ?? null,
+        title: config.title,
+        description: desc,
+        logoUrl: config.logoUrl,
+      });
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `giggen-story-${config.slug}.png`;
+      a.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.warn("Story generation failed", err);
+    }
+    setGeneratingStory(false);
+  };
+
   // Collapsed: small pill button
   if (!expanded) {
     return (
@@ -89,7 +119,7 @@ export function ShareButton({
     );
   }
 
-  // Expanded: share card with preview
+  // Expanded: share card with preview + story download
   return (
     <div
       className={cn(
@@ -157,6 +187,31 @@ export function ShareButton({
             <Share2 className="w-3 h-3" />
           </button>
         </div>
+
+        {/* Story image download */}
+        <button
+          onClick={handleDownloadStory}
+          disabled={generatingStory}
+          className={cn(
+            "w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-sm",
+            "text-[10px] font-medium uppercase tracking-wider",
+            "border border-accent/20 text-accent/80 hover:bg-accent/10",
+            "transition-all duration-300",
+            generatingStory && "opacity-60 cursor-wait"
+          )}
+        >
+          {generatingStory ? (
+            <>
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Lager bilde...
+            </>
+          ) : (
+            <>
+              <ImageDown className="w-3 h-3" />
+              Last ned story-bilde
+            </>
+          )}
+        </button>
       </div>
     </div>
   );

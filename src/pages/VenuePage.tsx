@@ -65,6 +65,8 @@ export default function VenuePage() {
             title: venue.name,
             slug: venue.slug,
             ...getShareCopy("venue", venue.name),
+            heroImageUrl: heroImageUrl,
+            description: venue.description,
           }}
         />
       </div>
