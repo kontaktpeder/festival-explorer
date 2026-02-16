@@ -10,7 +10,7 @@ import { HeroSection } from "@/components/ui/HeroSection";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
-import { formatEntityLocationDisplay, type LocationType } from "@/types/location";
+
 
 export default function VenuePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -40,10 +40,8 @@ export default function VenuePage() {
   const heroImageUrl = useSignedMediaUrl(venue.hero_image_url, 'public');
   const heroImageSettings = parseImageSettings(venue.hero_image_settings);
 
-  // Get location data (may come from entity system in the future)
-  const locationName = (venue as any).location_name as string | null;
-  const locationType = (venue as any).location_type as LocationType | null;
-  const locationDisplay = formatEntityLocationDisplay(locationName, locationType);
+  // venues table has address + city; entities have location_name/type
+  const locationDisplay = [venue.address, venue.city].filter(Boolean).join(", ");
 
   return (
     <PageLayout>
@@ -66,11 +64,10 @@ export default function VenuePage() {
       <div className="section space-y-4">
         {/* Meta info */}
         <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-          {/* Show location display if available, otherwise fall back to address */}
-          {(locationDisplay || venue.address) && (
+          {locationDisplay && (
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-accent" />
-              <span>{locationDisplay || venue.address}</span>
+              <span>{locationDisplay}</span>
             </div>
           )}
         </div>
