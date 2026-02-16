@@ -2,7 +2,6 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trash2, UserPlus, Loader2 } from "lucide-react";
@@ -15,6 +14,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
+import { PersonaSearchPicker } from "@/components/persona/PersonaSearchPicker";
+import { usePersonaSearch, type PersonaOption } from "@/hooks/usePersonaSearch";
 
 interface VenueStaffRow {
   id: string;
@@ -57,8 +58,7 @@ export function VenueStaffEditor({ venueId, canEdit }: Props) {
   const queryClient = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [personaResults, setPersonaResults] = useState<PersonaResult[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchTriggered, setSearchTriggered] = useState(false);
 
   const { data: rows, isLoading } = useQuery({
     queryKey: ["venue-staff", venueId],
@@ -94,20 +94,14 @@ export function VenueStaffEditor({ venueId, canEdit }: Props) {
     (personas || []).map((p) => [p.id, p])
   );
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      setPersonaResults([]);
-      return;
-    }
-    setSearchLoading(true);
-    const { data, error } = await supabase
-      .from("personas")
-      .select("id, name, slug, avatar_url, category_tags")
-      .ilike("name", `%${searchQuery}%`)
-      .limit(20);
-    if (error) toast.error("Søk feilet");
-    else setPersonaResults((data || []) as PersonaResult[]);
-    setSearchLoading(false);
+  const { data: personaResults = [], isLoading: searchLoading } = usePersonaSearch({
+    query: searchQuery,
+    mode: "all",
+    enabled: addOpen && searchTriggered && !!searchQuery.trim(),
+  });
+
+  const handleSearch = () => {
+    setSearchTriggered(true);
   };
 
   const addMutation = useMutation({
@@ -125,8 +119,8 @@ export function VenueStaffEditor({ venueId, canEdit }: Props) {
         queryKey: ["venue-room-permissions", venueId],
       });
       setAddOpen(false);
-      setPersonaResults([]);
       setSearchQuery("");
+      setSearchTriggered(false);
       toast.success("Lagt til");
     },
     onError: (e: Error) => toast.error(e.message),
@@ -174,12 +168,12 @@ export function VenueStaffEditor({ venueId, canEdit }: Props) {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const handleAdd = (personaId: string) => {
-    if (rows?.some((r) => r.persona_id === personaId)) {
+  const handleAdd = (persona: PersonaOption) => {
+    if (rows?.some((r) => r.persona_id === persona.id)) {
       toast.error("Allerede lagt til");
       return;
     }
-    addMutation.mutate(personaId);
+    addMutation.mutate(persona.id);
   };
 
   if (isLoading)
@@ -235,58 +229,22 @@ export function VenueStaffEditor({ venueId, canEdit }: Props) {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <div className="flex gap-2">
-              <Input
-                placeholder="Søk etter navn..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleSearch();
-                  }
-                }}
-              />
-              <Button variant="outline" onClick={handleSearch}>
-                {searchLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Søk"
-                )}
-              </Button>
-            </div>
-
-            {personaResults.length > 0 && (
-              <div className="space-y-1 max-h-60 overflow-y-auto">
-                {personaResults.map((p) => {
-                  const alreadyAdded = rows?.some(
-                    (r) => r.persona_id === p.id
-                  );
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => handleAdd(p.id)}
-                      disabled={addMutation.isPending || alreadyAdded}
-                      className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 text-left disabled:opacity-50"
-                    >
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={p.avatar_url || undefined} />
-                        <AvatarFallback>
-                          {p.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm font-medium">{p.name}</span>
-                      {alreadyAdded && (
-                        <span className="text-xs text-muted-foreground ml-auto">
-                          (allerede lagt til)
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+            <PersonaSearchPicker
+              personas={personaResults}
+              isLoading={searchLoading}
+              searchQuery={searchQuery}
+              onSearchQueryChange={(v) => {
+                setSearchQuery(v);
+                if (!v.trim()) setSearchTriggered(false);
+              }}
+              onAction={handleAdd}
+              actionLabel="Legg til"
+              showSearchButton
+              onSearchSubmit={handleSearch}
+              placeholder="Søk etter navn..."
+              emptyMessage="Ingen profiler funnet"
+              disabledIds={new Set(rows?.map((r) => r.persona_id) || [])}
+            />
           </div>
         </DialogContent>
       </Dialog>
