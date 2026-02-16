@@ -197,7 +197,7 @@ export default function VenueRoom() {
           <Button asChild variant="outline" size="sm" className="text-xs border-border/30 hover:border-accent/40">
             <Link to={`/venue/${venue.slug}`} target="_blank">
               <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-              Se live
+              {venue.is_published ? "Se live" : "Forhåndsvisning"}
             </Link>
           </Button>
         </div>
