@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
-import { MapPin } from "lucide-react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { MapPin, ChevronDown } from "lucide-react";
 import { useUnifiedTimelineEvents } from "@/hooks/useUnifiedTimeline";
 import { formatTimelineEventDate } from "@/lib/timeline-format";
 import type { TimelineSource, EventTypeOption, UnifiedTimelineEvent } from "@/types/timeline";
 import { getEventTypeConfig, ALL_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
+
+const INITIAL_VISIBLE = 3;
 
 interface UnifiedTimelineProps {
   source: TimelineSource;
@@ -16,6 +18,8 @@ interface UnifiedTimelineProps {
  */
 export function UnifiedTimeline({ source, eventTypeOptions }: UnifiedTimelineProps) {
   const { data: events, isLoading } = useUnifiedTimelineEvents(source, { visibility: "public" });
+  const [expanded, setExpanded] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   if (isLoading) {
     return (
@@ -27,19 +31,41 @@ export function UnifiedTimeline({ source, eventTypeOptions }: UnifiedTimelinePro
 
   if (!events || events.length === 0) return null;
 
+  const needsCollapse = events.length > INITIAL_VISIBLE;
+  const visibleEvents = expanded ? events : events.slice(0, INITIAL_VISIBLE);
+
   return (
-    <div className="relative pl-8 md:pl-12">
-      <div className="absolute left-3 md:left-4 top-4 bottom-4 w-px bg-gradient-to-b from-primary/40 via-primary/20 to-transparent" />
-      <div className="space-y-14 md:space-y-20">
-        {events.map((event, index) => (
-          <TimelineDisplayItem
-            key={event.id}
-            event={event}
-            index={index}
-            eventTypeOptions={eventTypeOptions}
-          />
-        ))}
+    <div className="relative">
+      <div className="relative pl-8 md:pl-12">
+        <div className="absolute left-3 md:left-4 top-4 bottom-4 w-px bg-gradient-to-b from-primary/40 via-primary/20 to-transparent" />
+        <div className="space-y-14 md:space-y-20">
+          {visibleEvents.map((event, index) => (
+            <TimelineDisplayItem
+              key={event.id}
+              event={event}
+              index={index}
+              eventTypeOptions={eventTypeOptions}
+            />
+          ))}
+        </div>
       </div>
+
+      {needsCollapse && (
+        <div className={`relative mt-8 ${!expanded ? "pt-8" : "pt-4"}`}>
+          {!expanded && (
+            <div className="absolute inset-x-0 -top-20 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+          )}
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="flex items-center gap-2 text-sm text-accent hover:text-accent/80 transition-colors font-medium uppercase tracking-wider"
+          >
+            {expanded ? "Vis mindre" : `Vis alle ${events.length} hendelser`}
+            <ChevronDown
+              className={`w-4 h-4 transition-transform duration-300 ${expanded ? "rotate-180" : ""}`}
+            />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
