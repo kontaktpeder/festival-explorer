@@ -9,21 +9,20 @@ const SAFE_RIGHT = 96;
 const SAFE_TOP = 120;
 const SAFE_BOTTOM = 140;
 
-const GIGGEN_SIZE = 80;
+const GIGGEN_SIZE = 92;
+const GIGGEN_INSET = 16;
 const SUBJECT_LOGO_MAX_W = 360;
 const SUBJECT_LOGO_MAX_H = 160;
 
-/** Oransje accent – inline for html2canvas */
-const ACCENT_COLOR = "hsl(24, 100%, 55%)";
+/** Varmere oransje – mer plakat, mindre UI */
+const ACCENT_COLOR = "#FF8C2B";
 
 type ShareImageCardProps = {
   data: ShareModel;
 };
 
 /**
- * Hero forgrunn som respekterer aspect ratio uten object-fit.
- * html2canvas ignorerer object-fit, så vi beregner contain-størrelse
- * fra naturalWidth/naturalHeight og setter eksplisitt w/h på img.
+ * Hero forgrunn – contain uten object-fit (html2canvas-vennlig).
  */
 function ShareHeroForeground({ src }: { src: string }) {
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
@@ -88,7 +87,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           backgroundColor: "#0a0a0a",
         }}
       >
-        {/* Lag 1: Bakgrunn – hero cover + blur 44px + opacity 0.18 */}
+        {/* Lag 1: Bakgrunn – hero cover + blur + mørk overlay */}
         {heroUrl ? (
           <>
             <img
@@ -115,16 +114,6 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
                 pointerEvents: "none",
               }}
             />
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background:
-                  "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, transparent 30%, transparent 55%, rgba(0,0,0,0.45) 100%)",
-                pointerEvents: "none",
-                zIndex: 1,
-              }}
-            />
           </>
         ) : (
           <img
@@ -143,39 +132,64 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           />
         )}
 
-        {/* Lag 2: Hero forgrunn – contain uten object-fit (html2canvas-vennlig) */}
+        {/* Lag 2: Hero forgrunn */}
         {heroUrl && <ShareHeroForeground src={heroUrl} />}
 
-        {/* Lag 3: Bunn-gradient for lesbarhet */}
+        {/* Topp-gradient – myk overgang (speilet bunn) */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.65) 35%, transparent 60%)",
+              "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0) 65%)",
             pointerEvents: "none",
             zIndex: 3,
           }}
         />
 
-        {/* GIGGEN-ikon – topp høyre */}
+        {/* Bunn-gradient – kortere, mer lys i bildet */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.75) 15%, rgba(0,0,0,0.15) 40%, transparent 75%)",
+            pointerEvents: "none",
+            zIndex: 3,
+          }}
+        />
+
+        {/* Svak hjørne-vignette – fokus i midten */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.35) 100%)",
+            pointerEvents: "none",
+            zIndex: 3,
+          }}
+        />
+
+        {/* GIGGEN-ikon – større, mer inn, svak skygge */}
         <img
           src={brandLogo}
           alt=""
           crossOrigin="anonymous"
           style={{
             position: "absolute",
-            top: SAFE_TOP,
-            right: SAFE_RIGHT,
+            top: SAFE_TOP + GIGGEN_INSET,
+            right: SAFE_RIGHT + GIGGEN_INSET,
             width: GIGGEN_SIZE,
             height: GIGGEN_SIZE,
             objectFit: "contain",
             zIndex: 10,
             opacity: 0.9,
+            filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.4))",
           }}
         />
 
-        {/* Tittel + tagline – top-left */}
+        {/* Tittel + tagline – tydeligere hierarki */}
         <div
           style={{
             position: "absolute",
@@ -194,7 +208,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
               textTransform: "uppercase" as const,
               letterSpacing: "-0.03em",
               textShadow: "0 6px 40px rgba(0,0,0,0.7)",
-              marginBottom: 20,
+              marginBottom: 24,
             }}
           >
             {data.title}
@@ -202,9 +216,9 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           {data.subtitle && (
             <div
               style={{
-                fontSize: 40,
-                fontWeight: 300,
-                lineHeight: 1.25,
+                fontSize: 34,
+                fontWeight: 600,
+                lineHeight: 1.3,
                 color: ACCENT_COLOR,
                 textShadow: "0 3px 16px rgba(0,0,0,0.6)",
                 display: "-webkit-box",
@@ -220,7 +234,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           )}
         </div>
 
-        {/* CTA – nederst venstre */}
+        {/* CTA – mer tyngde, svak glow */}
         <div
           style={{
             position: "absolute",
@@ -231,10 +245,11 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
         >
           <div
             style={{
-              fontSize: 34,
+              fontSize: 36,
               fontWeight: 600,
               color: "rgba(255,255,255,0.85)",
-              textShadow: "0 2px 14px rgba(0,0,0,0.6)",
+              textShadow:
+                "0 2px 14px rgba(0,0,0,0.6), 0 0 30px rgba(255,255,255,0.08)",
             }}
           >
             {data.cta ?? "Les mer på giggen.org"}
