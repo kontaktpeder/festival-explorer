@@ -11,6 +11,8 @@ import { HeroSection } from "@/components/ui/HeroSection";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
+import { ShareButton } from "@/components/share/ShareButton";
+import { getShareCopy } from "@/lib/share-copy";
 import { UnifiedTimeline } from "@/components/ui/UnifiedTimeline";
 import { VENUE_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
 
@@ -54,6 +56,21 @@ export default function VenuePage() {
     <PageLayout>
       {/* Static logo */}
       <StaticLogo />
+
+      {/* Share button */}
+      <div className="fixed bottom-4 right-4 z-40">
+        <ShareButton
+          config={{
+            pageType: "venue",
+            title: venue.name,
+            slug: venue.slug,
+            ...getShareCopy("venue", venue.name),
+          }}
+          variant="secondary"
+          size="sm"
+          showLabel
+        />
+      </div>
 
       {/* 1. HERO – Stemning og identitet */}
       <HeroSection 
