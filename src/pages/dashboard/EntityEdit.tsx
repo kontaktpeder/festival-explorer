@@ -761,7 +761,7 @@ export default function EntityEdit() {
               canEdit={canEdit}
               eventTypeOptions={isVenue ? VENUE_EVENT_TYPE_OPTIONS : PERSONA_EVENT_TYPE_OPTIONS}
               title={isVenue ? "Historien" : "Tidslinje"}
-              helperText={isVenue ? "Viktige hendelser i scenens historie" : "Viktige øyeblikk i prosjektets reise"}
+              helperText={isVenue ? "Viktige hendelser i scenens historie" : "Viktige øyeblikk i prosjektets reise - vises som tidslinje på prosjektsiden"}
             />
           </div>
         </DialogContent>
