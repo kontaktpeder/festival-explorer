@@ -38,7 +38,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           backgroundColor: "#0a0a0a",
         }}
       >
-        {/* Lag 1: Bakgrunn – hero cover + blur 32px + opacity 0.22, eller brand */}
+        {/* Lag 1: Bakgrunn – hero cover + blur 44px + opacity 0.18 */}
         {heroUrl ? (
           <>
             <img
@@ -48,22 +48,30 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
               style={{
                 position: "absolute",
                 inset: 0,
-                width: "100%",
-                height: "100%",
+                width: SHARE_WIDTH,
+                height: SHARE_HEIGHT,
                 objectFit: "cover",
                 objectPosition: "center",
-                filter: "blur(32px) brightness(0.5)",
-                opacity: 0.22,
-                transform: "scale(1.15)",
+                filter: "blur(44px)",
+                opacity: 0.18,
+                transform: "scale(1.1)",
               }}
             />
-            {/* Full-canvas vignette: top 0.15, bottom 0.45 */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                backgroundColor: "rgba(0,0,0,0.18)",
+                pointerEvents: "none",
+              }}
+            />
             <div
               style={{
                 position: "absolute",
                 inset: 0,
                 background:
                   "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, transparent 30%, transparent 55%, rgba(0,0,0,0.45) 100%)",
+                pointerEvents: "none",
                 zIndex: 1,
               }}
             />
@@ -76,8 +84,8 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
             style={{
               position: "absolute",
               inset: 0,
-              width: "100%",
-              height: "100%",
+              width: SHARE_WIDTH,
+              height: SHARE_HEIGHT,
               objectFit: "cover",
               opacity: 0.35,
               filter: "blur(1px)",
@@ -94,8 +102,8 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
             style={{
               position: "absolute",
               inset: 0,
-              width: "100%",
-              height: "100%",
+              width: SHARE_WIDTH,
+              height: SHARE_HEIGHT,
               objectFit: "contain",
               objectPosition: "center",
               zIndex: 2,
@@ -103,7 +111,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           />
         )}
 
-        {/* Lag 3: Bunn-gradient for lesbarhet, ingen tynn linje */}
+        {/* Lag 3: Bunn-gradient for lesbarhet */}
         <div
           style={{
             position: "absolute",
@@ -117,7 +125,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           }}
         />
 
-        {/* GIGGEN-ikon – topp høyre, innenfor safe zone */}
+        {/* GIGGEN-ikon – topp høyre */}
         <img
           src={brandLogo}
           alt=""
@@ -134,7 +142,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           }}
         />
 
-        {/* Tittel + tagline – top-left, innenfor safe zone */}
+        {/* Tittel + tagline – top-left */}
         <div
           style={{
             position: "absolute",
@@ -177,7 +185,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           )}
         </div>
 
-        {/* CTA – nederst venstre, innenfor safe zone. Ingen URL i bildet. */}
+        {/* CTA – nederst venstre */}
         <div
           style={{
             position: "absolute",
@@ -198,7 +206,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           </div>
         </div>
 
-        {/* Prosjekt/venue-logo – nederst høyre, innenfor safe zone */}
+        {/* Prosjekt/venue-logo – nederst høyre */}
         {subjectLogo && (
           <div
             style={{
