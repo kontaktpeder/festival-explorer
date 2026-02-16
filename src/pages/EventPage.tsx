@@ -193,22 +193,27 @@ export default function EventPage() {
         </>
       )}
 
-      {/* 6. PRAKTISK – Trygghet (optional section) */}
-      <section className="py-16 md:py-24 border-t border-border/20">
-        <div className="max-w-2xl mx-auto px-6">
-          <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
-            Praktisk
-          </h2>
-          
-          <div className="space-y-3 text-foreground/70">
-            <p className="font-light">Aldersgrense: 20 år</p>
-            <p className="font-light">Garderobe tilgjengelig</p>
-            {event.venue && (
-              <p className="font-light">{event.venue.address || event.venue.name}</p>
-            )}
-          </div>
-        </div>
-      </section>
+      {/* 6. PRAKTISK – fra event (aldersgrense, garderobe) + adresse fra venue */}
+      {(() => {
+        const ageLimit = (event as any).age_limit?.trim();
+        const cloakroom = (event as any).cloakroom_available === true;
+        const address = event.venue?.address || event.venue?.name;
+        if (!ageLimit && !cloakroom && !address) return null;
+        return (
+          <section className="py-16 md:py-24 border-t border-border/20">
+            <div className="max-w-2xl mx-auto px-6">
+              <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
+                Praktisk
+              </h2>
+              <div className="space-y-3 text-foreground/70">
+                {ageLimit && <p className="font-light">Aldersgrense: {ageLimit}</p>}
+                {cloakroom && <p className="font-light">Garderobe tilgjengelig</p>}
+                {address && <p className="font-light">{address}</p>}
+              </div>
+            </div>
+          </section>
+        );
+      })()}
 
           {/* Arrangør – festival-team + event-spesifikke (dedup: event overstyrer) */}
           {(() => {

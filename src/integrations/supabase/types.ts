@@ -766,7 +766,9 @@ export type Database = {
       }
       events: {
         Row: {
+          age_limit: string | null
           city: string | null
+          cloakroom_available: boolean | null
           created_at: string
           created_by: string
           description: string | null
@@ -783,7 +785,9 @@ export type Database = {
           venue_id: string | null
         }
         Insert: {
+          age_limit?: string | null
           city?: string | null
+          cloakroom_available?: boolean | null
           created_at?: string
           created_by: string
           description?: string | null
@@ -800,7 +804,9 @@ export type Database = {
           venue_id?: string | null
         }
         Update: {
+          age_limit?: string | null
           city?: string | null
+          cloakroom_available?: boolean | null
           created_at?: string
           created_by?: string
           description?: string | null
