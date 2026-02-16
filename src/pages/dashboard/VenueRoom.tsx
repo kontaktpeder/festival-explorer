@@ -73,7 +73,7 @@ export default function VenueRoom() {
     enabled: !!id,
   });
 
-  const { data: permissions } = useQuery({
+  const { data: permissions } = useQuery<VenueAccess>({
     queryKey: ["venue-room-permissions", id, venue?.created_by, selectedPersonaId],
     queryFn: async (): Promise<VenueAccess> => {
       if (!venue) return NO_ACCESS;
@@ -84,9 +84,8 @@ export default function VenueRoom() {
       if (venue.created_by === user.id) return ALL_ACCESS;
 
       // Check staff via persona
-      const personaIds = selectedPersonaId
-        ? [selectedPersonaId]
-        : ((await supabase.from("personas").select("id").eq("user_id", user.id)).data?.map((p) => p.id) ?? []);
+      // Kun aktiv persona – ingen fallback (konsistent med festivalrom)
+      const personaIds = selectedPersonaId ? [selectedPersonaId] : [];
 
       if (personaIds.length === 0) return NO_ACCESS;
 
@@ -112,7 +111,7 @@ export default function VenueRoom() {
   });
 
   const { data: venueEvents } = useQuery({
-    queryKey: ["venue-room-events", id],
+    queryKey: ["venue-room-events", id, selectedPersonaId],
     queryFn: async () => {
       const { data } = await supabase
         .from("events")
