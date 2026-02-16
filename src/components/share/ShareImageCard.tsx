@@ -135,25 +135,25 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
         {/* Lag 2: Hero forgrunn */}
         {heroUrl && <ShareHeroForeground src={heroUrl} />}
 
-        {/* Topp-gradient – myk overgang */}
+        {/* Topp-gradient */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 25%, rgba(0,0,0,0) 50%)",
+              "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 20%, transparent 40%)",
             pointerEvents: "none",
             zIndex: 3,
           }}
         />
 
-        {/* Bunn-gradient – kortere */}
+        {/* Bunn-gradient */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 12%, rgba(0,0,0,0.05) 35%, transparent 55%)",
+              "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.35) 10%, rgba(0,0,0,0) 30%)",
             pointerEvents: "none",
             zIndex: 3,
           }}
@@ -165,7 +165,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
             position: "absolute",
             inset: 0,
             background:
-              "radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.25) 100%)",
+              "radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.15) 100%)",
             pointerEvents: "none",
             zIndex: 3,
           }}
