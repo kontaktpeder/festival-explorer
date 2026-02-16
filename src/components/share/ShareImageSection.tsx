@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Share2 } from "lucide-react";
+import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ShareModel } from "@/types/share";
 import { ShareModal } from "./ShareModal";
@@ -18,7 +18,7 @@ export function ShareImageSection({
 
   return (
     <section className="py-16 md:py-24 border-t border-border/20">
-      <div className="max-w-2xl mx-auto px-6">
+      <div className="max-w-2xl mx-auto px-6 text-center">
         <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-4">
           Del
         </h2>
@@ -29,7 +29,7 @@ export function ShareImageSection({
           onClick={() => setModalOpen(true)}
           className="bg-accent text-accent-foreground hover:bg-accent/90"
         >
-          <Share2 className="w-4 h-4 mr-2" />
+          <Send className="w-4 h-4 mr-2" />
           Del
         </Button>
       </div>
