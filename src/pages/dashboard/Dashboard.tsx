@@ -101,47 +101,15 @@ export default function Dashboard() {
     enabled: !!hasBackstageAccess,
   });
 
-  // Venues the user owns or has staff access to
+  // Venues the user owns or has staff access to (via RPC)
   const { data: myVenues } = useQuery({
-    queryKey: ["dashboard-my-venues", currentUser?.id],
+    queryKey: ["dashboard-my-venues", currentUser?.id, selectedPersonaId],
     queryFn: async () => {
-      if (!currentUser?.id) return [];
-
-      // Owned venues
-      const { data: owned } = await supabase
-        .from("venues")
-        .select("id, name, slug, is_published, city")
-        .eq("created_by", currentUser.id)
-        .order("name");
-
-      // Staff venues via persona
-      const { data: personas } = await supabase
-        .from("personas")
-        .select("id")
-        .eq("user_id", currentUser.id);
-
-      const personaIds = (personas || []).map((p) => p.id);
-      const ownedIds = new Set((owned || []).map((v) => v.id));
-
-      let staffVenues: typeof owned = [];
-      if (personaIds.length > 0) {
-        const { data: staffRows } = await supabase
-          .from("venue_staff")
-          .select("venue_id")
-          .in("persona_id", personaIds);
-
-        const staffIds = (staffRows || []).map((s) => s.venue_id).filter((id) => !ownedIds.has(id));
-        if (staffIds.length > 0) {
-          const { data } = await supabase
-            .from("venues")
-            .select("id, name, slug, is_published, city")
-            .in("id", staffIds)
-            .order("name");
-          staffVenues = data || [];
-        }
-      }
-
-      return [...(owned || []), ...staffVenues];
+      const { data, error } = await supabase.rpc("get_my_venues", {
+        p_persona_id: selectedPersonaId ?? null,
+      });
+      if (error) throw error;
+      return data ?? [];
     },
     enabled: !!currentUser?.id,
   });

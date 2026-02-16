@@ -58,8 +58,13 @@ export default function CrewCheckInPage() {
   const scanLockRef = useRef(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const venueId = searchParams.get("venue");
   const festivalId = searchParams.get("festival");
-  const backTo = festivalId ? `/dashboard/festival/${festivalId}` : "/dashboard";
+  const backTo = venueId
+    ? `/dashboard/venue/${venueId}`
+    : festivalId
+      ? `/dashboard/festival/${festivalId}`
+      : "/dashboard";
   const [deviceId] = useState(() =>
     typeof crypto !== "undefined" && crypto.randomUUID
       ? crypto.randomUUID()

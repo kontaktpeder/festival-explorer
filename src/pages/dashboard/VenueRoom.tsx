@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft,
   QrCode,
-  FolderOpen,
   Settings,
   Music,
   ChevronRight,
@@ -15,6 +14,37 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { useSelectedPersonaId } from "@/components/dashboard/PersonaSelector";
+
+interface VenueAccess {
+  isOwner: boolean;
+  can_edit_venue: boolean;
+  can_manage_staff: boolean;
+  can_manage_events: boolean;
+  can_scan_tickets: boolean;
+  can_access_media: boolean;
+  can_view_ticket_stats: boolean;
+}
+
+const ALL_ACCESS: VenueAccess = {
+  isOwner: true,
+  can_edit_venue: true,
+  can_manage_staff: true,
+  can_manage_events: true,
+  can_scan_tickets: true,
+  can_access_media: true,
+  can_view_ticket_stats: true,
+};
+
+const NO_ACCESS: VenueAccess = {
+  isOwner: false,
+  can_edit_venue: false,
+  can_manage_staff: false,
+  can_manage_events: false,
+  can_scan_tickets: false,
+  can_access_media: false,
+  can_view_ticket_stats: false,
+};
 
 interface ModuleCard {
   title: string;
@@ -28,13 +58,14 @@ interface ModuleCard {
 export default function VenueRoom() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const selectedPersonaId = useSelectedPersonaId();
 
   const { data: venue, isLoading } = useQuery({
     queryKey: ["venue-room", id],
     queryFn: async () => {
       const { data } = await supabase
         .from("venues")
-        .select("id, name, slug, is_published, address, city")
+        .select("id, name, slug, is_published, address, city, created_by")
         .eq("id", id!)
         .single();
       return data;
@@ -43,59 +74,29 @@ export default function VenueRoom() {
   });
 
   const { data: permissions } = useQuery({
-    queryKey: ["venue-room-permissions", id],
-    queryFn: async () => {
+    queryKey: ["venue-room-permissions", id, venue?.created_by, selectedPersonaId],
+    queryFn: async (): Promise<VenueAccess> => {
+      if (!venue) return NO_ACCESS;
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+      if (!user) return NO_ACCESS;
 
-      // Check if admin
-      const { data: isAdmin } = await supabase.rpc("is_admin");
-      if (isAdmin) {
-        return {
-          isOwner: true,
-          can_edit_venue: true,
-          can_manage_staff: true,
-          can_manage_events: true,
-          can_scan_tickets: true,
-          can_access_media: true,
-          can_view_ticket_stats: true,
-        };
-      }
+      // Owner gets full access
+      if (venue.created_by === user.id) return ALL_ACCESS;
 
-      // Check if venue owner
-      const { data: venueData } = await supabase
-        .from("venues")
-        .select("created_by")
-        .eq("id", id!)
-        .single();
+      // Check staff via persona
+      const personaIds = selectedPersonaId
+        ? [selectedPersonaId]
+        : ((await supabase.from("personas").select("id").eq("user_id", user.id)).data?.map((p) => p.id) ?? []);
 
-      if (venueData?.created_by === user.id) {
-        return {
-          isOwner: true,
-          can_edit_venue: true,
-          can_manage_staff: true,
-          can_manage_events: true,
-          can_scan_tickets: true,
-          can_access_media: true,
-          can_view_ticket_stats: true,
-        };
-      }
-
-      // Check venue_staff via persona
-      const { data: personas } = await supabase
-        .from("personas")
-        .select("id")
-        .eq("user_id", user.id);
-
-      if (!personas?.length) return null;
+      if (personaIds.length === 0) return NO_ACCESS;
 
       const { data: staff } = await supabase
         .from("venue_staff")
         .select("can_edit_venue, can_manage_staff, can_manage_events, can_scan_tickets, can_access_media, can_view_ticket_stats")
         .eq("venue_id", id!)
-        .in("persona_id", personas.map((p) => p.id));
+        .in("persona_id", personaIds);
 
-      if (!staff?.length) return null;
+      if (!staff?.length) return NO_ACCESS;
 
       return {
         isOwner: false,
@@ -107,7 +108,7 @@ export default function VenueRoom() {
         can_view_ticket_stats: staff.some((s) => s.can_view_ticket_stats),
       };
     },
-    enabled: !!id,
+    enabled: !!id && !!venue,
   });
 
   const { data: venueEvents } = useQuery({
@@ -195,7 +196,7 @@ export default function VenueRoom() {
             </span>
           </div>
           <Button asChild variant="outline" size="sm" className="text-xs border-border/30 hover:border-accent/40">
-            <Link to={`/project/${venue.slug}`} target="_blank">
+            <Link to={`/venue/${venue.slug}`} target="_blank">
               <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
               Se live
             </Link>

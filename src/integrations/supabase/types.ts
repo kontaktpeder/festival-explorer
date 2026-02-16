@@ -2082,6 +2082,7 @@ export type Database = {
           hero_image_url: string | null
           id: string
           is_published: boolean
+          logo_url: string | null
           name: string
           slug: string
           updated_at: string
@@ -2096,6 +2097,7 @@ export type Database = {
           hero_image_url?: string | null
           id?: string
           is_published?: boolean
+          logo_url?: string | null
           name: string
           slug: string
           updated_at?: string
@@ -2110,6 +2112,7 @@ export type Database = {
           hero_image_url?: string | null
           id?: string
           is_published?: boolean
+          logo_url?: string | null
           name?: string
           slug?: string
           updated_at?: string
@@ -2251,6 +2254,30 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "festivals"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_my_venues: {
+        Args: { p_persona_id?: string }
+        Returns: {
+          address: string | null
+          city: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          hero_image_settings: Json | null
+          hero_image_url: string | null
+          id: string
+          is_published: boolean
+          logo_url: string | null
+          name: string
+          slug: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "venues"
           isOneToOne: false
           isSetofReturn: true
         }
