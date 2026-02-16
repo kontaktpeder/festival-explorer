@@ -76,9 +76,9 @@ export default function VenuePage() {
 
       {/* 2. ADRESSE – Orientering */}
       {locationDisplay && (
-        <section className="py-16 md:py-24">
-          <div className="max-w-3xl mx-auto px-6">
-            <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-accent mb-8">
+        <section className="py-10 md:py-16">
+          <div className="max-w-5xl mx-auto px-6 md:px-12">
+            <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-accent mb-6">
               Adresse
             </h2>
             
@@ -94,9 +94,9 @@ export default function VenuePage() {
 
       {/* 3. BESKRIVELSE – Hva slags sted er dette */}
       {venue.description && (
-        <section className="py-16 md:py-24 border-t border-border/20">
-          <div className="max-w-2xl mx-auto px-6">
-            <p className="text-xl md:text-2xl font-light leading-relaxed text-foreground/90 whitespace-pre-line">
+        <section className="py-10 md:py-16 border-t border-border/20">
+          <div className="max-w-5xl mx-auto px-6 md:px-12">
+            <p className="text-xl md:text-2xl font-light leading-relaxed text-foreground/90 whitespace-pre-line max-w-3xl">
               {venue.description}
             </p>
           </div>
@@ -105,20 +105,20 @@ export default function VenuePage() {
 
       {/* 4. KOMMENDE EVENTS – Programmert */}
       {venue.upcomingEvents && venue.upcomingEvents.length > 0 && (
-        <section className="py-20 md:py-32 border-t border-border/20">
-          <div className="max-w-3xl mx-auto px-6">
-            <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-accent mb-12 md:mb-16">
+        <section className="py-12 md:py-20 border-t border-border/20">
+          <div className="max-w-5xl mx-auto px-6 md:px-12">
+            <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-accent mb-8 md:mb-12">
               Kommende events
             </h2>
 
-            <div className="space-y-8 md:space-y-12">
+            <div className="space-y-6 md:space-y-8">
               {venue.upcomingEvents.map((event) => {
                 const startDate = new Date(event.start_at);
                 return (
                   <Link
                     key={event.id}
                     to={`/event/${event.slug}`}
-                    className="group flex items-start gap-6 py-4 transition-all duration-300 hover:translate-x-2"
+                    className="group flex items-start gap-6 py-3 transition-all duration-300 hover:translate-x-2"
                   >
                     {/* Date block */}
                     <div className="flex-shrink-0 w-16 text-center">
@@ -154,8 +154,8 @@ export default function VenuePage() {
       )}
 
       {(!venue.upcomingEvents || venue.upcomingEvents.length === 0) && (
-        <section className="py-20 md:py-32 border-t border-border/20">
-          <div className="max-w-2xl mx-auto px-6 text-center">
+        <section className="py-12 md:py-20 border-t border-border/20">
+          <div className="max-w-5xl mx-auto px-6 md:px-12 text-center">
             <p className="text-muted-foreground/50 font-light text-lg">
               Ingen kommende events for øyeblikket.
             </p>
@@ -177,9 +177,9 @@ export default function VenuePage() {
 
       {/* HISTORIKK – Tidslinje */}
       {venue.id && (
-        <section className="py-20 md:py-32 border-t border-border/20">
-          <div className="max-w-3xl mx-auto px-6">
-            <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-accent mb-12 md:mb-16">
+        <section className="py-12 md:py-20 border-t border-border/20">
+          <div className="max-w-5xl mx-auto px-6 md:px-12">
+            <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-accent mb-8 md:mb-12">
               Historikk
             </h2>
             <UnifiedTimeline
@@ -191,7 +191,7 @@ export default function VenuePage() {
       )}
 
       {/* STILLE AVSLUTNING */}
-      <section className="py-24 md:py-40">
+      <section className="py-16 md:py-24">
         <div className="flex justify-center">
           <Building2 className="w-8 h-8 text-accent/20" />
         </div>
