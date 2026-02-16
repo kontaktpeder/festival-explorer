@@ -1,156 +1,265 @@
 import { forwardRef } from "react";
 import shareGIcon from "@/assets/share-g-icon.png";
 import shareFallbackBg from "@/assets/share-fallback-bg.jpeg";
+import type { ShareModel, ShareVariant } from "@/types/share";
+import { SHARE_DIMENSIONS } from "@/types/share";
 
-export type ShareImageFormat = "link" | "story";
-
-const DIMENSIONS = {
-  link: { width: 1200, height: 630 },
-  story: { width: 1080, height: 1920 },
-} as const;
+export type ShareImageFormat = ShareVariant;
 
 type ShareImageCardProps = {
-  format: ShareImageFormat;
-  heroImageUrl: string | null;
-  logoUrl: string | null;
-  title: string;
-  tagline: string | null;
+  variant: ShareVariant;
+  data: ShareModel;
 };
 
 export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
-  function ShareImageCard(
-    { format, heroImageUrl, logoUrl, title, tagline },
-    ref
-  ) {
-    const { width, height } = DIMENSIONS[format];
-    const isStory = format === "story";
-    const bgUrl = heroImageUrl || shareFallbackBg;
+  function ShareImageCard({ variant, data }, ref) {
+    const { width, height } = SHARE_DIMENSIONS[variant];
+    const isStory = variant === "story";
+    const brandBg = data.brandBackgroundUrl || shareFallbackBg;
+    const brandLogo = data.brandLogoUrl || shareGIcon;
+    const heroUrl = data.heroImageUrl || shareFallbackBg;
+    const logoSize = isStory ? 88 : 64;
+    const logoMargin = isStory ? 64 : 56;
 
     return (
       <div
         ref={ref}
-        className="relative overflow-hidden"
         style={{
+          position: "relative",
+          overflow: "hidden",
           width,
           height,
-          backgroundColor: "#0f0f12",
+          backgroundColor: "#0a0f1a",
         }}
       >
-        {/* Background image */}
+        {/* Layer 1: Brand background texture */}
         <img
-          src={bgUrl}
+          src={brandBg}
           alt=""
           crossOrigin="anonymous"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-
-        {/* Gradient overlay */}
-        <div
-          className="absolute inset-0"
           style={{
-            background:
-              "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.5) 45%, rgba(0,0,0,0.15) 100%)",
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            opacity: 0.35,
+            filter: "blur(1px)",
           }}
         />
 
-        {/* G watermark – subtle centered */}
+        {/* Layer 2: Hero image */}
         <img
-          src={shareGIcon}
+          src={heroUrl}
           alt=""
           crossOrigin="anonymous"
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
           style={{
-            width: isStory ? "55%" : "50%",
-            opacity: 0.06,
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
           }}
         />
 
-        {/* Content area */}
-        <div
-          className="absolute inset-0 flex flex-col justify-end"
-          style={{ padding: isStory ? 72 : 48 }}
-        >
-          <div className="relative z-10 space-y-3">
-            {/* Logo if available */}
-            {logoUrl && (
-              <img
-                src={logoUrl}
-                alt=""
-                crossOrigin="anonymous"
-                style={{
-                  height: isStory ? 80 : 48,
-                  width: "auto",
-                  maxWidth: isStory ? 200 : 140,
-                  objectFit: "contain",
-                  borderRadius: 8,
-                }}
-              />
-            )}
-
-            {/* Title */}
+        {isStory ? (
+          <>
+            {/* Story: gradient covers bottom 55% */}
             <div
               style={{
-                fontSize: isStory ? 72 : 42,
-                fontWeight: 900,
-                lineHeight: 0.95,
-                color: "#ffffff",
-                textTransform: "uppercase" as const,
-                letterSpacing: "-0.02em",
-                maxWidth: isStory ? "90%" : "80%",
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: "55%",
+                background:
+                  "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.65) 50%, transparent 100%)",
+              }}
+            />
+
+            {/* Story: Title at top */}
+            <div
+              style={{
+                position: "absolute",
+                top: 80,
+                left: 60,
+                right: 60,
+                zIndex: 10,
               }}
             >
-              {title}
-            </div>
-
-            {/* Tagline */}
-            {tagline && (
               <div
                 style={{
-                  fontSize: isStory ? 34 : 20,
-                  fontWeight: 300,
-                  lineHeight: 1.3,
-                  color: "rgba(255,255,255,0.8)",
-                  maxWidth: isStory ? "85%" : "75%",
-                  marginTop: isStory ? 16 : 8,
+                  fontSize: 78,
+                  fontWeight: 900,
+                  lineHeight: 0.92,
+                  color: "#ffffff",
+                  textTransform: "uppercase",
+                  letterSpacing: "-0.02em",
+                  textShadow: "0 4px 30px rgba(0,0,0,0.6)",
                 }}
               >
-                {tagline}
+                {data.title}
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* GIGGEN branding bar */}
-          <div
-            className="relative z-10 flex items-center justify-between"
-            style={{
-              marginTop: isStory ? 48 : 28,
-              paddingTop: isStory ? 24 : 16,
-              borderTop: "1px solid rgba(255,255,255,0.15)",
-            }}
-          >
-            <span
+            {/* Story: Bottom content */}
+            <div
               style={{
-                fontSize: isStory ? 28 : 18,
-                fontWeight: 700,
-                color: "rgba(255,255,255,0.6)",
-                letterSpacing: "0.15em",
-                textTransform: "uppercase" as const,
+                position: "absolute",
+                bottom: logoMargin + logoSize + 24,
+                left: 60,
+                right: 60 + logoSize + 24,
+                zIndex: 10,
               }}
             >
-              GIGGEN
-            </span>
+              {data.subtitle && (
+                <div
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 300,
+                    lineHeight: 1.3,
+                    color: "rgba(255,255,255,0.85)",
+                    marginBottom: 20,
+                  }}
+                >
+                  {data.subtitle}
+                </div>
+              )}
+              {data.cta && (
+                <div
+                  style={{
+                    fontSize: 26,
+                    fontWeight: 600,
+                    color: "#ffffff",
+                    marginBottom: 12,
+                  }}
+                >
+                  {data.cta}
+                </div>
+              )}
+              <div
+                style={{
+                  fontSize: 20,
+                  fontWeight: 400,
+                  color: "rgba(255,255,255,0.5)",
+                  letterSpacing: "0.03em",
+                }}
+              >
+                {data.url.replace(/^https?:\/\//, "")}
+              </div>
+            </div>
+
+            {/* Story: Logo stamp bottom-right */}
             <img
-              src={shareGIcon}
+              src={brandLogo}
               alt=""
               crossOrigin="anonymous"
               style={{
-                height: isStory ? 40 : 28,
-                width: "auto",
-                opacity: 0.5,
+                position: "absolute",
+                bottom: logoMargin,
+                right: logoMargin,
+                width: logoSize,
+                height: logoSize,
+                objectFit: "contain",
+                zIndex: 10,
+                opacity: 0.9,
               }}
             />
-          </div>
-        </div>
+          </>
+        ) : (
+          <>
+            {/* Link: gradient covers bottom 35% */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: "40%",
+                background:
+                  "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 55%, transparent 100%)",
+              }}
+            />
+
+            {/* Link: Bottom content */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: logoMargin,
+                left: 56,
+                right: 56 + logoSize + 24,
+                zIndex: 10,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 52,
+                  fontWeight: 900,
+                  lineHeight: 0.95,
+                  color: "#ffffff",
+                  textTransform: "uppercase",
+                  letterSpacing: "-0.02em",
+                  marginBottom: 16,
+                }}
+              >
+                {data.title}
+              </div>
+              {data.subtitle && (
+                <div
+                  style={{
+                    fontSize: 24,
+                    fontWeight: 300,
+                    lineHeight: 1.3,
+                    color: "rgba(255,255,255,0.8)",
+                    marginBottom: 14,
+                  }}
+                >
+                  {data.subtitle}
+                </div>
+              )}
+              {data.cta && (
+                <div
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 600,
+                    color: "#ffffff",
+                    marginBottom: 10,
+                  }}
+                >
+                  {data.cta}
+                </div>
+              )}
+              <div
+                style={{
+                  fontSize: 18,
+                  fontWeight: 400,
+                  color: "rgba(255,255,255,0.45)",
+                  letterSpacing: "0.03em",
+                }}
+              >
+                {data.url.replace(/^https?:\/\//, "")}
+              </div>
+            </div>
+
+            {/* Link: Logo stamp bottom-right */}
+            <img
+              src={brandLogo}
+              alt=""
+              crossOrigin="anonymous"
+              style={{
+                position: "absolute",
+                bottom: logoMargin,
+                right: logoMargin,
+                width: logoSize,
+                height: logoSize,
+                objectFit: "contain",
+                zIndex: 10,
+                opacity: 0.9,
+              }}
+            />
+          </>
+        )}
       </div>
     );
   }
