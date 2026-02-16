@@ -75,18 +75,18 @@ export function ShareModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm p-0 bg-card border-accent/15 overflow-hidden">
+      <DialogContent className="max-w-sm p-0 bg-card/95 backdrop-blur-xl border-accent/10 overflow-hidden rounded-3xl">
         <DialogTitle className="sr-only">Del {data.title}</DialogTitle>
 
         {/* Preview image */}
-        <div className="flex justify-center bg-black/40 p-6 pb-4">
+        <div className="flex justify-center p-5 pb-3">
           <div
             style={{
               width: PREVIEW_MAX_W,
               aspectRatio: `${SHARE_WIDTH} / ${SHARE_HEIGHT}`,
-              backgroundColor: "#0a0a0a",
+              backgroundColor: "hsl(var(--background))",
             }}
-            className="relative rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/5"
+            className="relative rounded-2xl overflow-hidden shadow-2xl ring-1 ring-accent/10"
           >
             {previewUrl ? (
               <img
@@ -107,19 +107,19 @@ export function ShareModal({
         </div>
 
         {/* Text + actions */}
-        <div className="px-6 pb-6 pt-2 space-y-5">
-          <p className="text-sm text-muted-foreground/60 text-center leading-relaxed">
-            Del <span className="text-foreground/90 font-medium">{data.title}</span> med dine venner og kolleger
+        <div className="px-5 pb-5 pt-1 space-y-4">
+          <p className="text-sm text-muted-foreground/50 text-center leading-relaxed">
+            Del <span className="text-foreground/80 font-medium">{data.title}</span> med dine venner og kolleger
           </p>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2.5">
             <button
               onClick={() => {
                 share(filenameBase);
                 onOpenChange(false);
               }}
               disabled={disabled}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-accent text-accent-foreground text-sm font-medium disabled:opacity-60 transition-colors hover:bg-accent/90"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-full bg-accent text-accent-foreground text-sm font-medium disabled:opacity-60 transition-all hover:brightness-110"
             >
               {generating ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -134,7 +134,7 @@ export function ShareModal({
                 onOpenChange(false);
               }}
               disabled={disabled}
-              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg border border-accent/20 bg-transparent hover:bg-accent/10 text-foreground/80 text-sm font-medium disabled:opacity-60 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-full border border-accent/20 bg-transparent hover:bg-accent/10 text-foreground/70 text-sm font-medium disabled:opacity-60 transition-all"
             >
               {generating ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
