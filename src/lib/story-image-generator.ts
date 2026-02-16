@@ -1,4 +1,5 @@
 import giggenLogo from "@/assets/giggen-logo-final.png";
+import storyFallbackBg from "@/assets/story-fallback-bg.jpeg";
 
 const STORY_W = 1080;
 const STORY_H = 1920;
@@ -41,10 +42,10 @@ export async function generateStoryImage(opts: StoryImageOptions): Promise<Blob>
       const h = img.height * scale;
       ctx.drawImage(img, (STORY_W - w) / 2, (STORY_H - h) / 2, w, h);
     } catch {
-      drawFallbackBg(ctx);
+      await drawFallbackBg(ctx);
     }
   } else {
-    drawFallbackBg(ctx);
+    await drawFallbackBg(ctx);
   }
 
   // 2. Dark gradient overlay from bottom
@@ -127,12 +128,20 @@ export async function generateStoryImage(opts: StoryImageOptions): Promise<Blob>
   });
 }
 
-function drawFallbackBg(ctx: CanvasRenderingContext2D) {
-  const grad = ctx.createLinearGradient(0, 0, STORY_W, STORY_H);
-  grad.addColorStop(0, "#0f0f12");
-  grad.addColorStop(1, "#1a1a2e");
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, STORY_W, STORY_H);
+async function drawFallbackBg(ctx: CanvasRenderingContext2D) {
+  try {
+    const img = await loadImage(storyFallbackBg);
+    const scale = Math.max(STORY_W / img.width, STORY_H / img.height);
+    const w = img.width * scale;
+    const h = img.height * scale;
+    ctx.drawImage(img, (STORY_W - w) / 2, (STORY_H - h) / 2, w, h);
+  } catch {
+    const grad = ctx.createLinearGradient(0, 0, STORY_W, STORY_H);
+    grad.addColorStop(0, "#0f0f12");
+    grad.addColorStop(1, "#1a1a2e");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, STORY_W, STORY_H);
+  }
 }
 
 function loadImage(url: string): Promise<HTMLImageElement> {
