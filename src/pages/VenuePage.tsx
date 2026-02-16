@@ -10,6 +10,8 @@ import { HeroSection } from "@/components/ui/HeroSection";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
+import { UnifiedTimeline } from "@/components/ui/UnifiedTimeline";
+import { VENUE_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
 
 
 export default function VenuePage() {
@@ -153,7 +155,22 @@ export default function VenuePage() {
         </section>
       )}
 
-      {/* 5. STILLE AVSLUTNING */}
+      {/* HISTORIKK – Tidslinje */}
+      {venue.id && (
+        <section className="py-20 md:py-32 border-t border-border/20">
+          <div className="max-w-3xl mx-auto px-6">
+            <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-12 md:mb-16">
+              Historikk
+            </h2>
+            <UnifiedTimeline
+              source={{ type: "entity", id: venue.id }}
+              eventTypeOptions={VENUE_EVENT_TYPE_OPTIONS}
+            />
+          </div>
+        </section>
+      )}
+
+      {/* STILLE AVSLUTNING */}
       <section className="py-24 md:py-40">
         <div className="flex justify-center">
           <Building2 className="w-8 h-8 text-accent/20" />
