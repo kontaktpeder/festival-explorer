@@ -189,7 +189,7 @@ export default function CrewCheckInPage() {
       } as CheckInResult;
     },
     onSuccess: (data) => {
-      console.log("Check-in result:", data);
+      if (import.meta.env.DEV) console.log("Check-in result:", data);
       showResultScreen(data);
       
       if (data.success) {
