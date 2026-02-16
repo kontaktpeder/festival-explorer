@@ -2,12 +2,11 @@ import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { MapPin, Calendar, Clock, Building2 } from "lucide-react";
+import { MapPin, Calendar, Clock, Building2, Send } from "lucide-react";
 import { useVenue } from "@/hooks/useFestival";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { parseImageSettings } from "@/types/database";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { HeroSection } from "@/components/ui/HeroSection";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
@@ -15,7 +14,7 @@ import { ShareImageSection } from "@/components/share/ShareImageSection";
 import { shareModelFromVenue } from "@/lib/share-model";
 import { UnifiedTimeline } from "@/components/ui/UnifiedTimeline";
 import { VENUE_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
-
+import { CroppedImage } from "@/components/ui/CroppedImage";
 
 export default function VenuePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -25,7 +24,6 @@ export default function VenuePage() {
     window.scrollTo(0, 0);
   }, [slug]);
 
-  // Hooks must be called before any early returns
   const heroImageUrl = useSignedMediaUrl(venue?.hero_image_url, 'public');
   const heroImageSettings = parseImageSettings(venue?.hero_image_settings);
 
@@ -49,155 +47,165 @@ export default function VenuePage() {
     );
   }
 
-  // venues table has address + city
   const locationDisplay = [venue.address, venue.city].filter(Boolean).join(", ");
 
   return (
     <PageLayout>
-      {/* Static logo */}
       <StaticLogo />
 
-
-      {/* 1. HERO – Stemning og identitet */}
-      <HeroSection 
-        imageUrl={heroImageUrl || undefined} 
-        imageSettings={heroImageSettings}
-        fullScreen
-        scrollExpand
-        useNaturalAspect
-      >
-        {venue.city && (
-          <div className="text-mono text-accent/70 mb-3 text-xs uppercase tracking-[0.3em]">{venue.city}</div>
+      {/* COVER BANNER – shorter, Facebook-style */}
+      <div className="relative w-full h-[280px] md:h-[360px] bg-card overflow-hidden">
+        {heroImageUrl ? (
+          <CroppedImage
+            src={heroImageUrl}
+            alt={venue.name}
+            imageSettings={heroImageSettings}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-card to-muted" />
         )}
-        <h1 className="font-black text-4xl md:text-6xl lg:text-7xl uppercase tracking-tight leading-[0.9]">
-          {venue.name}
-        </h1>
-      </HeroSection>
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+      </div>
 
-      {/* 2. ADRESSE – Orientering */}
-      {locationDisplay && (
-        <section className="py-10 md:py-16">
-          <div className="max-w-5xl mx-auto px-6 md:px-12">
-            <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-accent mb-6">
-              Adresse
-            </h2>
-            
-            <div className="space-y-4">
-              <div className="flex items-center gap-4 text-lg md:text-xl">
-                <MapPin className="w-5 h-5 text-accent/60 flex-shrink-0" />
-                <span className="font-light">{locationDisplay}</span>
+      {/* NAME + INFO BAR – directly below cover */}
+      <div className="max-w-6xl mx-auto px-4 md:px-8 -mt-16 relative z-10">
+        <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-6">
+          <div className="flex-1">
+            <h1 className="font-black text-3xl md:text-5xl uppercase tracking-tight leading-[0.95]">
+              {venue.name}
+            </h1>
+            {locationDisplay && (
+              <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground/70">
+                <MapPin className="w-4 h-4" />
+                <span>{locationDisplay}</span>
               </div>
-            </div>
+            )}
           </div>
-        </section>
-      )}
-
-      {/* 3. BESKRIVELSE – Hva slags sted er dette */}
-      {venue.description && (
-        <section className="py-10 md:py-16 border-t border-border/20">
-          <div className="max-w-5xl mx-auto px-6 md:px-12">
-            <p className="text-xl md:text-2xl font-light leading-relaxed text-foreground/90 whitespace-pre-line max-w-3xl">
-              {venue.description}
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* 4. KOMMENDE EVENTS – Programmert */}
-      {venue.upcomingEvents && venue.upcomingEvents.length > 0 && (
-        <section className="py-12 md:py-20 border-t border-border/20">
-          <div className="max-w-5xl mx-auto px-6 md:px-12">
-            <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-accent mb-8 md:mb-12">
-              Kommende events
-            </h2>
-
-            <div className="space-y-6 md:space-y-8">
-              {venue.upcomingEvents.map((event) => {
-                const startDate = new Date(event.start_at);
-                return (
-                  <Link
-                    key={event.id}
-                    to={`/event/${event.slug}`}
-                    className="group flex items-start gap-6 py-3 transition-all duration-300 hover:translate-x-2"
-                  >
-                    {/* Date block */}
-                    <div className="flex-shrink-0 w-16 text-center">
-                      <div className="text-mono text-accent/60 text-[10px] uppercase tracking-widest">
-                        {format(startDate, "MMM", { locale: nb }).toUpperCase()}
-                      </div>
-                      <div className="text-3xl md:text-4xl font-bold tracking-tight leading-none mt-1">
-                        {format(startDate, "d")}
-                      </div>
-                    </div>
-
-                    {/* Event info */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-xl md:text-2xl font-medium tracking-tight group-hover:text-accent transition-colors duration-300">
-                        {event.title}
-                      </h3>
-                      <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground/60">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span className="font-light">
-                          {format(startDate, "EEEE HH:mm", { locale: nb })}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Arrow hint */}
-                    <Calendar className="w-5 h-5 text-muted-foreground/20 group-hover:text-accent/60 transition-colors duration-300 mt-1" />
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {(!venue.upcomingEvents || venue.upcomingEvents.length === 0) && (
-        <section className="py-12 md:py-20 border-t border-border/20">
-          <div className="max-w-5xl mx-auto px-6 md:px-12 text-center">
-            <p className="text-muted-foreground/50 font-light text-lg">
-              Ingen kommende events for øyeblikket.
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* Del – bilde med bakgrunn, tittel */}
-      <ShareImageSection
-        slug={venue.slug}
-        shareModel={shareModelFromVenue({
-          slug: venue.slug,
-          name: venue.name,
-          description: venue.description ?? null,
-          heroImageUrl: heroImageUrl ?? null,
-          logoUrl: (venue as any).logo_url ?? null,
-        })}
-      />
-
-      {/* HISTORIKK – Tidslinje */}
-      {venue.id && (
-        <section className="py-12 md:py-20 border-t border-border/20">
-          <div className="max-w-5xl mx-auto px-6 md:px-12">
-            <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-accent mb-8 md:mb-12">
-              Historikk
-            </h2>
-            <UnifiedTimeline
-              source={{ type: "entity", id: venue.id }}
-              eventTypeOptions={VENUE_EVENT_TYPE_OPTIONS}
-            />
-          </div>
-        </section>
-      )}
-
-      {/* STILLE AVSLUTNING */}
-      <section className="py-16 md:py-24">
-        <div className="flex justify-center">
-          <Building2 className="w-8 h-8 text-accent/20" />
         </div>
-      </section>
 
-      {/* What is GIGGEN footer */}
+        {/* Divider */}
+        <div className="border-b border-border/20 mt-6 mb-0" />
+      </div>
+
+      {/* MAIN CONTENT – two-column on desktop */}
+      <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 lg:gap-12">
+
+          {/* LEFT – Primary content */}
+          <div className="space-y-8">
+            {/* Beskrivelse */}
+            {venue.description && (
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-3">
+                  Om stedet
+                </h2>
+                <p className="text-base md:text-lg font-light leading-relaxed text-foreground/85 whitespace-pre-line">
+                  {venue.description}
+                </p>
+              </div>
+            )}
+
+            {/* Kommende events */}
+            {venue.upcomingEvents && venue.upcomingEvents.length > 0 && (
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-4">
+                  Kommende events
+                </h2>
+                <div className="space-y-1">
+                  {venue.upcomingEvents.map((event) => {
+                    const startDate = new Date(event.start_at);
+                    return (
+                      <Link
+                        key={event.id}
+                        to={`/event/${event.slug}`}
+                        className="group flex items-center gap-4 py-3 px-3 -mx-3 rounded-lg hover:bg-card/60 transition-colors"
+                      >
+                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-accent/10 flex flex-col items-center justify-center">
+                          <span className="text-[10px] font-bold uppercase text-accent/70 leading-none">
+                            {format(startDate, "MMM", { locale: nb })}
+                          </span>
+                          <span className="text-lg font-bold leading-none mt-0.5">
+                            {format(startDate, "d")}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base font-medium tracking-tight group-hover:text-accent transition-colors truncate">
+                            {event.title}
+                          </h3>
+                          <p className="text-xs text-muted-foreground/50 mt-0.5">
+                            {format(startDate, "EEEE HH:mm", { locale: nb })}
+                          </p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {(!venue.upcomingEvents || venue.upcomingEvents.length === 0) && (
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-3">
+                  Kommende events
+                </h2>
+                <p className="text-muted-foreground/40 text-sm">
+                  Ingen kommende events for øyeblikket.
+                </p>
+              </div>
+            )}
+
+            {/* Historikk */}
+            {venue.id && (
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-4">
+                  Historikk
+                </h2>
+                <UnifiedTimeline
+                  source={{ type: "entity", id: venue.id }}
+                  eventTypeOptions={VENUE_EVENT_TYPE_OPTIONS}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT – Sidebar */}
+          <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
+            {/* Info-kort */}
+            <div className="rounded-xl border border-border/15 bg-card/40 p-5 space-y-4">
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50">
+                Info
+              </h3>
+              {locationDisplay && (
+                <div className="flex items-start gap-3 text-sm">
+                  <MapPin className="w-4 h-4 text-muted-foreground/50 mt-0.5 flex-shrink-0" />
+                  <span className="text-foreground/80">{locationDisplay}</span>
+                </div>
+              )}
+              {venue.city && (
+                <div className="flex items-start gap-3 text-sm">
+                  <Building2 className="w-4 h-4 text-muted-foreground/50 mt-0.5 flex-shrink-0" />
+                  <span className="text-foreground/80">{venue.city}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Del */}
+            <ShareImageSection
+              slug={venue.slug}
+              shareModel={shareModelFromVenue({
+                slug: venue.slug,
+                name: venue.name,
+                description: venue.description ?? null,
+                heroImageUrl: heroImageUrl ?? null,
+                logoUrl: (venue as any).logo_url ?? null,
+              })}
+              compact
+            />
+          </aside>
+        </div>
+      </div>
+
       <WhatIsGiggenFooter />
     </PageLayout>
   );
