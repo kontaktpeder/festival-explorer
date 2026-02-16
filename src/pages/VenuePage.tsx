@@ -74,12 +74,12 @@ export default function VenuePage() {
         </h1>
       </HeroSection>
 
-      {/* 2. STEDET – Orientering */}
+      {/* 2. ADRESSE – Orientering */}
       {locationDisplay && (
         <section className="py-16 md:py-24">
-          <div className="max-w-2xl mx-auto px-6">
-            <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
-              Stedet
+          <div className="max-w-3xl mx-auto px-6">
+            <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-accent mb-8">
+              Adresse
             </h2>
             
             <div className="space-y-4">
@@ -107,7 +107,7 @@ export default function VenuePage() {
       {venue.upcomingEvents && venue.upcomingEvents.length > 0 && (
         <section className="py-20 md:py-32 border-t border-border/20">
           <div className="max-w-3xl mx-auto px-6">
-            <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-12 md:mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-accent mb-12 md:mb-16">
               Kommende events
             </h2>
 
@@ -179,7 +179,7 @@ export default function VenuePage() {
       {venue.id && (
         <section className="py-20 md:py-32 border-t border-border/20">
           <div className="max-w-3xl mx-auto px-6">
-            <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-12 md:mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold uppercase tracking-tight text-accent mb-12 md:mb-16">
               Historikk
             </h2>
             <UnifiedTimeline
