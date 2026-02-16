@@ -116,18 +116,19 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
           "max-w-[85%] md:max-w-[70%]",
           !isMobile && "transition-all duration-500 group-hover:translate-y-[-10px]"
         )}>
-          <h3 className="text-display text-4xl md:text-6xl lg:text-7xl text-foreground drop-shadow-2xl">
-            {artist.name}
-          </h3>
-          {displayLogoUrl && (
+          {displayLogoUrl && artist.slug !== "maya-estrela" ? (
             <img
               src={displayLogoUrl}
-              alt=""
+              alt={artist.name}
               className={cn(
-                "mt-4 w-auto h-auto max-h-12 md:max-h-16 object-contain opacity-50 grayscale brightness-200",
+                "w-auto h-auto max-h-16 md:max-h-24 lg:max-h-32 object-contain drop-shadow-2xl",
                 shouldInvert && "invert"
               )}
             />
+          ) : (
+            <h3 className="text-display text-4xl md:text-6xl lg:text-7xl text-foreground drop-shadow-2xl">
+              {artist.name}
+            </h3>
           )}
           
           {/* Mobile: Show "Utforsk", Desktop: Tagline on hover */}
