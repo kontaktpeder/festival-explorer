@@ -1,7 +1,12 @@
 import { useState } from "react";
-import { Share2, Loader2, Check, Link2, X, ImageDown } from "lucide-react";
+import { Share2, Loader2, Check, Link2, X, ImageDown, Download } from "lucide-react";
 import { getPublicUrl, cn } from "@/lib/utils";
 import { generateStoryImage, extractFirstTwoSentences } from "@/lib/story-image-generator";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export type SharePageType = "project" | "venue" | "festival";
 
@@ -32,6 +37,8 @@ export function ShareButton({
   const [copied, setCopied] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [generatingStory, setGeneratingStory] = useState(false);
+  const [storyPreviewUrl, setStoryPreviewUrl] = useState<string | null>(null);
+  const [storyBlob, setStoryBlob] = useState<Blob | null>(null);
 
   const baseUrl = getPublicUrl();
   const path =
@@ -72,7 +79,7 @@ export function ShareButton({
     }
   };
 
-  const handleDownloadStory = async () => {
+  const handleGeneratePreview = async () => {
     setGeneratingStory(true);
     try {
       const desc = extractFirstTwoSentences(config.description);
@@ -82,16 +89,42 @@ export function ShareButton({
         description: desc,
         logoUrl: config.logoUrl,
       });
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download = `giggen-story-${config.slug}.png`;
-      a.click();
-      URL.revokeObjectURL(blobUrl);
+      setStoryBlob(blob);
+      setStoryPreviewUrl(URL.createObjectURL(blob));
     } catch (err) {
       console.warn("Story generation failed", err);
     }
     setGeneratingStory(false);
+  };
+
+  const handleDownloadStory = () => {
+    if (!storyBlob) return;
+    const blobUrl = URL.createObjectURL(storyBlob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = `giggen-story-${config.slug}.png`;
+    a.click();
+    URL.revokeObjectURL(blobUrl);
+  };
+
+  const handleShareStory = async () => {
+    if (!storyBlob) return;
+    const file = new File([storyBlob], `giggen-story-${config.slug}.png`, { type: "image/png" });
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: config.shareTitle });
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") console.warn("Share failed", err);
+      }
+    } else {
+      handleDownloadStory();
+    }
+  };
+
+  const closePreview = () => {
+    if (storyPreviewUrl) URL.revokeObjectURL(storyPreviewUrl);
+    setStoryPreviewUrl(null);
+    setStoryBlob(null);
   };
 
   // Collapsed: small pill button
@@ -121,6 +154,7 @@ export function ShareButton({
 
   // Expanded: share card with preview + story download
   return (
+  <>
     <div
       className={cn(
         "w-64 rounded-2xl overflow-hidden",
@@ -188,9 +222,9 @@ export function ShareButton({
           </button>
         </div>
 
-        {/* Story image download */}
+        {/* Story image preview */}
         <button
-          onClick={handleDownloadStory}
+          onClick={handleGeneratePreview}
           disabled={generatingStory}
           className={cn(
             "w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-sm",
@@ -208,11 +242,44 @@ export function ShareButton({
           ) : (
             <>
               <ImageDown className="w-3 h-3" />
-              Last ned story-bilde
+              Lag story-bilde
             </>
           )}
         </button>
       </div>
     </div>
+
+    {/* Story preview dialog */}
+    <Dialog open={!!storyPreviewUrl} onOpenChange={(open) => !open && closePreview()}>
+      <DialogContent className="max-w-xs p-3 bg-card border-border/30">
+        <DialogTitle className="text-xs font-medium uppercase tracking-wider text-foreground/70 mb-2">
+          Story-bilde
+        </DialogTitle>
+        {storyPreviewUrl && (
+          <img
+            src={storyPreviewUrl}
+            alt="Story preview"
+            className="w-full rounded-lg"
+          />
+        )}
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={handleShareStory}
+            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-sm text-[10px] font-medium uppercase tracking-wider bg-accent text-accent-foreground hover:brightness-110 transition-all"
+          >
+            <Share2 className="w-3 h-3" />
+            Del
+          </button>
+          <button
+            onClick={handleDownloadStory}
+            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-sm text-[10px] font-medium uppercase tracking-wider border border-accent/30 text-accent hover:bg-accent/10 transition-all"
+          >
+            <Download className="w-3 h-3" />
+            Last ned
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  </>
   );
 }
