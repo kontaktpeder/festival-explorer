@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -17,6 +18,10 @@ import { VENUE_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
 export default function VenuePage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: venue, isLoading, error } = useVenue(slug || "");
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [slug]);
 
   // Hooks must be called before any early returns
   const heroImageUrl = useSignedMediaUrl(venue?.hero_image_url, 'public');
