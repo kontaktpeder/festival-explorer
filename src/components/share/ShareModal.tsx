@@ -36,32 +36,31 @@ export function ShareModal({
     preloadForModel,
   } = useShareImage({ setIsCapturing });
 
+  const preloadUrls = [
+    data.brandBackgroundUrl,
+    data.brandLogoUrl,
+    data.heroImageUrl ?? null,
+    data.subjectLogoUrl ?? null,
+  ];
+
   useEffect(() => {
     if (!open || !data) return;
-    preloadForModel([
-      data.brandBackgroundUrl,
-      data.brandLogoUrl,
-      data.heroImageUrl ?? null,
-      data.subjectLogoUrl ?? null,
-    ]).catch(() => {});
+    preloadForModel(preloadUrls).catch(() => {});
   }, [open, data, preloadForModel]);
 
   const handleShare = async () => {
-    await share(filenameBase);
+    await share(filenameBase, preloadUrls);
     onOpenChange(false);
   };
 
   const handleDownload = async () => {
-    await download(filenameBase);
+    await download(filenameBase, preloadUrls);
     onOpenChange(false);
   };
 
-  const previewW = SHARE_WIDTH * PREVIEW_SCALE;
-  const previewH = SHARE_HEIGHT * PREVIEW_SCALE;
-
   const scale = isCapturing ? 1 : PREVIEW_SCALE;
-  const wrapperW = isCapturing ? SHARE_WIDTH : previewW;
-  const wrapperH = isCapturing ? SHARE_HEIGHT : previewH;
+  const wrapperW = isCapturing ? SHARE_WIDTH : SHARE_WIDTH * PREVIEW_SCALE;
+  const wrapperH = isCapturing ? SHARE_HEIGHT : SHARE_HEIGHT * PREVIEW_SCALE;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -73,23 +72,25 @@ export function ShareModal({
           Instagram innlegg (4:5) – forhåndsvisning nedenfor, deretter Del eller Last ned.
         </p>
 
-        {/* Én kort: full størrelse 1080×1350, vises skalert; under capture scale(1) */}
-        <div
-          className="mx-auto mb-4 rounded-lg overflow-hidden border border-border/30"
-          style={{ width: wrapperW, height: wrapperH }}
-        >
+        <div className="flex justify-center">
           <div
-            style={{
-              transform: `scale(${scale})`,
-              transformOrigin: "top left",
-            }}
+            style={{ width: wrapperW, height: wrapperH }}
+            className="relative overflow-hidden rounded-xl"
           >
-            <ShareImageCard ref={cardRef} data={data} />
+            <div
+              style={{
+                transform: `scale(${scale})`,
+                transformOrigin: "top left",
+                width: SHARE_WIDTH,
+                height: SHARE_HEIGHT,
+              }}
+            >
+              <ShareImageCard ref={cardRef} data={data} />
+            </div>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 mt-4">
           <button
             onClick={handleShare}
             disabled={generating}
