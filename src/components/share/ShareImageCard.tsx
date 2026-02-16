@@ -1,66 +1,97 @@
 import { forwardRef } from "react";
 import shareGIcon from "@/assets/share-g-icon.png";
 import shareFallbackBg from "@/assets/share-fallback-bg.jpeg";
-import type { ShareModel, ShareVariant } from "@/types/share";
-import { SHARE_DIMENSIONS } from "@/types/share";
+import type { ShareModel } from "@/types/share";
+import { SHARE_WIDTH, SHARE_HEIGHT } from "@/types/share";
 
-export type ShareImageFormat = ShareVariant;
+const SAFE = 56;
+const GIGGEN_SIZE = 64;
+const GIGGEN_MARGIN = 56;
+const SUBJECT_LOGO_MAX_W = 320;
+const SUBJECT_LOGO_MAX_H = 140;
+const SUBJECT_LOGO_MARGIN = 56;
+
+/** Oransje accent – brukes direkte i canvas (html2canvas krever inline) */
+const ACCENT_COLOR = "hsl(24, 100%, 55%)";
 
 type ShareImageCardProps = {
-  variant: ShareVariant;
   data: ShareModel;
-  /** When true, renders a scaled-down preview (not for capture). */
+  /** Når true, skalert preview i modal. Default false = full px for capture. */
   preview?: boolean;
 };
 
 export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
-  function ShareImageCard({ variant, data, preview = false }, ref) {
-    const { width, height } = SHARE_DIMENSIONS[variant];
-    const isStory = variant === "story";
+  function ShareImageCard({ data, preview = false }, ref) {
     const brandBg = data.brandBackgroundUrl || shareFallbackBg;
     const brandLogo = data.brandLogoUrl || shareGIcon;
     const heroUrl = data.heroImageUrl || null;
     const subjectLogo = data.subjectLogoUrl || null;
 
-    const logoSize = isStory ? 88 : 64;
-    const logoMargin = isStory ? 64 : 56;
-
     const rootStyle: React.CSSProperties = preview
       ? {
-          position: "relative" as const,
+          position: "relative",
           overflow: "hidden",
-          width,
-          height,
+          width: SHARE_WIDTH,
+          height: SHARE_HEIGHT,
           transform: "scale(0.22)",
           transformOrigin: "top left",
+          backgroundColor: "#0a0a0a",
         }
       : {
-          position: "relative" as const,
+          position: "relative",
           overflow: "hidden",
-          width,
-          height,
+          width: SHARE_WIDTH,
+          height: SHARE_HEIGHT,
+          backgroundColor: "#0a0a0a",
         };
 
     return (
-      <div ref={ref} style={{ ...rootStyle, backgroundColor: "#0a0f1a" }}>
-        {/* Layer 1: Brand background texture */}
-        <img
-          src={brandBg}
-          alt=""
-          crossOrigin="anonymous"
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            opacity: 0.35,
-            filter: "blur(1px)",
-          }}
-        />
-
-        {/* Layer 2: Hero image */}
+      <div ref={ref} style={rootStyle}>
+        {/* Lag 1: Bakgrunn – hero blurred som fyll, eller brand texture */}
         {heroUrl ? (
+          <>
+            <img
+              src={heroUrl}
+              alt=""
+              crossOrigin="anonymous"
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                objectPosition: "center",
+                filter: "blur(16px) brightness(0.5)",
+                transform: "scale(1.1)",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                backgroundColor: "rgba(0,0,0,0.3)",
+              }}
+            />
+          </>
+        ) : (
+          <img
+            src={brandBg}
+            alt=""
+            crossOrigin="anonymous"
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              opacity: 0.35,
+              filter: "blur(1px)",
+            }}
+          />
+        )}
+
+        {/* Lag 2: Hero forgrunn – contain, sentrert, aldri strekk */}
+        {heroUrl && (
           <img
             src={heroUrl}
             alt=""
@@ -70,39 +101,116 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
               inset: 0,
               width: "100%",
               height: "100%",
-              objectFit: "cover",
+              objectFit: "contain",
               objectPosition: "center",
+              zIndex: 2,
             }}
           />
-        ) : (
-          <div style={{ position: "absolute", inset: 0 }} />
         )}
 
-        {/* Layer 3: Gradient overlay */}
+        {/* Lag 3: Bunn-gradient for lesbarhet (~38% høyde) */}
         <div
           style={{
             position: "absolute",
             bottom: 0,
             left: 0,
             right: 0,
-            height: isStory ? "55%" : "40%",
-            background: isStory
-              ? "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.65) 50%, transparent 100%)"
-              : "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 55%, transparent 100%)",
+            height: "38%",
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 55%, transparent 100%)",
+            zIndex: 3,
           }}
         />
 
-        {/* Subject logo (top-left signature) */}
+        {/* GIGGEN-ikon – topp høyre */}
+        <img
+          src={brandLogo}
+          alt=""
+          crossOrigin="anonymous"
+          style={{
+            position: "absolute",
+            top: GIGGEN_MARGIN,
+            right: GIGGEN_MARGIN,
+            width: GIGGEN_SIZE,
+            height: GIGGEN_SIZE,
+            objectFit: "contain",
+            zIndex: 10,
+            opacity: 0.9,
+          }}
+        />
+
+        {/* Tekstblokk – top-left (safe zone) */}
+        <div
+          style={{
+            position: "absolute",
+            top: SAFE,
+            left: SAFE,
+            maxWidth: SHARE_WIDTH - SAFE * 2 - GIGGEN_SIZE - 24,
+            zIndex: 10,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 52,
+              fontWeight: 900,
+              lineHeight: 0.92,
+              color: "#ffffff",
+              textTransform: "uppercase" as const,
+              letterSpacing: "-0.02em",
+              textShadow: "0 4px 30px rgba(0,0,0,0.6)",
+              marginBottom: 16,
+            }}
+          >
+            {data.title}
+          </div>
+          {data.subtitle && (
+            <div
+              style={{
+                fontSize: 24,
+                fontWeight: 300,
+                lineHeight: 1.3,
+                color: ACCENT_COLOR,
+                textShadow: "0 2px 12px rgba(0,0,0,0.5)",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical" as const,
+                overflow: "hidden",
+              }}
+            >
+              {data.subtitle}
+            </div>
+          )}
+        </div>
+
+        {/* CTA – nederst venstre, over gradient */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: SAFE,
+            left: SAFE,
+            zIndex: 10,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 22,
+              fontWeight: 600,
+              color: "#ffffff",
+              textShadow: "0 2px 12px rgba(0,0,0,0.5)",
+            }}
+          >
+            {data.cta ?? "Les mer på giggen.org"}
+          </div>
+        </div>
+
+        {/* Prosjekt/venue-logo – nederst høyre, kun hvis finnes */}
         {subjectLogo && (
           <div
             style={{
               position: "absolute",
-              top: isStory ? 80 : 56,
-              left: isStory ? 60 : 56,
+              bottom: SUBJECT_LOGO_MARGIN,
+              right: SUBJECT_LOGO_MARGIN,
               zIndex: 10,
-              background: "rgba(0,0,0,0.35)",
-              borderRadius: 16,
-              padding: 12,
             }}
           >
             <img
@@ -110,89 +218,13 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
               alt=""
               crossOrigin="anonymous"
               style={{
-                width: isStory ? 100 : 72,
-                height: isStory ? 100 : 72,
+                maxWidth: SUBJECT_LOGO_MAX_W,
+                maxHeight: SUBJECT_LOGO_MAX_H,
                 objectFit: "contain",
               }}
             />
           </div>
         )}
-
-        {/* Text content – no URL in the image */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "flex-end",
-            padding: isStory ? "0 60px 64px" : "0 56px 56px",
-            zIndex: 10,
-          }}
-        >
-          <div style={{ paddingRight: logoSize + 24 }}>
-            {/* Title */}
-            <div
-              style={{
-                fontSize: isStory ? 78 : 52,
-                fontWeight: 900,
-                lineHeight: 0.92,
-                color: "#ffffff",
-                textTransform: "uppercase" as const,
-                letterSpacing: "-0.02em",
-                textShadow: "0 4px 30px rgba(0,0,0,0.6)",
-                marginBottom: 20,
-              }}
-            >
-              {data.title}
-            </div>
-
-            {/* Subtitle */}
-            {data.subtitle && (
-              <div
-                style={{
-                  fontSize: isStory ? 32 : 24,
-                  fontWeight: 300,
-                  lineHeight: 1.3,
-                  color: "rgba(255,255,255,0.85)",
-                  marginBottom: 20,
-                }}
-              >
-                {data.subtitle}
-              </div>
-            )}
-
-            {/* CTA */}
-            {data.cta && (
-              <div
-                style={{
-                  fontSize: isStory ? 26 : 22,
-                  fontWeight: 600,
-                  color: "#ffffff",
-                }}
-              >
-                {data.cta}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* GIGGEN stamp – bottom-right */}
-        <img
-          src={brandLogo}
-          alt=""
-          crossOrigin="anonymous"
-          style={{
-            position: "absolute",
-            bottom: logoMargin,
-            right: logoMargin,
-            width: logoSize,
-            height: logoSize,
-            objectFit: "contain",
-            zIndex: 10,
-            opacity: 0.9,
-          }}
-        />
       </div>
     );
   }
