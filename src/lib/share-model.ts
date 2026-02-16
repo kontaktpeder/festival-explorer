@@ -1,8 +1,12 @@
 import { getPublicUrl } from "@/lib/utils";
 import type { ShareModel } from "@/types/share";
 
-function truncateTitle(title: string, max = 30): string {
-  return title.length > max ? title.slice(0, max - 3).trim() + "…" : title;
+const TITLE_MAX = 28;
+const SUBTITLE_MAX = 80;
+
+function truncate(str: string, max: number): string {
+  if (str.length <= max) return str;
+  return str.slice(0, max - 3).trim() + "…";
 }
 
 export function shareModelFromProject(params: {
@@ -10,18 +14,20 @@ export function shareModelFromProject(params: {
   title: string;
   tagline?: string | null;
   heroImageUrl: string | null;
+  logoUrl?: string | null;
   brandLogoUrl?: string;
   brandBackgroundUrl?: string;
 }): ShareModel {
   const base = getPublicUrl().replace(/\/$/, "");
   return {
-    title: truncateTitle(params.title),
-    subtitle: params.tagline ?? undefined,
-    heroImageUrl: params.heroImageUrl ?? "",
+    title: truncate(params.title, TITLE_MAX),
+    subtitle: params.tagline ? truncate(params.tagline, SUBTITLE_MAX) : undefined,
+    heroImageUrl: params.heroImageUrl ?? null,
     cta: `Oppdag ${params.title} på GIGGEN`,
     url: `${base}/project/${params.slug}`,
     brandLogoUrl: params.brandLogoUrl,
     brandBackgroundUrl: params.brandBackgroundUrl,
+    subjectLogoUrl: params.logoUrl ?? null,
   };
 }
 
@@ -30,17 +36,19 @@ export function shareModelFromVenue(params: {
   name: string;
   description?: string | null;
   heroImageUrl: string | null;
+  logoUrl?: string | null;
   brandLogoUrl?: string;
   brandBackgroundUrl?: string;
 }): ShareModel {
   const base = getPublicUrl().replace(/\/$/, "");
   return {
-    title: truncateTitle(params.name),
-    subtitle: params.description?.slice(0, 80) ?? undefined,
-    heroImageUrl: params.heroImageUrl ?? "",
+    title: truncate(params.name, TITLE_MAX),
+    subtitle: params.description ? truncate(params.description, SUBTITLE_MAX) : undefined,
+    heroImageUrl: params.heroImageUrl ?? null,
     cta: "Se program på GIGGEN",
     url: `${base}/venue/${params.slug}`,
     brandLogoUrl: params.brandLogoUrl,
     brandBackgroundUrl: params.brandBackgroundUrl,
+    subjectLogoUrl: params.logoUrl ?? null,
   };
 }

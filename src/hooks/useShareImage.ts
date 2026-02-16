@@ -2,6 +2,16 @@ import { useRef, useCallback, useState } from "react";
 import html2canvas from "html2canvas";
 import type { ShareVariant } from "@/types/share";
 
+function preloadImage(src: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve();
+    img.onerror = () => reject(new Error(`Preload failed: ${src}`));
+    img.src = src;
+  });
+}
+
 export function useShareImage() {
   const storyCardRef = useRef<HTMLDivElement>(null);
   const linkCardRef = useRef<HTMLDivElement>(null);
@@ -16,6 +26,9 @@ export function useShareImage() {
       if (!ref.current) return null;
       setGenerating(true);
       try {
+        if (typeof document !== "undefined" && document.fonts?.ready) {
+          await document.fonts.ready;
+        }
         const canvas = await html2canvas(ref.current, {
           backgroundColor: null,
           scale: 2,
@@ -26,6 +39,9 @@ export function useShareImage() {
           canvas.toBlob(
             (blob) => {
               setGenerating(false);
+              if (!blob) {
+                console.error("html2canvas toBlob returned null – check CORS on images");
+              }
               resolve(blob ?? null);
             },
             "image/png"
@@ -39,6 +55,11 @@ export function useShareImage() {
     },
     []
   );
+
+  const preloadForModel = useCallback(async (urls: (string | null | undefined)[]) => {
+    const valid = urls.filter((u): u is string => !!u);
+    await Promise.allSettled(valid.map(preloadImage));
+  }, []);
 
   const download = useCallback(
     async (variant: ShareVariant, filenameBase: string) => {
@@ -65,7 +86,9 @@ export function useShareImage() {
         try {
           await navigator.share({ files: [file], title: filenameBase });
         } catch (err) {
-          if ((err as Error).name !== "AbortError") console.warn("Share failed", err);
+          if ((err as Error).name !== "AbortError") {
+            await download(variant, filenameBase);
+          }
         }
       } else {
         await download(variant, filenameBase);
@@ -81,5 +104,6 @@ export function useShareImage() {
     generateBlob,
     download,
     share,
+    preloadForModel,
   };
 }
