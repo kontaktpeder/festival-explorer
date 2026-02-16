@@ -4,50 +4,41 @@ import shareFallbackBg from "@/assets/share-fallback-bg.jpeg";
 import type { ShareModel } from "@/types/share";
 import { SHARE_WIDTH, SHARE_HEIGHT } from "@/types/share";
 
-const SAFE = 56;
-const GIGGEN_SIZE = 64;
-const GIGGEN_MARGIN = 56;
-const SUBJECT_LOGO_MAX_W = 320;
-const SUBJECT_LOGO_MAX_H = 140;
-const SUBJECT_LOGO_MARGIN = 56;
+const SAFE_LEFT = 96;
+const SAFE_RIGHT = 96;
+const SAFE_TOP = 120;
+const SAFE_BOTTOM = 140;
 
-/** Oransje accent – brukes direkte i canvas (html2canvas krever inline) */
+const GIGGEN_SIZE = 80;
+const SUBJECT_LOGO_MAX_W = 360;
+const SUBJECT_LOGO_MAX_H = 160;
+
+/** Oransje accent – inline for html2canvas */
 const ACCENT_COLOR = "hsl(24, 100%, 55%)";
 
 type ShareImageCardProps = {
   data: ShareModel;
-  /** Når true, skalert preview i modal. Default false = full px for capture. */
-  preview?: boolean;
 };
 
 export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
-  function ShareImageCard({ data, preview = false }, ref) {
+  function ShareImageCard({ data }, ref) {
     const brandBg = data.brandBackgroundUrl || shareFallbackBg;
     const brandLogo = data.brandLogoUrl || shareGIcon;
     const heroUrl = data.heroImageUrl || null;
     const subjectLogo = data.subjectLogoUrl || null;
 
-    const rootStyle: React.CSSProperties = preview
-      ? {
-          position: "relative",
-          overflow: "hidden",
-          width: SHARE_WIDTH,
-          height: SHARE_HEIGHT,
-          transform: "scale(0.22)",
-          transformOrigin: "top left",
-          backgroundColor: "#0a0a0a",
-        }
-      : {
-          position: "relative",
-          overflow: "hidden",
-          width: SHARE_WIDTH,
-          height: SHARE_HEIGHT,
-          backgroundColor: "#0a0a0a",
-        };
-
     return (
-      <div ref={ref} style={rootStyle}>
-        {/* Lag 1: Bakgrunn – hero blurred som fyll, eller brand texture */}
+      <div
+        ref={ref}
+        style={{
+          position: "relative",
+          overflow: "hidden",
+          width: SHARE_WIDTH,
+          height: SHARE_HEIGHT,
+          backgroundColor: "#0a0a0a",
+        }}
+      >
+        {/* Lag 1: Bakgrunn – hero cover + blur 32px + opacity 0.22, eller brand */}
         {heroUrl ? (
           <>
             <img
@@ -61,15 +52,19 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
                 height: "100%",
                 objectFit: "cover",
                 objectPosition: "center",
-                filter: "blur(16px) brightness(0.5)",
-                transform: "scale(1.1)",
+                filter: "blur(32px) brightness(0.5)",
+                opacity: 0.22,
+                transform: "scale(1.15)",
               }}
             />
+            {/* Full-canvas vignette: top 0.15, bottom 0.45 */}
             <div
               style={{
                 position: "absolute",
                 inset: 0,
-                backgroundColor: "rgba(0,0,0,0.3)",
+                background:
+                  "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, transparent 30%, transparent 55%, rgba(0,0,0,0.45) 100%)",
+                zIndex: 1,
               }}
             />
           </>
@@ -90,7 +85,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           />
         )}
 
-        {/* Lag 2: Hero forgrunn – contain, sentrert, aldri strekk */}
+        {/* Lag 2: Hero forgrunn – contain, skarp */}
         {heroUrl && (
           <img
             src={heroUrl}
@@ -108,29 +103,29 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           />
         )}
 
-        {/* Lag 3: Bunn-gradient for lesbarhet (~38% høyde) */}
+        {/* Lag 3: Bunn-gradient for lesbarhet, ingen tynn linje */}
         <div
           style={{
             position: "absolute",
             bottom: 0,
             left: 0,
             right: 0,
-            height: "38%",
+            height: "42%",
             background:
-              "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 55%, transparent 100%)",
+              "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.7) 50%, transparent 100%)",
             zIndex: 3,
           }}
         />
 
-        {/* GIGGEN-ikon – topp høyre */}
+        {/* GIGGEN-ikon – topp høyre, innenfor safe zone */}
         <img
           src={brandLogo}
           alt=""
           crossOrigin="anonymous"
           style={{
             position: "absolute",
-            top: GIGGEN_MARGIN,
-            right: GIGGEN_MARGIN,
+            top: SAFE_TOP,
+            right: SAFE_RIGHT,
             width: GIGGEN_SIZE,
             height: GIGGEN_SIZE,
             objectFit: "contain",
@@ -139,26 +134,26 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           }}
         />
 
-        {/* Tekstblokk – top-left (safe zone) */}
+        {/* Tittel + tagline – top-left, innenfor safe zone */}
         <div
           style={{
             position: "absolute",
-            top: SAFE,
-            left: SAFE,
-            maxWidth: SHARE_WIDTH - SAFE * 2 - GIGGEN_SIZE - 24,
+            top: SAFE_TOP,
+            left: SAFE_LEFT,
+            maxWidth: SHARE_WIDTH - SAFE_LEFT - SAFE_RIGHT - GIGGEN_SIZE - 32,
             zIndex: 10,
           }}
         >
           <div
             style={{
-              fontSize: 52,
+              fontSize: 96,
               fontWeight: 900,
-              lineHeight: 0.92,
+              lineHeight: 0.88,
               color: "#ffffff",
               textTransform: "uppercase" as const,
-              letterSpacing: "-0.02em",
-              textShadow: "0 4px 30px rgba(0,0,0,0.6)",
-              marginBottom: 16,
+              letterSpacing: "-0.03em",
+              textShadow: "0 6px 40px rgba(0,0,0,0.7)",
+              marginBottom: 20,
             }}
           >
             {data.title}
@@ -166,11 +161,11 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           {data.subtitle && (
             <div
               style={{
-                fontSize: 24,
+                fontSize: 40,
                 fontWeight: 300,
-                lineHeight: 1.3,
+                lineHeight: 1.25,
                 color: ACCENT_COLOR,
-                textShadow: "0 2px 12px rgba(0,0,0,0.5)",
+                textShadow: "0 3px 16px rgba(0,0,0,0.6)",
                 display: "-webkit-box",
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: "vertical" as const,
@@ -182,34 +177,34 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           )}
         </div>
 
-        {/* CTA – nederst venstre, over gradient */}
+        {/* CTA – nederst venstre, innenfor safe zone. Ingen URL i bildet. */}
         <div
           style={{
             position: "absolute",
-            bottom: SAFE,
-            left: SAFE,
+            bottom: SAFE_BOTTOM,
+            left: SAFE_LEFT,
             zIndex: 10,
           }}
         >
           <div
             style={{
-              fontSize: 22,
+              fontSize: 34,
               fontWeight: 600,
-              color: "#ffffff",
-              textShadow: "0 2px 12px rgba(0,0,0,0.5)",
+              color: "rgba(255,255,255,0.85)",
+              textShadow: "0 2px 14px rgba(0,0,0,0.6)",
             }}
           >
             {data.cta ?? "Les mer på giggen.org"}
           </div>
         </div>
 
-        {/* Prosjekt/venue-logo – nederst høyre, kun hvis finnes */}
+        {/* Prosjekt/venue-logo – nederst høyre, innenfor safe zone */}
         {subjectLogo && (
           <div
             style={{
               position: "absolute",
-              bottom: SUBJECT_LOGO_MARGIN,
-              right: SUBJECT_LOGO_MARGIN,
+              bottom: SAFE_BOTTOM,
+              right: SAFE_RIGHT,
               zIndex: 10,
             }}
           >
