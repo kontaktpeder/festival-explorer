@@ -111,16 +111,14 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           />
         )}
 
-        {/* Lag 3: Bunn-gradient for lesbarhet */}
+        {/* Lag 3: Bunn-gradient – helflate, myk overgang, ingen hairline */}
         <div
           style={{
             position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: "42%",
+            inset: 0,
             background:
-              "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.7) 50%, transparent 100%)",
+              "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.65) 35%, transparent 60%)",
+            pointerEvents: "none",
             zIndex: 3,
           }}
         />
@@ -142,13 +140,13 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           }}
         />
 
-        {/* Tittel + tagline – top-left */}
+        {/* Tittel + tagline – top-left, fast bredde */}
         <div
           style={{
             position: "absolute",
             top: SAFE_TOP,
             left: SAFE_LEFT,
-            maxWidth: SHARE_WIDTH - SAFE_LEFT - SAFE_RIGHT - GIGGEN_SIZE - 32,
+            width: SHARE_WIDTH - SAFE_LEFT - SAFE_RIGHT - GIGGEN_SIZE - 32,
             zIndex: 10,
           }}
         >
@@ -178,6 +176,8 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: "vertical" as const,
                 overflow: "hidden",
+                marginTop: 14,
+                paddingBottom: 8,
               }}
             >
               {data.subtitle}
