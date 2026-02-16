@@ -156,96 +156,49 @@ export default function EventPage() {
             </section>
           )}
 
-          {/* Bak scenen – festival-team + event-spesifikke (dedup: event overstyrer) */}
+          {/* Festival-team: backstage + arrangør samlet */}
           {(() => {
             const bs = (event as any).backstage || { festival: [], event: [] };
-            const eventKeys = new Set((bs.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
-            const filteredFestival = (bs.festival || []).filter((p: any) => !eventKeys.has(`${p.participant_kind}:${p.participant_id}`));
-            if (filteredFestival.length === 0 && (bs.event || []).length === 0) return null;
+            const bsEventKeys = new Set((bs.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
+            const bsFiltered = (bs.festival || []).filter((p: any) => !bsEventKeys.has(`${p.participant_kind}:${p.participant_id}`));
+            const bsAll = [...bsFiltered, ...(bs.event || [])];
+
+            const hr = (event as any).hostRoles || { festival: [], event: [] };
+            const hrEventKeys = new Set((hr.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
+            const hrFiltered = (hr.festival || []).filter((p: any) => !hrEventKeys.has(`${p.participant_kind}:${p.participant_id}`));
+            const hrAll = [...hrFiltered, ...(hr.event || [])];
+
+            if (bsAll.length === 0 && hrAll.length === 0) return null;
             return (
               <section className="py-16 md:py-24 border-t border-border/20">
                 <div className="max-w-2xl mx-auto px-6">
                   <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
-                    Bak scenen
+                    Festival-team
                   </h2>
-                  {filteredFestival.length > 0 && (
-                    <div className="space-y-4 mb-6">
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Festival-team</p>
-                      {filteredFestival.map((item: any, i: number) => (
-                        <EventParticipantItem key={item.participant_id || i} item={item} />
-                      ))}
-                    </div>
-                  )}
-                  {(bs.event || []).length > 0 && (
-                    <div className="space-y-4">
-                      {filteredFestival.length > 0 && (
-                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Denne kvelden</p>
-                      )}
-                      {(bs.event as any[]).map((item: any, i: number) => (
-                        <EventParticipantItem key={item.participant_id || i} item={item} />
-                      ))}
-                    </div>
-                  )}
+                  <div className="space-y-8">
+                    {hrAll.length > 0 && (
+                      <div className="space-y-4">
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Arrangør</p>
+                        {hrAll.map((item: any, i: number) => (
+                          <EventParticipantItem key={item.participant_id || i} item={item} />
+                        ))}
+                      </div>
+                    )}
+                    {bsAll.length > 0 && (
+                      <div className="space-y-4">
+                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Bak scenen</p>
+                        {bsAll.map((item: any, i: number) => (
+                          <EventParticipantItem key={item.participant_id || i} item={item} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </section>
             );
           })()}
         </>
       )}
-
-      {/* 6. PRAKTISK – fra event (aldersgrense, garderobe) + adresse fra venue */}
-      {(() => {
-        const ageLimit = (event as any).age_limit?.trim();
-        const cloakroom = (event as any).cloakroom_available === true;
-        const address = event.venue?.address || event.venue?.name;
-        if (!ageLimit && !cloakroom && !address) return null;
-        return (
-          <section className="py-16 md:py-24 border-t border-border/20">
-            <div className="max-w-2xl mx-auto px-6">
-              <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
-                Praktisk
-              </h2>
-              <div className="space-y-3 text-foreground/70">
-                {ageLimit && <p className="font-light">Aldersgrense: {ageLimit}</p>}
-                {cloakroom && <p className="font-light">Garderobe tilgjengelig</p>}
-                {address && <p className="font-light">{address}</p>}
-              </div>
-            </div>
-          </section>
-        );
-      })()}
-
-          {/* Arrangør – festival-team + event-spesifikke (dedup: event overstyrer) */}
-          {(() => {
-            const hr = (event as any).hostRoles || { festival: [], event: [] };
-            const eventKeys = new Set((hr.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
-            const filteredFestival = (hr.festival || []).filter((p: any) => !eventKeys.has(`${p.participant_kind}:${p.participant_id}`));
-            if (filteredFestival.length === 0 && (hr.event || []).length === 0) return null;
-            return (
-              <section className="py-16 md:py-24 border-t border-border/20">
-                <div className="max-w-2xl mx-auto px-6">
-                  {filteredFestival.length > 0 && (
-                    <div className="space-y-4 mb-6">
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Festival-team</p>
-                      {filteredFestival.map((item: any, i: number) => (
-                        <EventParticipantItem key={item.participant_id || i} item={item} />
-                      ))}
-                    </div>
-                  )}
-                  {(hr.event || []).length > 0 && (
-                    <div className="space-y-4">
-                      {filteredFestival.length > 0 && (
-                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Denne kvelden</p>
-                      )}
-                      {(hr.event as any[]).map((item: any, i: number) => (
-                        <EventParticipantItem key={item.participant_id || i} item={item} />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </section>
-            );
-          })()}
 
       {/* 7. STILLE AVSLUTNING – La kvelden henge */}
       <section className="py-24 md:py-40">
