@@ -264,6 +264,8 @@ export default function EventRoomPage() {
       toast({ title: isNew ? "Event opprettet" : "Event oppdatert" });
       if (isNew && data) {
         navigate(`/event-room/${data.id}`);
+      } else if (event?.venue_id) {
+        navigate(`/dashboard/venue/${event.venue_id}`);
       } else if (festivalContext?.festival_id) {
         navigate(`/dashboard/festival/${festivalContext.festival_id}`);
       } else {
