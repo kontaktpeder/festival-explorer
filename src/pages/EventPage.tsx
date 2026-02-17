@@ -188,77 +188,62 @@ export default function EventPage() {
           </div>
 
           {/* RIGHT – Sidebar */}
-          <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
-            <div className="space-y-4">
-              <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50">
+          <aside className="space-y-8 lg:sticky lg:top-8 lg:self-start">
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-4">
                 Praktisk
               </h3>
 
-              <div className="flex items-start gap-3 text-sm">
-                <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                  <Calendar className="w-4 h-4 text-accent/70" />
-                </div>
-                <div>
-                  <span className="text-foreground/80 font-medium">
+              <div className="divide-y divide-border/10">
+                {/* Date */}
+                <div className="flex items-center gap-3 py-3">
+                  <Calendar className="w-4 h-4 shrink-0 text-muted-foreground/30" strokeWidth={1.5} />
+                  <span className="text-sm text-foreground/80">
                     {format(startDate, "EEEE d. MMMM", { locale: nb })}
                   </span>
                 </div>
-              </div>
 
-              <div className="flex items-start gap-3 text-sm">
-                <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                  <Clock className="w-4 h-4 text-accent/70" />
+                {/* Time */}
+                <div className="flex items-center gap-3 py-3">
+                  <Clock className="w-4 h-4 shrink-0 text-muted-foreground/30" strokeWidth={1.5} />
+                  <span className="text-sm text-foreground/80">{timeRange}</span>
                 </div>
-                <div>
-                  <span className="text-foreground/80 font-medium">{timeRange}</span>
-                </div>
+
+                {/* Venue */}
+                {event.venue && (
+                  <Link to={`/venue/${event.venue.slug}`} className="flex items-center gap-3 py-3 group">
+                    <MapPin className="w-4 h-4 shrink-0 text-muted-foreground/30" strokeWidth={1.5} />
+                    <div className="min-w-0">
+                      <span className="text-sm text-foreground/80 group-hover:text-accent transition-colors">
+                        {event.venue.name}
+                      </span>
+                      {event.venue.address && (
+                        <p className="text-xs text-muted-foreground/40 mt-0.5">{event.venue.address}</p>
+                      )}
+                    </div>
+                  </Link>
+                )}
+
+                {/* Age limit */}
+                {(() => {
+                  const ageLimit = (event as any).age_limit?.trim();
+                  if (!ageLimit) return null;
+                  return (
+                    <div className="flex items-center gap-3 py-3">
+                      <ShieldCheck className="w-4 h-4 shrink-0 text-muted-foreground/30" strokeWidth={1.5} />
+                      <span className="text-sm text-foreground/80">{ageLimit}</span>
+                    </div>
+                  );
+                })()}
+
+                {/* Cloakroom */}
+                {(event as any).cloakroom_available === true && (
+                  <div className="flex items-center gap-3 py-3">
+                    <Shirt className="w-4 h-4 shrink-0 text-muted-foreground/30" strokeWidth={1.5} />
+                    <span className="text-sm text-foreground/80">Garderobe</span>
+                  </div>
+                )}
               </div>
-
-              {event.venue && (
-                <Link to={`/venue/${event.venue.slug}`} className="flex items-start gap-3 text-sm group">
-                  <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-4 h-4 text-accent/70" />
-                  </div>
-                  <div>
-                    <span className="text-foreground/80 font-medium group-hover:text-accent transition-colors">
-                      {event.venue.name}
-                    </span>
-                    {event.venue.address && (
-                      <p className="text-xs text-muted-foreground/50 mt-0.5">{event.venue.address}</p>
-                    )}
-                  </div>
-                </Link>
-              )}
-
-              {(() => {
-                const ageLimit = (event as any).age_limit?.trim();
-                const cloakroom = (event as any).cloakroom_available === true;
-                if (!ageLimit && !cloakroom) return null;
-                return (
-                  <>
-                    {ageLimit && (
-                      <div className="flex items-start gap-3 text-sm">
-                        <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                          <ShieldCheck className="w-4 h-4 text-accent/70" />
-                        </div>
-                        <div>
-                          <span className="text-foreground/80 font-medium">{ageLimit}</span>
-                        </div>
-                      </div>
-                    )}
-                    {cloakroom && (
-                      <div className="flex items-start gap-3 text-sm">
-                        <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                          <Shirt className="w-4 h-4 text-accent/70" />
-                        </div>
-                        <div>
-                          <span className="text-foreground/80 font-medium">Garderobe</span>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
             </div>
 
             {/* Share */}
