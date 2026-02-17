@@ -135,13 +135,13 @@ export function InlineMediaPickerWithCrop({
     return undefined;
   };
 
-  const aspectClass = cropMode === "avatar" ? "aspect-square" : "aspect-video";
+  const aspectClass = cropMode === "avatar" ? "aspect-square" : "";
   const previewHeight = cropMode === "avatar" ? "h-24 w-24" : "h-24 w-full";
 
   // Determine preview aspect ratio
   const previewAspect = useNaturalAspect && parsedSettings?.aspect_ratio
     ? parsedSettings.aspect_ratio
-    : undefined;
+    : cropMode === "hero" ? 2.5 : undefined;
 
   return (
     <div className="space-y-2">

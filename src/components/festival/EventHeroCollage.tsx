@@ -20,29 +20,12 @@ interface EventHeroCollageProps {
 }
 
 /**
- * Per-artist object-position overrides.
- * Used when DB focal-point data is missing or insufficient.
- * Key = lowercase artist name.
- */
-const ARTIST_CROP_OVERRIDES: Record<string, string> = {
-  "maya estrela": "center 30%",
-};
-
-/**
  * Resolve object-position for a collage cell.
- * Priority: DB focal-point → name-based override → default center.
+ * Uses DB focal-point settings only. Default: center.
  */
 function resolveObjectPosition(artist: CollageArtist): string {
-  // If DB has focal-point settings, use them
   const fromFocal = getObjectPositionFromFocal(artist.imageSettings);
-  if (fromFocal && fromFocal !== "center center" && fromFocal !== "center" && fromFocal !== "50% 50%") {
-    return fromFocal;
-  }
-
-  // Check name-based overrides
-  const override = ARTIST_CROP_OVERRIDES[artist.name.toLowerCase()];
-  if (override) return override;
-
+  if (fromFocal && fromFocal !== "50% 50%") return fromFocal;
   return "center";
 }
 

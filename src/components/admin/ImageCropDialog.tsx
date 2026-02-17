@@ -122,7 +122,7 @@ export function ImageCropDialog({
     onOpenChange(false);
   };
 
-  const modeLabel = mode === "avatar" ? "Profilbilde (1:1)" : "Hero-bilde (16:9)";
+  const modeLabel = mode === "avatar" ? "Profilbilde (1:1)" : "Hero-bilde (1500×600)";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
