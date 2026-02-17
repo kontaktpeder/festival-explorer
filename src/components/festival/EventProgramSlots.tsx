@@ -66,16 +66,19 @@ export function EventProgramSlots({ slots, headlinerEntityIds = [] }: EventProgr
                 </span>
               )}
 
-              {/* Time */}
-              <span className="w-[46px] shrink-0 text-xs font-mono text-muted-foreground/50 tabular-nums">
-                {format(new Date(slot.starts_at), "HH:mm", { locale: nb })}
-              </span>
+              {/* Time + Icon (left) */}
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs font-mono text-muted-foreground/50 tabular-nums">
+                  {format(new Date(slot.starts_at), "HH:mm", { locale: nb })}
+                </span>
+                <Icon className="h-4 w-4 shrink-0 text-muted-foreground/30" strokeWidth={1.5} />
+              </div>
 
-              {/* Icon */}
-              <Icon className="h-4 w-4 shrink-0 text-muted-foreground/30" strokeWidth={1.5} />
+              {/* Spacer */}
+              <div className="flex-1" />
 
-              {/* Name */}
-              <div className="flex-1 min-w-0 flex items-center gap-2">
+              {/* Name (right) */}
+              <div className="min-w-0 flex items-center gap-2">
                 {slot.is_canceled ? (
                   <span className="text-sm text-muted-foreground line-through">
                     {entity?.name ?? config.label}
@@ -104,13 +107,6 @@ export function EventProgramSlots({ slots, headlinerEntityIds = [] }: EventProgr
                   </span>
                 )}
               </div>
-
-              {/* End time */}
-              {slot.ends_at && (
-                <span className="hidden sm:block text-[10px] font-mono text-muted-foreground/25 tabular-nums shrink-0">
-                  {format(new Date(slot.ends_at), "HH:mm", { locale: nb })}
-                </span>
-              )}
             </div>
           );
         })}
