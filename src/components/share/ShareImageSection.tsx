@@ -21,7 +21,7 @@ export function ShareImageSection({
 
   if (compact) {
     return (
-      <div className="rounded-xl border border-border/15 bg-card/40 p-5 space-y-3">
+      <div className="space-y-3">
         <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50">
           Del
         </h3>
