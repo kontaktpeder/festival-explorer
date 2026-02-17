@@ -6,7 +6,7 @@ import { useEvent } from "@/hooks/useFestival";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { parseImageSettings } from "@/types/database";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { HeroSection } from "@/components/ui/HeroSection";
+import { CroppedImage } from "@/components/ui/CroppedImage";
 import { LineupItem } from "@/components/ui/LineupItem";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
@@ -58,21 +58,54 @@ export default function EventPage() {
       {/* Static logo in header */}
       <StaticLogo />
 
-      {/* 1. HERO – Følelse og kontekst, ren stemning */}
-      <HeroSection 
-        imageUrl={heroImageUrl || undefined} 
-        imageSettings={heroImageSettings}
-        fullScreen
-        scrollExpand
-        useNaturalAspect
-      >
-        <div className="text-mono text-accent/70 mb-3 text-xs uppercase tracking-[0.3em]">
+      {/* HERO – same layout as ProjectPage */}
+      <div className="relative w-full md:h-[580px] bg-background md:bg-black overflow-hidden">
+        {heroImageUrl ? (
+          <>
+            {/* Mobile: cropped cover */}
+            <div className="block md:hidden h-[300px]">
+              <CroppedImage
+                src={heroImageUrl}
+                alt={event.title}
+                imageSettings={heroImageSettings}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {/* Desktop: contain with blurred bg fill */}
+            <div className="hidden md:block relative h-full">
+              <img
+                src={heroImageUrl}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover scale-110"
+                style={{ filter: "blur(44px)", opacity: 0.18 }}
+              />
+              <div className="absolute inset-0 bg-black/20" />
+              <div className="relative flex items-center justify-center h-full z-[1]">
+                <img
+                  src={heroImageUrl}
+                  alt={event.title}
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="w-full h-[300px] md:h-full bg-gradient-to-br from-card to-muted" />
+        )}
+        {/* Bottom fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none hidden md:block" />
+      </div>
+
+      {/* Title + date below hero */}
+      <div className="max-w-6xl mx-auto px-4 md:px-8 pt-4 md:pt-6 relative z-10">
+        <div className="text-mono text-accent/70 mb-2 text-xs uppercase tracking-[0.3em]">
           {format(startDate, "EEEE", { locale: nb })}
         </div>
-        <h1 className="font-black text-4xl md:text-6xl lg:text-7xl uppercase tracking-tight leading-[0.9]">
+        <h1 className="font-black text-3xl md:text-5xl lg:text-6xl uppercase tracking-tight leading-[0.9]">
           {event.title}
         </h1>
-      </HeroSection>
+        <div className="border-b border-border/20 mt-6 mb-0" />
+      </div>
 
       {/* 2. KVELDENS RAMMER – Orientering, trygghet */}
       <section className="py-16 md:py-24">
