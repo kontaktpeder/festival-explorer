@@ -115,7 +115,7 @@ export default function EventPage() {
         </p>
 
         {/* Praktisk – compact inline */}
-        <div className="flex flex-col gap-2 mt-4 text-sm text-foreground/70">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2 mt-4 text-sm text-foreground/70">
           <span className="flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5 text-muted-foreground/40" strokeWidth={1.5} />
             {format(startDate, "d. MMM", { locale: nb })}
