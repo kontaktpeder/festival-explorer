@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,9 +11,18 @@ import {
   Users,
   ExternalLink,
   Building2,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { UnifiedTimelineManager } from "@/components/dashboard/UnifiedTimelineManager";
+import { VENUE_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useSelectedPersonaId } from "@/components/dashboard/PersonaSelector";
 
@@ -51,6 +61,7 @@ interface ModuleCard {
   description: string;
   icon: React.ElementType;
   to?: string;
+  onClick?: () => void;
   disabled?: boolean;
   hidden?: boolean;
 }
@@ -59,6 +70,7 @@ export default function VenueRoom() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const selectedPersonaId = useSelectedPersonaId();
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
 
   const { data: venue, isLoading } = useQuery({
     queryKey: ["venue-room", id],
@@ -79,24 +91,15 @@ export default function VenueRoom() {
       if (!venue) return NO_ACCESS;
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return NO_ACCESS;
-
-      // Owner gets full access
       if (venue.created_by === user.id) return ALL_ACCESS;
-
-      // Check staff via persona
-      // Kun aktiv persona – ingen fallback (konsistent med festivalrom)
       const personaIds = selectedPersonaId ? [selectedPersonaId] : [];
-
       if (personaIds.length === 0) return NO_ACCESS;
-
       const { data: staff } = await supabase
         .from("venue_staff")
         .select("can_edit_venue, can_manage_staff, can_manage_events, can_scan_tickets, can_access_media, can_view_ticket_stats")
         .eq("venue_id", id!)
         .in("persona_id", personaIds);
-
       if (!staff?.length) return NO_ACCESS;
-
       return {
         isOwner: false,
         can_edit_venue: staff.some((s) => s.can_edit_venue),
@@ -149,6 +152,13 @@ export default function VenueRoom() {
       icon: Music,
       to: `/dashboard/venue/${id}/events`,
       hidden: !canAccessEvents,
+    },
+    {
+      title: "Historien",
+      description: "Viktige hendelser i scenens historie",
+      icon: Clock,
+      onClick: () => setHistoryDialogOpen(true),
+      hidden: !p?.can_edit_venue,
     },
     {
       title: "Team",
@@ -280,7 +290,15 @@ export default function VenueRoom() {
                   </div>
                 );
 
-                if (mod.disabled || !mod.to) return <div key={mod.title}>{inner}</div>;
+                if (mod.disabled) return <div key={mod.title}>{inner}</div>;
+                if (mod.onClick) {
+                  return (
+                    <button key={mod.title} onClick={mod.onClick} className="text-left">
+                      {inner}
+                    </button>
+                  );
+                }
+                if (!mod.to) return <div key={mod.title}>{inner}</div>;
                 return (
                   <Link key={mod.title} to={mod.to}>
                     {inner}
@@ -335,6 +353,27 @@ export default function VenueRoom() {
               ))}
             </div>
           </section>
+        )}
+
+        {/* Historien-dialog */}
+        {p?.can_edit_venue && (
+          <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
+            <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-accent" />
+                  Historien
+                </DialogTitle>
+              </DialogHeader>
+              <div className="pt-4">
+                <UnifiedTimelineManager
+                  source={{ type: "entity", id: id }}
+                  eventTypeOptions={VENUE_EVENT_TYPE_OPTIONS}
+                  canEdit={true}
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
         )}
       </main>
     </div>
