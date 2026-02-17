@@ -53,19 +53,42 @@ export default function VenuePage() {
     <PageLayout>
       <StaticLogo />
 
-      {/* COVER BANNER – shorter, Facebook-style */}
-      <div className="relative w-full h-[280px] md:h-[360px] bg-card overflow-hidden">
+      {/* COVER BANNER – same layout as ProjectPage */}
+      <div className="relative w-full md:h-[580px] bg-background md:bg-black overflow-hidden">
         {heroImageUrl ? (
-          <CroppedImage
-            src={heroImageUrl}
-            alt={venue.name}
-            imageSettings={heroImageSettings}
-            className="w-full h-full object-cover"
-          />
+          <>
+            {/* Mobile: cropped cover */}
+            <div className="block md:hidden h-[280px]">
+              <CroppedImage
+                src={heroImageUrl}
+                alt={venue.name}
+                imageSettings={heroImageSettings}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {/* Desktop: contain with blurred bg fill */}
+            <div className="hidden md:block relative h-full">
+              <img
+                src={heroImageUrl}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover scale-110"
+                style={{ filter: "blur(44px)", opacity: 0.18 }}
+              />
+              <div className="absolute inset-0 bg-black/20" />
+              <div className="relative flex items-center justify-center h-full z-[1]">
+                <img
+                  src={heroImageUrl}
+                  alt={venue.name}
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
+            </div>
+          </>
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-card to-muted" />
+          <div className="w-full h-[280px] md:h-full bg-gradient-to-br from-card to-muted" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        {/* Bottom fade – only on desktop */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none hidden md:block" />
       </div>
 
       {/* NAME + INFO BAR – directly below cover */}
