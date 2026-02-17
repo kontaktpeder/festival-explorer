@@ -411,9 +411,9 @@ export default function EventRoomPage() {
       <main
         className="w-full px-4 sm:px-8 lg:px-12 py-5 sm:py-6 pb-[max(2rem,env(safe-area-inset-bottom))]"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6 lg:gap-10">
           {/* Left column: form fields */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6">
             {/* Description */}
             <div className="space-y-1">
               <Textarea
@@ -587,24 +587,27 @@ export default function EventRoomPage() {
 
             {/* Medvirkende */}
             {!isNew && id && (
-              <div className="space-y-4">
-                <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
-                  Medvirkende
-                </h2>
+              <div className="space-y-5 pt-4 border-t border-border/10">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-muted-foreground/50" />
+                  <h2 className="text-sm font-semibold tracking-tight text-foreground">
+                    Medvirkende
+                  </h2>
+                </div>
                 <Tabs defaultValue="on_stage">
-                  <TabsList className="w-full grid grid-cols-3 h-9">
-                    <TabsTrigger value="on_stage" className="text-xs">På scenen</TabsTrigger>
-                    <TabsTrigger value="backstage" className="text-xs">Bak scenen</TabsTrigger>
-                    <TabsTrigger value="host" className="text-xs">Arrangør</TabsTrigger>
+                  <TabsList className="w-full grid grid-cols-3 h-8 bg-muted/20">
+                    <TabsTrigger value="on_stage" className="text-[11px] data-[state=active]:bg-background">På scenen</TabsTrigger>
+                    <TabsTrigger value="backstage" className="text-[11px] data-[state=active]:bg-background">Bak scenen</TabsTrigger>
+                    <TabsTrigger value="host" className="text-[11px] data-[state=active]:bg-background">Arrangør</TabsTrigger>
                   </TabsList>
-                  <TabsContent value="on_stage" className="mt-4">
-                    <EventParticipantsZoneEditor eventId={id} zone="on_stage" title="På scenen" />
+                  <TabsContent value="on_stage" className="mt-3">
+                    <EventParticipantsZoneEditor eventId={id} zone="on_stage" />
                   </TabsContent>
-                  <TabsContent value="backstage" className="mt-4">
-                    <EventParticipantsZoneEditor eventId={id} zone="backstage" title="Bak scenen" />
+                  <TabsContent value="backstage" className="mt-3">
+                    <EventParticipantsZoneEditor eventId={id} zone="backstage" />
                   </TabsContent>
-                  <TabsContent value="host" className="mt-4">
-                    <EventParticipantsZoneEditor eventId={id} zone="host" title="Arrangør" />
+                  <TabsContent value="host" className="mt-3">
+                    <EventParticipantsZoneEditor eventId={id} zone="host" />
                   </TabsContent>
                 </Tabs>
               </div>
