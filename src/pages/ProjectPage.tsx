@@ -84,22 +84,35 @@ export default function ProjectPage() {
       <StaticLogo />
 
       {/* COVER BANNER – taller than venue, cinematic feel */}
-      <div className="relative w-full h-[340px] md:h-[440px] bg-card overflow-hidden">
+      <div className="relative w-full md:h-[480px] bg-black overflow-hidden">
         {heroImageUrl ? (
-          <CroppedImage
-            src={heroImageUrl}
-            alt={entity.name}
-            imageSettings={heroImageSettings ?? { focal_x: 0.5, focal_y: 0.4, zoom: 1 }}
-            className="w-full h-full object-cover"
-          />
+          <>
+            {/* Mobile: cropped cover */}
+            <div className="block md:hidden h-[340px]">
+              <CroppedImage
+                src={heroImageUrl}
+                alt={entity.name}
+                imageSettings={heroImageSettings ?? { focal_x: 0.5, focal_y: 0.4, zoom: 1 }}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {/* Desktop: contain – full image visible, black sides */}
+            <div className="hidden md:flex items-center justify-center h-full">
+              <img
+                src={heroImageUrl}
+                alt={entity.name}
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
+          </>
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-card to-muted" />
+          <div className="w-full h-[340px] md:h-full bg-gradient-to-br from-card to-muted" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent pointer-events-none" style={{ height: '40%', top: 'auto' }} />
       </div>
 
       {/* NAME + TAGLINE – overlap the cover */}
-      <div className="max-w-6xl mx-auto px-4 md:px-8 -mt-20 relative z-10">
+      <div className="max-w-6xl mx-auto px-4 md:px-8 -mt-12 relative z-10">
         <div className="flex items-end gap-5">
           {logoUrl && (
             <img
