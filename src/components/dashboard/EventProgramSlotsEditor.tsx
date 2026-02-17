@@ -443,7 +443,6 @@ function EntityPicker({
         .from("entities")
         .select("id, name, slug")
         .in("type", ["solo", "band"])
-        .eq("is_published", true)
         .order("name");
       if (error) throw error;
       return data || [];
