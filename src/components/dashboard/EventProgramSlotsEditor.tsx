@@ -33,6 +33,7 @@ import type { SlotKind, InternalSlotStatus } from "@/types/database";
 interface EventProgramSlotsEditorProps {
   eventId: string;
   canEdit: boolean;
+  eventStartAt?: string;
 }
 
 interface SlotForm {
@@ -55,7 +56,7 @@ const EMPTY_FORM: SlotForm = {
   is_canceled: false,
 };
 
-export function EventProgramSlotsEditor({ eventId, canEdit }: EventProgramSlotsEditorProps) {
+export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: EventProgramSlotsEditorProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -150,7 +151,8 @@ export function EventProgramSlotsEditor({ eventId, canEdit }: EventProgramSlotsE
 
   const openCreate = () => {
     setEditingSlot(null);
-    setForm({ ...EMPTY_FORM });
+    const defaultStart = eventStartAt ? isoToLocalDatetimeString(eventStartAt) : "";
+    setForm({ ...EMPTY_FORM, starts_at: defaultStart });
     setDialogOpen(true);
   };
 

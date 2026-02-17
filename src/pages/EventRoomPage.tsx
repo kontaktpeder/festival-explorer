@@ -582,7 +582,7 @@ export default function EventRoomPage() {
           <div className="space-y-6">
             {/* Program slots */}
             {!isNew && id && (
-              <EventProgramSlotsEditor eventId={id} canEdit={canEdit} />
+              <EventProgramSlotsEditor eventId={id} canEdit={canEdit} eventStartAt={event?.start_at} />
             )}
 
             {/* Medvirkende */}
