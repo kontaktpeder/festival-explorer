@@ -15,12 +15,16 @@ import { TeamCreditsSection } from "@/components/ui/TeamCreditsSection";
 import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
 import { ShareImageSection } from "@/components/share/ShareImageSection";
 import { EventZoneTabs } from "@/components/festival/EventZoneTabs";
+import { EventHeroCollage } from "@/components/festival/EventHeroCollage";
 import { USE_ZONE_TABS_ON_EVENT } from "@/lib/ui-features";
 import { shareModelFromEvent } from "@/lib/share-model";
+import { getEntityPublicRoute } from "@/lib/entity-types";
+import { useEntityTypes } from "@/hooks/useEntityTypes";
 
 export default function EventPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: event, isLoading, error } = useEvent(slug || "");
+  const { data: entityTypes } = useEntityTypes();
   
   const heroImageUrl = useSignedMediaUrl(event?.hero_image_url, 'public');
 
@@ -55,31 +59,47 @@ export default function EventPage() {
     <PageLayout>
       <StaticLogo />
 
-      {/* HERO */}
-      <div className="relative w-full md:h-[580px] bg-background md:bg-black overflow-hidden">
-        {heroImageUrl ? (
-          <>
-            <div className="block md:hidden h-[300px]">
-              <CroppedImage
-                src={heroImageUrl}
-                alt={event.title}
-                imageSettings={heroImageSettings}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="hidden md:block relative h-full">
-              <img src={heroImageUrl} alt="" className="absolute inset-0 w-full h-full object-cover scale-110" style={{ filter: "blur(44px)", opacity: 0.18 }} />
-              <div className="absolute inset-0 bg-black/20" />
-              <div className="relative flex items-center justify-center h-full z-[1]">
-                <img src={heroImageUrl} alt={event.title} className="max-w-full max-h-full object-contain" />
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="w-full h-[300px] md:h-full bg-gradient-to-br from-card to-muted" />
-        )}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none hidden md:block" />
-      </div>
+      {/* HERO – Artist collage or fallback */}
+      {(() => {
+        // Extract collage artists from lineup
+        const collageArtists = (event.lineup || []).map((item: any) => {
+          if (item.participant_kind === "persona" && item.persona) {
+            return {
+              name: item.persona.name,
+              imageUrl: item.persona.avatar_url || null,
+              imageSettings: item.persona.avatar_image_settings || null,
+              route: `/p/${item.persona.slug}`,
+              isHeadliner: item.is_featured,
+            };
+          }
+          if (item.entity) {
+            return {
+              name: item.entity.name,
+              imageUrl: item.entity.hero_image_url || null,
+              imageSettings: item.entity.hero_image_settings || null,
+              route: getEntityPublicRoute(item.entity.type, item.entity.slug, entityTypes || []),
+              isHeadliner: item.is_featured,
+            };
+          }
+          return null;
+        }).filter(Boolean);
+
+        // Put featured/headliner first
+        const headlinerIdx = collageArtists.findIndex((a: any) => a.isHeadliner);
+        if (headlinerIdx > 0) {
+          const [headliner] = collageArtists.splice(headlinerIdx, 1);
+          collageArtists.unshift(headliner);
+        }
+
+        return (
+          <EventHeroCollage
+            artists={collageArtists}
+            eventTitle={event.title}
+            fallbackImageUrl={event.hero_image_url}
+            fallbackImageSettings={heroImageSettings}
+          />
+        );
+      })()}
 
       {/* Title + microcopy */}
       <div className="max-w-6xl mx-auto px-4 md:px-8 pt-4 md:pt-6 relative z-10">
