@@ -217,7 +217,7 @@ export default function TicketsPage() {
           <ul className="space-y-1.5 text-sm text-foreground/80">
             <li className="flex items-center gap-2">
               <Music className="w-3.5 h-3.5 text-accent/60 flex-shrink-0" />
-              Konserter i 1. etasje
+              Konserter og kunstutstilling i 1. og 2. etasje
             </li>
             <li className="flex items-center gap-2">
               <Lock className="w-3.5 h-3.5 text-accent/60 flex-shrink-0" />
