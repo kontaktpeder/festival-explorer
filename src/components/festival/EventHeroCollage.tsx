@@ -20,9 +20,38 @@ interface EventHeroCollageProps {
 }
 
 /**
+ * Per-artist object-position overrides.
+ * Used when DB focal-point data is missing or insufficient.
+ * Key = lowercase artist name.
+ */
+const ARTIST_CROP_OVERRIDES: Record<string, string> = {
+  "maya estrela": "center 20%",
+};
+
+/**
+ * Resolve object-position for a collage cell.
+ * Priority: DB focal-point → name-based override → default center.
+ */
+function resolveObjectPosition(artist: CollageArtist): string {
+  // If DB has focal-point settings, use them
+  const fromFocal = getObjectPositionFromFocal(artist.imageSettings);
+  if (fromFocal && fromFocal !== "center center" && fromFocal !== "center") {
+    return fromFocal;
+  }
+
+  // Check name-based overrides
+  const override = ARTIST_CROP_OVERRIDES[artist.name.toLowerCase()];
+  if (override) return override;
+
+  return "center";
+}
+
+/**
  * Artist collage grid for event hero.
  * Hierarchy: headliner gets ~60% of space, others fill around it.
  * Falls back to single image if only 1 artist or no artist images.
+ *
+ * Top padding reserves space for the fixed nav/CTA to prevent overlap.
  */
 export function EventHeroCollage({
   artists,
@@ -34,7 +63,6 @@ export function EventHeroCollage({
   const withImages = artists.filter((a) => a.imageUrl);
 
   if (withImages.length === 0) {
-    // No artist images – fall back to venue/event hero
     return fallbackImageUrl ? (
       <FallbackHero
         imageUrl={fallbackImageUrl}
@@ -56,13 +84,17 @@ export function EventHeroCollage({
 
   return (
     <div className="relative w-full bg-black overflow-hidden">
+      {/* 
+        pt-16 md:pt-20 reserves space for the fixed header/CTA bar
+        so collage content never hides behind navigation.
+      */}
       <div
-        className={`grid w-full ${
+        className={`grid w-full pt-16 md:pt-20 ${
           supporting.length === 1
-            ? "grid-cols-2 h-[300px] md:h-[520px]"
+            ? "grid-cols-2 h-[364px] md:h-[600px]"
             : supporting.length === 2
-            ? "grid-cols-[1.4fr_1fr] grid-rows-2 h-[360px] md:h-[520px]"
-            : "grid-cols-[1.4fr_1fr] grid-rows-3 h-[420px] md:h-[560px]"
+            ? "grid-cols-[1.4fr_1fr] grid-rows-2 h-[424px] md:h-[600px]"
+            : "grid-cols-[1.4fr_1fr] grid-rows-3 h-[484px] md:h-[640px]"
         }`}
       >
         {/* Headliner – spans all rows */}
@@ -86,7 +118,7 @@ export function EventHeroCollage({
         ))}
       </div>
 
-      {/* Dark gradient overlay at bottom */}
+      {/* Dark gradient overlay at bottom for text legibility */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
     </div>
   );
@@ -113,12 +145,14 @@ function CollageCell({
     );
   }
 
+  const objectPosition = resolveObjectPosition(artist);
+
   const inner = (
     <img
       src={signedUrl}
       alt={artist.name}
       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-      style={{ objectPosition: getObjectPositionFromFocal(artist.imageSettings) }}
+      style={{ objectPosition }}
       loading={priority ? undefined : "lazy"}
       fetchPriority={priority ? "high" : undefined}
       decoding="async"
@@ -129,8 +163,9 @@ function CollageCell({
     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />
   );
 
+  // Name tag with guaranteed dark gradient for legibility
   const nameTag = (
-    <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4 bg-gradient-to-t from-black/70 to-transparent">
+    <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent min-h-[48px] flex items-end">
       <span className="text-white text-xs md:text-sm font-semibold tracking-wide uppercase drop-shadow-lg">
         {artist.name}
       </span>
@@ -158,15 +193,16 @@ function CollageCell({
 
 function SingleArtistHero({ artist }: { artist: CollageArtist }) {
   const signedUrl = useSignedMediaUrl(artist.imageUrl, "public");
+  const objectPosition = resolveObjectPosition(artist);
 
   return (
-    <div className="relative w-full h-[300px] md:h-[520px] bg-black overflow-hidden">
+    <div className="relative w-full h-[364px] md:h-[600px] bg-black overflow-hidden pt-16 md:pt-20">
       {signedUrl && (
         <img
           src={signedUrl}
           alt={artist.name}
           className="w-full h-full object-cover"
-          style={{ objectPosition: getObjectPositionFromFocal(artist.imageSettings) }}
+          style={{ objectPosition }}
           fetchPriority="high"
           decoding="async"
         />
@@ -188,10 +224,10 @@ function FallbackHero({
   const signedUrl = useSignedMediaUrl(imageUrl, "public");
 
   return (
-    <div className="relative w-full h-[300px] md:h-[520px] bg-black overflow-hidden">
+    <div className="relative w-full h-[364px] md:h-[600px] bg-black overflow-hidden pt-16 md:pt-20">
       {signedUrl && (
         <>
-          <div className="hidden md:block">
+          <div className="hidden md:block relative h-full">
             <img
               src={signedUrl}
               alt=""
@@ -203,7 +239,7 @@ function FallbackHero({
               <img src={signedUrl} alt={title} className="max-w-full max-h-full object-contain" />
             </div>
           </div>
-          <div className="block md:hidden">
+          <div className="block md:hidden h-full">
             <img
               src={signedUrl}
               alt={title}
