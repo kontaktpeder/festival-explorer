@@ -14,6 +14,7 @@ import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
 import { TeamCreditsSection } from "@/components/ui/TeamCreditsSection";
 import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
 import { ShareImageSection } from "@/components/share/ShareImageSection";
+import { EventProgramSlots } from "@/components/festival/EventProgramSlots";
 import { EventZoneTabs } from "@/components/festival/EventZoneTabs";
 import { EventHeroCollage } from "@/components/festival/EventHeroCollage";
 import { USE_ZONE_TABS_ON_EVENT } from "@/lib/ui-features";
@@ -122,8 +123,38 @@ export default function EventPage() {
           {/* LEFT – Primary: Lineup FIRST, then description, then team */}
           <div className="space-y-8">
 
-            {/* LINEUP / ZONE TABS – moved to top */}
-            {USE_ZONE_TABS_ON_EVENT ? (
+            {/* PROGRAM SLOTS or LINEUP / ZONE TABS */}
+            {(event as any).programSlots && (event as any).programSlots.length > 0 ? (
+              <>
+                <EventProgramSlots slots={(event as any).programSlots} />
+                {/* Share near program */}
+                <div className="mt-6">
+                  <ShareImageSection
+                    slug={event.slug}
+                    shareModel={shareModelFromEvent({
+                      slug: event.slug,
+                      title: event.title,
+                      venueName: event.venue?.name ?? null,
+                      heroImageUrl: heroImageUrl ?? null,
+                    })}
+                    compact
+                  />
+                </div>
+                {/* Team */}
+                {(() => {
+                  const bs = (event as any).backstage || { festival: [], event: [] };
+                  const bsEventKeys = new Set((bs.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
+                  const bsFiltered = (bs.festival || []).filter((p: any) => !bsEventKeys.has(`${p.participant_kind}:${p.participant_id}`));
+                  const bsAll = [...bsFiltered, ...(bs.event || [])];
+                  const hr = (event as any).hostRoles || { festival: [], event: [] };
+                  const hrEventKeys = new Set((hr.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
+                  const hrFiltered = (hr.festival || []).filter((p: any) => !hrEventKeys.has(`${p.participant_kind}:${p.participant_id}`));
+                  const hrAll = [...hrFiltered, ...(hr.event || [])];
+                  const allMembers = [...hrAll, ...bsAll];
+                  return <TeamCreditsSection title="Team" members={allMembers} />;
+                })()}
+              </>
+            ) : USE_ZONE_TABS_ON_EVENT ? (
               <EventZoneTabs
                 lineup={event.lineup || []}
                 backstage={(event as any).backstage || []}

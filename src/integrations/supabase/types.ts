@@ -725,6 +725,63 @@ export type Database = {
           },
         ]
       }
+      event_program_slots: {
+        Row: {
+          created_at: string
+          ends_at: string | null
+          entity_id: string | null
+          event_id: string
+          id: string
+          internal_note: string | null
+          internal_status: string
+          is_canceled: boolean
+          slot_kind: string
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at?: string | null
+          entity_id?: string | null
+          event_id: string
+          id?: string
+          internal_note?: string | null
+          internal_status?: string
+          is_canceled?: boolean
+          slot_kind?: string
+          starts_at: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string | null
+          entity_id?: string | null
+          event_id?: string
+          id?: string
+          internal_note?: string | null
+          internal_status?: string
+          is_canceled?: boolean
+          slot_kind?: string
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_program_slots_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_program_slots_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_projects: {
         Row: {
           billing_order: number
