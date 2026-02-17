@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Calendar, Clock, MapPin, Music } from "lucide-react";
+import { Calendar, Clock, MapPin, Music, ShieldCheck, Shirt } from "lucide-react";
 import { useEvent } from "@/hooks/useFestival";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { parseImageSettings } from "@/types/database";
@@ -12,8 +12,11 @@ import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
 import { TeamCreditsSection } from "@/components/ui/TeamCreditsSection";
+import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
+import { ShareImageSection } from "@/components/share/ShareImageSection";
 import { EventZoneTabs } from "@/components/festival/EventZoneTabs";
 import { USE_ZONE_TABS_ON_EVENT } from "@/lib/ui-features";
+import { shareModelFromEvent } from "@/lib/share-model";
 
 export default function EventPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -107,135 +110,171 @@ export default function EventPage() {
         <div className="border-b border-border/20 mt-6 mb-0" />
       </div>
 
-      {/* 2. KVELDENS RAMMER – Orientering, trygghet */}
-      <section className="py-16 md:py-24">
-        <div className="max-w-2xl mx-auto px-6">
-          <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
-            Kvelden
-          </h2>
-          
-          <div className="space-y-4">
-            <div className="flex items-center gap-4 text-lg md:text-xl">
-              <Calendar className="w-5 h-5 text-accent/60 flex-shrink-0" />
-              <span className="font-light">
-                {format(startDate, "EEEE d. MMMM", { locale: nb })}
-              </span>
-            </div>
-            
-            <div className="flex items-center gap-4 text-lg md:text-xl">
-              <Clock className="w-5 h-5 text-accent/60 flex-shrink-0" />
-              <span className="font-light">{timeRange}</span>
-            </div>
-            
-            {event.venue && (
-              <Link
-                to={`/venue/${event.venue.slug}`}
-                className="flex items-center gap-4 text-lg md:text-xl group"
-              >
-                <MapPin className="w-5 h-5 text-accent/60 flex-shrink-0" />
-                <span className="font-light group-hover:text-accent transition-colors">
-                  {event.venue.name}
-                </span>
-              </Link>
+      {/* MAIN CONTENT – two-column on desktop */}
+      <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 lg:gap-12">
+
+          {/* LEFT – Primary content */}
+          <div className="space-y-8">
+            {/* Beskrivelse */}
+            {event.description && (
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-3">
+                  Om kvelden
+                </h2>
+                <p className="text-base md:text-lg font-light leading-relaxed text-foreground/85 whitespace-pre-line">
+                  {event.description}
+                </p>
+              </div>
+            )}
+
+            {/* LINEUP / ZONE TABS */}
+            {USE_ZONE_TABS_ON_EVENT ? (
+              <EventZoneTabs
+                lineup={event.lineup || []}
+                backstage={(event as any).backstage || []}
+                hostRoles={(event as any).hostRoles || []}
+              />
+            ) : (
+              <>
+                {event.lineup && event.lineup.length > 0 && (
+                  <div>
+                    <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-4">
+                      Lineup
+                    </h2>
+                    <div className="space-y-6 md:space-y-8">
+                      {event.lineup.map((item: any, index: number) => {
+                        const headlinerIndex = event.lineup.some((i: any) => i.is_featured)
+                          ? event.lineup.findIndex((i: any) => i.is_featured)
+                          : 0;
+                        return (
+                          <LineupItem
+                            key={item.entity_id || item.participant_id || index}
+                            item={item}
+                            showBilling
+                            isFirst={index === 0}
+                            isHeadliner={index === headlinerIndex}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Festival-team */}
+                {(() => {
+                  const bs = (event as any).backstage || { festival: [], event: [] };
+                  const bsEventKeys = new Set((bs.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
+                  const bsFiltered = (bs.festival || []).filter((p: any) => !bsEventKeys.has(`${p.participant_kind}:${p.participant_id}`));
+                  const bsAll = [...bsFiltered, ...(bs.event || [])];
+
+                  const hr = (event as any).hostRoles || { festival: [], event: [] };
+                  const hrEventKeys = new Set((hr.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
+                  const hrFiltered = (hr.festival || []).filter((p: any) => !hrEventKeys.has(`${p.participant_kind}:${p.participant_id}`));
+                  const hrAll = [...hrFiltered, ...(hr.event || [])];
+
+                  const allMembers = [...hrAll, ...bsAll];
+                  return <TeamCreditsSection title="Team" members={allMembers} />;
+                })()}
+              </>
             )}
           </div>
-        </div>
-      </section>
 
-      {/* 3. HVA SLAGS KVELD ER DETTE – Stemningsforankring */}
-      {event.description && (
-        <section className="py-16 md:py-24 border-t border-border/20">
-          <div className="max-w-2xl mx-auto px-6">
-            <p className="text-xl md:text-2xl font-light leading-relaxed text-foreground/90">
-              {event.description}
-            </p>
-          </div>
-        </section>
-      )}
+          {/* RIGHT – Sidebar */}
+          <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
+            {/* Info-kort */}
+            <div className="rounded-xl border border-border/15 bg-card/40 p-5 space-y-4">
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50">
+                Kvelden
+              </h3>
 
-
-      {/* 5. LINEUP / ZONE TABS */}
-      {USE_ZONE_TABS_ON_EVENT ? (
-        <EventZoneTabs
-          lineup={event.lineup || []}
-          backstage={(event as any).backstage || []}
-          hostRoles={(event as any).hostRoles || []}
-        />
-      ) : (
-        <>
-          {/* Legacy: separate sections */}
-          {event.lineup && event.lineup.length > 0 && (
-            <section className="py-20 md:py-32 border-t border-border/20">
-              <div className="max-w-3xl mx-auto px-6">
-                <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-12 md:mb-16">
-                  På scenen
-                </h2>
-                <div className="space-y-8 md:space-y-12">
-                  {event.lineup.map((item: any, index: number) => {
-                    const headlinerIndex = event.lineup.some((i: any) => i.is_featured)
-                      ? event.lineup.findIndex((i: any) => i.is_featured)
-                      : 0;
-                    return (
-                      <LineupItem
-                        key={item.entity_id || item.participant_id || index}
-                        item={item}
-                        showBilling
-                        isFirst={index === 0}
-                        isHeadliner={index === headlinerIndex}
-                      />
-                    );
-                  })}
+              <div className="flex items-start gap-3 text-sm">
+                <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <Calendar className="w-4 h-4 text-accent/70" />
+                </div>
+                <div>
+                  <span className="text-foreground/80 font-medium">
+                    {format(startDate, "EEEE d. MMMM", { locale: nb })}
+                  </span>
                 </div>
               </div>
-            </section>
-          )}
 
-          {/* 6. PRAKTISK – fra event (aldersgrense, garderobe) + adresse fra venue */}
-          {(() => {
-            const ageLimit = (event as any).age_limit?.trim();
-            const cloakroom = (event as any).cloakroom_available === true;
-            const address = event.venue?.address || event.venue?.name;
-            if (!ageLimit && !cloakroom && !address) return null;
-            return (
-              <section className="py-16 md:py-24 border-t border-border/20">
-                <div className="max-w-2xl mx-auto px-6">
-                  <h2 className="text-mono text-accent/60 text-xs uppercase tracking-[0.25em] mb-8">
-                    Praktisk
-                  </h2>
-                  <div className="space-y-3 text-foreground/70">
-                    {ageLimit && <p className="font-light">Aldersgrense: {ageLimit}</p>}
-                    {cloakroom && <p className="font-light">Garderobe tilgjengelig</p>}
-                    {address && <p className="font-light">{address}</p>}
-                  </div>
+              <div className="flex items-start gap-3 text-sm">
+                <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <Clock className="w-4 h-4 text-accent/70" />
                 </div>
-              </section>
-            );
-          })()}
+                <div>
+                  <span className="text-foreground/80 font-medium">{timeRange}</span>
+                </div>
+              </div>
 
-          {/* Festival-team: backstage + arrangør samlet, flat liste */}
-          {(() => {
-            const bs = (event as any).backstage || { festival: [], event: [] };
-            const bsEventKeys = new Set((bs.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
-            const bsFiltered = (bs.festival || []).filter((p: any) => !bsEventKeys.has(`${p.participant_kind}:${p.participant_id}`));
-            const bsAll = [...bsFiltered, ...(bs.event || [])];
+              {event.venue && (
+                <Link
+                  to={`/venue/${event.venue.slug}`}
+                  className="flex items-start gap-3 text-sm group"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-4 h-4 text-accent/70" />
+                  </div>
+                  <div>
+                    <span className="text-foreground/80 font-medium group-hover:text-accent transition-colors">
+                      {event.venue.name}
+                    </span>
+                    {event.venue.address && (
+                      <p className="text-xs text-muted-foreground/50 mt-0.5">{event.venue.address}</p>
+                    )}
+                  </div>
+                </Link>
+              )}
 
-            const hr = (event as any).hostRoles || { festival: [], event: [] };
-            const hrEventKeys = new Set((hr.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
-            const hrFiltered = (hr.festival || []).filter((p: any) => !hrEventKeys.has(`${p.participant_kind}:${p.participant_id}`));
-            const hrAll = [...hrFiltered, ...(hr.event || [])];
+              {/* Praktisk inline */}
+              {(() => {
+                const ageLimit = (event as any).age_limit?.trim();
+                const cloakroom = (event as any).cloakroom_available === true;
+                if (!ageLimit && !cloakroom) return null;
+                return (
+                  <>
+                    {ageLimit && (
+                      <div className="flex items-start gap-3 text-sm">
+                        <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                          <ShieldCheck className="w-4 h-4 text-accent/70" />
+                        </div>
+                        <div>
+                          <span className="text-foreground/80 font-medium">{ageLimit}</span>
+                        </div>
+                      </div>
+                    )}
+                    {cloakroom && (
+                      <div className="flex items-start gap-3 text-sm">
+                        <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                          <Shirt className="w-4 h-4 text-accent/70" />
+                        </div>
+                        <div>
+                          <span className="text-foreground/80 font-medium">Garderobe</span>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
 
-            const allMembers = [...hrAll, ...bsAll];
-            return <TeamCreditsSection title="Festival-team" members={allMembers} />;
-          })()}
-        </>
-      )}
-
-      {/* 7. STILLE AVSLUTNING – La kvelden henge */}
-      <section className="py-24 md:py-40">
-        <div className="flex justify-center">
-          <Music className="w-8 h-8 text-accent/20" />
+            {/* Del */}
+            <ShareImageSection
+              slug={event.slug}
+              shareModel={shareModelFromEvent({
+                slug: event.slug,
+                title: event.title,
+                venueName: event.venue?.name ?? null,
+                heroImageUrl: heroImageUrl ?? null,
+              })}
+              compact
+            />
+          </aside>
         </div>
-      </section>
+      </div>
+
+      <WhatIsGiggenFooter />
     </PageLayout>
   );
 }
