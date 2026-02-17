@@ -225,17 +225,7 @@ export default function EventPage() {
           {/* RIGHT – Sidebar */}
           <aside className="space-y-8 lg:sticky lg:top-8 lg:self-start">
 
-            {/* Share */}
-            <ShareImageSection
-              slug={event.slug}
-              shareModel={shareModelFromEvent({
-                slug: event.slug,
-                title: event.title,
-                venueName: event.venue?.name ?? null,
-                heroImageUrl: heroImageUrl ?? null,
-              })}
-              compact
-            />
+            {/* Share – hidden for now */}
 
             {/* Team */}
             {(() => {
