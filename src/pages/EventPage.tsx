@@ -104,10 +104,10 @@ export default function EventPage() {
 
       {/* Title + microcopy */}
       <div className="max-w-6xl mx-auto px-4 md:px-8 pt-4 md:pt-6 relative z-10">
-        <div className="text-mono text-accent/70 mb-2 text-xs uppercase tracking-[0.3em]">
+        <div className="text-mono text-accent/70 mb-2 text-xs uppercase tracking-[0.3em] text-right">
           {format(startDate, "EEEE", { locale: nb })}
         </div>
-        <h1 className="font-black text-3xl md:text-5xl lg:text-6xl uppercase tracking-tight leading-[0.9]">
+        <h1 className="font-black text-3xl md:text-5xl lg:text-6xl uppercase tracking-tight leading-[0.9] text-right">
           {event.title}
         </h1>
         <p className="text-muted-foreground/60 text-sm mt-3 max-w-lg">
