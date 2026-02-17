@@ -36,6 +36,7 @@ import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
 import { ShareImageSection } from "@/components/share/ShareImageSection";
 import { shareModelFromProject } from "@/lib/share-model";
 import { CroppedImage } from "@/components/ui/CroppedImage";
+import { UpcomingGigsSection } from "@/components/ui/UpcomingGigsSection";
 
 export default function ProjectPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -178,6 +179,9 @@ export default function ProjectPage() {
                 </p>
               </div>
             )}
+
+            {/* Spiller snart */}
+            <UpcomingGigsSection entityId={entity.id} />
 
             {/* Team / Bak prosjektet */}
             {publicTeamMembers.length > 0 && (
