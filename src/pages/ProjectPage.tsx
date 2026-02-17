@@ -215,23 +215,6 @@ export default function ProjectPage() {
 
           {/* RIGHT – Sidebar */}
           <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
-            {/* Info */}
-            <div className="space-y-4">
-              <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50">
-                Info
-              </h3>
-              {locationDisplay && (
-                <div className="flex items-start gap-3 text-sm">
-                  <MapPin className="w-4 h-4 text-muted-foreground/50 mt-0.5 flex-shrink-0" />
-                  <span className="text-foreground/80">{locationDisplay}</span>
-                </div>
-              )}
-              {entity.tagline && (
-                <p className="text-sm text-foreground/60 leading-relaxed">{entity.tagline}</p>
-              )}
-            </div>
-
-            <div className="border-t border-border/10" />
 
             {/* Del */}
             <ShareImageSection
