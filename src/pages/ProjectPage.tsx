@@ -96,13 +96,24 @@ export default function ProjectPage() {
                 className="w-full h-full object-cover"
               />
             </div>
-            {/* Desktop: contain – full image visible, black sides */}
-            <div className="hidden md:flex items-center justify-center h-full">
+            {/* Desktop: contain with blurred bg fill */}
+            <div className="hidden md:block relative h-full">
+              {/* Blurred background fill */}
               <img
                 src={heroImageUrl}
-                alt={entity.name}
-                className="max-w-full max-h-full object-contain"
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover scale-110"
+                style={{ filter: "blur(44px)", opacity: 0.18 }}
               />
+              <div className="absolute inset-0 bg-black/20" />
+              {/* Sharp foreground – contained */}
+              <div className="relative flex items-center justify-center h-full z-[1]">
+                <img
+                  src={heroImageUrl}
+                  alt={entity.name}
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
             </div>
           </>
         ) : (
