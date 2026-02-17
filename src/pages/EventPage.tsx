@@ -126,9 +126,17 @@ export default function EventPage() {
             {/* PROGRAM SLOTS or LINEUP / ZONE TABS */}
             {(event as any).programSlots && (event as any).programSlots.length > 0 ? (
               <>
-                <EventProgramSlots slots={(event as any).programSlots} />
-                {/* Share near program */}
-                <div className="mt-6">
+                <EventProgramSlots
+                  slots={(event as any).programSlots}
+                  headlinerEntityIds={
+                    (event.lineup || [])
+                      .filter((i: any) => i.is_featured)
+                      .map((i: any) => i.entity_id || i.participant_id)
+                      .filter(Boolean)
+                  }
+                />
+                {/* Share – compact inline */}
+                <div className="mt-4">
                   <ShareImageSection
                     slug={event.slug}
                     shareModel={shareModelFromEvent({
