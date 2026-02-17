@@ -111,7 +111,7 @@ export default function EventPage() {
           {event.title}
         </h1>
         <p className="text-muted-foreground/60 text-sm mt-3 max-w-lg">
-          Billetter kjøpes som festivalpass. Festivalpass + BOILER ROOM gir full tilgang.
+          Billetter kjøpes som festivalpass. Festivalpass + BOILER ROOM gir full tilgang til alle etasjer hele kvelden.
         </p>
         <div className="border-b border-border/20 mt-6 mb-0" />
       </div>
