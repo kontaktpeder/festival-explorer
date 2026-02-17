@@ -2,8 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Loader2, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
+import { Loader2, ArrowUp, ArrowDown, Trash2, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { PersonaSearchPicker } from "@/components/persona/PersonaSearchPicker";
 import { usePersonaSearch, type PersonaOption } from "@/hooks/usePersonaSearch";
@@ -27,6 +26,7 @@ interface ResolvedRef {
   slug?: string | null;
   type?: string | null;
   category_tags?: string[] | null;
+  avatar_url?: string | null;
 }
 
 interface Props {
@@ -68,20 +68,20 @@ function DebouncedRoleInput({
   }, [initialValue]);
 
   return (
-    <>
+    <div>
       <Input
         placeholder={placeholder}
         value={value}
         onChange={handleChange}
         onKeyDown={(e) => e.stopPropagation()}
-        className="mt-1.5 h-7 text-base"
+        className="h-7 text-base border-transparent bg-transparent hover:bg-muted/30 focus:bg-muted/30 px-1.5 shadow-none transition-colors"
       />
       {!value && fallbackRole && (
-        <p className="text-[10px] text-muted-foreground mt-0.5">
+        <p className="text-[10px] text-muted-foreground/50 px-1.5 mt-0.5">
           Vises som: <span className="font-medium capitalize">{fallbackRole}</span>
         </p>
       )}
-    </>
+    </div>
   );
 }
 
@@ -121,7 +121,7 @@ export function EventParticipantsZoneEditor({
     if (personaIds.length > 0) {
       const { data: pData } = await supabase
         .from("personas")
-        .select("id,name,slug,type,category_tags")
+        .select("id,name,slug,type,category_tags,avatar_url")
         .in("id", personaIds);
       (pData || []).forEach((p: any) => (map[p.id] = p));
     }
@@ -212,77 +212,86 @@ export function EventParticipantsZoneEditor({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Search */}
-        <PersonaSearchPicker
-          personas={personaResults}
-          isLoading={searchLoading}
-          searchQuery={searchQuery}
-          onSearchQueryChange={(v) => {
-            setSearchQuery(v);
-            if (!v.trim()) setSearchTriggered(false);
-          }}
-          onSelect={handleAdd}
-          showSearchButton
-          onSearchSubmit={handleSearch}
-          placeholder="Søk etter person..."
-          emptyMessage="Ingen personer funnet"
-          disabledIds={new Set(rows.map((r) => r.participant_id))}
-        />
+    <div className="space-y-3">
+      {/* Search */}
+      <PersonaSearchPicker
+        personas={personaResults}
+        isLoading={searchLoading}
+        searchQuery={searchQuery}
+        onSearchQueryChange={(v) => {
+          setSearchQuery(v);
+          if (!v.trim()) setSearchTriggered(false);
+        }}
+        onSelect={handleAdd}
+        showSearchButton
+        onSearchSubmit={handleSearch}
+        placeholder="Legg til person..."
+        emptyMessage="Ingen personer funnet"
+        disabledIds={new Set(rows.map((r) => r.participant_id))}
+      />
 
-        {/* List */}
-        {loading ? (
-          <div className="flex justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {rows.map((row, index) => (
+      {/* List */}
+      {loading ? (
+        <div className="flex justify-center py-6">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground/40" />
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="py-6 text-center">
+          <p className="text-sm text-muted-foreground/40">
+            Ingen lagt til ennå
+          </p>
+        </div>
+      ) : (
+        <div className="divide-y divide-border/10">
+          {rows.map((row, index) => {
+            const persona = resolved[row.participant_id];
+            const initials = (persona?.name || "?").charAt(0).toUpperCase();
+            const fallbackRole = getPersonaTypeLabel(persona?.type) ?? persona?.category_tags?.[0];
+
+            return (
               <div
                 key={row.id}
-                className="bg-muted/30 border border-border rounded-lg p-3 flex items-center gap-3"
+                className="flex items-center gap-3 py-2.5 group"
               >
+                {/* Avatar */}
+                <div className="h-8 w-8 rounded-full bg-muted/50 border border-border/20 flex items-center justify-center shrink-0 overflow-hidden">
+                  {persona?.avatar_url ? (
+                    <img src={persona.avatar_url} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-xs font-medium text-muted-foreground">{initials}</span>
+                  )}
+                </div>
+
+                {/* Name + role */}
                 <div className="flex-1 min-w-0">
-                  <span className="font-medium text-sm truncate">
-                    {resolved[row.participant_id]?.name || "Ukjent"}
-                  </span>
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {persona?.name || "Ukjent"}
+                  </p>
                   <DebouncedRoleInput
                     initialValue={row.role_label || ""}
-                    placeholder={
-                      (getPersonaTypeLabel(resolved[row.participant_id]?.type) ?? resolved[row.participant_id]?.category_tags?.[0])
-                        ? `Rolle (standard: ${getPersonaTypeLabel(resolved[row.participant_id]?.type) ?? resolved[row.participant_id]?.category_tags?.[0]})`
-                        : "Rolle (valgfritt)"
-                    }
-                    fallbackRole={getPersonaTypeLabel(resolved[row.participant_id]?.type) ?? resolved[row.participant_id]?.category_tags?.[0]}
+                    placeholder={fallbackRole ? `${fallbackRole}` : "Rolle"}
+                    fallbackRole={fallbackRole}
                     onSave={(v) => saveRoleLabel(row.id, v)}
                   />
                 </div>
 
-                <div className="flex gap-1 shrink-0">
+                {/* Reorder + delete */}
+                <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity">
                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => reorder(index, "up")} disabled={index === 0}>
-                    <ArrowUp className="h-3.5 w-3.5" />
+                    <ArrowUp className="h-3 w-3" />
                   </Button>
                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => reorder(index, "down")} disabled={index === rows.length - 1}>
-                    <ArrowDown className="h-3.5 w-3.5" />
+                    <ArrowDown className="h-3 w-3" />
                   </Button>
                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(row.id)}>
-                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                    <Trash2 className="h-3 w-3 text-destructive" />
                   </Button>
                 </div>
               </div>
-            ))}
-            {rows.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground text-sm border border-dashed border-border rounded-lg">
-                Ingen deltakere lagt til i denne sonen ennå.
-              </div>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

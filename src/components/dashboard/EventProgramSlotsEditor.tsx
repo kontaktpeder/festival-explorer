@@ -25,7 +25,7 @@ import {
   INTERNAL_STATUS_OPTIONS,
   getSlotKindConfig,
 } from "@/lib/program-slots";
-import { Plus, Pencil, Copy, Trash2 } from "lucide-react";
+import { Plus, Pencil, Copy, Trash2, Clock, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { isoToLocalDatetimeString } from "@/lib/utils";
 import type { SlotKind, InternalSlotStatus } from "@/types/database";
@@ -54,6 +54,12 @@ const EMPTY_FORM: SlotForm = {
   internal_status: "confirmed",
   internal_note: "",
   is_canceled: false,
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  confirmed: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
+  contract_pending: "bg-amber-500/15 text-amber-400 border-amber-500/20",
+  canceled: "bg-red-500/15 text-red-400 border-red-500/20",
 };
 
 export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: EventProgramSlotsEditorProps) {
@@ -206,103 +212,134 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
     }
   };
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Laster...</p>;
+  if (isLoading) return <p className="text-sm text-muted-foreground py-4">Laster program...</p>;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
-          Program
-        </h2>
+        <div className="flex items-center gap-2">
+          <Clock className="h-4 w-4 text-muted-foreground/50" />
+          <h2 className="text-sm font-semibold tracking-tight text-foreground">
+            Program
+          </h2>
+          <span className="text-[10px] text-muted-foreground/50 tabular-nums">
+            {slots.length} punkt{slots.length !== 1 ? "er" : ""}
+          </span>
+        </div>
         {canEdit && (
-          <Button variant="ghost" size="sm" onClick={openCreate} className="h-7 text-xs gap-1.5">
-            <Plus className="h-3.5 w-3.5" />
-            Legg til
+          <Button variant="outline" size="sm" onClick={openCreate} className="h-7 text-xs gap-1.5 border-border/30 hover:border-accent/40">
+            <Plus className="h-3 w-3" />
+            Nytt punkt
           </Button>
         )}
       </div>
 
+      {/* Slot list */}
       {slots.length === 0 ? (
-        <p className="text-sm text-muted-foreground/60 py-4 text-center">
-          Ingen programpunkter ennå.
-        </p>
+        <div className="py-8 text-center border border-dashed border-border/30 rounded-lg">
+          <Clock className="h-5 w-5 mx-auto text-muted-foreground/30 mb-2" />
+          <p className="text-sm text-muted-foreground/50">
+            Ingen programpunkter ennå
+          </p>
+        </div>
       ) : (
-        <div className="space-y-1">
+        <div className="divide-y divide-border/10">
           {slots.map((slot: any) => {
             const config = getSlotKindConfig(slot.slot_kind);
             const Icon = config.icon;
             const entity = slot.entity;
+            const statusOption = INTERNAL_STATUS_OPTIONS.find((o) => o.value === slot.internal_status);
+            const statusColor = STATUS_COLORS[slot.internal_status] || "";
+
             return (
               <div
                 key={slot.id}
-                className="flex items-center gap-3 py-2 px-2 rounded-md hover:bg-muted/30 group transition-colors"
+                className={`py-3 first:pt-0 last:pb-0 group ${slot.is_canceled ? "opacity-50" : ""}`}
               >
-                <Icon className="h-4 w-4 text-muted-foreground/60 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono text-muted-foreground">
+                <div className="flex items-start gap-3">
+                  {/* Time column */}
+                  <div className="w-[72px] shrink-0 pt-0.5">
+                    <span className="text-xs font-mono text-muted-foreground tabular-nums">
                       {new Date(slot.starts_at).toLocaleTimeString("nb-NO", {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
-                      {slot.ends_at &&
-                        ` – ${new Date(slot.ends_at).toLocaleTimeString("nb-NO", {
+                    </span>
+                    {slot.ends_at && (
+                      <span className="text-[10px] font-mono text-muted-foreground/50 block tabular-nums">
+                        {new Date(slot.ends_at).toLocaleTimeString("nb-NO", {
                           hour: "2-digit",
                           minute: "2-digit",
-                        })}`}
-                    </span>
-                    <span className="text-sm font-medium truncate">
-                      {entity ? entity.name : config.label}
-                    </span>
-                    {slot.is_canceled && (
-                      <Badge variant="destructive" className="text-[9px] h-4 px-1">
-                        Avlyst
-                      </Badge>
+                        })}
+                      </span>
                     )}
                   </div>
-                </div>
 
-                {canEdit && (
-                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                    <Select
-                      value={slot.internal_status}
-                      onValueChange={(v) =>
-                        updateMutation.mutate({
-                          id: slot.id,
-                          internal_status: v as InternalSlotStatus,
-                        })
-                      }
-                    >
-                      <SelectTrigger className="h-6 w-auto text-[10px] border-none bg-transparent shadow-none px-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {INTERNAL_STATUS_OPTIONS.map((o) => (
-                          <SelectItem key={o.value} value={o.value} className="text-xs">
-                            {o.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openDuplicate(slot)} title="Dupliser">
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEdit(slot)} title="Rediger">
-                      <Pencil className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-destructive"
-                      onClick={() => {
-                        if (window.confirm("Slette dette punktet?")) deleteMutation.mutate(slot.id);
-                      }}
-                      title="Slett"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                  {/* Icon */}
+                  <div className="w-7 h-7 rounded-md bg-muted/40 flex items-center justify-center shrink-0">
+                    <Icon className="h-3.5 w-3.5 text-muted-foreground/70" />
                   </div>
-                )}
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium text-foreground">
+                        {entity ? entity.name : config.label}
+                      </span>
+                      {slot.is_canceled && (
+                        <Badge variant="destructive" className="text-[9px] h-4 px-1.5">
+                          Avlyst
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Meta row: category + status */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] text-muted-foreground/60 bg-muted/30 px-1.5 py-0.5 rounded">
+                        {config.label}
+                      </span>
+                      {statusOption && (
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded border ${statusColor}`}>
+                          {statusOption.label}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Note */}
+                    {slot.internal_note && (
+                      <div className="flex items-start gap-1.5 mt-1">
+                        <FileText className="h-3 w-3 text-muted-foreground/40 mt-0.5 shrink-0" />
+                        <p className="text-[11px] text-muted-foreground/60 leading-relaxed">
+                          {slot.internal_note}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  {canEdit && (
+                    <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openDuplicate(slot)} title="Dupliser">
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(slot)} title="Rediger">
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive"
+                        onClick={() => {
+                          if (window.confirm("Slette dette punktet?")) deleteMutation.mutate(slot.id);
+                        }}
+                        title="Slett"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -316,28 +353,45 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
             <DialogTitle>{editingSlot ? "Rediger punkt" : "Legg til punkt"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Type</Label>
-              <Select value={form.slot_kind} onValueChange={(v) => setForm((f) => ({ ...f, slot_kind: v as SlotKind }))}>
-                <SelectTrigger className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SLOT_KIND_OPTIONS.map((o) => {
-                    const Icon = o.icon;
-                    return (
-                      <SelectItem key={o.value} value={o.value}>
-                        <span className="flex items-center gap-2">
-                          <Icon className="h-3.5 w-3.5" />
-                          {o.label}
-                        </span>
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
+            {/* Type + Status side by side */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Type</Label>
+                <Select value={form.slot_kind} onValueChange={(v) => setForm((f) => ({ ...f, slot_kind: v as SlotKind }))}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SLOT_KIND_OPTIONS.map((o) => {
+                      const Icon = o.icon;
+                      return (
+                        <SelectItem key={o.value} value={o.value}>
+                          <span className="flex items-center gap-2">
+                            <Icon className="h-3.5 w-3.5" />
+                            {o.label}
+                          </span>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Intern status</Label>
+                <Select value={form.internal_status} onValueChange={(v) => setForm((f) => ({ ...f, internal_status: v as InternalSlotStatus }))}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INTERNAL_STATUS_OPTIONS.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
+            {/* Time side by side */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-xs">Starttid *</Label>
@@ -345,7 +399,7 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
                   type="datetime-local"
                   value={form.starts_at}
                   onChange={(e) => setForm((f) => ({ ...f, starts_at: e.target.value }))}
-                  className="h-9 text-sm"
+                  className="h-9 text-base"
                   required
                 />
               </div>
@@ -355,7 +409,7 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
                   type="datetime-local"
                   value={form.ends_at}
                   onChange={(e) => setForm((f) => ({ ...f, ends_at: e.target.value }))}
-                  className="h-9 text-sm"
+                  className="h-9 text-base"
                 />
               </div>
             </div>
@@ -370,20 +424,6 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
                 />
               </div>
             )}
-
-            <div className="space-y-1.5">
-              <Label className="text-xs">Intern status</Label>
-              <Select value={form.internal_status} onValueChange={(v) => setForm((f) => ({ ...f, internal_status: v as InternalSlotStatus }))}>
-                <SelectTrigger className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {INTERNAL_STATUS_OPTIONS.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
 
             <div className="space-y-1.5">
               <Label className="text-xs">Intern notat</Label>
