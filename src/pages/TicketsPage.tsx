@@ -102,55 +102,95 @@ export default function TicketsPage() {
   const festivalPasses = (ticketTypes || []).filter((t) => festivalPassCodes.includes(t.code));
   const boilerOnly = (ticketTypes || []).filter((t) => t.code === "BOILER");
 
+  const renderPurchaseForm = () => (
+    <div className="ticket-card rounded-lg mt-2 animate-fade-in">
+      <div className="p-4 space-y-3">
+        <p className="text-sm font-medium">Din informasjon</p>
+        <Input
+          placeholder="Navn"
+          value={buyerName}
+          onChange={(e) => setBuyerName(e.target.value)}
+          disabled={!TICKET_SALES_ENABLED}
+          className="h-9 bg-background/50 border-border/50"
+        />
+        <Input
+          type="email"
+          placeholder="E-post"
+          value={buyerEmail}
+          onChange={(e) => setBuyerEmail(e.target.value)}
+          disabled={!TICKET_SALES_ENABLED}
+          className="h-9 bg-background/50 border-border/50"
+        />
+        <p className="text-xs text-muted-foreground">
+          Ved å fortsette godtar du våre{" "}
+          <Link to="/vilkar" className="underline hover:text-foreground transition-colors">vilkår</Link>
+          {" "}og{" "}
+          <Link to="/personvern" className="underline hover:text-foreground transition-colors">personvernerklæring</Link>
+        </p>
+        <Button
+          className="w-full h-10 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
+          onClick={handlePurchase}
+          disabled={isLoading || !TICKET_SALES_ENABLED}
+        >
+          {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
+          {TICKET_SALES_ENABLED ? "Gå til betaling" : "Billettsalg stengt"}
+        </Button>
+      </div>
+    </div>
+  );
+
   const renderTicketCard = (type: TicketTypeWithCount) => {
     const soldOut = type.issued >= type.capacity;
     const remaining = type.capacity - type.issued;
     const showRemaining = type.code !== "BOILER" && !soldOut && remaining <= 20;
     const meta = getTicketMeta(type.code);
+    const isSelected = selectedType === type.id;
 
     return (
-      <div
-        key={type.id}
-        className={`ticket-card rounded-lg transition-all duration-200 ${
-          soldOut
-            ? "opacity-50 cursor-not-allowed"
-            : "cursor-pointer hover:scale-[1.01]"
-        } ${selectedType === type.id ? "selected" : ""}`}
-        onClick={() => !soldOut && setSelectedType(type.id)}
-      >
-        <div className="p-4 space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5 flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-base font-semibold text-foreground">{type.name}</p>
-                {meta.badge && (
-                  <Badge className="bg-accent/15 text-accent border-accent/30 text-[10px] uppercase tracking-wider font-semibold">
-                    {meta.badge}
-                  </Badge>
+      <div key={type.id}>
+        <div
+          className={`ticket-card rounded-lg transition-all duration-200 ${
+            soldOut
+              ? "opacity-50 cursor-not-allowed"
+              : "cursor-pointer hover:scale-[1.01]"
+          } ${isSelected ? "selected" : ""}`}
+          onClick={() => !soldOut && setSelectedType(type.id)}
+        >
+          <div className="p-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5 flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-base font-semibold text-foreground">{type.name}</p>
+                  {meta.badge && (
+                    <Badge className="bg-accent/15 text-accent border-accent/30 text-[10px] uppercase tracking-wider font-semibold">
+                      {meta.badge}
+                    </Badge>
+                  )}
+                  {meta.recommended && !soldOut && (
+                    <span className="text-[10px] text-accent/60 uppercase tracking-wider font-mono">
+                      Anbefalt
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">{type.description}</p>
+                {meta.tag && (
+                  <p className="text-[11px] text-muted-foreground/50 font-medium uppercase tracking-wide">
+                    {meta.tag}
+                  </p>
                 )}
-                {meta.recommended && !soldOut && (
-                  <span className="text-[10px] text-accent/60 uppercase tracking-wider font-mono">
-                    Anbefalt
-                  </span>
-                )}
+                {soldOut ? (
+                  <p className="text-xs font-semibold text-destructive">Utsolgt</p>
+                ) : showRemaining ? (
+                  <p className="text-xs font-semibold text-accent">{remaining} igjen</p>
+                ) : null}
               </div>
-              <p className="text-xs text-muted-foreground">{type.description}</p>
-              {meta.tag && (
-                <p className="text-[11px] text-muted-foreground/50 font-medium uppercase tracking-wide">
-                  {meta.tag}
-                </p>
-              )}
-              {soldOut ? (
-                <p className="text-xs font-semibold text-destructive">Utsolgt</p>
-              ) : showRemaining ? (
-                <p className="text-xs font-semibold text-accent">{remaining} igjen</p>
-              ) : null}
+              <p className="text-lg font-bold whitespace-nowrap ml-4 text-accent">
+                {(type.price_nok / 100).toFixed(0)} kr
+              </p>
             </div>
-            <p className="text-lg font-bold whitespace-nowrap ml-4 text-accent">
-              {(type.price_nok / 100).toFixed(0)} kr
-            </p>
           </div>
         </div>
+        {isSelected && renderPurchaseForm()}
       </div>
     );
   };
@@ -208,44 +248,6 @@ export default function TicketsPage() {
             </h2>
             <p className="text-xs text-muted-foreground/50">Begrenset kapasitet.</p>
             {boilerOnly.map(renderTicketCard)}
-          </div>
-        )}
-
-        {/* Purchase form */}
-        {selectedType && (
-          <div className="ticket-card rounded-lg">
-            <div className="p-4 space-y-3">
-              <p className="text-sm font-medium">Din informasjon</p>
-              <Input
-                placeholder="Navn"
-                value={buyerName}
-                onChange={(e) => setBuyerName(e.target.value)}
-                disabled={!TICKET_SALES_ENABLED}
-                className="h-9 bg-background/50 border-border/50"
-              />
-              <Input
-                type="email"
-                placeholder="E-post"
-                value={buyerEmail}
-                onChange={(e) => setBuyerEmail(e.target.value)}
-                disabled={!TICKET_SALES_ENABLED}
-                className="h-9 bg-background/50 border-border/50"
-              />
-              <p className="text-xs text-muted-foreground">
-                Ved å fortsette godtar du våre{" "}
-                <Link to="/vilkar" className="underline hover:text-foreground transition-colors">vilkår</Link>
-                {" "}og{" "}
-                <Link to="/personvern" className="underline hover:text-foreground transition-colors">personvernerklæring</Link>
-              </p>
-              <Button
-                className="w-full h-10 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
-                onClick={handlePurchase}
-                disabled={isLoading || !TICKET_SALES_ENABLED}
-              >
-                {isLoading ? <Loader2 className="animate-spin mr-2" /> : null}
-                {TICKET_SALES_ENABLED ? "Gå til betaling" : "Billettsalg stengt"}
-              </Button>
-            </div>
           </div>
         )}
 
