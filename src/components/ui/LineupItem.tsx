@@ -97,11 +97,11 @@ export function LineupItem({ item, showBilling, isFirst, isHeadliner: isHeadline
       to={route} 
       className="group block"
     >
-      <div className={`flex items-center gap-6 md:gap-8 ${isFirst || isHeadliner ? 'py-2' : ''}`}>
-        {/* Artist image - larger for poster feel */}
+      <div className={`flex items-center gap-5 md:gap-6 py-1`}>
+        {/* Artist image */}
         <div className={`
           flex-shrink-0 rounded-lg overflow-hidden bg-secondary/50
-          ${isHeadliner ? 'w-24 h-24 md:w-32 md:h-32' : 'w-16 h-16 md:w-20 md:h-20'}
+          ${isHeadliner ? 'w-20 h-20 md:w-24 md:h-24' : 'w-18 h-18 md:w-20 md:h-20'}
           transition-transform duration-300 ${!isMobile ? 'group-hover:scale-105' : ''}
         `}>
           {imageUrl ? (
@@ -115,10 +115,7 @@ export function LineupItem({ item, showBilling, isFirst, isHeadliner: isHeadline
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <span className={`
-                font-bold text-muted-foreground/30
-                ${isHeadliner ? 'text-3xl' : 'text-xl'}
-              `}>
+              <span className="font-bold text-muted-foreground/30 text-2xl">
                 {displayName.charAt(0)}
               </span>
             </div>
@@ -130,7 +127,7 @@ export function LineupItem({ item, showBilling, isFirst, isHeadliner: isHeadline
           <h3 className={`
             font-semibold tracking-tight 
             ${!isMobile ? 'group-hover:text-accent' : ''} transition-colors duration-200
-            ${isHeadliner ? 'text-2xl md:text-3xl' : 'text-lg md:text-xl'}
+            ${isHeadliner ? 'text-xl md:text-2xl' : 'text-lg md:text-xl'}
           `}>
             {displayName}
           </h3>
@@ -142,19 +139,16 @@ export function LineupItem({ item, showBilling, isFirst, isHeadliner: isHeadline
             </p>
           ) : (
             displayTagline && (
-              <p className={`
-                text-muted-foreground/70 mt-1
-                ${isHeadliner ? 'text-base md:text-lg' : 'text-sm md:text-base'}
-              `}>
+              <p className="text-muted-foreground/70 mt-1 text-sm md:text-base">
                 {displayTagline}
               </p>
             )
           )}
         </div>
 
-        {/* Headliner badge - subtle, not flashy (desktop only) */}
+        {/* Headliner badge - subtle (desktop only) */}
         {isHeadliner && !isMobile && (
-          <span className="text-accent/60 text-xs uppercase tracking-widest font-mono flex-shrink-0 hidden md:block">
+          <span className="text-accent/50 text-[10px] uppercase tracking-widest font-mono flex-shrink-0 hidden md:block">
             Headliner
           </span>
         )}
