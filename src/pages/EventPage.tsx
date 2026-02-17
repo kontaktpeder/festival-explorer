@@ -135,19 +135,6 @@ export default function EventPage() {
                       .filter(Boolean)
                   }
                 />
-                {/* Share – compact inline */}
-                <div className="mt-4">
-                  <ShareImageSection
-                    slug={event.slug}
-                    shareModel={shareModelFromEvent({
-                      slug: event.slug,
-                      title: event.title,
-                      venueName: event.venue?.name ?? null,
-                      heroImageUrl: heroImageUrl ?? null,
-                    })}
-                    compact
-                  />
-                </div>
               </>
             ) : USE_ZONE_TABS_ON_EVENT ? (
               <EventZoneTabs
@@ -181,19 +168,6 @@ export default function EventPage() {
                           />
                         );
                       })}
-                    </div>
-                    {/* Share near lineup */}
-                    <div className="mt-6">
-                      <ShareImageSection
-                        slug={event.slug}
-                        shareModel={shareModelFromEvent({
-                          slug: event.slug,
-                          title: event.title,
-                          venueName: event.venue?.name ?? null,
-                          heroImageUrl: heroImageUrl ?? null,
-                        })}
-                        compact
-                      />
                     </div>
                   </div>
                 )}
@@ -287,6 +261,18 @@ export default function EventPage() {
                 );
               })()}
             </div>
+
+            {/* Share */}
+            <ShareImageSection
+              slug={event.slug}
+              shareModel={shareModelFromEvent({
+                slug: event.slug,
+                title: event.title,
+                venueName: event.venue?.name ?? null,
+                heroImageUrl: heroImageUrl ?? null,
+              })}
+              compact
+            />
 
             {/* Team */}
             {(() => {
