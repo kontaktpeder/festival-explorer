@@ -89,7 +89,7 @@ export default function ProjectPage() {
           <CroppedImage
             src={heroImageUrl}
             alt={entity.name}
-            imageSettings={heroImageSettings}
+            imageSettings={heroImageSettings ?? { focal_x: 0.5, focal_y: 0.6, zoom: 1 }}
             className="w-full h-full object-cover"
           />
         ) : (
