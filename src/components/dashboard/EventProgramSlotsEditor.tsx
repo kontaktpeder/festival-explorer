@@ -152,7 +152,13 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
   const openCreate = () => {
     setEditingSlot(null);
     const defaultStart = eventStartAt ? isoToLocalDatetimeString(eventStartAt) : "";
-    setForm({ ...EMPTY_FORM, starts_at: defaultStart });
+    let defaultEnd = "";
+    if (eventStartAt) {
+      const endDate = new Date(eventStartAt);
+      endDate.setHours(endDate.getHours() + 1);
+      defaultEnd = isoToLocalDatetimeString(endDate.toISOString());
+    }
+    setForm({ ...EMPTY_FORM, starts_at: defaultStart, ends_at: defaultEnd });
     setDialogOpen(true);
   };
 
