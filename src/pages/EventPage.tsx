@@ -115,46 +115,36 @@ export default function EventPage() {
         </p>
 
         {/* Praktisk – compact inline */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-4 text-sm text-foreground/70">
+        <div className="flex flex-col gap-2 mt-4 text-sm text-foreground/70">
           <span className="flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5 text-muted-foreground/40" strokeWidth={1.5} />
             {format(startDate, "d. MMM", { locale: nb })}
           </span>
-          <span className="text-border/30">·</span>
           <span className="flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5 text-muted-foreground/40" strokeWidth={1.5} />
             {timeRange}
           </span>
           {event.venue && (
-            <>
-              <span className="text-border/30">·</span>
-              <Link to={`/venue/${event.venue.slug}`} className="flex items-center gap-1.5 hover:text-accent transition-colors">
-                <MapPin className="w-3.5 h-3.5 text-muted-foreground/40" strokeWidth={1.5} />
-                {event.venue.name}
-              </Link>
-            </>
+            <Link to={`/venue/${event.venue.slug}`} className="flex items-center gap-1.5 hover:text-accent transition-colors">
+              <MapPin className="w-3.5 h-3.5 text-muted-foreground/40" strokeWidth={1.5} />
+              {event.venue.name}
+            </Link>
           )}
           {(() => {
             const ageLimit = (event as any).age_limit?.trim();
             if (!ageLimit) return null;
             return (
-              <>
-                <span className="text-border/30">·</span>
-                <span className="flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-muted-foreground/40" strokeWidth={1.5} />
-                  {ageLimit}
-                </span>
-              </>
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-muted-foreground/40" strokeWidth={1.5} />
+                {ageLimit}
+              </span>
             );
           })()}
           {(event as any).cloakroom_available === true && (
-            <>
-              <span className="text-border/30">·</span>
-              <span className="flex items-center gap-1.5">
-                <Shirt className="w-3.5 h-3.5 text-muted-foreground/40" strokeWidth={1.5} />
-                Garderobe
-              </span>
-            </>
+            <span className="flex items-center gap-1.5">
+              <Shirt className="w-3.5 h-3.5 text-muted-foreground/40" strokeWidth={1.5} />
+              Garderobe
+            </span>
           )}
         </div>
 
