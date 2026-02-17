@@ -84,11 +84,11 @@ export default function ProjectPage() {
       <StaticLogo />
 
       {/* COVER BANNER – taller than venue, cinematic feel */}
-      <div className="relative w-full md:h-[480px] bg-black overflow-hidden">
+      <div className="relative w-full md:h-[580px] bg-black overflow-hidden">
         {heroImageUrl ? (
           <>
             {/* Mobile: cropped cover */}
-            <div className="block md:hidden h-[340px]">
+            <div className="block md:hidden h-[380px]">
               <CroppedImage
                 src={heroImageUrl}
                 alt={entity.name}
@@ -106,13 +106,14 @@ export default function ProjectPage() {
             </div>
           </>
         ) : (
-          <div className="w-full h-[340px] md:h-full bg-gradient-to-br from-card to-muted" />
+          <div className="w-full h-[380px] md:h-full bg-gradient-to-br from-card to-muted" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent pointer-events-none" style={{ height: '40%', top: 'auto' }} />
+        {/* Bottom fade from black into page background */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
       </div>
 
-      {/* NAME + TAGLINE – overlap the cover */}
-      <div className="max-w-6xl mx-auto px-4 md:px-8 -mt-12 relative z-10">
+      {/* NAME + TAGLINE – below hero, no overlap */}
+      <div className="max-w-6xl mx-auto px-4 md:px-8 pt-6 relative z-10">
         <div className="flex items-end gap-5">
           {logoUrl && (
             <img
