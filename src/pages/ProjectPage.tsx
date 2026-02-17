@@ -204,8 +204,8 @@ export default function ProjectPage() {
 
           {/* RIGHT – Sidebar */}
           <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
-            {/* Info-kort */}
-            <div className="rounded-xl border border-border/15 bg-card/40 p-5 space-y-4">
+            {/* Info */}
+            <div className="space-y-4">
               <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50">
                 Info
               </h3>
@@ -219,6 +219,8 @@ export default function ProjectPage() {
                 <p className="text-sm text-foreground/60 leading-relaxed">{entity.tagline}</p>
               )}
             </div>
+
+            <div className="border-t border-border/10" />
 
             {/* Del */}
             <ShareImageSection
