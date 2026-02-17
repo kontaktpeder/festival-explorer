@@ -194,25 +194,6 @@ export default function VenuePage() {
 
           {/* RIGHT – Sidebar */}
           <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
-            {/* Info-kort */}
-            <div className="rounded-xl border border-border/15 bg-card/40 p-5 space-y-4">
-              <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50">
-                Info
-              </h3>
-              {locationDisplay && (
-                <div className="flex items-start gap-3 text-sm">
-                  <MapPin className="w-4 h-4 text-muted-foreground/50 mt-0.5 flex-shrink-0" />
-                  <span className="text-foreground/80">{locationDisplay}</span>
-                </div>
-              )}
-              {venue.city && (
-                <div className="flex items-start gap-3 text-sm">
-                  <Building2 className="w-4 h-4 text-muted-foreground/50 mt-0.5 flex-shrink-0" />
-                  <span className="text-foreground/80">{venue.city}</span>
-                </div>
-              )}
-            </div>
-
             {/* Del */}
             <ShareImageSection
               slug={venue.slug}
