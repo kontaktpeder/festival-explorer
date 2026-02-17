@@ -36,6 +36,7 @@ import { useUpdateTeamMember, useSetEntityTeamPersona, useTransferEntityOwnershi
 import { useMyPersonas } from "@/hooks/usePersona";
 import { ProjectCreditFlow } from "@/components/dashboard/ProjectCreditFlow";
 import { SocialLinksEditor } from "@/components/ui/SocialLinksEditor";
+import { useEntityEventInvitations } from "@/hooks/useEventInvitations";
 import {
   UserPlus,
   ExternalLink,
@@ -52,6 +53,8 @@ import {
   ArrowLeft,
   ChevronRight,
   X,
+  Mail,
+  Check,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
@@ -114,6 +117,8 @@ export default function EntityEdit() {
   const transferOwnership = useTransferEntityOwnership();
   const leaveEntity = useLeaveEntity();
   const removeTeamMember = useRemoveTeamMember();
+
+  const { invitations: eventInvitations, accept: acceptEventInvitation, decline: declineEventInvitation } = useEntityEventInvitations(id);
 
   const { data: entityWithAccess, isLoading, error } = useQuery({
     queryKey: ["dashboard-entity", id],
@@ -558,6 +563,72 @@ export default function EntityEdit() {
                   </div>
                 );
               })}
+            </div>
+          </section>
+        )}
+
+        {/* Event invitations */}
+        {eventInvitations.length > 0 && (
+          <section className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-accent" />
+              <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+                Invitasjoner til events
+              </h2>
+            </div>
+            <div className="space-y-2">
+              {eventInvitations.map((inv: any) => (
+                <div
+                  key={inv.id}
+                  className="flex items-center justify-between p-3 rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {inv.event?.title ?? "Event"}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground/60">
+                      {inv.inviter_persona?.name
+                        ? `Invitert av ${inv.inviter_persona.name}`
+                        : "Invitert til å delta"}
+                      {" · Ved godkjenning får arrangør leser-tilgang."}
+                    </p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        declineEventInvitation.mutateAsync(inv.id).then(() => {
+                          toast({ title: "Invitasjon avslått" });
+                        }).catch(() => {
+                          toast({ title: "Feil ved avslag", variant: "destructive" });
+                        });
+                      }}
+                      disabled={declineEventInvitation.isPending}
+                      title="Avslå"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="h-8"
+                      onClick={() => {
+                        acceptEventInvitation.mutateAsync(inv.id).then(() => {
+                          toast({ title: `Invitasjon godtatt – arrangør har fått tilgang` });
+                          queryClient.invalidateQueries({ queryKey: ["entity-team", id] });
+                        }).catch((e: Error) => {
+                          toast({ title: "Feil", description: e.message, variant: "destructive" });
+                        });
+                      }}
+                      disabled={acceptEventInvitation.isPending}
+                    >
+                      <Check className="h-4 w-4 mr-1" />
+                      Godta
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
         )}

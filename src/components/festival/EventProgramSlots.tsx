@@ -14,15 +14,20 @@ interface EventProgramSlotsProps {
 export function EventProgramSlots({ slots, headlinerEntityIds = [] }: EventProgramSlotsProps) {
   const { data: entityTypes } = useEntityTypes();
 
-  if (!slots || slots.length === 0) return null;
+  // Defensive: only show publicly visible, non-canceled slots
+  const visibleSlots = (slots || []).filter(
+    (s) => (s as any).is_visible_public !== false
+  );
+
+  if (visibleSlots.length === 0) return null;
 
   const now = new Date();
   const HIGHLIGHT_KINDS = ["concert", "boiler", "stage_talk"];
-  const activeSlot = slots.find(
+  const activeSlot = visibleSlots.find(
     (s) => !s.is_canceled && s.ends_at && HIGHLIGHT_KINDS.includes(s.slot_kind) && new Date(s.starts_at) <= now && new Date(s.ends_at) >= now
   );
   const nextSlot = !activeSlot
-    ? slots.find((s) => !s.is_canceled && HIGHLIGHT_KINDS.includes(s.slot_kind) && new Date(s.starts_at) > now)
+    ? visibleSlots.find((s) => !s.is_canceled && HIGHLIGHT_KINDS.includes(s.slot_kind) && new Date(s.starts_at) > now)
     : null;
   const highlightSlot = activeSlot || nextSlot;
   const highlightLabel = activeSlot ? "Nå" : "Neste";
@@ -38,7 +43,7 @@ export function EventProgramSlots({ slots, headlinerEntityIds = [] }: EventProgr
 
       {/* Timeline list */}
       <div className="divide-y divide-border/10">
-        {slots.map((slot, index) => {
+        {visibleSlots.map((slot, index) => {
           const config = getSlotKindConfig(slot.slot_kind);
           const Icon = config.icon;
           const entity = slot.entity;
