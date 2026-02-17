@@ -52,3 +52,19 @@ export function shareModelFromVenue(params: {
     subjectLogoUrl: params.logoUrl ?? null,
   };
 }
+
+export function shareModelFromEvent(params: {
+  slug: string;
+  title: string;
+  venueName?: string | null;
+  heroImageUrl: string | null;
+}): ShareModel {
+  const base = getPublicUrl().replace(/\/$/, "");
+  return {
+    title: truncate(params.title, TITLE_MAX),
+    subtitle: params.venueName ? truncate(params.venueName, SUBTITLE_MAX) : undefined,
+    heroImageUrl: params.heroImageUrl ?? null,
+    cta: "Les mer på giggen.org",
+    url: `${base}/event/${params.slug}`,
+  };
+}
