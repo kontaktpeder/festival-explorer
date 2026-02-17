@@ -25,7 +25,7 @@ interface EventHeroCollageProps {
  * Key = lowercase artist name.
  */
 const ARTIST_CROP_OVERRIDES: Record<string, string> = {
-  "maya estrela": "center 45%",
+  "maya estrela": "center 15%",
 };
 
 /**
