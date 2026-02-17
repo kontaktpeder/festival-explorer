@@ -27,11 +27,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -42,8 +37,6 @@ import {
   ChevronsUpDown,
   Plus,
   ExternalLink,
-  ChevronDown,
-  ChevronRight,
 } from "lucide-react";
 import { EventParticipantsZoneEditor } from "@/components/admin/EventParticipantsZoneEditor";
 import { EventProgramSlotsEditor } from "@/components/dashboard/EventProgramSlotsEditor";
@@ -79,7 +72,7 @@ export default function EventRoomPage() {
   const [heroImageSettings, setHeroImageSettings] = useState<ImageSettings | null>(null);
   const [venuePickerOpen, setVenuePickerOpen] = useState(false);
   const [isTicketAdmin, setIsTicketAdmin] = useState(false);
-  const [detailsOpen, setDetailsOpen] = useState(false);
+  
 
   const { data: myEntities } = useMyEntities();
 
@@ -413,169 +406,150 @@ export default function EventRoomPage() {
       >
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6 lg:gap-10">
           {/* Left column: form fields */}
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* Description */}
-            <div className="space-y-1">
-              <Textarea
-                value={formData.description}
-                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                placeholder="Beskrivelse..."
-                className="border-none bg-transparent shadow-none px-0 min-h-[80px] resize-none placeholder:text-muted-foreground/40 focus-visible:ring-0"
-                rows={3}
-              />
-            </div>
+            <Textarea
+              value={formData.description}
+              onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+              placeholder="Beskrivelse..."
+              className="border-none bg-transparent shadow-none px-0 min-h-[70px] resize-none placeholder:text-muted-foreground/40 focus-visible:ring-0"
+              rows={3}
+            />
 
-            {/* Time */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Start</Label>
+            {/* Compact info grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-3">
+              <div className="space-y-1">
+                <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/50">Start</Label>
                 <Input
                   type="datetime-local"
                   value={formData.start_at}
                   onChange={(e) => setFormData((prev) => ({ ...prev, start_at: e.target.value }))}
-                  className="h-9 text-sm bg-muted/30 border-border/30"
+                  className="h-8 text-xs bg-muted/20 border-border/20"
                   required
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Slutt</Label>
+              <div className="space-y-1">
+                <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/50">Slutt</Label>
                 <Input
                   type="datetime-local"
                   value={formData.end_at}
                   onChange={(e) => setFormData((prev) => ({ ...prev, end_at: e.target.value }))}
-                  className="h-9 text-sm bg-muted/30 border-border/30"
+                  className="h-8 text-xs bg-muted/20 border-border/20"
                 />
               </div>
-            </div>
-
-            {/* Hero image */}
-            <div className="flex items-center gap-3">
-              {formData.hero_image_url && (
-                <img
-                  src={formData.hero_image_url}
-                  alt="Hero"
-                  className="h-10 w-14 rounded object-cover border border-border/30"
-                />
-              )}
-              <div className="flex-1 min-w-0">
-                <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Hero-bilde</Label>
-              </div>
-              <InlineMediaPickerWithCrop
-                value={formData.hero_image_url}
-                imageSettings={heroImageSettings}
-                onChange={(url) => setFormData((prev) => ({ ...prev, hero_image_url: url }))}
-                onSettingsChange={setHeroImageSettings}
-                cropMode="hero"
-                placeholder="Bytt"
-                showAllForAdmin
-                useNaturalAspect
-                hidePreview
-              />
-            </div>
-
-            {/* Details (collapsible) */}
-            <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
-              <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full py-2">
-                {detailsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                <span>Venue & praktisk</span>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-4 pt-2">
-                {/* Venue */}
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Venue</Label>
-                  <Popover open={venuePickerOpen} onOpenChange={setVenuePickerOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className="w-full justify-between font-normal h-9 text-sm bg-muted/30 border-border/30"
-                      >
+              <div className="space-y-1">
+                <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/50">Venue</Label>
+                <Popover open={venuePickerOpen} onOpenChange={setVenuePickerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="w-full justify-between font-normal h-8 text-xs bg-muted/20 border-border/20"
+                    >
+                      <span className="truncate">
                         {formData.venue_id
                           ? venues?.find((v) => v.id === formData.venue_id)?.name
-                          : "Velg venue"}
-                        <ChevronsUpDown className="ml-2 h-3.5 w-3.5 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                      <Command>
-                        <CommandInput placeholder="Søk etter venue..." />
-                        <CommandList>
-                          <CommandEmpty>Ingen venue funnet.</CommandEmpty>
-                          <CommandGroup>
+                          : "Velg..."}
+                      </span>
+                      <ChevronsUpDown className="ml-1 h-3 w-3 opacity-40 shrink-0" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Søk etter venue..." />
+                      <CommandList>
+                        <CommandEmpty>Ingen venue funnet.</CommandEmpty>
+                        <CommandGroup>
+                          <CommandItem
+                            value="__none__"
+                            onSelect={() => {
+                              setFormData((prev) => ({ ...prev, venue_id: "" }));
+                              setVenuePickerOpen(false);
+                            }}
+                          >
+                            <Check className={cn("mr-2 h-3.5 w-3.5", !formData.venue_id ? "opacity-100" : "opacity-0")} />
+                            Ingen venue
+                          </CommandItem>
+                          {venues?.map((venue) => (
                             <CommandItem
-                              value="__none__"
+                              key={venue.id}
+                              value={venue.name}
                               onSelect={() => {
-                                setFormData((prev) => ({ ...prev, venue_id: "" }));
+                                setFormData((prev) => ({ ...prev, venue_id: venue.id }));
                                 setVenuePickerOpen(false);
                               }}
                             >
-                              <Check className={cn("mr-2 h-3.5 w-3.5", !formData.venue_id ? "opacity-100" : "opacity-0")} />
-                              Ingen venue
+                              <Check className={cn("mr-2 h-3.5 w-3.5", formData.venue_id === venue.id ? "opacity-100" : "opacity-0")} />
+                              {venue.name}
+                              {venue.city && <span className="ml-2 text-muted-foreground text-xs">({venue.city})</span>}
                             </CommandItem>
-                            {venues?.map((venue) => (
-                              <CommandItem
-                                key={venue.id}
-                                value={venue.name}
-                                onSelect={() => {
-                                  setFormData((prev) => ({ ...prev, venue_id: venue.id }));
-                                  setVenuePickerOpen(false);
-                                }}
-                              >
-                                <Check className={cn("mr-2 h-3.5 w-3.5", formData.venue_id === venue.id ? "opacity-100" : "opacity-0")} />
-                                {venue.name}
-                                {venue.city && <span className="ml-2 text-muted-foreground text-xs">({venue.city})</span>}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </div>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/50">By</Label>
+                <Input
+                  value={formData.city}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
+                  placeholder="Oslo"
+                  className="h-8 text-xs bg-muted/20 border-border/20"
+                />
+              </div>
+            </div>
 
-                {/* City */}
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">By</Label>
-                  <Input
-                    value={formData.city}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
-                    placeholder="Oslo"
-                    className="h-9 text-sm bg-muted/30 border-border/30"
+            {/* Secondary row: age, cloakroom, hero image */}
+            <div className="flex flex-wrap items-end gap-x-5 gap-y-3">
+              <div className="space-y-1 w-28">
+                <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/50">Alder</Label>
+                <Input
+                  value={formData.age_limit}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, age_limit: e.target.value }))}
+                  placeholder="18+"
+                  className="h-8 text-xs bg-muted/20 border-border/20"
+                />
+              </div>
+              <div className="flex items-center gap-2 pb-1">
+                <input
+                  type="checkbox"
+                  id="cloakroom_available"
+                  checked={formData.cloakroom_available === true}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      cloakroom_available: e.target.checked ? true : null,
+                    }))
+                  }
+                  className="h-3.5 w-3.5 rounded border-border"
+                />
+                <Label htmlFor="cloakroom_available" className="text-xs font-normal cursor-pointer text-muted-foreground">
+                  Garderobe
+                </Label>
+              </div>
+              <div className="flex items-center gap-2 pb-1 ml-auto">
+                {formData.hero_image_url && (
+                  <img
+                    src={formData.hero_image_url}
+                    alt="Hero"
+                    className="h-8 w-12 rounded object-cover border border-border/20"
                   />
-                </div>
-
-                {/* Praktisk */}
-                <div className="space-y-3 pt-2 border-t border-border/30">
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Praktisk</p>
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Aldersgrense</Label>
-                    <Input
-                      value={formData.age_limit}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, age_limit: e.target.value }))}
-                      placeholder="F.eks. 18 år, 20 år"
-                      className="h-9 text-sm bg-muted/30 border-border/30"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="cloakroom_available"
-                      checked={formData.cloakroom_available === true}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          cloakroom_available: e.target.checked ? true : null,
-                        }))
-                      }
-                      className="h-4 w-4 rounded border-border"
-                    />
-                    <Label htmlFor="cloakroom_available" className="text-sm font-normal cursor-pointer">
-                      Garderobe tilgjengelig
-                    </Label>
-                  </div>
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
+                )}
+                <InlineMediaPickerWithCrop
+                  value={formData.hero_image_url}
+                  imageSettings={heroImageSettings}
+                  onChange={(url) => setFormData((prev) => ({ ...prev, hero_image_url: url }))}
+                  onSettingsChange={setHeroImageSettings}
+                  cropMode="hero"
+                  placeholder="Hero-bilde"
+                  showAllForAdmin
+                  useNaturalAspect
+                  hidePreview
+                />
+              </div>
+            </div>
           </div>
 
           {/* Right column: program + participants */}
