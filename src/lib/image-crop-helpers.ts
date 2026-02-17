@@ -24,8 +24,7 @@ import { parseImageSettings } from "@/types/database";
  */
 export const ASPECT_RATIOS = {
   avatar: 1, // 1:1 square
-  hero: 16 / 9, // 16:9 wide
-  // Future: gallery: 4 / 3, etc.
+  hero: 1500 / 600, // 2.5:1 (1500×600, matcher event collage)
 } as const;
 
 export type CropMode = keyof typeof ASPECT_RATIOS;

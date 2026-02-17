@@ -60,7 +60,7 @@ export function CroppedImage({
   if (aspect === "avatar") {
     aspectClass = "aspect-square";
   } else if (aspect === "hero") {
-    aspectClass = "aspect-video";
+    aspectStyle = { aspectRatio: 2.5 }; // 1500×600
   } else if (aspect === "auto" && naturalAspectRatio) {
     // Use natural aspect ratio from image settings
     aspectStyle = { aspectRatio: `${naturalAspectRatio}` };
