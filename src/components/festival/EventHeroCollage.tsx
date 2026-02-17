@@ -25,7 +25,7 @@ interface EventHeroCollageProps {
  * Key = lowercase artist name.
  */
 const ARTIST_CROP_OVERRIDES: Record<string, string> = {
-  "maya estrela": "center top",
+  "maya estrela": "center 30%",
 };
 
 /**
@@ -146,13 +146,12 @@ function CollageCell({
   }
 
   const objectPosition = resolveObjectPosition(artist);
-  const needsZoomOut = artist.name.toLowerCase() === "maya estrela";
 
   const inner = (
     <img
       src={signedUrl}
       alt={artist.name}
-      className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${needsZoomOut ? "scale-[0.7] origin-top" : ""}`}
+      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
       style={{ objectPosition }}
       loading={priority ? undefined : "lazy"}
       fetchPriority={priority ? "high" : undefined}
