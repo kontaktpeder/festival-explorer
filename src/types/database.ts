@@ -364,3 +364,34 @@ export interface EventParticipant {
   entity?: Entity | null;
   persona?: Persona | null;
 }
+
+// ============================================
+// Program Slots
+// ============================================
+
+export type SlotKind =
+  | 'concert'
+  | 'boiler'
+  | 'break'
+  | 'giggen_info'
+  | 'doors'
+  | 'closing'
+  | 'stage_talk';
+
+export type InternalSlotStatus = 'contract_pending' | 'confirmed' | 'canceled';
+
+export interface EventProgramSlot {
+  id: string;
+  event_id: string;
+  entity_id: string | null;
+  starts_at: string;
+  ends_at: string | null;
+  slot_kind: SlotKind;
+  is_canceled: boolean;
+  internal_status: InternalSlotStatus;
+  internal_note: string | null;
+  created_at: string;
+  updated_at: string;
+  // Resolved entity (populated by hooks)
+  entity?: { id: string; name: string; slug: string; tagline?: string | null; hero_image_url?: string | null; type?: string } | null;
+}

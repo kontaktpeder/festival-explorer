@@ -495,9 +495,20 @@ export function useEvent(slug: string) {
         }
       }
 
+      // Fetch program slots
+      const { data: programSlots } = await supabase
+        .from("event_program_slots" as any)
+        .select(`
+          *,
+          entity:entities(id, name, slug, tagline, hero_image_url, type)
+        `)
+        .eq("event_id", event.id)
+        .order("starts_at", { ascending: true });
+
       return {
         ...event,
         lineup,
+        programSlots: (programSlots || []) as any[],
         backstage: {
           festival: festivalBackstage,
           event: backstage,

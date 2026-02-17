@@ -46,6 +46,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { EventParticipantsZoneEditor } from "@/components/admin/EventParticipantsZoneEditor";
+import { EventProgramSlotsEditor } from "@/components/dashboard/EventProgramSlotsEditor";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
@@ -577,8 +578,13 @@ export default function EventRoomPage() {
             </Collapsible>
           </div>
 
-          {/* Right column: participants */}
+          {/* Right column: program + participants */}
           <div className="space-y-6">
+            {/* Program slots */}
+            {!isNew && id && (
+              <EventProgramSlotsEditor eventId={id} canEdit={canEdit} />
+            )}
+
             {/* Medvirkende */}
             {!isNew && id && (
               <div className="space-y-4">
