@@ -147,7 +147,7 @@ function CollageCell({
   // Name tag with guaranteed dark gradient for legibility
   const nameTag = (
     <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4 min-h-[48px] flex items-end">
-      <span className="text-white text-xs md:text-sm font-semibold tracking-wide uppercase drop-shadow-lg">
+      <span className="text-white text-sm md:text-lg font-bold tracking-wide uppercase drop-shadow-lg">
         {artist.name}
       </span>
     </div>
