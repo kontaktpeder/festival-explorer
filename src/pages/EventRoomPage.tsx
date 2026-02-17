@@ -49,7 +49,7 @@ import { EventParticipantsZoneEditor } from "@/components/admin/EventParticipant
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
-import { generateSlug, cn } from "@/lib/utils";
+import { generateSlug, cn, isoToLocalDatetimeString } from "@/lib/utils";
 import type { ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
 import { useMyEntities } from "@/hooks/useEntity";
@@ -219,8 +219,8 @@ export default function EventRoomPage() {
         title: event.title || "",
         slug: event.slug || "",
         description: event.description || "",
-        start_at: event.start_at ? event.start_at.slice(0, 16) : "",
-        end_at: event.end_at ? event.end_at.slice(0, 16) : "",
+        start_at: isoToLocalDatetimeString(event.start_at),
+        end_at: isoToLocalDatetimeString(event.end_at),
         venue_id: event.venue_id || "",
         city: event.city || "",
         hero_image_url: event.hero_image_url || "",

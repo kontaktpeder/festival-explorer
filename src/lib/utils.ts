@@ -19,6 +19,17 @@ export function generateSlug(text: string): string {
  * Get the public URL for the app (production URL).
  * Uses VITE_PUBLIC_URL if set, otherwise falls back to window.location.origin.
  */
+/**
+ * Konverterer ISO-streng (UTC) til lokal YYYY-MM-DDTHH:mm for datetime-local input.
+ */
+export function isoToLocalDatetimeString(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export function getPublicUrl(): string {
   const publicUrl = import.meta.env.VITE_PUBLIC_URL;
   if (publicUrl) {
