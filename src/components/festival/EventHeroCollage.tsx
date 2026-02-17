@@ -35,7 +35,7 @@ const ARTIST_CROP_OVERRIDES: Record<string, string> = {
 function resolveObjectPosition(artist: CollageArtist): string {
   // If DB has focal-point settings, use them
   const fromFocal = getObjectPositionFromFocal(artist.imageSettings);
-  if (fromFocal && fromFocal !== "center center" && fromFocal !== "center") {
+  if (fromFocal && fromFocal !== "center center" && fromFocal !== "center" && fromFocal !== "50% 50%") {
     return fromFocal;
   }
 
