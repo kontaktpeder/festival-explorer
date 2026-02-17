@@ -172,7 +172,7 @@ export default function ProjectPage() {
             {entity.description && (
               <div>
                 <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-3">
-                  Om prosjektet
+                  Om {entity.name}
                 </h2>
                 <p className="text-base md:text-lg font-light leading-relaxed text-foreground/85 whitespace-pre-line">
                   {entity.description}
