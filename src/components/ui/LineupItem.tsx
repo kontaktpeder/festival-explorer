@@ -15,6 +15,8 @@ interface LineupItemProps {
   isFirst?: boolean;
   /** When set, overrides headliner logic */
   isHeadliner?: boolean;
+  /** Larger sizing for event page program view */
+  large?: boolean;
 }
 
 // Type guard for new EventEntity format
@@ -35,7 +37,7 @@ function isEventParticipant(item: LineupItemData): item is EventParticipant {
  * 
  * NEW ROLE MODEL STEP 1.1: Supports EventParticipant (entity + persona)
  */
-export function LineupItem({ item, showBilling, isFirst, isHeadliner: isHeadlinerProp }: LineupItemProps) {
+export function LineupItem({ item, showBilling, isFirst, isHeadliner: isHeadlinerProp, large }: LineupItemProps) {
   const { data: entityTypes } = useEntityTypes();
   const isMobile = useIsMobile();
   
@@ -101,7 +103,10 @@ export function LineupItem({ item, showBilling, isFirst, isHeadliner: isHeadline
         {/* Artist image */}
         <div className={`
           flex-shrink-0 rounded-lg overflow-hidden bg-secondary/50
-          ${isHeadliner ? 'w-20 h-20 md:w-24 md:h-24' : 'w-18 h-18 md:w-20 md:h-20'}
+          ${large
+            ? (isHeadliner ? 'w-24 h-24 md:w-28 md:h-28' : 'w-22 h-22 md:w-24 md:h-24')
+            : (isHeadliner ? 'w-20 h-20 md:w-24 md:h-24' : 'w-18 h-18 md:w-20 md:h-20')
+          }
           transition-transform duration-300 ${!isMobile ? 'group-hover:scale-105' : ''}
         `}>
           {imageUrl ? (
