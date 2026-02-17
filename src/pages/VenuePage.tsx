@@ -144,13 +144,19 @@ export default function VenuePage() {
                         to={`/event/${event.slug}`}
                         className="group flex items-center gap-4 py-3 px-3 -mx-3 rounded-lg hover:bg-card/60 transition-colors"
                       >
-                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-accent/10 flex flex-col items-center justify-center">
-                          <span className="text-[10px] font-bold uppercase text-accent/70 leading-none">
-                            {format(startDate, "MMM", { locale: nb })}
-                          </span>
-                          <span className="text-lg font-bold leading-none mt-0.5">
-                            {format(startDate, "d")}
-                          </span>
+                        <div className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-accent/10">
+                          {event.hero_image_url ? (
+                            <EventThumbnail storagePath={event.hero_image_url} alt={event.title} />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center">
+                              <span className="text-[10px] font-bold uppercase text-accent/70 leading-none">
+                                {format(startDate, "MMM", { locale: nb })}
+                              </span>
+                              <span className="text-lg font-bold leading-none mt-0.5">
+                                {format(startDate, "d")}
+                              </span>
+                            </div>
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="text-base font-medium tracking-tight group-hover:text-accent transition-colors truncate">
@@ -212,5 +218,19 @@ export default function VenuePage() {
 
       <WhatIsGiggenFooter />
     </PageLayout>
+  );
+}
+
+function EventThumbnail({ storagePath, alt }: { storagePath: string; alt: string }) {
+  const url = useSignedMediaUrl(storagePath, 'public');
+  if (!url) return <div className="w-full h-full bg-muted" />;
+  return (
+    <img
+      src={url}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      className="w-full h-full object-cover"
+    />
   );
 }
