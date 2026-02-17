@@ -121,71 +121,70 @@ export default function EventPage() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 lg:gap-12">
 
           {/* LEFT – Primary: Lineup FIRST, then description, then team */}
-          <div className="space-y-8">
+            <div className="space-y-8">
 
-            {/* PROGRAM SLOTS or LINEUP / ZONE TABS */}
-            {(event as any).programSlots && (event as any).programSlots.length > 0 ? (
-              <>
-                <EventProgramSlots
-                  slots={(event as any).programSlots}
-                  headlinerEntityIds={
-                    (event.lineup || [])
-                      .filter((i: any) => i.is_featured)
-                      .map((i: any) => i.entity_id || i.participant_id)
-                      .filter(Boolean)
-                  }
-                />
-              </>
-            ) : USE_ZONE_TABS_ON_EVENT ? (
-              <EventZoneTabs
-                lineup={event.lineup || []}
-                backstage={(event as any).backstage || []}
-                hostRoles={(event as any).hostRoles || []}
-              />
-            ) : (
-              <>
-                {event.lineup && event.lineup.length > 0 && (
-                  <div>
-                    <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-1">
-                      Program
-                    </h2>
-                    <p className="text-muted-foreground/60 text-sm mb-5">
-                      Billetten gjelder alle konserter på denne scenen – og flere opplevelser i festivalen.
-                    </p>
-                    <div className="space-y-4 md:space-y-5">
-                      {event.lineup.map((item: any, index: number) => {
-                        const headlinerIndex = event.lineup.some((i: any) => i.is_featured)
-                          ? event.lineup.findIndex((i: any) => i.is_featured)
-                          : 0;
-                        return (
-                          <LineupItem
-                            key={item.entity_id || item.participant_id || index}
-                            item={item}
-                            showBilling
-                            isFirst={index === 0}
-                            isHeadliner={index === headlinerIndex}
-                            large
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-              </>
-            )}
-
-            {/* Beskrivelse – moved below lineup */}
+            {/* Beskrivelse – above program */}
             {event.description && (
               <div>
                 <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-3">
-                  Om kvelden
+                  Om
                 </h2>
                 <p className="text-base md:text-lg font-light leading-relaxed text-foreground/85 whitespace-pre-line">
                   {event.description}
                 </p>
               </div>
             )}
+
+              {/* PROGRAM SLOTS or LINEUP / ZONE TABS */}
+              {(event as any).programSlots && (event as any).programSlots.length > 0 ? (
+                <>
+                  <EventProgramSlots
+                    slots={(event as any).programSlots}
+                    headlinerEntityIds={
+                      (event.lineup || [])
+                        .filter((i: any) => i.is_featured)
+                        .map((i: any) => i.entity_id || i.participant_id)
+                        .filter(Boolean)
+                    }
+                  />
+                </>
+              ) : USE_ZONE_TABS_ON_EVENT ? (
+                <EventZoneTabs
+                  lineup={event.lineup || []}
+                  backstage={(event as any).backstage || []}
+                  hostRoles={(event as any).hostRoles || []}
+                />
+              ) : (
+                <>
+                  {event.lineup && event.lineup.length > 0 && (
+                    <div>
+                      <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-1">
+                        Program
+                      </h2>
+                      <p className="text-muted-foreground/60 text-sm mb-5">
+                        Billetten gjelder alle konserter på denne scenen – og flere opplevelser i festivalen.
+                      </p>
+                      <div className="space-y-4 md:space-y-5">
+                        {event.lineup.map((item: any, index: number) => {
+                          const headlinerIndex = event.lineup.some((i: any) => i.is_featured)
+                            ? event.lineup.findIndex((i: any) => i.is_featured)
+                            : 0;
+                          return (
+                            <LineupItem
+                              key={item.entity_id || item.participant_id || index}
+                              item={item}
+                              showBilling
+                              isFirst={index === 0}
+                              isHeadliner={index === headlinerIndex}
+                              large
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
           </div>
 
           {/* RIGHT – Sidebar */}
