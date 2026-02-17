@@ -17,11 +17,12 @@ export function EventProgramSlots({ slots }: EventProgramSlotsProps) {
   if (!slots || slots.length === 0) return null;
 
   const now = new Date();
+  const HIGHLIGHT_KINDS = ["concert", "boiler", "stage_talk"];
   const activeSlot = slots.find(
-    (s) => !s.is_canceled && s.ends_at && new Date(s.starts_at) <= now && new Date(s.ends_at) >= now
+    (s) => !s.is_canceled && s.ends_at && HIGHLIGHT_KINDS.includes(s.slot_kind) && new Date(s.starts_at) <= now && new Date(s.ends_at) >= now
   );
   const nextSlot = !activeSlot
-    ? slots.find((s) => !s.is_canceled && new Date(s.starts_at) > now)
+    ? slots.find((s) => !s.is_canceled && HIGHLIGHT_KINDS.includes(s.slot_kind) && new Date(s.starts_at) > now)
     : null;
   const highlightSlot = activeSlot || nextSlot;
   const highlightLabel = activeSlot ? "Nå" : "Neste";
@@ -81,15 +82,19 @@ export function EventProgramSlots({ slots }: EventProgramSlotsProps) {
                 {slot.is_canceled && (
                   <Badge variant="destructive" className="text-[9px] h-4 px-1 mr-2">Avlyst</Badge>
                 )}
-                {entity && entityRoute ? (
+              {entity && entityRoute ? (
                   <Link
                     to={entityRoute}
                     className="text-sm font-medium hover:text-accent transition-colors"
                   >
                     {entity.name}
                   </Link>
+                ) : entity?.name ? (
+                  <span className="text-sm text-muted-foreground">{entity.name}</span>
+                ) : (slot.slot_kind === "concert" || slot.slot_kind === "boiler") && !entity ? (
+                  <span className="text-sm text-muted-foreground">{config.label} <span className="text-muted-foreground/40 italic">TBA</span></span>
                 ) : (
-                  <span className="text-sm text-muted-foreground">{entity?.name || config.label}</span>
+                  <span className="text-sm text-muted-foreground">{config.label}</span>
                 )}
                 {entity?.tagline && (
                   <p className="text-xs text-muted-foreground/50 truncate">{entity.tagline}</p>
