@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { MapPin, Music } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
@@ -23,10 +24,10 @@ function getPersonasSectionTitle(entityType: EntityType): string {
       return 'Bak prosjektet';
   }
 }
+
 import { useEntity } from "@/hooks/useEntity";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { HeroSection } from "@/components/ui/HeroSection";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { UnifiedTimeline } from "@/components/ui/UnifiedTimeline";
@@ -34,18 +35,21 @@ import { EntitySocialLinks } from "@/components/ui/EntitySocialLinks";
 import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
 import { ShareImageSection } from "@/components/share/ShareImageSection";
 import { shareModelFromProject } from "@/lib/share-model";
+import { CroppedImage } from "@/components/ui/CroppedImage";
 
 export default function ProjectPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: entity, isLoading, error } = useEntity(slug || "");
   const timelineSource = entity?.id ? { type: "entity" as const, id: entity.id } : undefined;
   const { data: timelineEvents } = useUnifiedTimelineEvents(timelineSource, { visibility: "public" });
-  
-  // Signed URL for public viewing
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [slug]);
+
   const heroImageUrl = useSignedMediaUrl(entity?.hero_image_url, 'public');
   const logoUrl = useSignedMediaUrl((entity as any)?.logo_url, 'public');
 
-  // Vises alle som er kreditert (entity_team.is_public); useEntity henter allerede kun disse
   const publicTeamMembers = entity?.team ?? [];
 
   if (isLoading) {
@@ -68,115 +72,209 @@ export default function ProjectPage() {
     );
   }
 
-  // Parse hero image settings for focal point positioning
   const heroImageSettings = parseImageSettings(entity.hero_image_settings);
-
-  // Get social links from entity (future-proofed - field may not exist yet)
   const entitySocialLinks = ((entity as any).social_links || []) as SocialLink[] | undefined;
-
-  // Get location data
   const locationName = (entity as any).location_name as string | null;
   const locationType = (entity as any).location_type as LocationType | null;
   const locationDisplay = formatEntityLocationDisplay(locationName, locationType);
+  const hasTimeline = timelineEvents && timelineEvents.length > 0;
 
   return (
     <PageLayout>
-      {/* Static logo in header */}
       <StaticLogo />
 
+      {/* COVER BANNER – taller than venue, cinematic feel */}
+      <div className="relative w-full h-[340px] md:h-[440px] bg-card overflow-hidden">
+        {heroImageUrl ? (
+          <CroppedImage
+            src={heroImageUrl}
+            alt={entity.name}
+            imageSettings={heroImageSettings}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-card to-muted" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+      </div>
 
-      {/* HERO – Full screen identity */}
-      <HeroSection 
-        imageUrl={heroImageUrl || undefined} 
-        imageSettings={heroImageSettings}
-        fullScreen
-        scrollExpand
-        useNaturalAspect
-      >
-        <div className="space-y-3">
-          {entity.tagline && (
-            <div className="text-mono text-accent/70 text-xs uppercase tracking-[0.2em]">
-              {entity.tagline}
-            </div>
+      {/* NAME + TAGLINE – overlap the cover */}
+      <div className="max-w-6xl mx-auto px-4 md:px-8 -mt-20 relative z-10">
+        <div className="flex items-end gap-5">
+          {logoUrl && (
+            <img
+              src={logoUrl}
+              alt={`${entity.name} logo`}
+              className="h-16 w-16 md:h-20 md:w-20 rounded-xl object-cover ring-2 ring-background shadow-lg flex-shrink-0"
+            />
           )}
-          <h1 className="font-display font-black text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight leading-[0.9]">
-            {entity.name}
-          </h1>
-        </div>
-      </HeroSection>
-
-      {/* OM PROSJEKTET – The voice */}
-      {(entity.description || locationDisplay || (entitySocialLinks && entitySocialLinks.length > 0)) && (
-        <section className="py-20 md:py-32 px-6 md:px-12">
-          <div className="max-w-2xl">
-            {/* Logo + Location */}
-            <div className="flex items-center gap-4 mb-6">
-              {logoUrl && (
-                <img
-                  src={logoUrl}
-                  alt={`${entity.name} logo`}
-                  className="h-10 w-10 md:h-12 md:w-12 rounded-lg object-cover ring-1 ring-border/10"
-                />
-              )}
-              {locationDisplay && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground/60">
-                  <MapPin className="w-4 h-4" />
-                  <span>{locationDisplay}</span>
-                </div>
-              )}
-            </div>
-
-            {entity.description && (
-              <p className="text-lg md:text-xl text-foreground/85 leading-relaxed whitespace-pre-line font-light">
-                {entity.description}
+          <div className="flex-1 min-w-0">
+            <h1 className="font-black text-3xl md:text-5xl uppercase tracking-tight leading-[0.95]">
+              {entity.name}
+            </h1>
+            {entity.tagline && (
+              <p className="text-sm md:text-base text-muted-foreground/60 mt-1.5 truncate">
+                {entity.tagline}
               </p>
             )}
+          </div>
+        </div>
 
-            {/* Social links for project/venue */}
+        {/* Location + socials bar */}
+        {(locationDisplay || (entitySocialLinks && entitySocialLinks.length > 0)) && (
+          <div className="flex items-center gap-4 mt-3 flex-wrap">
+            {locationDisplay && (
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground/50">
+                <MapPin className="w-3.5 h-3.5" />
+                <span>{locationDisplay}</span>
+              </div>
+            )}
             <EntitySocialLinks links={entitySocialLinks} />
           </div>
-        </section>
-      )}
+        )}
 
-      {/* MED PÅ SCENEN / BAK PROSJEKTET – The people */}
-      {publicTeamMembers.length > 0 && (
-        <TeamCreditsSection
-          title={getPersonasSectionTitle(entity.type)}
-          members={publicTeamMembers.map((member: any) => ({
-            persona: member.persona,
-            entity: member.entity,
-            role_label: null,
-            bindingRoleLabel: member.bindingRoleLabel,
-            role_labels: member.role_labels,
-          }))}
-          className="py-16 md:py-28 px-6 md:px-12 border-t border-border/20"
-        />
-      )}
+        <div className="border-b border-border/20 mt-6 mb-0" />
+      </div>
 
-      {/* Del – bilde med bakgrunn, tittel, tagline, logo */}
-      <ShareImageSection
-        slug={entity.slug}
-        shareModel={shareModelFromProject({
-          slug: entity.slug,
-          title: entity.name,
-          tagline: entity.tagline ?? null,
-          heroImageUrl: heroImageUrl ?? null,
-          logoUrl: logoUrl ?? null,
-        })}
-      />
+      {/* MAIN CONTENT – two-column on desktop */}
+      <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 lg:gap-12">
 
-      {/* HISTORIEN – The journey - only show if events exist */}
-      {timelineEvents && timelineEvents.length > 0 && (
-        <section className="py-16 md:py-28 px-6 md:px-12 border-t border-border/20">
-          <h2 className="text-xs uppercase tracking-[0.25em] text-muted-foreground/60 mb-12 md:mb-20">
-            Historien
-          </h2>
-          <UnifiedTimeline source={{ type: "entity", id: entity.id }} />
-        </section>
-      )}
+          {/* LEFT – Primary content */}
+          <div className="space-y-8">
+            {/* Beskrivelse */}
+            {entity.description && (
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-3">
+                  Om prosjektet
+                </h2>
+                <p className="text-base md:text-lg font-light leading-relaxed text-foreground/85 whitespace-pre-line">
+                  {entity.description}
+                </p>
+              </div>
+            )}
 
-      {/* What is GIGGEN footer */}
+            {/* Team / Bak prosjektet */}
+            {publicTeamMembers.length > 0 && (
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-4">
+                  {getPersonasSectionTitle(entity.type)}
+                </h2>
+                <div className="space-y-3">
+                  {publicTeamMembers.map((member: any, i: number) => (
+                    <TeamCreditInline
+                      key={(member.persona?.slug || member.entity?.slug || '') + i}
+                      member={{
+                        persona: member.persona,
+                        entity: member.entity,
+                        role_label: null,
+                        bindingRoleLabel: member.bindingRoleLabel,
+                        role_labels: member.role_labels,
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Historikk / Tidslinje */}
+            {hasTimeline && (
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-4">
+                  Historien
+                </h2>
+                <UnifiedTimeline source={{ type: "entity", id: entity.id }} />
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT – Sidebar */}
+          <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
+            {/* Info-kort */}
+            <div className="rounded-xl border border-border/15 bg-card/40 p-5 space-y-4">
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50">
+                Info
+              </h3>
+              {locationDisplay && (
+                <div className="flex items-start gap-3 text-sm">
+                  <MapPin className="w-4 h-4 text-muted-foreground/50 mt-0.5 flex-shrink-0" />
+                  <span className="text-foreground/80">{locationDisplay}</span>
+                </div>
+              )}
+              {entity.tagline && (
+                <p className="text-sm text-foreground/60 leading-relaxed">{entity.tagline}</p>
+              )}
+            </div>
+
+            {/* Del */}
+            <ShareImageSection
+              slug={entity.slug}
+              shareModel={shareModelFromProject({
+                slug: entity.slug,
+                title: entity.name,
+                tagline: entity.tagline ?? null,
+                heroImageUrl: heroImageUrl ?? null,
+                logoUrl: logoUrl ?? null,
+              })}
+              compact
+            />
+          </aside>
+        </div>
+      </div>
+
       <WhatIsGiggenFooter />
     </PageLayout>
+  );
+}
+
+/* ── Inline team credit (reuses same data shape) ─────────────────── */
+
+import { useSignedMediaUrl as useSignedUrl } from "@/hooks/useSignedMediaUrl";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useEntityTypes } from "@/hooks/useEntityTypes";
+import { getEntityPublicRoute } from "@/lib/entity-types";
+
+function TeamCreditInline({ member }: { member: any }) {
+  const { data: entityTypes } = useEntityTypes();
+  const rawImageUrl = member.persona?.avatar_url ?? member.entity?.hero_image_url ?? null;
+  const imageUrl = useSignedUrl(rawImageUrl, "public");
+  const name = member.persona?.name ?? member.entity?.name ?? "";
+
+  const role =
+    member.role_label ||
+    member.bindingRoleLabel ||
+    (member.role_labels?.length ? member.role_labels.join(", ") : null) ||
+    getPersonaTypeLabel(member.persona?.type) ||
+    (member.persona?.category_tags?.[0] ?? null);
+
+  const personaSlug = member.persona?.slug;
+  const entitySlug = member.entity?.slug;
+  const entityType = member.entity?.type;
+
+  const nameEl = personaSlug ? (
+    <Link to={`/p/${personaSlug}`} className="text-sm font-medium text-foreground hover:underline">
+      {name}
+    </Link>
+  ) : entitySlug && entityType ? (
+    <Link to={getEntityPublicRoute(entityType, entitySlug, entityTypes)} className="text-sm font-medium text-foreground hover:underline">
+      {name}
+    </Link>
+  ) : (
+    <p className="text-sm font-medium text-foreground">{name}</p>
+  );
+
+  return (
+    <div className="flex items-center gap-3 py-1.5">
+      <Avatar className="h-9 w-9 border border-border/20">
+        {imageUrl ? <AvatarImage src={imageUrl} alt={name} className="object-cover" /> : null}
+        <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+          {name.charAt(0).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+      <div>
+        {nameEl}
+        {role && <p className="text-xs text-muted-foreground/50">{role}</p>}
+      </div>
+    </div>
   );
 }
