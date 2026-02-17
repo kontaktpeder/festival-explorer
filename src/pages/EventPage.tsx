@@ -22,7 +22,6 @@ export default function EventPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: event, isLoading, error } = useEvent(slug || "");
   
-  // Signed URL for public viewing
   const heroImageUrl = useSignedMediaUrl(event?.hero_image_url, 'public');
 
   if (isLoading) {
@@ -47,25 +46,19 @@ export default function EventPage() {
 
   const startDate = new Date(event.start_at);
   const endDate = event.end_at ? new Date(event.end_at) : null;
-
-  // Parse hero image settings for focal point positioning
   const heroImageSettings = parseImageSettings(event.hero_image_settings);
-
-  // Format time range
   const timeRange = endDate 
     ? `${format(startDate, "HH:mm")} – ${format(endDate, "HH:mm")}`
     : format(startDate, "HH:mm");
 
   return (
     <PageLayout>
-      {/* Static logo in header */}
       <StaticLogo />
 
-      {/* HERO – same layout as ProjectPage */}
+      {/* HERO */}
       <div className="relative w-full md:h-[580px] bg-background md:bg-black overflow-hidden">
         {heroImageUrl ? (
           <>
-            {/* Mobile: cropped cover */}
             <div className="block md:hidden h-[300px]">
               <CroppedImage
                 src={heroImageUrl}
@@ -74,32 +67,21 @@ export default function EventPage() {
                 className="w-full h-full object-cover"
               />
             </div>
-            {/* Desktop: contain with blurred bg fill */}
             <div className="hidden md:block relative h-full">
-              <img
-                src={heroImageUrl}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover scale-110"
-                style={{ filter: "blur(44px)", opacity: 0.18 }}
-              />
+              <img src={heroImageUrl} alt="" className="absolute inset-0 w-full h-full object-cover scale-110" style={{ filter: "blur(44px)", opacity: 0.18 }} />
               <div className="absolute inset-0 bg-black/20" />
               <div className="relative flex items-center justify-center h-full z-[1]">
-                <img
-                  src={heroImageUrl}
-                  alt={event.title}
-                  className="max-w-full max-h-full object-contain"
-                />
+                <img src={heroImageUrl} alt={event.title} className="max-w-full max-h-full object-contain" />
               </div>
             </div>
           </>
         ) : (
           <div className="w-full h-[300px] md:h-full bg-gradient-to-br from-card to-muted" />
         )}
-        {/* Bottom fade */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none hidden md:block" />
       </div>
 
-      {/* Title + date below hero */}
+      {/* Title + microcopy */}
       <div className="max-w-6xl mx-auto px-4 md:px-8 pt-4 md:pt-6 relative z-10">
         <div className="text-mono text-accent/70 mb-2 text-xs uppercase tracking-[0.3em]">
           {format(startDate, "EEEE", { locale: nb })}
@@ -107,28 +89,20 @@ export default function EventPage() {
         <h1 className="font-black text-3xl md:text-5xl lg:text-6xl uppercase tracking-tight leading-[0.9]">
           {event.title}
         </h1>
+        <p className="text-muted-foreground/60 text-sm mt-3 max-w-lg">
+          Billetter kjøpes som festivalpass. Festivalpass + BOILER ROOM gir full tilgang.
+        </p>
         <div className="border-b border-border/20 mt-6 mb-0" />
       </div>
 
-      {/* MAIN CONTENT – two-column on desktop */}
+      {/* MAIN CONTENT */}
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-10">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 lg:gap-12">
 
-          {/* LEFT – Primary content */}
+          {/* LEFT – Primary: Lineup FIRST, then description, then team */}
           <div className="space-y-8">
-            {/* Beskrivelse */}
-            {event.description && (
-              <div>
-                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-3">
-                  Om kvelden
-                </h2>
-                <p className="text-base md:text-lg font-light leading-relaxed text-foreground/85 whitespace-pre-line">
-                  {event.description}
-                </p>
-              </div>
-            )}
 
-            {/* LINEUP / ZONE TABS */}
+            {/* LINEUP / ZONE TABS – moved to top */}
             {USE_ZONE_TABS_ON_EVENT ? (
               <EventZoneTabs
                 lineup={event.lineup || []}
@@ -139,10 +113,13 @@ export default function EventPage() {
               <>
                 {event.lineup && event.lineup.length > 0 && (
                   <div>
-                    <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-4">
-                      Lineup
+                    <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-1">
+                      Program
                     </h2>
-                    <div className="space-y-6 md:space-y-8">
+                    <p className="text-muted-foreground/60 text-sm mb-5">
+                      Billetten gjelder alle konserter på denne scenen – og flere opplevelser i festivalen.
+                    </p>
+                    <div className="space-y-4 md:space-y-5">
                       {event.lineup.map((item: any, index: number) => {
                         const headlinerIndex = event.lineup.some((i: any) => i.is_featured)
                           ? event.lineup.findIndex((i: any) => i.is_featured)
@@ -154,9 +131,23 @@ export default function EventPage() {
                             showBilling
                             isFirst={index === 0}
                             isHeadliner={index === headlinerIndex}
+                            large
                           />
                         );
                       })}
+                    </div>
+                    {/* Share near lineup */}
+                    <div className="mt-6">
+                      <ShareImageSection
+                        slug={event.slug}
+                        shareModel={shareModelFromEvent({
+                          slug: event.slug,
+                          title: event.title,
+                          venueName: event.venue?.name ?? null,
+                          heroImageUrl: heroImageUrl ?? null,
+                        })}
+                        compact
+                      />
                     </div>
                   </div>
                 )}
@@ -167,22 +158,31 @@ export default function EventPage() {
                   const bsEventKeys = new Set((bs.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
                   const bsFiltered = (bs.festival || []).filter((p: any) => !bsEventKeys.has(`${p.participant_kind}:${p.participant_id}`));
                   const bsAll = [...bsFiltered, ...(bs.event || [])];
-
                   const hr = (event as any).hostRoles || { festival: [], event: [] };
                   const hrEventKeys = new Set((hr.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
                   const hrFiltered = (hr.festival || []).filter((p: any) => !hrEventKeys.has(`${p.participant_kind}:${p.participant_id}`));
                   const hrAll = [...hrFiltered, ...(hr.event || [])];
-
                   const allMembers = [...hrAll, ...bsAll];
                   return <TeamCreditsSection title="Team" members={allMembers} />;
                 })()}
               </>
             )}
+
+            {/* Beskrivelse – moved below lineup */}
+            {event.description && (
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-3">
+                  Om kvelden
+                </h2>
+                <p className="text-base md:text-lg font-light leading-relaxed text-foreground/85 whitespace-pre-line">
+                  {event.description}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* RIGHT – Sidebar */}
           <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
-            {/* Info-kort */}
             <div className="space-y-4">
               <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50">
                 Kvelden
@@ -209,10 +209,7 @@ export default function EventPage() {
               </div>
 
               {event.venue && (
-                <Link
-                  to={`/venue/${event.venue.slug}`}
-                  className="flex items-start gap-3 text-sm group"
-                >
+                <Link to={`/venue/${event.venue.slug}`} className="flex items-start gap-3 text-sm group">
                   <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
                     <MapPin className="w-4 h-4 text-accent/70" />
                   </div>
@@ -227,7 +224,6 @@ export default function EventPage() {
                 </Link>
               )}
 
-              {/* Praktisk inline */}
               {(() => {
                 const ageLimit = (event as any).age_limit?.trim();
                 const cloakroom = (event as any).cloakroom_available === true;
@@ -258,18 +254,6 @@ export default function EventPage() {
                 );
               })()}
             </div>
-
-            {/* Del */}
-            <ShareImageSection
-              slug={event.slug}
-              shareModel={shareModelFromEvent({
-                slug: event.slug,
-                title: event.title,
-                venueName: event.venue?.name ?? null,
-                heroImageUrl: heroImageUrl ?? null,
-              })}
-              compact
-            />
           </aside>
         </div>
       </div>

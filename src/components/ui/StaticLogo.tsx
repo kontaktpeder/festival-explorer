@@ -141,7 +141,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
                 to="/tickets"
                 className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-7 py-3 text-base transition-all shadow-lg"
               >
-                Kjøp billett
+                Kjøp festivalpass
               </Link>
             </div>
           </div>
@@ -228,7 +228,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
                 to="/tickets"
                  className="pointer-events-auto bg-accent text-accent-foreground font-black rounded-full px-6 py-3 text-sm shadow-lg"
               >
-                Kjøp billett
+                Kjøp festivalpass
               </Link>
             </div>
           </>
@@ -286,7 +286,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
               to="/tickets"
               className="hidden md:block bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-7 py-3 text-base transition-all"
             >
-              Kjøp billett
+              Kjøp festivalpass
             </Link>
             
             {/* Secondary: Backstage */}
@@ -312,7 +312,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
             to="/tickets"
             className="pointer-events-auto bg-accent text-accent-foreground font-black rounded-full px-6 py-3 text-sm shadow-lg"
           >
-            Kjøp billett
+            Kjøp festivalpass
           </Link>
         </div>
       )}
