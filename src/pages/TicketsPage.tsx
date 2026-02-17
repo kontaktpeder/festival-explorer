@@ -221,7 +221,7 @@ export default function TicketsPage() {
             </li>
             <li className="flex items-center gap-2">
               <Lock className="w-3.5 h-3.5 text-accent/60 flex-shrink-0" />
-              BOILER ROOM (DJ-program) krever egen billett eller full tilgang
+              BOILER ROOM (DJ-program i kjelleren) krever egen billett eller full tilgang
             </li>
             <li className="flex items-center gap-2">
               <Smartphone className="w-3.5 h-3.5 text-accent/60 flex-shrink-0" />
