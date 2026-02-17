@@ -110,7 +110,9 @@ function TimelineDisplayItem({ event, index, eventTypeOptions }: TimelineDisplay
       }`}
       style={{ transitionDelay: `${index * 120}ms` }}
     >
-      <div className="absolute -left-6 md:-left-8 top-2 w-3 h-3 rounded-full bg-primary/80 ring-4 ring-background" />
+      <div className="absolute -left-6 md:-left-8 top-2 w-5 h-5 rounded-full bg-primary/80 ring-4 ring-background flex items-center justify-center">
+        <EventIcon className="w-3 h-3 text-primary-foreground" />
+      </div>
 
       <div className="space-y-3">
         {dateStr && (
@@ -119,9 +121,11 @@ function TimelineDisplayItem({ event, index, eventTypeOptions }: TimelineDisplay
           </div>
         )}
 
-        <h3 className="text-lg md:text-xl font-medium text-foreground leading-snug">
-          {event.title}
-        </h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg md:text-xl font-medium text-foreground leading-snug">
+            {event.title}
+          </h3>
+        </div>
 
         {locationStr && (
           <p className="text-sm text-muted-foreground/60 flex items-center gap-2">
