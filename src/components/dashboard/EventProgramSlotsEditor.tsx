@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -21,11 +22,17 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   SLOT_KIND_OPTIONS,
   INTERNAL_STATUS_OPTIONS,
   getSlotKindConfig,
 } from "@/lib/program-slots";
-import { Plus, Pencil, Copy, Trash2, Clock, FileText } from "lucide-react";
+import { Plus, Pencil, Copy, Trash2, Clock, FileText, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { isoToLocalDatetimeString } from "@/lib/utils";
 import type { SlotKind, InternalSlotStatus } from "@/types/database";
@@ -44,6 +51,7 @@ interface SlotForm {
   internal_status: InternalSlotStatus;
   internal_note: string;
   is_canceled: boolean;
+  is_visible_public: boolean;
 }
 
 const EMPTY_FORM: SlotForm = {
@@ -54,6 +62,7 @@ const EMPTY_FORM: SlotForm = {
   internal_status: "confirmed",
   internal_note: "",
   is_canceled: false,
+  is_visible_public: false,
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -86,6 +95,38 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
     enabled: !!eventId,
   });
 
+  // Allowed entities: from event_participants + accepted invitations
+  const { data: allowedEntities = [] } = useQuery({
+    queryKey: ["event-allowed-entities", eventId],
+    queryFn: async () => {
+      const [participantsRes, invitationsRes] = await Promise.all([
+        supabase
+          .from("event_participants")
+          .select("participant_id")
+          .eq("event_id", eventId)
+          .in("participant_kind", ["entity", "project"]),
+        supabase
+          .from("event_invitations" as any)
+          .select("entity_id")
+          .eq("event_id", eventId)
+          .eq("status", "accepted"),
+      ]);
+      const ids = new Set<string>();
+      (participantsRes.data || []).forEach((p: any) => ids.add(p.participant_id));
+      (invitationsRes.data || []).forEach((i: any) => ids.add(i.entity_id));
+      if (ids.size === 0) return [];
+
+      const { data, error } = await supabase
+        .from("entities")
+        .select("id, name, slug")
+        .in("id", Array.from(ids))
+        .order("name");
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!eventId,
+  });
+
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["event-program-slots", eventId] });
     queryClient.invalidateQueries({ queryKey: ["event"] });
@@ -104,6 +145,7 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
           internal_status: payload.internal_status,
           internal_note: payload.internal_note || null,
           is_canceled: payload.is_canceled,
+          is_visible_public: payload.is_visible_public,
         } as any);
       if (error) throw error;
     },
@@ -126,6 +168,7 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
       if (payload.internal_status !== undefined) updates.internal_status = payload.internal_status;
       if (payload.internal_note !== undefined) updates.internal_note = payload.internal_note || null;
       if (payload.is_canceled !== undefined) updates.is_canceled = payload.is_canceled;
+      if (payload.is_visible_public !== undefined) updates.is_visible_public = payload.is_visible_public;
 
       const { error } = await supabase
         .from("event_program_slots" as any)
@@ -155,6 +198,10 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
     onError: (e: Error) => toast({ title: "Feil", description: e.message, variant: "destructive" }),
   });
 
+  const toggleVisibility = (slot: any) => {
+    updateMutation.mutate({ id: slot.id, is_visible_public: !slot.is_visible_public });
+  };
+
   const openCreate = () => {
     setEditingSlot(null);
     const defaultStart = eventStartAt ? isoToLocalDatetimeString(eventStartAt) : "";
@@ -178,6 +225,7 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
       internal_status: slot.internal_status,
       internal_note: slot.internal_note || "",
       is_canceled: slot.is_canceled,
+      is_visible_public: slot.is_visible_public ?? false,
     });
     setDialogOpen(true);
   };
@@ -192,6 +240,7 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
       internal_status: slot.internal_status,
       internal_note: slot.internal_note || "",
       is_canceled: false,
+      is_visible_public: false,
     });
     setDialogOpen(true);
   };
@@ -214,6 +263,8 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
 
   if (isLoading) return <p className="text-sm text-muted-foreground py-4">Laster program...</p>;
 
+  const visibleCount = slots.filter((s: any) => s.is_visible_public).length;
+
   return (
     <div className="space-y-3">
       {/* Header */}
@@ -225,6 +276,7 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
           </h2>
           <span className="text-[10px] text-muted-foreground/50 tabular-nums">
             {slots.length} punkt{slots.length !== 1 ? "er" : ""}
+            {slots.length > 0 && ` · ${visibleCount} synlig${visibleCount !== 1 ? "e" : ""}`}
           </span>
         </div>
         {canEdit && (
@@ -244,106 +296,142 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
           </p>
         </div>
       ) : (
-        <div className="divide-y divide-border/10">
-          {slots.map((slot: any) => {
-            const config = getSlotKindConfig(slot.slot_kind);
-            const Icon = config.icon;
-            const entity = slot.entity;
-            const statusOption = INTERNAL_STATUS_OPTIONS.find((o) => o.value === slot.internal_status);
-            const statusColor = STATUS_COLORS[slot.internal_status] || "";
+        <TooltipProvider delayDuration={200}>
+          <div className="divide-y divide-border/10">
+            {slots.map((slot: any) => {
+              const config = getSlotKindConfig(slot.slot_kind);
+              const Icon = config.icon;
+              const entity = slot.entity;
+              const statusOption = INTERNAL_STATUS_OPTIONS.find((o) => o.value === slot.internal_status);
+              const statusColor = STATUS_COLORS[slot.internal_status] || "";
+              const isVisible = slot.is_visible_public;
 
-            return (
-              <div
-                key={slot.id}
-                className={`py-3 first:pt-0 last:pb-0 group ${slot.is_canceled ? "opacity-50" : ""}`}
-              >
-                <div className="flex items-start gap-3">
-                  {/* Time column */}
-                  <div className="w-[72px] shrink-0 pt-0.5">
-                    <span className="text-xs font-mono text-muted-foreground tabular-nums">
-                      {new Date(slot.starts_at).toLocaleTimeString("nb-NO", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                    {slot.ends_at && (
-                      <span className="text-[10px] font-mono text-muted-foreground/50 block tabular-nums">
-                        {new Date(slot.ends_at).toLocaleTimeString("nb-NO", {
+              return (
+                <div
+                  key={slot.id}
+                  className={`py-3 first:pt-0 last:pb-0 group ${slot.is_canceled ? "opacity-50" : ""}`}
+                >
+                  <div className="flex items-start gap-3">
+                    {/* Time column */}
+                    <div className="w-[72px] shrink-0 pt-0.5">
+                      <span className="text-xs font-mono text-muted-foreground tabular-nums">
+                        {new Date(slot.starts_at).toLocaleTimeString("nb-NO", {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
                       </span>
-                    )}
-                  </div>
-
-                  {/* Icon */}
-                  <div className="w-7 h-7 rounded-md bg-muted/40 flex items-center justify-center shrink-0">
-                    <Icon className="h-3.5 w-3.5 text-muted-foreground/70" />
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium text-foreground">
-                        {entity ? entity.name : config.label}
-                      </span>
-                      {slot.is_canceled && (
-                        <Badge variant="destructive" className="text-[9px] h-4 px-1.5">
-                          Avlyst
-                        </Badge>
-                      )}
-                    </div>
-
-                    {/* Meta row: category + status */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] text-muted-foreground/60 bg-muted/30 px-1.5 py-0.5 rounded">
-                        {config.label}
-                      </span>
-                      {statusOption && (
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded border ${statusColor}`}>
-                          {statusOption.label}
+                      {slot.ends_at && (
+                        <span className="text-[10px] font-mono text-muted-foreground/50 block tabular-nums">
+                          {new Date(slot.ends_at).toLocaleTimeString("nb-NO", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </span>
                       )}
                     </div>
 
-                    {/* Note */}
-                    {slot.internal_note && (
-                      <div className="flex items-start gap-1.5 mt-1">
-                        <FileText className="h-3 w-3 text-muted-foreground/40 mt-0.5 shrink-0" />
-                        <p className="text-[11px] text-muted-foreground/60 leading-relaxed">
-                          {slot.internal_note}
-                        </p>
+                    {/* Icon */}
+                    <div className="w-7 h-7 rounded-md bg-muted/40 flex items-center justify-center shrink-0">
+                      <Icon className="h-3.5 w-3.5 text-muted-foreground/70" />
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-foreground">
+                          {entity ? entity.name : config.label}
+                        </span>
+                        {slot.is_canceled && (
+                          <Badge variant="destructive" className="text-[9px] h-4 px-1.5">
+                            Avlyst
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Meta row: category + status + visibility */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] text-muted-foreground/60 bg-muted/30 px-1.5 py-0.5 rounded">
+                          {config.label}
+                        </span>
+                        {statusOption && (
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded border ${statusColor}`}>
+                            {statusOption.label}
+                          </span>
+                        )}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded ${
+                              isVisible
+                                ? "bg-emerald-500/10 text-emerald-400"
+                                : "bg-muted/30 text-muted-foreground/50"
+                            }`}>
+                              {isVisible ? <Eye className="h-2.5 w-2.5" /> : <EyeOff className="h-2.5 w-2.5" />}
+                              {isVisible ? "Synlig" : "Skjult"}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-xs">
+                            {isVisible
+                              ? "Synlig for publikum på event- og festivalprogram"
+                              : "Kun synlig backstage – ikke publisert ennå"}
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+
+                      {/* Note */}
+                      {slot.internal_note && (
+                        <div className="flex items-start gap-1.5 mt-1">
+                          <FileText className="h-3 w-3 text-muted-foreground/40 mt-0.5 shrink-0" />
+                          <p className="text-[11px] text-muted-foreground/60 leading-relaxed">
+                            {slot.internal_note}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    {canEdit && (
+                      <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => toggleVisibility(slot)}
+                              title={isVisible ? "Skjul fra publikum" : "Vis for publikum"}
+                            >
+                              {isVisible ? <Eye className="h-3 w-3 text-emerald-400" /> : <EyeOff className="h-3 w-3" />}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-xs">
+                            {isVisible ? "Skjul fra publikum" : "Vis for publikum"}
+                          </TooltipContent>
+                        </Tooltip>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openDuplicate(slot)} title="Dupliser">
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(slot)} title="Rediger">
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-destructive"
+                          onClick={() => {
+                            if (window.confirm("Slette dette punktet?")) deleteMutation.mutate(slot.id);
+                          }}
+                          title="Slett"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
                       </div>
                     )}
                   </div>
-
-                  {/* Actions */}
-                  {canEdit && (
-                    <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 sm:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openDuplicate(slot)} title="Dupliser">
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(slot)} title="Rediger">
-                        <Pencil className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-destructive"
-                        onClick={() => {
-                          if (window.confirm("Slette dette punktet?")) deleteMutation.mutate(slot.id);
-                        }}
-                        title="Slett"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  )}
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </TooltipProvider>
       )}
 
       {/* Add/Edit dialog */}
@@ -363,11 +451,11 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
                   </SelectTrigger>
                   <SelectContent>
                     {SLOT_KIND_OPTIONS.map((o) => {
-                      const Icon = o.icon;
+                      const SlotIcon = o.icon;
                       return (
                         <SelectItem key={o.value} value={o.value}>
                           <span className="flex items-center gap-2">
-                            <Icon className="h-3.5 w-3.5" />
+                            <SlotIcon className="h-3.5 w-3.5" />
                             {o.label}
                           </span>
                         </SelectItem>
@@ -421,7 +509,13 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
                   value={form.entity_id}
                   onChange={(id) => setForm((f) => ({ ...f, entity_id: id }))}
                   placeholder="Velg artist..."
+                  allowedEntities={allowedEntities}
                 />
+                {allowedEntities.length === 0 && (
+                  <p className="text-[10px] text-muted-foreground/60">
+                    Ingen godkjente artister. Inviter prosjekter eller legg dem til som medvirkende først.
+                  </p>
+                )}
               </div>
             )}
 
@@ -436,17 +530,31 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
               />
             </div>
 
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="is_canceled"
-                checked={form.is_canceled}
-                onChange={(e) => setForm((f) => ({ ...f, is_canceled: e.target.checked }))}
-                className="h-4 w-4 rounded"
-              />
-              <Label htmlFor="is_canceled" className="cursor-pointer text-sm">
-                Avlyst
-              </Label>
+            {/* Visibility + Canceled row */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="is_visible_public"
+                  checked={form.is_visible_public}
+                  onCheckedChange={(checked) => setForm((f) => ({ ...f, is_visible_public: checked }))}
+                />
+                <Label htmlFor="is_visible_public" className="cursor-pointer text-sm flex items-center gap-1.5">
+                  <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                  Synlig for publikum
+                </Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="is_canceled"
+                  checked={form.is_canceled}
+                  onChange={(e) => setForm((f) => ({ ...f, is_canceled: e.target.checked }))}
+                  className="h-4 w-4 rounded"
+                />
+                <Label htmlFor="is_canceled" className="cursor-pointer text-sm">
+                  Avlyst
+                </Label>
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -466,29 +574,18 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
   );
 }
 
-/** Simple entity picker for solo/band entities */
+/** Entity picker scoped to allowed entities (participants + accepted invitations) */
 function EntityPicker({
   value,
   onChange,
   placeholder,
+  allowedEntities,
 }: {
   value: string;
   onChange: (id: string) => void;
   placeholder?: string;
+  allowedEntities: { id: string; name: string; slug: string }[];
 }) {
-  const { data: entities = [] } = useQuery({
-    queryKey: ["entities-solo-band"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("entities")
-        .select("id, name, slug")
-        .in("type", ["solo", "band"])
-        .order("name");
-      if (error) throw error;
-      return data || [];
-    },
-  });
-
   return (
     <Select value={value || "__none__"} onValueChange={(v) => onChange(v === "__none__" ? "" : v)}>
       <SelectTrigger className="h-9">
@@ -496,7 +593,7 @@ function EntityPicker({
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="__none__">Ingen</SelectItem>
-        {entities.map((e: any) => (
+        {allowedEntities.map((e) => (
           <SelectItem key={e.id} value={e.id}>
             {e.name}
           </SelectItem>

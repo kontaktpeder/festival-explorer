@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { EventParticipantsZoneEditor } from "@/components/admin/EventParticipantsZoneEditor";
 import { EventProgramSlotsEditor } from "@/components/dashboard/EventProgramSlotsEditor";
+import { EventInvitationsEditor } from "@/components/dashboard/EventInvitationsEditor";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { getAuthenticatedUser } from "@/lib/admin-helpers";
@@ -554,6 +555,11 @@ export default function EventRoomPage() {
 
           {/* Right column: program + participants */}
           <div className="space-y-6">
+            {/* Event invitations */}
+            {!isNew && id && (
+              <EventInvitationsEditor eventId={id} canEdit={canEdit} />
+            )}
+
             {/* Program slots */}
             {!isNew && id && (
               <EventProgramSlotsEditor eventId={id} canEdit={canEdit} eventStartAt={event?.start_at} />
