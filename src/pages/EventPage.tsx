@@ -148,19 +148,6 @@ export default function EventPage() {
                     compact
                   />
                 </div>
-                {/* Team */}
-                {(() => {
-                  const bs = (event as any).backstage || { festival: [], event: [] };
-                  const bsEventKeys = new Set((bs.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
-                  const bsFiltered = (bs.festival || []).filter((p: any) => !bsEventKeys.has(`${p.participant_kind}:${p.participant_id}`));
-                  const bsAll = [...bsFiltered, ...(bs.event || [])];
-                  const hr = (event as any).hostRoles || { festival: [], event: [] };
-                  const hrEventKeys = new Set((hr.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
-                  const hrFiltered = (hr.festival || []).filter((p: any) => !hrEventKeys.has(`${p.participant_kind}:${p.participant_id}`));
-                  const hrAll = [...hrFiltered, ...(hr.event || [])];
-                  const allMembers = [...hrAll, ...bsAll];
-                  return <TeamCreditsSection title="Team" members={allMembers} />;
-                })()}
               </>
             ) : USE_ZONE_TABS_ON_EVENT ? (
               <EventZoneTabs
@@ -211,19 +198,6 @@ export default function EventPage() {
                   </div>
                 )}
 
-                {/* Festival-team */}
-                {(() => {
-                  const bs = (event as any).backstage || { festival: [], event: [] };
-                  const bsEventKeys = new Set((bs.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
-                  const bsFiltered = (bs.festival || []).filter((p: any) => !bsEventKeys.has(`${p.participant_kind}:${p.participant_id}`));
-                  const bsAll = [...bsFiltered, ...(bs.event || [])];
-                  const hr = (event as any).hostRoles || { festival: [], event: [] };
-                  const hrEventKeys = new Set((hr.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
-                  const hrFiltered = (hr.festival || []).filter((p: any) => !hrEventKeys.has(`${p.participant_kind}:${p.participant_id}`));
-                  const hrAll = [...hrFiltered, ...(hr.event || [])];
-                  const allMembers = [...hrAll, ...bsAll];
-                  return <TeamCreditsSection title="Team" members={allMembers} />;
-                })()}
               </>
             )}
 
@@ -244,7 +218,7 @@ export default function EventPage() {
           <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
             <div className="space-y-4">
               <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/50">
-                Kvelden
+                Praktisk
               </h3>
 
               <div className="flex items-start gap-3 text-sm">
@@ -313,6 +287,20 @@ export default function EventPage() {
                 );
               })()}
             </div>
+
+            {/* Team */}
+            {(() => {
+              const bs = (event as any).backstage || { festival: [], event: [] };
+              const bsEventKeys = new Set((bs.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
+              const bsFiltered = (bs.festival || []).filter((p: any) => !bsEventKeys.has(`${p.participant_kind}:${p.participant_id}`));
+              const bsAll = [...bsFiltered, ...(bs.event || [])];
+              const hr = (event as any).hostRoles || { festival: [], event: [] };
+              const hrEventKeys = new Set((hr.event || []).map((p: any) => `${p.participant_kind}:${p.participant_id}`));
+              const hrFiltered = (hr.festival || []).filter((p: any) => !hrEventKeys.has(`${p.participant_kind}:${p.participant_id}`));
+              const hrAll = [...hrFiltered, ...(hr.event || [])];
+              const allMembers = [...hrAll, ...bsAll];
+              return <TeamCreditsSection title="Team" members={allMembers} />;
+            })()}
           </aside>
         </div>
       </div>
