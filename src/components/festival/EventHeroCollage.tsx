@@ -142,7 +142,9 @@ function CollageCell({
     />
   );
 
-  const overlay = null;
+  const overlay = (
+    <div className="absolute inset-0 bg-black/15 pointer-events-none" />
+  );
 
   // Name tag with guaranteed dark gradient for legibility
   const nameTag = (
