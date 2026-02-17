@@ -388,10 +388,33 @@ export interface EventProgramSlot {
   ends_at: string | null;
   slot_kind: SlotKind;
   is_canceled: boolean;
+  is_visible_public: boolean;
   internal_status: InternalSlotStatus;
   internal_note: string | null;
   created_at: string;
   updated_at: string;
   // Resolved entity (populated by hooks)
   entity?: { id: string; name: string; slug: string; tagline?: string | null; hero_image_url?: string | null; type?: string } | null;
+}
+
+// ============================================
+// Event Invitations (persona-basert)
+// ============================================
+
+export type EventInvitationStatus = 'pending' | 'accepted' | 'declined';
+
+export interface EventInvitation {
+  id: string;
+  event_id: string;
+  entity_id: string;
+  invited_by: string; // personas(id)
+  status: EventInvitationStatus;
+  access_on_accept: 'viewer' | 'editor' | 'admin';
+  message: string | null;
+  created_at: string;
+  updated_at: string;
+  responded_at: string | null;
+  event?: { id: string; title: string; slug: string } | null;
+  entity?: { id: string; name: string; slug: string; hero_image_url?: string | null } | null;
+  inviter_persona?: { id: string; name: string; slug: string } | null;
 }

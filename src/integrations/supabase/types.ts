@@ -675,6 +675,67 @@ export type Database = {
           },
         ]
       }
+      event_invitations: {
+        Row: {
+          access_on_accept: string
+          created_at: string
+          entity_id: string
+          event_id: string
+          id: string
+          invited_by: string
+          message: string | null
+          responded_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          access_on_accept?: string
+          created_at?: string
+          entity_id: string
+          event_id: string
+          id?: string
+          invited_by: string
+          message?: string | null
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          access_on_accept?: string
+          created_at?: string
+          entity_id?: string
+          event_id?: string
+          id?: string
+          invited_by?: string
+          message?: string | null
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_invitations_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_invitations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "personas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_participants: {
         Row: {
           created_at: string
@@ -735,6 +796,7 @@ export type Database = {
           internal_note: string | null
           internal_status: string
           is_canceled: boolean
+          is_visible_public: boolean
           slot_kind: string
           starts_at: string
           updated_at: string
@@ -748,6 +810,7 @@ export type Database = {
           internal_note?: string | null
           internal_status?: string
           is_canceled?: boolean
+          is_visible_public?: boolean
           slot_kind?: string
           starts_at: string
           updated_at?: string
@@ -761,6 +824,7 @@ export type Database = {
           internal_note?: string | null
           internal_status?: string
           is_canceled?: boolean
+          is_visible_public?: boolean
           slot_kind?: string
           starts_at?: string
           updated_at?: string
@@ -2195,6 +2259,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_event_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: undefined
+      }
       accept_invitation_by_id: {
         Args: { p_invitation_id: string }
         Returns: {
@@ -2266,6 +2334,10 @@ export type Database = {
       can_see_revenue_any: { Args: never; Returns: boolean }
       can_see_ticket_stats_any: { Args: never; Returns: boolean }
       can_upload_high_res: { Args: { p_user_id: string }; Returns: boolean }
+      can_use_entity_in_event: {
+        Args: { p_entity_id: string; p_event_id: string }
+        Returns: boolean
+      }
       can_view_event_lineup: { Args: { p_event_id: string }; Returns: boolean }
       checkin_ticket_atomic: {
         Args: {
