@@ -204,22 +204,22 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           <div>
             {logoDisplayMode !== 'instead_of_name' && (
               <>
-                <div
-                  style={{
-                    fontSize: 96,
-                    fontWeight: 900,
-                    lineHeight: 0.88,
-                    color: "#ffffff",
-                    textTransform: "uppercase" as const,
-                    letterSpacing: "0.08em",
-                    textShadow: "0 6px 40px rgba(0,0,0,0.7)",
-                    marginBottom: 24,
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical" as const,
-                    overflow: "hidden",
-                  }}
-                >
+                  <div
+                    style={{
+                      fontSize: 76,
+                      fontWeight: 900,
+                      lineHeight: 0.92,
+                      color: "#ffffff",
+                      textTransform: "uppercase" as const,
+                      letterSpacing: "0.08em",
+                      textShadow: "0 6px 40px rgba(0,0,0,0.7)",
+                      marginBottom: 20,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical" as const,
+                      overflow: "hidden",
+                    }}
+                  >
                   {data.title}
                 </div>
                 {data.subtitle && (
