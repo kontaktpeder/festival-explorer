@@ -1,4 +1,4 @@
-import { forwardRef, useState } from "react";
+import { forwardRef, useState, useRef, useEffect } from "react";
 import shareGIcon from "@/assets/share-g-icon.png";
 import shareFallbackBg from "@/assets/share-fallback-bg.jpeg";
 import type { ShareModel } from "@/types/share";
@@ -32,7 +32,7 @@ type ShareImageCardProps = {
  * Hero i fast sone – manuelt cover-crop fordi html2canvas ignorerer object-fit.
  * Beregner riktige px-dimensjoner ved onLoad slik at bildet aldri strekkes.
  */
-function ShareHeroForeground({ src, focalX = 0.5, focalY = 0.5 }: { src: string; focalX?: number; focalY?: number }) {
+function ShareHeroForeground({ src, focalX = 0.5, focalY = 0.5, heroTop = HERO_ZONE_TOP }: { src: string; focalX?: number; focalY?: number; heroTop?: number }) {
   const [imgStyle, setImgStyle] = useState<React.CSSProperties>({
     position: "absolute",
     width: "100%",
@@ -70,7 +70,7 @@ function ShareHeroForeground({ src, focalX = 0.5, focalY = 0.5 }: { src: string;
     <div
       style={{
         position: "absolute",
-        top: HERO_ZONE_TOP,
+        top: heroTop,
         left: 0,
         width: SHARE_WIDTH,
         height: HERO_ZONE_HEIGHT,
@@ -105,6 +105,17 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
     const LOGO_BOX_W = Math.min(200, Math.max(140, SHARE_WIDTH * 0.14)); // ~151px
     const HEADER_GAP = 32;
     const TITLE_COL_W = SHARE_WIDTH - HEADER_PADDING_X * 2 - HEADER_GAP - LOGO_BOX_W;
+
+    // Dynamic hero top: measure header height so 1-line titles sit closer to image
+    const headerRef = useRef<HTMLDivElement>(null);
+    const [heroTop, setHeroTop] = useState(HERO_ZONE_TOP);
+    useEffect(() => {
+      if (!headerRef.current) return;
+      const h = headerRef.current.offsetHeight;
+      // fixed gap of 90px between header bottom and hero image
+      const computed = SAFE_TOP + h + 90;
+      setHeroTop(Math.min(computed, HERO_ZONE_TOP));
+    }, [data.title, data.subtitle]);
 
     return (
       <div
@@ -163,7 +174,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
         )}
 
         {/* Lag 2: Hero forgrunn */}
-        {heroUrl && <ShareHeroForeground src={heroUrl} focalX={heroFocalX} focalY={heroFocalY} />}
+        {heroUrl && <ShareHeroForeground src={heroUrl} focalX={heroFocalX} focalY={heroFocalY} heroTop={heroTop} />}
 
         {/* Topp-gradient */}
         <div
@@ -221,6 +232,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
 
         {/* Header: tittel + logo – grid med safezone */}
         <div
+          ref={headerRef}
           style={{
             position: "absolute",
             top: SAFE_TOP,
