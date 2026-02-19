@@ -16,6 +16,7 @@ export function shareModelFromProject(params: {
   title: string;
   tagline?: string | null;
   heroImageUrl: string | null;
+  heroImageSettings?: unknown | null;
   logoUrl?: string | null;
   logoDisplayMode?: 'with_name' | 'instead_of_name';
   brandLogoUrl?: string;
@@ -37,6 +38,7 @@ export function shareModelFromProject(params: {
     title: truncate(params.title, TITLE_MAX),
     subtitle: params.tagline ? truncate(params.tagline, SUBTITLE_MAX) : undefined,
     heroImageUrl: params.heroImageUrl ?? null,
+    heroImageSettings: params.heroImageSettings ?? null,
     logoDisplayMode: params.logoDisplayMode ?? 'with_name',
     cta,
     url: `${base}/project/${params.slug}`,

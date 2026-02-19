@@ -32,7 +32,7 @@ type ShareImageCardProps = {
  * Hero i fast sone – manuelt cover-crop fordi html2canvas ignorerer object-fit.
  * Beregner riktige px-dimensjoner ved onLoad slik at bildet aldri strekkes.
  */
-function ShareHeroForeground({ src }: { src: string }) {
+function ShareHeroForeground({ src, focalX = 0.5, focalY = 0.5 }: { src: string; focalX?: number; focalY?: number }) {
   const [imgStyle, setImgStyle] = useState<React.CSSProperties>({
     position: "absolute",
     width: "100%",
@@ -52,8 +52,10 @@ function ShareHeroForeground({ src }: { src: string }) {
     const scale = Math.max(containerW / naturalW, containerH / naturalH);
     const renderedW = naturalW * scale;
     const renderedH = naturalH * scale;
-    const offsetX = (containerW - renderedW) / 2;
-    const offsetY = (containerH - renderedH) / 2;
+
+    // Use focal point (0–1) to determine crop position instead of always centering
+    const offsetX = -focalX * (renderedW - containerW);
+    const offsetY = -focalY * (renderedH - containerH);
 
     setImgStyle({
       position: "absolute",
@@ -94,6 +96,9 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
     const heroUrl = data.heroImageUrl || null;
     const subjectLogo = data.subjectLogoUrl || null;
     const logoDisplayMode = data.logoDisplayMode ?? 'with_name';
+    const heroSettings = data.heroImageSettings as { focal_x?: number; focal_y?: number } | null | undefined;
+    const heroFocalX = heroSettings?.focal_x ?? 0.5;
+    const heroFocalY = heroSettings?.focal_y ?? 0.5;
 
     // Header layout constants
     const HEADER_PADDING_X = 96;
@@ -158,7 +163,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
         )}
 
         {/* Lag 2: Hero forgrunn */}
-        {heroUrl && <ShareHeroForeground src={heroUrl} />}
+        {heroUrl && <ShareHeroForeground src={heroUrl} focalX={heroFocalX} focalY={heroFocalY} />}
 
         {/* Topp-gradient */}
         <div
