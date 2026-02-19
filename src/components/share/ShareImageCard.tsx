@@ -18,8 +18,8 @@ const GIGGEN_SIZE = 76;
 const GIGGEN_INSET = 16;
 const GIGGEN_BOTTOM = 52;
 const GIGGEN_LEFT = 52;
-const SUBJECT_LOGO_MAX_W = 280;
-const SUBJECT_LOGO_MAX_H = 100;
+const SUBJECT_LOGO_MAX_W = 380;
+const SUBJECT_LOGO_MAX_H = 160;
 
 /** Varmere oransje – mer plakat, mindre UI */
 const ACCENT_COLOR = "#FF8C2B";
@@ -230,7 +230,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
             style={{
               position: "absolute",
               top: HERO_ZONE_TOP + 24,
-              right: SAFE_RIGHT,
+              right: 32,
               zIndex: 10,
             }}
           >
