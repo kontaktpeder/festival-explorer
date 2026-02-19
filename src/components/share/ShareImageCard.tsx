@@ -116,7 +116,15 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
 
     // Dynamic hero top: measure header height so 1-line titles sit closer to image
     const headerRef = useRef<HTMLDivElement>(null);
+    const [headerDynTop, setHeaderDynTop] = useState<number | null>(null);
+    useEffect(() => {
+      if (!isOneLineTitle || !headerRef.current) return;
+      const h = headerRef.current.offsetHeight;
+      // Position header so it ends just above the hero (with ~28px gap)
+      setHeaderDynTop(HERO_ZONE_TOP - h - 28);
+    }, [isOneLineTitle, data.title, data.subtitle]);
     const heroTop = HERO_ZONE_TOP;
+    const headerTop2 = isOneLineTitle ? (headerDynTop ?? SAFE_TOP) : SAFE_TOP + 48;
 
     return (
       <div
@@ -236,7 +244,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           ref={headerRef}
           style={{
             position: "absolute",
-            top: headerTop,
+            top: headerTop2,
             left: HEADER_PADDING_X,
             width: headerFullWidth,
             display: "grid",
