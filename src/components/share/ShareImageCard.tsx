@@ -105,6 +105,8 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
     const LOGO_BOX_W = Math.min(200, Math.max(140, SHARE_WIDTH * 0.14)); // ~151px
     const HEADER_GAP = 32;
     const TITLE_COL_W = SHARE_WIDTH - HEADER_PADDING_X * 2 - HEADER_GAP - LOGO_BOX_W;
+    const hasSubjectLogo = !!subjectLogo;
+    const headerFullWidth = SHARE_WIDTH - HEADER_PADDING_X * 2;
 
     // 1-line vs 2-line title detection (~15 chars fits on one line at 76px / 705px col)
     const isOneLineTitle = logoDisplayMode === 'instead_of_name' ? false : (data.title?.length ?? 0) <= 15;
@@ -244,10 +246,10 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
             position: "absolute",
             top: headerTop,
             left: HEADER_PADDING_X,
-            width: SHARE_WIDTH - HEADER_PADDING_X * 2,
+            width: headerFullWidth,
             display: "grid",
-            gridTemplateColumns: `${TITLE_COL_W}px ${LOGO_BOX_W}px`,
-            columnGap: HEADER_GAP,
+            gridTemplateColumns: hasSubjectLogo ? `${TITLE_COL_W}px ${LOGO_BOX_W}px` : "1fr",
+            columnGap: hasSubjectLogo ? HEADER_GAP : 0,
             alignItems: "start",
             zIndex: 10,
           }}
