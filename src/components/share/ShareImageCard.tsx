@@ -6,13 +6,13 @@ import { SHARE_WIDTH, SHARE_HEIGHT } from "@/types/share";
 
 const SAFE_LEFT = 96;
 const SAFE_RIGHT = 96;
-const SAFE_TOP = 72;
+const SAFE_TOP = 104;
 const SAFE_BOTTOM = 140;
 
-const GIGGEN_SIZE = 140;
+const GIGGEN_SIZE = 88;
 const GIGGEN_INSET = 16;
-const GIGGEN_BOTTOM = 48;
-const GIGGEN_LEFT = 48;
+const GIGGEN_BOTTOM = 52;
+const GIGGEN_LEFT = 52;
 const SUBJECT_LOGO_MAX_W = 360;
 const SUBJECT_LOGO_MAX_H = 160;
 
@@ -155,7 +155,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to top, rgba(0,0,0,0.70) 0%, rgba(0,0,0,0.30) 18%, rgba(0,0,0,0.08) 38%, rgba(0,0,0,0) 55%)",
+              "linear-gradient(to top, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.22) 22%, rgba(0,0,0,0.05) 44%, rgba(0,0,0,0) 60%)",
             pointerEvents: "none",
             zIndex: 3,
           }}
