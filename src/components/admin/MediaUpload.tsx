@@ -128,10 +128,18 @@ export function MediaUpload({
       let dimensions: { width?: number; height?: number } = {};
 
       // Compress images (NOTE: GIF must not be compressed, otherwise animation is lost)
+      // PNG/WebP preserved so logos keep transparency
       if (ft === "image") {
         const isGif = file.type.toLowerCase() === "image/gif" || file.name.toLowerCase().endsWith(".gif");
+        const isPng = file.type.toLowerCase() === "image/png" || file.name.toLowerCase().endsWith(".png");
+        const isWebP = file.type.toLowerCase() === "image/webp" || file.name.toLowerCase().endsWith(".webp");
 
         if (isGif) {
+          processedFile = file;
+          const dims = await getImageDimensions(file);
+          dimensions = { width: dims.width, height: dims.height };
+        } else if (isPng || isWebP) {
+          // Preserve PNG/WebP – do not convert to JPEG (keeps transparency for logos)
           processedFile = file;
           const dims = await getImageDimensions(file);
           dimensions = { width: dims.width, height: dims.height };
@@ -141,7 +149,7 @@ export function MediaUpload({
           const dims = await getImageDimensions(file);
           dimensions = { width: dims.width, height: dims.height };
         } else {
-          // Standard: compress
+          // Standard: compress to JPEG
           const compressed = await compressImage(file, {
             maxWidth: 1920,
             maxHeight: 1920,
