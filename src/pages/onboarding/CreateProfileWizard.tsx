@@ -75,11 +75,10 @@ export default function CreateProfileWizard() {
     }
   };
 
-  const stepCount = 5;
+  const stepCount = 6;
 
   return (
     <div className="min-h-[100svh] bg-background flex flex-col">
-      {/* Top bar */}
       <header
         className="relative z-20 w-full border-b border-border/10"
         style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
@@ -92,24 +91,13 @@ export default function CreateProfileWizard() {
         </div>
       </header>
 
-      {/* Content area */}
       <div className="relative z-10 flex-1 flex flex-col justify-center w-full max-w-xl mx-auto px-6 sm:px-8">
         {step === 0 && <StepIntro onNext={() => setStep(1)} onCancel={() => navigate("/dashboard")} />}
         {step === 1 && <StepRole type={type} setType={setType} onNext={() => setStep(2)} onBack={() => setStep(0)} />}
-        {step === 2 && (
-          <StepName
-            name={name}
-            setName={setName}
-            onNext={() => setStep(3)}
-            onBack={() => setStep(1)}
-          />
-        )}
+        {step === 2 && <StepName name={name} setName={setName} onNext={() => setStep(3)} onBack={() => setStep(1)} />}
         {step === 3 && (
-          <StepProfile
-            type={type}
+          <StepAvatar
             name={name}
-            bio={bio}
-            setBio={setBio}
             avatarUrl={avatarUrl}
             setAvatarUrl={setAvatarUrl}
             avatarImageSettings={avatarImageSettings}
@@ -119,6 +107,15 @@ export default function CreateProfileWizard() {
           />
         )}
         {step === 4 && (
+          <StepBio
+            type={type}
+            bio={bio}
+            setBio={setBio}
+            onNext={() => setStep(5)}
+            onBack={() => setStep(3)}
+          />
+        )}
+        {step === 5 && (
           <StepVisibility
             name={name}
             type={type}
@@ -127,7 +124,7 @@ export default function CreateProfileWizard() {
             isPublic={isPublic}
             setIsPublic={setIsPublic}
             onFinish={handleCreate}
-            onBack={() => setStep(3)}
+            onBack={() => setStep(4)}
             isPending={createPersona.isPending}
           />
         )}
@@ -158,20 +155,14 @@ function StepIntro({ onNext, onCancel }: { onNext: () => void; onCancel: () => v
 
 /* ── Step 1: Rolle ── */
 function StepRole({
-  type,
-  setType,
-  onNext,
-  onBack,
+  type, setType, onNext, onBack,
 }: {
-  type: string | null;
-  setType: (t: string) => void;
-  onNext: () => void;
-  onBack: () => void;
+  type: string | null; setType: (t: string) => void; onNext: () => void; onBack: () => void;
 }) {
   return (
     <StepLayout
       title="Hva gjør du?"
-      subtitle="Velg rollen som best beskriver deg. Du kan lage flere profiler senere."
+      subtitle="Velg rollen som best beskriver deg."
       primary={{ label: "Neste", onClick: onNext, disabled: !type }}
       secondary={{ label: "Tilbake", onClick: onBack }}
     >
@@ -181,9 +172,7 @@ function StepRole({
             key={t}
             onClick={() => setType(t)}
             className={`group w-full flex items-center gap-4 py-5 px-1 text-left transition-all duration-200 border-b ${
-              type === t
-                ? "border-accent/30"
-                : "border-border/10 hover:border-border/30"
+              type === t ? "border-accent/30" : "border-border/10 hover:border-border/30"
             }`}
           >
             <div className={`h-11 w-11 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200 ${
@@ -207,27 +196,20 @@ function StepRole({
   );
 }
 
-/* ── Step 2: Navn (only) ── */
+/* ── Step 2: Navn ── */
 function StepName({
-  name,
-  setName,
-  onNext,
-  onBack,
+  name, setName, onNext, onBack,
 }: {
-  name: string;
-  setName: (v: string) => void;
-  onNext: () => void;
-  onBack: () => void;
+  name: string; setName: (v: string) => void; onNext: () => void; onBack: () => void;
 }) {
   return (
     <StepLayout
       title="Hva heter du?"
-      subtitle="Skriv navnet du bruker profesjonelt, for rollen du har satt."
+      subtitle="Skriv navnet du bruker profesjonelt."
       primary={{ label: "Neste", onClick: onNext, disabled: !name.trim() }}
       secondary={{ label: "Tilbake", onClick: onBack }}
     >
       <div className="space-y-3">
-        <Label htmlFor="name" className="text-base text-muted-foreground">Navn</Label>
         <Input
           id="name"
           value={name}
@@ -235,7 +217,7 @@ function StepName({
           placeholder="Fullt navn"
           className="text-xl h-14 bg-transparent border-border/20 focus:border-accent/40"
         />
-        <p className="text-base text-muted-foreground/40 pt-1">
+        <p className="text-base text-muted-foreground/40">
           Band og prosjekter legger du til senere.
         </p>
       </div>
@@ -243,23 +225,11 @@ function StepName({
   );
 }
 
-/* ── Step 3: Profilbilde + Bio ── */
-function StepProfile({
-  name,
-  type,
-  bio,
-  setBio,
-  avatarUrl,
-  setAvatarUrl,
-  avatarImageSettings,
-  setAvatarImageSettings,
-  onNext,
-  onBack,
+/* ── Step 3: Profilbilde ── */
+function StepAvatar({
+  name, avatarUrl, setAvatarUrl, avatarImageSettings, setAvatarImageSettings, onNext, onBack,
 }: {
   name: string;
-  type: string | null;
-  bio: string;
-  setBio: (v: string) => void;
   avatarUrl: string;
   setAvatarUrl: (v: string) => void;
   avatarImageSettings: ImageSettings | null;
@@ -267,87 +237,74 @@ function StepProfile({
   onNext: () => void;
   onBack: () => void;
 }) {
-  const roleLabel = type ? getPersonaTypeLabel(type) : null;
   return (
     <StepLayout
-      title="Skriv litt om deg"
-      subtitle={`Beskriv din tilknytning til musikkbransjen – knyttet til rollen din som ${roleLabel ?? "…"}.`}
-      primary={{ label: "Neste", onClick: onNext }}
+      title="Legg til profilbilde"
+      subtitle="Valgfritt – du kan legge til dette senere."
+      primary={{ label: avatarUrl ? "Neste" : "Hopp over", onClick: onNext }}
       secondary={{ label: "Tilbake", onClick: onBack }}
     >
-      <div className="space-y-8">
-        {/* Role indicator */}
-        {roleLabel && (
-          <div className="flex items-center gap-2">
-            <span className="text-base text-muted-foreground/50">Du vises som</span>
-            <span className="text-base font-medium text-accent">{roleLabel}</span>
-          </div>
-        )}
-
-        {/* Avatar */}
-        <div className="flex items-center gap-5">
-          <Avatar className="h-20 w-20 ring-2 ring-border/20 shrink-0">
-            {avatarUrl ? (
-              <AvatarImage src={avatarUrl} style={getCroppedImageStyles(avatarImageSettings)} className="object-cover" />
-            ) : null}
-            <AvatarFallback className="text-2xl bg-muted/30 text-muted-foreground/50">
-              {name ? name.charAt(0).toUpperCase() : "?"}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <InlineMediaPickerWithCrop
-              value={avatarUrl}
-              imageSettings={avatarImageSettings}
-              onChange={setAvatarUrl}
-              onSettingsChange={setAvatarImageSettings}
-              cropMode="avatar"
-              placeholder="Profilbilde"
-            />
-            <p className="text-xs text-muted-foreground/40 mt-1">Valgfritt</p>
-          </div>
-        </div>
-
-        {/* Bio */}
-        <div className="space-y-3">
-          <Label htmlFor="bio" className="text-base text-muted-foreground">Om deg</Label>
-          <Textarea
-            id="bio"
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            placeholder="F.eks. «Trommis i Kråkesølv, freelance lydtekniker i Bergen»"
-            rows={3}
-            className="text-lg bg-transparent border-border/20 focus:border-accent/40 resize-none"
-          />
-          <p className="text-base text-muted-foreground/40">
-            Valgfritt – du kan legge til dette senere.
-          </p>
-        </div>
+      <div className="flex flex-col items-center gap-6 py-4">
+        <Avatar className="h-32 w-32 ring-2 ring-border/20">
+          {avatarUrl ? (
+            <AvatarImage src={avatarUrl} style={getCroppedImageStyles(avatarImageSettings)} className="object-cover" />
+          ) : null}
+          <AvatarFallback className="text-4xl bg-muted/20 text-muted-foreground/30">
+            {name ? name.charAt(0).toUpperCase() : "?"}
+          </AvatarFallback>
+        </Avatar>
+        <InlineMediaPickerWithCrop
+          value={avatarUrl}
+          imageSettings={avatarImageSettings}
+          onChange={setAvatarUrl}
+          onSettingsChange={setAvatarImageSettings}
+          cropMode="avatar"
+          placeholder="Velg bilde"
+        />
       </div>
     </StepLayout>
   );
 }
 
-/* ── Step 4: Synlighet ── */
-function StepVisibility({
-  name,
-  type,
-  avatarUrl,
-  avatarImageSettings,
-  isPublic,
-  setIsPublic,
-  onFinish,
-  onBack,
-  isPending,
+/* ── Step 4: Bio ── */
+function StepBio({
+  type, bio, setBio, onNext, onBack,
 }: {
-  name: string;
   type: string | null;
-  avatarUrl: string;
-  avatarImageSettings: ImageSettings | null;
-  isPublic: boolean;
-  setIsPublic: (v: boolean) => void;
-  onFinish: () => void;
+  bio: string;
+  setBio: (v: string) => void;
+  onNext: () => void;
   onBack: () => void;
-  isPending: boolean;
+}) {
+  const roleLabel = type ? getPersonaTypeLabel(type) : null;
+  return (
+    <StepLayout
+      title="Beskriv deg selv"
+      subtitle={roleLabel ? `Knyttet til rollen din som ${roleLabel}.` : undefined}
+      primary={{ label: bio.trim() ? "Neste" : "Hopp over", onClick: onNext }}
+      secondary={{ label: "Tilbake", onClick: onBack }}
+    >
+      <Textarea
+        id="bio"
+        value={bio}
+        onChange={(e) => setBio(e.target.value)}
+        placeholder="F.eks. «Trommis i Kråkesølv, freelance lydtekniker i Bergen»"
+        rows={4}
+        className="text-lg bg-transparent border-border/20 focus:border-accent/40 resize-none"
+      />
+      <p className="text-base text-muted-foreground/40 mt-3">
+        Valgfritt – du kan endre dette senere.
+      </p>
+    </StepLayout>
+  );
+}
+
+/* ── Step 5: Synlighet ── */
+function StepVisibility({
+  name, type, avatarUrl, avatarImageSettings, isPublic, setIsPublic, onFinish, onBack, isPending,
+}: {
+  name: string; type: string | null; avatarUrl: string; avatarImageSettings: ImageSettings | null;
+  isPublic: boolean; setIsPublic: (v: boolean) => void; onFinish: () => void; onBack: () => void; isPending: boolean;
 }) {
   return (
     <StepLayout
@@ -357,7 +314,6 @@ function StepVisibility({
       showLegal
     >
       <div className="space-y-6">
-        {/* Preview */}
         <div className="flex items-center gap-3 py-4 border-b border-border/10">
           <Avatar className="h-11 w-11 ring-2 ring-border/20 shrink-0">
             {avatarUrl ? <AvatarImage src={avatarUrl} style={getCroppedImageStyles(avatarImageSettings)} className="object-cover" /> : null}
@@ -371,14 +327,11 @@ function StepVisibility({
           </div>
         </div>
 
-        {/* Visibility options */}
         <div className="space-y-3">
           <button
             onClick={() => setIsPublic(true)}
-            className={`group w-full text-left py-4 px-1 border-b transition-all duration-200 ${
-              isPublic
-                ? "border-accent/30"
-                : "border-border/10 hover:border-border/30"
+            className={`group w-full text-left py-5 px-1 border-b transition-all duration-200 ${
+              isPublic ? "border-accent/30" : "border-border/10 hover:border-border/30"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -392,10 +345,8 @@ function StepVisibility({
 
           <button
             onClick={() => setIsPublic(false)}
-            className={`group w-full text-left py-4 px-1 border-b transition-all duration-200 ${
-              !isPublic
-                ? "border-accent/30"
-                : "border-border/10 hover:border-border/30"
+            className={`group w-full text-left py-5 px-1 border-b transition-all duration-200 ${
+              !isPublic ? "border-accent/30" : "border-border/10 hover:border-border/30"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -414,25 +365,15 @@ function StepVisibility({
 
 /* ── Shared layout shell ── */
 function StepLayout({
-  title,
-  subtitle,
-  children,
-  primary,
-  secondary,
-  showLegal = false,
-  icon,
+  title, subtitle, children, primary, secondary, showLegal = false, icon,
 }: {
-  title: string;
-  subtitle?: string;
-  children: React.ReactNode;
+  title: string; subtitle?: string; children: React.ReactNode;
   primary: { label: string; onClick: () => void; disabled?: boolean };
   secondary?: { label: string; onClick: () => void };
-  showLegal?: boolean;
-  icon?: React.ReactNode;
+  showLegal?: boolean; icon?: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-10 py-10 sm:py-16 animate-fade-in">
-      {/* Header */}
       <div>
         {icon && <div className="mb-5">{icon}</div>}
         <h1 className="text-4xl sm:text-5xl font-bold text-foreground tracking-tight leading-[1.05]">{title}</h1>
@@ -441,10 +382,8 @@ function StepLayout({
         )}
       </div>
 
-      {/* Content */}
       <div>{children}</div>
 
-      {/* Actions */}
       <div className="flex items-center justify-between pt-4">
         <div>
           {secondary && (
