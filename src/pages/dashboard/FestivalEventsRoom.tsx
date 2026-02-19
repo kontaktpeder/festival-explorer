@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Music, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/LoadingState";
+import gIcon from "@/assets/giggen-g-icon-red.png";
 
 export default function FestivalEventsRoom() {
   const { id } = useParams<{ id: string }>();
@@ -65,14 +66,17 @@ export default function FestivalEventsRoom() {
               BACKSTAGE · Events
             </span>
           </div>
-          {canEdit && (
-            <Button asChild size="sm" variant="outline">
-              <Link to={`/event-room/new?festival_id=${id}`}>
-                <Plus className="h-4 w-4 mr-1" />
-                Ny event
-              </Link>
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {canEdit && (
+              <Button asChild size="sm" variant="outline">
+                <Link to={`/event-room/new?festival_id=${id}`}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Ny event
+                </Link>
+              </Button>
+            )}
+            <img src={gIcon} alt="" className="h-8 w-8 object-contain" />
+          </div>
         </div>
       </header>
 

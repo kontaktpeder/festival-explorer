@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FestivalParticipantsZoneEditor } from "@/components/admin/FestivalParticipantsZoneEditor";
 import { ContextualInviteModal, type ContextualInviteTarget } from "@/components/invite/ContextualInviteModal";
 import { usePlatformEntity } from "@/hooks/useEntityTypes";
+import gIcon from "@/assets/giggen-g-icon-red.png";
 import { LoadingState } from "@/components/ui/LoadingState";
 
 export default function FestivalTeamRoom() {
@@ -85,12 +86,15 @@ export default function FestivalTeamRoom() {
               BACKSTAGE · Team
             </span>
           </div>
-          {canEdit && inviteTarget && (
-            <Button size="sm" onClick={() => setInviteOpen(true)} className="gap-1.5">
-              <UserPlus className="h-3.5 w-3.5" />
-              Inviter
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {canEdit && inviteTarget && (
+              <Button size="sm" onClick={() => setInviteOpen(true)} className="gap-1.5">
+                <UserPlus className="h-3.5 w-3.5" />
+                Inviter
+              </Button>
+            )}
+            <img src={gIcon} alt="" className="h-8 w-8 object-contain" />
+          </div>
         </div>
       </header>
 

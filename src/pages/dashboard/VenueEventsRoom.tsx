@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Music, ChevronRight } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
+import gIcon from "@/assets/giggen-g-icon-red.png";
 
 export default function VenueEventsRoom() {
   const { id } = useParams<{ id: string }>();
@@ -55,6 +56,7 @@ export default function VenueEventsRoom() {
               BACKSTAGE · Events
             </span>
           </div>
+          <img src={gIcon} alt="" className="h-8 w-8 object-contain" />
         </div>
       </header>
 

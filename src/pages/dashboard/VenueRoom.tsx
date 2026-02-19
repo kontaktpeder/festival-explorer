@@ -13,6 +13,7 @@ import {
   Building2,
   Clock,
 } from "lucide-react";
+import gIcon from "@/assets/giggen-g-icon-red.png";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -204,12 +205,15 @@ export default function VenueRoom() {
               BACKSTAGE
             </span>
           </div>
-          <Button asChild variant="outline" size="sm" className="text-xs border-border/30 hover:border-accent/40">
-            <a href={`https://giggn.lovable.app/venue/${venue.slug}`} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-              {venue.is_published ? "Se live" : "Forhåndsvisning"}
-            </a>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm" className="text-xs border-border/30 hover:border-accent/40">
+              <a href={`https://giggn.lovable.app/venue/${venue.slug}`} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                {venue.is_published ? "Se live" : "Forhåndsvisning"}
+              </a>
+            </Button>
+            <img src={gIcon} alt="" className="h-8 w-8 object-contain" />
+          </div>
         </div>
       </header>
 

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { VenueStaffEditor } from "@/components/venues/VenueStaffEditor";
+import gIcon from "@/assets/giggen-g-icon-red.png";
 import { useSelectedPersonaId } from "@/components/dashboard/PersonaSelector";
 
 export default function VenueTeamRoom() {
@@ -59,16 +60,19 @@ export default function VenueTeamRoom() {
         className="sticky top-0 z-50 bg-background/60 backdrop-blur-xl border-b border-border/20"
         style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
       >
-        <div className="w-full px-4 sm:px-8 lg:px-12 py-3 flex items-center gap-3">
-          <button
-            onClick={() => navigate(`/dashboard/venue/${id}`)}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <span className="text-sm font-semibold tracking-tight text-foreground">
-            BACKSTAGE · Team
-          </span>
+        <div className="w-full px-4 sm:px-8 lg:px-12 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(`/dashboard/venue/${id}`)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <span className="text-sm font-semibold tracking-tight text-foreground">
+              BACKSTAGE · Team
+            </span>
+          </div>
+          <img src={gIcon} alt="" className="h-8 w-8 object-contain" />
         </div>
       </header>
 

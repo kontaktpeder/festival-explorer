@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LoadingState } from "@/components/ui/LoadingState";
+import gIcon from "@/assets/giggen-g-icon-red.png";
 
 interface ModuleCard {
   title: string;
@@ -233,12 +234,15 @@ export default function FestivalRoom() {
               BACKSTAGE
             </span>
           </div>
-          <Button asChild variant="outline" size="sm" className="text-xs border-border/30 hover:border-accent/40">
-            <Link to={`/festival/${festival.slug}`} target="_blank">
-              <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-              Se live
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm" className="text-xs border-border/30 hover:border-accent/40">
+              <Link to={`/festival/${festival.slug}`} target="_blank">
+                <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                Se live
+              </Link>
+            </Button>
+            <img src={gIcon} alt="" className="h-8 w-8 object-contain" />
+          </div>
         </div>
       </header>
 
