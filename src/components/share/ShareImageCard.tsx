@@ -9,8 +9,10 @@ const SAFE_RIGHT = 96;
 const SAFE_TOP = 120;
 const SAFE_BOTTOM = 140;
 
-const GIGGEN_SIZE = 92;
+const GIGGEN_SIZE = 140;
 const GIGGEN_INSET = 16;
+const GIGGEN_BOTTOM = 48;
+const GIGGEN_LEFT = 48;
 const SUBJECT_LOGO_MAX_W = 360;
 const SUBJECT_LOGO_MAX_H = 160;
 
@@ -171,15 +173,15 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           }}
         />
 
-        {/* GIGGEN-ikon – nederst venstre */}
+        {/* GIGGEN-ikon – nederst venstre, tett i hjørnet */}
         <img
           src={brandLogo}
           alt=""
           crossOrigin="anonymous"
           style={{
             position: "absolute",
-            bottom: SAFE_BOTTOM,
-            left: SAFE_LEFT,
+            bottom: GIGGEN_BOTTOM,
+            left: GIGGEN_LEFT,
             width: GIGGEN_SIZE,
             height: GIGGEN_SIZE,
             objectFit: "contain",
@@ -234,26 +236,43 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           )}
         </div>
 
-        {/* CTA – liten tekst, nederst høyre */}
+        {/* CTA – tydelig tekst, nederst høyre */}
         <div
           style={{
             position: "absolute",
             bottom: SAFE_BOTTOM,
             right: SAFE_RIGHT,
             zIndex: 10,
+            textAlign: "right" as const,
+            maxWidth: SHARE_WIDTH - SAFE_LEFT - GIGGEN_LEFT - GIGGEN_SIZE - 48,
           }}
         >
-          <div
-            style={{
-              fontSize: 22,
-              fontWeight: 500,
-              color: "rgba(255,255,255,0.55)",
-              letterSpacing: "0.04em",
-              textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-            }}
-          >
-            {data.cta ?? "Les mer på giggen.org"}
-          </div>
+          {data.cta ? (
+            <div
+              style={{
+                fontSize: 34,
+                fontWeight: 700,
+                color: "rgba(255,255,255,0.92)",
+                letterSpacing: "0.01em",
+                lineHeight: 1.25,
+                textShadow: "0 2px 14px rgba(0,0,0,0.7)",
+              }}
+            >
+              {data.cta}
+            </div>
+          ) : (
+            <div
+              style={{
+                fontSize: 26,
+                fontWeight: 500,
+                color: "rgba(255,255,255,0.55)",
+                letterSpacing: "0.04em",
+                textShadow: "0 2px 10px rgba(0,0,0,0.5)",
+              }}
+            >
+              giggen.org
+            </div>
+          )}
         </div>
 
         {/* Prosjekt/venue-logo – over CTA, høyre side */}
