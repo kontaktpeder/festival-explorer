@@ -27,9 +27,9 @@ export function shareModelFromProject(params: {
   let cta = `${params.title} på giggen.org`;
   if (params.venueName && params.startAt) {
     const dateStr = format(new Date(params.startAt), "d. MMMM", { locale: nb });
-    cta = `Live på ${params.venueName} – ${dateStr}. Billetter ute nå.`;
+    cta = `Live på ${params.venueName} – ${dateStr}.\nBilletter ute nå.`;
   } else if (params.venueName) {
-    cta = `Live på ${params.venueName}. Billetter ute nå.`;
+    cta = `Live på ${params.venueName}.\nBilletter ute nå.`;
   }
 
   return {
@@ -80,12 +80,12 @@ export function shareModelFromEvent(params: {
   let cta = "Billetter ute nå på giggen.org";
   if (params.venueName && params.startAt) {
     const dateStr = format(new Date(params.startAt), "d. MMMM", { locale: nb });
-    cta = `Live på ${params.venueName} – ${dateStr}. Billetter ute nå.`;
+    cta = `Live på ${params.venueName} – ${dateStr}.\nBilletter ute nå.`;
   } else if (params.venueName) {
-    cta = `Live på ${params.venueName}. Billetter ute nå.`;
+    cta = `Live på ${params.venueName}.\nBilletter ute nå.`;
   } else if (params.startAt) {
     const dateStr = format(new Date(params.startAt), "d. MMMM", { locale: nb });
-    cta = `${dateStr}. Billetter ute nå.`;
+    cta = `${dateStr}.\nBilletter ute nå.`;
   }
 
   return {
