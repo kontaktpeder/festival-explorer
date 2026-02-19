@@ -262,7 +262,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
                     crossOrigin="anonymous"
                     style={{
                       maxWidth: TITLE_COL_W,
-                      maxHeight: 200,
+                      maxHeight: 280,
                       objectFit: "contain",
                       opacity: 0.95,
                       filter: "drop-shadow(0 2px 16px rgba(0,0,0,0.7))",
@@ -281,7 +281,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
                       WebkitLineClamp: 3,
                       WebkitBoxOrient: "vertical" as const,
                       overflow: "hidden",
-                      marginTop: 40,
+                      marginTop: 24,
                       paddingBottom: 12,
                     }}
                   >

@@ -129,7 +129,7 @@ export default function ProjectPage() {
       </div>
 
       {/* NAME + TAGLINE */}
-      <div className="max-w-6xl mx-auto px-4 md:px-8 pt-5 md:pt-8 relative z-10">
+      <div className={`max-w-6xl mx-auto px-4 md:px-8 relative z-10 ${(entity as any).logo_display_mode === 'instead_of_name' && logoUrl ? 'pt-3 md:pt-5' : 'pt-5 md:pt-8'}`}>
         <div className="flex items-start gap-6 md:gap-10">
           {/* Title + tagline (or logo-only + tagline) */}
           <div className="flex-1 min-w-0">
@@ -142,10 +142,10 @@ export default function ProjectPage() {
                       src={logoUrl}
                       alt={entity.name}
                       className="w-auto object-contain"
-                      style={{ maxHeight: "96px", maxWidth: "min(100%, 320px)", opacity: 0.95, filter: "drop-shadow(0 0 0.5px rgba(255,255,255,0.25))" }}
+                      style={{ maxHeight: "128px", maxWidth: "min(100%, 400px)", opacity: 0.95, filter: "drop-shadow(0 0 0.5px rgba(255,255,255,0.25))" }}
                     />
                     {entity.tagline && (
-                      <p className="text-base md:text-lg text-muted-foreground/60 mt-3 leading-snug">
+                      <p className="text-base md:text-lg text-muted-foreground/60 mt-2 leading-snug">
                         {entity.tagline}
                       </p>
                     )}
