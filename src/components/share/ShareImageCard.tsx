@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, useState } from "react";
 import shareGIcon from "@/assets/share-g-icon.png";
 import shareFallbackBg from "@/assets/share-fallback-bg.jpeg";
 import type { ShareModel } from "@/types/share";
@@ -29,9 +29,41 @@ type ShareImageCardProps = {
 };
 
 /**
- * Hero i fast sone – samme størrelse for alle (object-fit: cover).
+ * Hero i fast sone – manuelt cover-crop fordi html2canvas ignorerer object-fit.
+ * Beregner riktige px-dimensjoner ved onLoad slik at bildet aldri strekkes.
  */
 function ShareHeroForeground({ src }: { src: string }) {
+  const [imgStyle, setImgStyle] = useState<React.CSSProperties>({
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+  });
+
+  const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    const naturalW = img.naturalWidth;
+    const naturalH = img.naturalHeight;
+    if (!naturalW || !naturalH) return;
+
+    const containerW = SHARE_WIDTH;
+    const containerH = HERO_ZONE_HEIGHT;
+
+    // Cover: scale so image fills container on both axes (crop the rest)
+    const scale = Math.max(containerW / naturalW, containerH / naturalH);
+    const renderedW = naturalW * scale;
+    const renderedH = naturalH * scale;
+    const offsetX = (containerW - renderedW) / 2;
+    const offsetY = (containerH - renderedH) / 2;
+
+    setImgStyle({
+      position: "absolute",
+      width: renderedW,
+      height: renderedH,
+      left: offsetX,
+      top: offsetY,
+    });
+  };
+
   return (
     <div
       style={{
@@ -48,12 +80,8 @@ function ShareHeroForeground({ src }: { src: string }) {
         src={src}
         alt=""
         crossOrigin="anonymous"
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          objectPosition: "center center",
-        }}
+        onLoad={handleLoad}
+        style={imgStyle}
       />
     </div>
   );
