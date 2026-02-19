@@ -256,6 +256,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
                 letterSpacing: "0.01em",
                 lineHeight: 1.25,
                 textShadow: "0 2px 14px rgba(0,0,0,0.7)",
+                whiteSpace: "pre-line" as const,
               }}
             >
               {data.cta}
