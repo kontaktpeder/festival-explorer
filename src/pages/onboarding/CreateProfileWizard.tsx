@@ -292,9 +292,6 @@ function StepBio({
         rows={4}
         className="text-lg bg-transparent border-border/20 focus:border-accent/40 resize-none"
       />
-      <p className="text-base text-muted-foreground/40 mt-3">
-        Valgfritt – du kan endre dette senere.
-      </p>
     </StepLayout>
   );
 }
