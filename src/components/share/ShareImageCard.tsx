@@ -6,7 +6,7 @@ import { SHARE_WIDTH, SHARE_HEIGHT } from "@/types/share";
 
 const SAFE_LEFT = 96;
 const SAFE_RIGHT = 96;
-const SAFE_TOP = 64;
+const SAFE_TOP = 100;
 const SAFE_BOTTOM = 140;
 
 // Fast hero-sone: samme rektangel for alle prosjekter (crop med object-fit: cover)
@@ -108,7 +108,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
 
     // 1-line vs 2-line title detection (~15 chars fits on one line at 76px / 705px col)
     const isOneLineTitle = logoDisplayMode === 'instead_of_name' ? false : (data.title?.length ?? 0) <= 15;
-    const titleFontSize = isOneLineTitle ? 92 : 66;
+    const titleFontSize = isOneLineTitle ? 108 : 82;
     const subtitleMarginTop = isOneLineTitle ? 24 : 40;
 
     // Dynamic hero top: measure header height so 1-line titles sit closer to image
