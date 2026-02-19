@@ -23,7 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useContactInfo, useUpsertContactInfo } from "@/hooks/useContactInfo";
 import { toast as sonnerToast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
-import gIconImg from "@/assets/giggen-g-icon.png";
+import gIconImg from "@/assets/giggen-g-icon-red.png";
 import { 
   LogOut, 
   Trash2, 
@@ -201,7 +201,7 @@ export default function AccountCenter() {
           </Link>
           <div className="flex items-center gap-2">
             {!USE_PERSONA_MODUS_BAR && <PersonaSelector />}
-            <img src={gIconImg} alt="" className="h-6 w-6 object-contain opacity-50" />
+            <img src={gIconImg} alt="" className="h-8 w-8 object-contain" />
           </div>
         </div>
       </header>

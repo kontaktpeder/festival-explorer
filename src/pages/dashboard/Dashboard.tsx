@@ -19,7 +19,7 @@ import { parseImageSettings, type ImageSettings } from "@/types/database";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Users, Building2, ExternalLink, User, Eye, Sparkles, Plus, ChevronRight, ChevronDown, QrCode, Info, MapPin, Settings, Shield, Calendar } from "lucide-react";
-import gIcon from "@/assets/giggen-g-icon.png";
+import gIcon from "@/assets/giggen-g-icon-red.png";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CroppedImage } from "@/components/ui/CroppedImage";
 import type { EntityType, AccessLevel } from "@/types/database";
@@ -239,7 +239,7 @@ export default function Dashboard() {
             </Link>
             <div className="flex items-center gap-2">
               <PersonaSelector />
-              <img src={gIcon} alt="" className="h-6 w-6 object-contain opacity-50" />
+              <img src={gIcon} alt="" className="h-8 w-8 object-contain" />
             </div>
           </div>
         </header>
@@ -512,7 +512,7 @@ export default function Dashboard() {
             </Link>
           </div>
           {!USE_PERSONA_MODUS_BAR && <PersonaSelector />}
-          <img src={gIcon} alt="" className="h-6 w-6 object-contain opacity-50" />
+          <img src={gIcon} alt="" className="h-8 w-8 object-contain" />
         </div>
       </header>
 
