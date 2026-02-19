@@ -237,6 +237,7 @@ export default function ProjectPage() {
                 tagline: entity.tagline ?? null,
                 heroImageUrl: heroImageUrl ?? null,
                 logoUrl: logoUrl ?? null,
+                logoDisplayMode: (entity as any).logo_display_mode ?? 'with_name',
                 venueName: nextGig?.venueName ?? null,
                 startAt: nextGig?.startsAt ?? null,
               })}

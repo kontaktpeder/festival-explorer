@@ -30,6 +30,7 @@ interface ArtistPosterBlockProps {
     tagline?: string | null;
     hero_image_url?: string | null;
     logo_url?: string | null;
+    logo_display_mode?: 'with_name' | 'instead_of_name';
   };
   index: number;
   variant: "festival" | "boilerroom";
@@ -49,6 +50,7 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
   const displayLogoUrl = logoUrlFromApi || artistLogos[artist.slug] || null;
   // Only invert for the old static mast logo, not API logos
   const shouldInvert = !logoUrlFromApi && artist.slug === "mast";
+  const logoDisplayMode = artist.logo_display_mode ?? 'with_name';
   const isEven = index % 2 === 0;
   const isMobile = useIsMobile();
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -111,24 +113,39 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
           isEven ? "items-start text-left" : "items-end text-right"
         )}
       >
-        {/* Artist logo/name typography - NO movement on mobile */}
+        {/* Artist logo/name typography */}
         <div className={cn(
           "max-w-[85%] md:max-w-[70%]",
           !isMobile && "transition-all duration-500 group-hover:translate-y-[-10px]"
         )}>
-          {displayLogoUrl && artist.slug !== "maya-estrela" ? (
+          {/* instead_of_name: kun logo, ingen navnetekst */}
+          {logoDisplayMode === 'instead_of_name' && displayLogoUrl ? (
             <img
               src={displayLogoUrl}
               alt={artist.name}
               className={cn(
-                "w-auto h-auto max-h-16 md:max-h-24 lg:max-h-32 object-contain drop-shadow-2xl",
+                "w-auto h-auto max-h-20 md:max-h-28 lg:max-h-36 object-contain drop-shadow-2xl",
                 shouldInvert && "invert"
               )}
             />
           ) : (
-            <h3 className="text-display text-4xl md:text-6xl lg:text-7xl text-foreground drop-shadow-2xl">
-              {artist.name}
-            </h3>
+            /* with_name: logo (om tilgjengelig) + alltid navn under på mobil */
+            <>
+              {displayLogoUrl && artist.slug !== "maya-estrela" ? (
+                <img
+                  src={displayLogoUrl}
+                  alt={artist.name}
+                  className={cn(
+                    "w-auto h-auto max-h-16 md:max-h-24 lg:max-h-32 object-contain drop-shadow-2xl",
+                    shouldInvert && "invert"
+                  )}
+                />
+              ) : (
+                <h3 className="text-display text-4xl md:text-6xl lg:text-7xl text-foreground drop-shadow-2xl">
+                  {artist.name}
+                </h3>
+              )}
+            </>
           )}
           
           {/* Mobile: Show "Utforsk", Desktop: Tagline on hover */}

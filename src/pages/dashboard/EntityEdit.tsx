@@ -92,6 +92,7 @@ export default function EntityEdit() {
     description: "",
     hero_image_url: "",
     logo_url: "",
+    logo_display_mode: "with_name" as "with_name" | "instead_of_name",
   });
   const [heroImageSettings, setHeroImageSettings] = useState<ImageSettings | null>(null);
   const [logoImageSettings, setLogoImageSettings] = useState<ImageSettings | null>(null);
@@ -216,6 +217,7 @@ export default function EntityEdit() {
         description: entityWithAccess.description || "",
         hero_image_url: entityWithAccess.hero_image_url || "",
         logo_url: (entityWithAccess as any).logo_url || "",
+        logo_display_mode: ((entityWithAccess as any).logo_display_mode || "with_name") as "with_name" | "instead_of_name",
       });
       setHeroImageSettings(parseImageSettings(entityWithAccess.hero_image_settings) || null);
       setLogoImageSettings(parseImageSettings((entityWithAccess as any).logo_image_settings) || null);
@@ -239,6 +241,7 @@ export default function EntityEdit() {
         hero_image_settings: heroImageSettings,
         logo_url: formData.logo_url || null,
         logo_image_settings: logoImageSettings,
+        logo_display_mode: formData.logo_display_mode,
         social_links: socialLinks,
         ...locationData,
       };
@@ -756,6 +759,42 @@ export default function EntityEdit() {
                 />
               )}
             </div>
+            {/* Logo display mode */}
+            {formData.logo_url && canEdit && (
+              <div className="space-y-2">
+                <Label className="text-muted-foreground text-xs uppercase tracking-wide">Logo-visning på plakater og delingsbilder</Label>
+                <div className="flex flex-col gap-2">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="radio"
+                      name="logo_display_mode"
+                      value="with_name"
+                      checked={formData.logo_display_mode === "with_name"}
+                      onChange={() => setFormData((prev) => ({ ...prev, logo_display_mode: "with_name" }))}
+                      className="accent-accent"
+                    />
+                    <div>
+                      <span className="text-sm text-foreground">Vis logo i tillegg til navn</span>
+                      <p className="text-xs text-muted-foreground">Logo vises til høyre, artisten navn til venstre</p>
+                    </div>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="radio"
+                      name="logo_display_mode"
+                      value="instead_of_name"
+                      checked={formData.logo_display_mode === "instead_of_name"}
+                      onChange={() => setFormData((prev) => ({ ...prev, logo_display_mode: "instead_of_name" }))}
+                      className="accent-accent"
+                    />
+                    <div>
+                      <span className="text-sm text-foreground">Vis kun logo (erstatter navn)</span>
+                      <p className="text-xs text-muted-foreground">Kun logo vises, ingen navnetekst</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            )}
             <div className="space-y-2">
               <Label className="text-muted-foreground text-xs uppercase tracking-wide">Navn *</Label>
               <Input value={formData.name} onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))} placeholder={isVenue ? "Venue navn" : "Artist/band navn"} disabled={!canEdit} required={canEdit} className="bg-background border-border/50 focus:border-accent" />

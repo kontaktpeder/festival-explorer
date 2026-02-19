@@ -104,7 +104,7 @@ export function useFestivalDetails(festivalId: string | null | undefined) {
 
       const [personasRes, entitiesRes] = await Promise.all([
         personaIdsSet.size > 0 ? supabase.from("personas").select("id,name,slug,hero_image_url,is_public").in("id", Array.from(personaIdsSet)) : Promise.resolve({ data: [] as any[] }),
-        entityIdsSet.size > 0 ? supabase.from("entities").select("id,name,slug,tagline,hero_image_url,logo_url,is_published,type").in("id", Array.from(entityIdsSet)) : Promise.resolve({ data: [] as any[] }),
+        entityIdsSet.size > 0 ? supabase.from("entities").select("id,name,slug,tagline,hero_image_url,logo_url,logo_display_mode,is_published,type").in("id", Array.from(entityIdsSet)) : Promise.resolve({ data: [] as any[] }),
       ]);
 
       const personaMap = new Map((personasRes.data || []).map((p: any) => [p.id, p]));
@@ -145,12 +145,12 @@ export function useFestivalDetails(festivalId: string | null | undefined) {
         return new Date(a.event.start_at).getTime() - new Date(b.event.start_at).getTime();
       });
 
-      const allArtistsWithEventSlug: Array<{ id: string; name: string; slug: string; tagline?: string | null; hero_image_url?: string | null; logo_url?: string | null; event_slug: string }> = [];
+      const allArtistsWithEventSlug: Array<{ id: string; name: string; slug: string; tagline?: string | null; hero_image_url?: string | null; logo_url?: string | null; logo_display_mode?: string | null; event_slug: string }> = [];
       sortedEvents.forEach((fe) => {
         if (!fe.event) return;
         (((fe.event as any).lineup as any[]) || []).forEach((lineupItem: any) => {
           if (lineupItem.entity?.is_published === true) {
-            allArtistsWithEventSlug.push({ id: lineupItem.entity.id, name: lineupItem.entity.name, slug: lineupItem.entity.slug, tagline: lineupItem.entity.tagline, hero_image_url: lineupItem.entity.hero_image_url, logo_url: lineupItem.entity.logo_url ?? null, event_slug: fe.event!.slug });
+            allArtistsWithEventSlug.push({ id: lineupItem.entity.id, name: lineupItem.entity.name, slug: lineupItem.entity.slug, tagline: lineupItem.entity.tagline, hero_image_url: lineupItem.entity.hero_image_url, logo_url: lineupItem.entity.logo_url ?? null, logo_display_mode: lineupItem.entity.logo_display_mode ?? null, event_slug: fe.event!.slug });
           }
         });
       });
@@ -288,7 +288,7 @@ export function useFestival(slug: string) {
           ? supabase.from("personas").select("id,name,slug,hero_image_url,is_public").in("id", Array.from(personaIdsFromParticipants))
           : Promise.resolve({ data: [] as any[] }),
         entityIdsFromParticipants.size > 0
-          ? supabase.from("entities").select("id,name,slug,tagline,hero_image_url,logo_url,is_published,type").in("id", Array.from(entityIdsFromParticipants))
+          ? supabase.from("entities").select("id,name,slug,tagline,hero_image_url,logo_url,logo_display_mode,is_published,type").in("id", Array.from(entityIdsFromParticipants))
           : Promise.resolve({ data: [] as any[] }),
       ]);
 
@@ -385,6 +385,7 @@ export function useFestival(slug: string) {
         tagline?: string | null;
         hero_image_url?: string | null;
         logo_url?: string | null;
+        logo_display_mode?: string | null;
         event_slug: string;
       }> = [];
       
@@ -401,6 +402,7 @@ export function useFestival(slug: string) {
               tagline: lineupItem.entity.tagline,
               hero_image_url: lineupItem.entity.hero_image_url,
               logo_url: lineupItem.entity.logo_url ?? null,
+              logo_display_mode: lineupItem.entity.logo_display_mode ?? null,
               event_slug: eventSlug,
             });
           }
