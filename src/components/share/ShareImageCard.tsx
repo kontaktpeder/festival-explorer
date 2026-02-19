@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useState } from "react";
+import { forwardRef } from "react";
 import shareGIcon from "@/assets/share-g-icon.png";
 import shareFallbackBg from "@/assets/share-fallback-bg.jpeg";
 import type { ShareModel } from "@/types/share";
@@ -8,6 +8,11 @@ const SAFE_LEFT = 96;
 const SAFE_RIGHT = 96;
 const SAFE_TOP = 116;
 const SAFE_BOTTOM = 140;
+
+// Fast hero-sone: samme rektangel for alle prosjekter (crop med object-fit: cover)
+const HERO_ZONE_TOP = 300;
+const HERO_ZONE_BOTTOM_RESERVE = 220;
+const HERO_ZONE_HEIGHT = SHARE_HEIGHT - HERO_ZONE_TOP - HERO_ZONE_BOTTOM_RESERVE; // 830
 
 const GIGGEN_SIZE = 76;
 const GIGGEN_INSET = 16;
@@ -24,35 +29,18 @@ type ShareImageCardProps = {
 };
 
 /**
- * Hero forgrunn – contain uten object-fit (html2canvas-vennlig).
+ * Hero i fast sone – samme størrelse for alle (object-fit: cover).
  */
 function ShareHeroForeground({ src }: { src: string }) {
-  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
-
-  const onLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.currentTarget;
-    const nw = img.naturalWidth;
-    const nh = img.naturalHeight;
-    if (!nw || !nh) return;
-    const r = nw / nh;
-    let w = SHARE_WIDTH;
-    let h = SHARE_HEIGHT;
-    if (r > SHARE_WIDTH / SHARE_HEIGHT) {
-      h = Math.round(SHARE_WIDTH / r);
-    } else {
-      w = Math.round(SHARE_HEIGHT * r);
-    }
-    setSize({ w, h });
-  }, []);
-
   return (
     <div
       style={{
         position: "absolute",
-        inset: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        top: HERO_ZONE_TOP,
+        left: 0,
+        width: SHARE_WIDTH,
+        height: HERO_ZONE_HEIGHT,
+        overflow: "hidden",
         zIndex: 2,
       }}
     >
@@ -60,11 +48,11 @@ function ShareHeroForeground({ src }: { src: string }) {
         src={src}
         alt=""
         crossOrigin="anonymous"
-        onLoad={onLoad}
         style={{
-          width: size ? size.w : SHARE_WIDTH,
-          height: size ? size.h : SHARE_HEIGHT,
+          width: "100%",
+          height: "100%",
           objectFit: "cover",
+          objectPosition: "center center",
         }}
       />
     </div>
@@ -98,9 +86,10 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
               crossOrigin="anonymous"
               style={{
                 position: "absolute",
-                inset: 0,
+                top: HERO_ZONE_TOP,
+                left: 0,
                 width: SHARE_WIDTH,
-                height: SHARE_HEIGHT,
+                height: HERO_ZONE_HEIGHT,
                 objectFit: "cover",
                 objectPosition: "center",
                 filter: "blur(44px)",
