@@ -118,9 +118,9 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
     useEffect(() => {
       if (!headerRef.current) return;
       const h = headerRef.current.offsetHeight;
-      const gap = isOneLineTitle ? 52 : 90;
+      const gap = isOneLineTitle ? 90 : 90;
       const computed = SAFE_TOP + h + gap;
-      const maxTop = isOneLineTitle ? 320 : HERO_ZONE_TOP;
+      const maxTop = isOneLineTitle ? HERO_ZONE_TOP : HERO_ZONE_TOP;
       setHeroTop(Math.min(computed, maxTop));
     }, [data.title, data.subtitle, isOneLineTitle]);
 
