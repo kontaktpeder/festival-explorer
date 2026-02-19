@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCreatePersona } from "@/hooks/usePersona";
@@ -48,6 +49,7 @@ export default function CreateProfileWizard() {
   const [step, setStep] = useState(0);
   const [type, setType] = useState<string | null>(null);
   const [name, setName] = useState("");
+  const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [avatarImageSettings, setAvatarImageSettings] = useState<ImageSettings | null>(null);
   const [isPublic, setIsPublic] = useState(true);
@@ -60,6 +62,7 @@ export default function CreateProfileWizard() {
     try {
       const persona = await createPersona.mutateAsync({
         name: name.trim(),
+        bio: bio.trim() || undefined,
         avatar_url: avatarUrl || undefined,
         avatar_image_settings: avatarImageSettings,
         is_public: isPublic,
@@ -76,15 +79,13 @@ export default function CreateProfileWizard() {
     }
   };
 
-  const stepCount = 4;
+  const stepCount = 5;
 
   return (
     <div className="min-h-[100svh] bg-background flex flex-col relative overflow-hidden">
       {/* Ambient gradient glows */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-accent-warm/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/4 pointer-events-none" />
-
-      {/* No background overlay */}
 
       {/* Top bar – glassmorphism */}
       <header
@@ -107,15 +108,24 @@ export default function CreateProfileWizard() {
           <StepName
             name={name}
             setName={setName}
-            avatarUrl={avatarUrl}
-            setAvatarUrl={setAvatarUrl}
-            avatarImageSettings={avatarImageSettings}
-            setAvatarImageSettings={setAvatarImageSettings}
             onNext={() => setStep(3)}
             onBack={() => setStep(1)}
           />
         )}
         {step === 3 && (
+          <StepProfile
+            name={name}
+            bio={bio}
+            setBio={setBio}
+            avatarUrl={avatarUrl}
+            setAvatarUrl={setAvatarUrl}
+            avatarImageSettings={avatarImageSettings}
+            setAvatarImageSettings={setAvatarImageSettings}
+            onNext={() => setStep(4)}
+            onBack={() => setStep(2)}
+          />
+        )}
+        {step === 4 && (
           <StepVisibility
             name={name}
             type={type}
@@ -124,7 +134,7 @@ export default function CreateProfileWizard() {
             isPublic={isPublic}
             setIsPublic={setIsPublic}
             onFinish={handleCreate}
-            onBack={() => setStep(2)}
+            onBack={() => setStep(3)}
             isPending={createPersona.isPending}
           />
         )}
@@ -204,23 +214,15 @@ function StepRole({
   );
 }
 
-/* ── Step 2: Navn ── */
+/* ── Step 2: Navn (only) ── */
 function StepName({
   name,
   setName,
-  avatarUrl,
-  setAvatarUrl,
-  avatarImageSettings,
-  setAvatarImageSettings,
   onNext,
   onBack,
 }: {
   name: string;
   setName: (v: string) => void;
-  avatarUrl: string;
-  setAvatarUrl: (v: string) => void;
-  avatarImageSettings: ImageSettings | null;
-  setAvatarImageSettings: (v: ImageSettings | null) => void;
   onNext: () => void;
   onBack: () => void;
 }) {
@@ -231,21 +233,54 @@ function StepName({
       primary={{ label: "Neste", onClick: onNext, disabled: !name.trim() }}
       secondary={{ label: "Tilbake", onClick: onBack }}
     >
-      <div className="space-y-6">
-        <div className="rounded-xl border border-border/20 bg-card/40 backdrop-blur-sm p-5">
-          <Label htmlFor="name" className="text-xs text-muted-foreground">Navn</Label>
-          <Input
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Fullt navn"
-            className="mt-1.5 text-base bg-background/50 border-border/30"
-          />
-          <p className="text-[10px] text-muted-foreground/50 mt-1.5">
-            Band og prosjekter legger du til senere.
-          </p>
-        </div>
+      <div className="rounded-xl border border-border/20 bg-card/40 backdrop-blur-sm p-5">
+        <Label htmlFor="name" className="text-xs text-muted-foreground">Navn</Label>
+        <Input
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Fullt navn"
+          className="mt-1.5 text-base bg-background/50 border-border/30"
+        />
+        <p className="text-[10px] text-muted-foreground/50 mt-1.5">
+          Band og prosjekter legger du til senere.
+        </p>
+      </div>
+    </StepLayout>
+  );
+}
 
+/* ── Step 3: Profilbilde + Bio ── */
+function StepProfile({
+  name,
+  bio,
+  setBio,
+  avatarUrl,
+  setAvatarUrl,
+  avatarImageSettings,
+  setAvatarImageSettings,
+  onNext,
+  onBack,
+}: {
+  name: string;
+  bio: string;
+  setBio: (v: string) => void;
+  avatarUrl: string;
+  setAvatarUrl: (v: string) => void;
+  avatarImageSettings: ImageSettings | null;
+  setAvatarImageSettings: (v: ImageSettings | null) => void;
+  onNext: () => void;
+  onBack: () => void;
+}) {
+  return (
+    <StepLayout
+      title="Skriv litt om deg"
+      subtitle="Skriv litt om hvilken tilknytning du har til musikkbransjen"
+      primary={{ label: "Neste", onClick: onNext }}
+      secondary={{ label: "Tilbake", onClick: onBack }}
+    >
+      <div className="space-y-6">
+        {/* Avatar */}
         <div className="flex items-center gap-3 rounded-xl border border-border/20 bg-card/40 backdrop-blur-sm p-4">
           <Avatar className="h-12 w-12 ring-2 ring-border/30 shrink-0">
             {avatarUrl ? (
@@ -267,12 +302,28 @@ function StepName({
             <p className="text-[9px] text-muted-foreground/40 mt-0.5">Valgfritt</p>
           </div>
         </div>
+
+        {/* Bio */}
+        <div className="rounded-xl border border-border/20 bg-card/40 backdrop-blur-sm p-5">
+          <Label htmlFor="bio" className="text-xs text-muted-foreground">Om deg</Label>
+          <Textarea
+            id="bio"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="F.eks. «Trommis i Kråkesølv, freelance lydtekniker i Bergen»"
+            rows={3}
+            className="mt-1.5 text-base bg-background/50 border-border/30 resize-none"
+          />
+          <p className="text-[10px] text-muted-foreground/50 mt-1.5">
+            Valgfritt – du kan legge til dette senere.
+          </p>
+        </div>
       </div>
     </StepLayout>
   );
 }
 
-/* ── Step 3: Synlighet ── */
+/* ── Step 4: Synlighet ── */
 function StepVisibility({
   name,
   type,
