@@ -123,21 +123,21 @@ export default function ProjectPage() {
       </div>
 
       {/* NAME + TAGLINE */}
-      <div className="max-w-6xl mx-auto px-4 md:px-8 pt-4 md:pt-6 relative z-10">
+      <div className="max-w-6xl mx-auto px-4 md:px-8 pt-5 md:pt-8 relative z-10">
         <div className="flex items-end gap-5">
           {logoUrl && (
             <img
               src={logoUrl}
               alt={`${entity.name} logo`}
-              className="h-16 w-16 md:h-20 md:w-20 rounded-xl object-cover ring-2 ring-background shadow-lg flex-shrink-0"
+              className="h-20 w-20 md:h-24 md:w-24 rounded-xl object-cover ring-2 ring-background shadow-lg flex-shrink-0"
             />
           )}
           <div className="flex-1 min-w-0">
-            <h1 className="font-black text-3xl md:text-5xl uppercase tracking-tight leading-[0.95]">
+            <h1 className="font-black text-4xl md:text-6xl uppercase tracking-tight leading-[0.95]">
               {entity.name}
             </h1>
             {entity.tagline && (
-              <p className="text-sm md:text-base text-muted-foreground/60 mt-1.5 truncate">
+              <p className="text-base md:text-lg text-muted-foreground/60 mt-2 leading-snug">
                 {entity.tagline}
               </p>
             )}
@@ -146,10 +146,10 @@ export default function ProjectPage() {
 
         {/* Location + socials bar */}
         {(locationDisplay || (entitySocialLinks && entitySocialLinks.length > 0)) && (
-          <div className="flex items-center gap-4 mt-3 flex-wrap">
+          <div className="flex items-center gap-4 mt-4 flex-wrap">
             {locationDisplay && (
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground/50">
-                <MapPin className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-1.5 text-base text-muted-foreground/50">
+                <MapPin className="w-4 h-4" />
                 <span>{locationDisplay}</span>
               </div>
             )}
@@ -157,22 +157,22 @@ export default function ProjectPage() {
           </div>
         )}
 
-        <div className="border-b border-border/20 mt-6 mb-0" />
+        <div className="border-b border-border/20 mt-7 mb-0" />
       </div>
 
       {/* MAIN CONTENT – two-column on desktop */}
-      <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 lg:gap-12">
+      <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 md:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-10 lg:gap-14">
 
           {/* LEFT – Primary content */}
-          <div className="space-y-8">
+          <div className="space-y-10">
             {/* Beskrivelse */}
             {entity.description && (
               <div>
-                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-3">
+                <h2 className="text-xs md:text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-4">
                   Om {entity.name}
                 </h2>
-                <p className="text-base md:text-lg font-light leading-relaxed text-foreground/85 whitespace-pre-line">
+                <p className="text-lg md:text-xl font-light leading-relaxed text-foreground/85 whitespace-pre-line">
                   {entity.description}
                 </p>
               </div>
@@ -184,10 +184,10 @@ export default function ProjectPage() {
             {/* Team / Bak prosjektet */}
             {publicTeamMembers.length > 0 && (
               <div>
-                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-4">
+                <h2 className="text-xs md:text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-5">
                   {getPersonasSectionTitle(entity.type)}
                 </h2>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {publicTeamMembers.map((member: any, i: number) => (
                     <TeamCreditInline
                       key={(member.persona?.slug || member.entity?.slug || '') + i}
@@ -207,7 +207,7 @@ export default function ProjectPage() {
             {/* Historikk / Tidslinje */}
             {hasTimeline && (
               <div>
-                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-4">
+                <h2 className="text-xs md:text-sm font-semibold uppercase tracking-widest text-muted-foreground/50 mb-5">
                   Historien
                 </h2>
                 <UnifiedTimeline source={{ type: "entity", id: entity.id }} />
@@ -266,28 +266,28 @@ function TeamCreditInline({ member }: { member: any }) {
   const entityType = member.entity?.type;
 
   const nameEl = personaSlug ? (
-    <Link to={`/p/${personaSlug}`} className="text-sm font-medium text-foreground hover:underline">
+    <Link to={`/p/${personaSlug}`} className="text-base font-medium text-foreground hover:underline">
       {name}
     </Link>
   ) : entitySlug && entityType ? (
-    <Link to={getEntityPublicRoute(entityType, entitySlug, entityTypes)} className="text-sm font-medium text-foreground hover:underline">
+    <Link to={getEntityPublicRoute(entityType, entitySlug, entityTypes)} className="text-base font-medium text-foreground hover:underline">
       {name}
     </Link>
   ) : (
-    <p className="text-sm font-medium text-foreground">{name}</p>
+    <p className="text-base font-medium text-foreground">{name}</p>
   );
 
   return (
-    <div className="flex items-center gap-3 py-1.5">
-      <Avatar className="h-9 w-9 border border-border/20">
+    <div className="flex items-center gap-4 py-2">
+      <Avatar className="h-11 w-11 border border-border/20">
         {imageUrl ? <AvatarImage src={imageUrl} alt={name} className="object-cover" /> : null}
-        <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+        <AvatarFallback className="bg-muted text-muted-foreground text-sm">
           {name.charAt(0).toUpperCase()}
         </AvatarFallback>
       </Avatar>
       <div>
         {nameEl}
-        {role && <p className="text-xs text-muted-foreground/50">{role}</p>}
+        {role && <p className="text-sm text-muted-foreground/50">{role}</p>}
       </div>
     </div>
   );
