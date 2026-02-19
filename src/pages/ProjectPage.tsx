@@ -131,16 +131,40 @@ export default function ProjectPage() {
       {/* NAME + TAGLINE */}
       <div className="max-w-6xl mx-auto px-4 md:px-8 pt-5 md:pt-8 relative z-10">
         <div className="flex items-start gap-6 md:gap-10">
-          {/* Title + tagline */}
+          {/* Title + tagline (or logo-only + tagline) */}
           <div className="flex-1 min-w-0">
-            <h1 className="font-black text-3xl md:text-5xl uppercase tracking-tight leading-[0.95] line-clamp-2">
-              {entity.name}
-            </h1>
-            {entity.tagline && (
-              <p className="text-base md:text-lg text-muted-foreground/60 mt-3 leading-snug">
-                {entity.tagline}
-              </p>
-            )}
+            {(() => {
+              const logoOnly = (entity as any).logo_display_mode === 'instead_of_name';
+              if (logoOnly && logoUrl) {
+                return (
+                  <>
+                    <img
+                      src={logoUrl}
+                      alt={entity.name}
+                      className="w-auto object-contain"
+                      style={{ maxHeight: "96px", maxWidth: "min(100%, 320px)", opacity: 0.95, filter: "drop-shadow(0 0 0.5px rgba(255,255,255,0.25))" }}
+                    />
+                    {entity.tagline && (
+                      <p className="text-base md:text-lg text-muted-foreground/60 mt-3 leading-snug">
+                        {entity.tagline}
+                      </p>
+                    )}
+                  </>
+                );
+              }
+              return (
+                <>
+                  <h1 className="font-black text-3xl md:text-5xl uppercase tracking-tight leading-[0.95] line-clamp-2">
+                    {entity.name}
+                  </h1>
+                  {entity.tagline && (
+                    <p className="text-base md:text-lg text-muted-foreground/60 mt-3 leading-snug">
+                      {entity.tagline}
+                    </p>
+                  )}
+                </>
+              );
+            })()}
             {/* Location + socials bar */}
             {(locationDisplay || (entitySocialLinks && entitySocialLinks.length > 0)) && (
               <div className="flex items-center gap-4 mt-3 flex-wrap">
@@ -155,8 +179,8 @@ export default function ProjectPage() {
             )}
           </div>
 
-          {/* Logo – right of title, premium placement */}
-          {logoUrl && (
+          {/* Logo – right of title, only when with_name */}
+          {(entity as any).logo_display_mode !== 'instead_of_name' && logoUrl && (
             <div className="flex-shrink-0 flex items-start pt-0 pl-8 md:pl-12">
               <img
                 src={logoUrl}

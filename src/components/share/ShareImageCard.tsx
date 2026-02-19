@@ -247,19 +247,55 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
         >
           {/* Tittel-kolonne */}
           <div>
-            {logoDisplayMode !== 'instead_of_name' && (
+            {logoDisplayMode === 'instead_of_name' ? (
               <>
+                {subjectLogo && (
+                  <img
+                    src={subjectLogo}
+                    alt=""
+                    crossOrigin="anonymous"
+                    style={{
+                      maxWidth: TITLE_COL_W,
+                      maxHeight: 200,
+                      objectFit: "contain",
+                      opacity: 0.95,
+                      filter: "drop-shadow(0 2px 16px rgba(0,0,0,0.7))",
+                    }}
+                  />
+                )}
+                {data.subtitle && (
                   <div
                     style={{
-                      fontSize: 76,
-                      fontWeight: 900,
-                      lineHeight: 0.92,
-                      color: "#ffffff",
-                      textTransform: "uppercase" as const,
-                      letterSpacing: "0.08em",
-                      textShadow: "0 6px 40px rgba(0,0,0,0.7)",
+                      fontSize: 34,
+                      fontWeight: 600,
+                      lineHeight: 1.3,
+                      color: ACCENT_COLOR,
+                      textShadow: "0 3px 16px rgba(0,0,0,0.6)",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical" as const,
+                      overflow: "hidden",
+                      marginTop: 40,
+                      paddingBottom: 12,
                     }}
                   >
+                    {data.subtitle}
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div
+                  style={{
+                    fontSize: 76,
+                    fontWeight: 900,
+                    lineHeight: 0.92,
+                    color: "#ffffff",
+                    textTransform: "uppercase" as const,
+                    letterSpacing: "0.08em",
+                    textShadow: "0 6px 40px rgba(0,0,0,0.7)",
+                  }}
+                >
                   {data.title}
                 </div>
                 {data.subtitle && (
@@ -285,14 +321,14 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
             )}
           </div>
 
-          {/* Logo-kolonne – høyre for tittel */}
-          {subjectLogo && (
+          {/* Logo-kolonne – kun ved with_name (liten logo til høyre) */}
+          {logoDisplayMode !== 'instead_of_name' && subjectLogo && (
             <div
               style={{
                 display: "flex",
                 alignItems: "flex-start",
                 justifyContent: "flex-end",
-                paddingTop: logoDisplayMode === 'instead_of_name' ? 0 : 8,
+                paddingTop: 8,
               }}
             >
               <img
@@ -300,8 +336,8 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
                 alt=""
                 crossOrigin="anonymous"
                 style={{
-                  maxWidth: logoDisplayMode === 'instead_of_name' ? LOGO_BOX_W * 1.5 : LOGO_BOX_W,
-                  maxHeight: logoDisplayMode === 'instead_of_name' ? 200 : 90,
+                  maxWidth: LOGO_BOX_W,
+                  maxHeight: 90,
                   objectFit: "contain",
                   opacity: 0.95,
                   filter: "drop-shadow(0 2px 16px rgba(0,0,0,0.7))",
