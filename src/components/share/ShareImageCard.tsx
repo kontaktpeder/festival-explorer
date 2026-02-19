@@ -65,6 +65,13 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
     const brandLogo = data.brandLogoUrl || shareGIcon;
     const heroUrl = data.heroImageUrl || null;
     const subjectLogo = data.subjectLogoUrl || null;
+    const logoDisplayMode = data.logoDisplayMode ?? 'with_name';
+
+    // Header layout constants
+    const HEADER_PADDING_X = 96;
+    const LOGO_BOX_W = Math.min(200, Math.max(140, SHARE_WIDTH * 0.14)); // ~151px
+    const HEADER_GAP = 32;
+    const TITLE_COL_W = SHARE_WIDTH - HEADER_PADDING_X * 2 - HEADER_GAP - LOGO_BOX_W;
 
     return (
       <div
@@ -179,75 +186,94 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           }}
         />
 
-        {/* Tittel + tagline – full bredde øverst */}
+        {/* Header: tittel + logo – grid med safezone */}
         <div
           style={{
             position: "absolute",
             top: SAFE_TOP,
-            left: SAFE_LEFT,
-            width: SHARE_WIDTH - SAFE_LEFT - SAFE_RIGHT,
+            left: HEADER_PADDING_X,
+            width: SHARE_WIDTH - HEADER_PADDING_X * 2,
+            display: "grid",
+            gridTemplateColumns: `${TITLE_COL_W}px ${LOGO_BOX_W}px`,
+            columnGap: HEADER_GAP,
+            alignItems: "start",
             zIndex: 10,
           }}
         >
-          <div
-            style={{
-              fontSize: 96,
-              fontWeight: 900,
-              lineHeight: 0.88,
-              color: "#ffffff",
-              textTransform: "uppercase" as const,
-              letterSpacing: "0.08em",
-              textShadow: "0 6px 40px rgba(0,0,0,0.7)",
-              marginBottom: 24,
-            }}
-          >
-            {data.title}
+          {/* Tittel-kolonne */}
+          <div>
+            {logoDisplayMode !== 'instead_of_name' && (
+              <>
+                <div
+                  style={{
+                    fontSize: 96,
+                    fontWeight: 900,
+                    lineHeight: 0.88,
+                    color: "#ffffff",
+                    textTransform: "uppercase" as const,
+                    letterSpacing: "0.08em",
+                    textShadow: "0 6px 40px rgba(0,0,0,0.7)",
+                    marginBottom: 24,
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical" as const,
+                    overflow: "hidden",
+                  }}
+                >
+                  {data.title}
+                </div>
+                {data.subtitle && (
+                  <div
+                    style={{
+                      fontSize: 34,
+                      fontWeight: 600,
+                      lineHeight: 1.3,
+                      color: ACCENT_COLOR,
+                      textShadow: "0 3px 16px rgba(0,0,0,0.6)",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: "vertical" as const,
+                      overflow: "hidden",
+                      marginTop: 14,
+                      paddingBottom: 12,
+                    }}
+                  >
+                    {data.subtitle}
+                  </div>
+                )}
+              </>
+            )}
           </div>
-          {data.subtitle && (
+
+          {/* Logo-kolonne – høyre for tittel */}
+          {subjectLogo && (
             <div
               style={{
-                fontSize: 34,
-                fontWeight: 600,
-                lineHeight: 1.3,
-                color: ACCENT_COLOR,
-                textShadow: "0 3px 16px rgba(0,0,0,0.6)",
-                display: "-webkit-box",
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: "vertical" as const,
-                overflow: "hidden",
-                marginTop: 14,
-                paddingBottom: 12,
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "flex-end",
+                paddingTop: logoDisplayMode === 'instead_of_name' ? 0 : 8,
               }}
             >
-              {data.subtitle}
+              <img
+                src={subjectLogo}
+                alt=""
+                crossOrigin="anonymous"
+                style={{
+                  maxWidth: logoDisplayMode === 'instead_of_name' ? LOGO_BOX_W * 1.5 : LOGO_BOX_W,
+                  maxHeight: logoDisplayMode === 'instead_of_name' ? 200 : 90,
+                  objectFit: "contain",
+                  opacity: 0.95,
+                  filter: "drop-shadow(0 2px 16px rgba(0,0,0,0.7))",
+                }}
+              />
             </div>
           )}
         </div>
 
         {/* Subject logo – øverst høyre i hero-sonen */}
-        {subjectLogo && (
-          <div
-            style={{
-              position: "absolute",
-              top: HERO_ZONE_TOP + 24,
-              right: 32,
-              zIndex: 10,
-            }}
-          >
-            <img
-              src={subjectLogo}
-              alt=""
-              crossOrigin="anonymous"
-              style={{
-                maxWidth: SUBJECT_LOGO_MAX_W,
-                maxHeight: SUBJECT_LOGO_MAX_H,
-                objectFit: "contain",
-                opacity: 0.92,
-                filter: "drop-shadow(0 2px 12px rgba(0,0,0,0.6))",
-              }}
-            />
-          </div>
-        )}
+
+
 
         {/* CTA – 2-linjers plakatstruktur, nederst høyre */}
         <div

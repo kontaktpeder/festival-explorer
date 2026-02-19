@@ -118,6 +118,7 @@ export interface Entity {
   description?: string | null;
   hero_image_url?: string | null;
   hero_image_settings?: unknown; // JSONB from DB, use parseImageSettings() to access
+  logo_display_mode?: 'with_name' | 'instead_of_name'; // How logo is shown on posters/share images
   address?: string | null; // For venues
   city?: string | null; // For venues
   is_published: boolean;

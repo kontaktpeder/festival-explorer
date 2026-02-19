@@ -2,11 +2,13 @@ export type ShareModel = {
   title: string;
   subtitle?: string;
   heroImageUrl?: string | null;
+  /** 'with_name' = logo i header til høyre for navn, 'instead_of_name' = kun logo, ingen tittel */
+  logoDisplayMode?: 'with_name' | 'instead_of_name';
   cta?: string;
   url: string;
   brandLogoUrl?: string;
   brandBackgroundUrl?: string;
-  /** Prosjekt- eller venue-logo, vises nederst høyre */
+  /** Prosjekt- eller venue-logo */
   subjectLogoUrl?: string | null;
 };
 
