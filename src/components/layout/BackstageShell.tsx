@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import gIcon from "@/assets/giggen-g-icon.png";
+import gIcon from "@/assets/giggen-g-icon-red.png";
 
 interface BackstageShellProps {
   children: ReactNode;
@@ -64,7 +64,7 @@ export function BackstageShell({
               </Button>
             )}
             {actions}
-            <img src={gIcon} alt="" className="h-6 w-6 object-contain opacity-50 ml-1" />
+            <img src={gIcon} alt="" className="h-8 w-8 object-contain ml-1" />
           </div>
         </div>
       </header>

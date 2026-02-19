@@ -14,7 +14,7 @@ import type { ImageSettings } from "@/types/database";
 import { Music, Camera, Wrench, Building2, Check, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import welcomeBg from "@/assets/giggen-welcome-bg.png";
-import gIcon from "@/assets/giggen-g-icon.png";
+import gIcon from "@/assets/giggen-g-icon-red.png";
 
 const PERSONA_CHANGE_EVENT = "personaChanged";
 
@@ -90,7 +90,7 @@ export default function CreateProfileWizard() {
           </Link>
           <div className="flex items-center gap-3">
             <ProgressBar current={step} total={stepCount} />
-            <img src={gIcon} alt="" className="h-6 w-6 object-contain opacity-50" />
+            <img src={gIcon} alt="" className="h-8 w-8 object-contain" />
           </div>
         </div>
       </header>
