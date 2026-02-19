@@ -108,8 +108,9 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
 
     // 1-line vs 2-line title detection (~15 chars fits on one line at 76px / 705px col)
     const isOneLineTitle = logoDisplayMode === 'instead_of_name' ? false : (data.title?.length ?? 0) <= 15;
-    const titleFontSize = isOneLineTitle ? 92 : 66;
+    const titleFontSize = isOneLineTitle ? 92 : 78;
     const subtitleMarginTop = isOneLineTitle ? 24 : 40;
+    const headerTop = isOneLineTitle ? SAFE_TOP : SAFE_TOP + 48;
 
     // Dynamic hero top: measure header height so 1-line titles sit closer to image
     const headerRef = useRef<HTMLDivElement>(null);
@@ -241,7 +242,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           ref={headerRef}
           style={{
             position: "absolute",
-            top: SAFE_TOP,
+            top: headerTop,
             left: HEADER_PADDING_X,
             width: SHARE_WIDTH - HEADER_PADDING_X * 2,
             display: "grid",
