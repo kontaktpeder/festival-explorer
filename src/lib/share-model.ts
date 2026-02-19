@@ -1,5 +1,7 @@
 import { getPublicUrl } from "@/lib/utils";
 import type { ShareModel } from "@/types/share";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
 
 const TITLE_MAX = 34;
 const SUBTITLE_MAX = 80;
@@ -23,7 +25,7 @@ export function shareModelFromProject(params: {
     title: truncate(params.title, TITLE_MAX),
     subtitle: params.tagline ? truncate(params.tagline, SUBTITLE_MAX) : undefined,
     heroImageUrl: params.heroImageUrl ?? null,
-    cta: "Les mer på giggen.org",
+    cta: `${params.title} på giggen.org`,
     url: `${base}/project/${params.slug}`,
     brandLogoUrl: params.brandLogoUrl,
     brandBackgroundUrl: params.brandBackgroundUrl,
@@ -45,7 +47,7 @@ export function shareModelFromVenue(params: {
     title: truncate(params.name, TITLE_MAX),
     subtitle: params.description ? truncate(params.description, SUBTITLE_MAX) : undefined,
     heroImageUrl: params.heroImageUrl ?? null,
-    cta: "Les mer på giggen.org",
+    cta: `Utforsk ${params.name} på giggen.org`,
     url: `${base}/venue/${params.slug}`,
     brandLogoUrl: params.brandLogoUrl,
     brandBackgroundUrl: params.brandBackgroundUrl,
@@ -57,14 +59,29 @@ export function shareModelFromEvent(params: {
   slug: string;
   title: string;
   venueName?: string | null;
+  venueSlug?: string | null;
+  startAt?: string | null;
   heroImageUrl: string | null;
+  hasTickets?: boolean;
 }): ShareModel {
   const base = getPublicUrl().replace(/\/$/, "");
+
+  let cta = "Billetter ute nå på giggen.org";
+  if (params.venueName && params.startAt) {
+    const dateStr = format(new Date(params.startAt), "d. MMMM", { locale: nb });
+    cta = `Live på ${params.venueName} – ${dateStr}. Billetter ute nå.`;
+  } else if (params.venueName) {
+    cta = `Live på ${params.venueName}. Billetter ute nå.`;
+  } else if (params.startAt) {
+    const dateStr = format(new Date(params.startAt), "d. MMMM", { locale: nb });
+    cta = `${dateStr}. Billetter ute nå.`;
+  }
+
   return {
     title: truncate(params.title, TITLE_MAX),
     subtitle: params.venueName ? truncate(params.venueName, SUBTITLE_MAX) : undefined,
     heroImageUrl: params.heroImageUrl ?? null,
-    cta: "Les mer på giggen.org",
+    cta,
     url: `${base}/event/${params.slug}`,
   };
 }
