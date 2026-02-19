@@ -6,10 +6,10 @@ import { SHARE_WIDTH, SHARE_HEIGHT } from "@/types/share";
 
 const SAFE_LEFT = 96;
 const SAFE_RIGHT = 96;
-const SAFE_TOP = 104;
+const SAFE_TOP = 116;
 const SAFE_BOTTOM = 140;
 
-const GIGGEN_SIZE = 88;
+const GIGGEN_SIZE = 76;
 const GIGGEN_INSET = 16;
 const GIGGEN_BOTTOM = 52;
 const GIGGEN_LEFT = 52;
@@ -143,7 +143,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 20%, transparent 40%)",
+              "linear-gradient(to bottom, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.38) 22%, rgba(0,0,0,0.08) 42%, transparent 58%)",
             pointerEvents: "none",
             zIndex: 3,
           }}
@@ -186,7 +186,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
             height: GIGGEN_SIZE,
             objectFit: "contain",
             zIndex: 10,
-            opacity: 0.9,
+            opacity: 0.72,
             filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.4))",
           }}
         />
@@ -256,8 +256,8 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
                     style={{
                       fontSize: 26,
                       fontWeight: 500,
-                      color: "rgba(255,255,255,0.65)",
-                      letterSpacing: "0.06em",
+                      color: "rgba(255,255,255,0.82)",
+                      letterSpacing: "0.10em",
                       lineHeight: 1.2,
                       textShadow: "0 2px 12px rgba(0,0,0,0.7)",
                       marginBottom: line2 ? 8 : 0,
@@ -269,10 +269,10 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
                 {line2 && (
                   <div
                     style={{
-                      fontSize: 40,
+                      fontSize: 44,
                       fontWeight: 800,
-                      color: "#ffffff",
-                      letterSpacing: "-0.01em",
+                      color: "#FFB060",
+                      letterSpacing: "0.04em",
                       lineHeight: 1.1,
                       textShadow: "0 3px 20px rgba(0,0,0,0.8)",
                       textTransform: "uppercase" as const,
