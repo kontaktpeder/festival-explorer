@@ -18,8 +18,8 @@ const GIGGEN_SIZE = 76;
 const GIGGEN_INSET = 16;
 const GIGGEN_BOTTOM = 52;
 const GIGGEN_LEFT = 52;
-const SUBJECT_LOGO_MAX_W = 360;
-const SUBJECT_LOGO_MAX_H = 160;
+const SUBJECT_LOGO_MAX_W = 280;
+const SUBJECT_LOGO_MAX_H = 100;
 
 /** Varmere oransje – mer plakat, mindre UI */
 const ACCENT_COLOR = "#FF8C2B";
@@ -224,91 +224,22 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           )}
         </div>
 
-        {/* CTA – 2-linjers plakatstruktur, nederst høyre */}
+        {/* CTA + logo – samme rad, forankret nederst høyre */}
         <div
           style={{
             position: "absolute",
             bottom: SAFE_BOTTOM,
             right: SAFE_RIGHT,
             zIndex: 10,
-            textAlign: "right" as const,
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "flex-end",
+            gap: 32,
             maxWidth: SHARE_WIDTH - SAFE_LEFT - GIGGEN_LEFT - GIGGEN_SIZE - 48,
           }}
         >
-          {data.cta ? (() => {
-            const [line1, line2] = data.cta.split("\n");
-            return (
-              <>
-                {line1 && (
-                  <div
-                    style={{
-                      fontSize: 27,
-                      fontWeight: 600,
-                      color: "rgba(255,255,255,0.95)",
-                      letterSpacing: "0.14em",
-                      lineHeight: 1.2,
-                      textShadow: "0 2px 16px rgba(0,0,0,0.9)",
-                      marginBottom: line2 ? 10 : 0,
-                    }}
-                  >
-                    {line1}
-                  </div>
-                )}
-                {line2 && (
-                  <div
-                    style={{
-                      fontSize: 50,
-                      fontWeight: 800,
-                      color: "#FFB060",
-                      letterSpacing: "0.05em",
-                      lineHeight: 1.05,
-                      textShadow: "0 3px 24px rgba(0,0,0,0.85)",
-                      textTransform: "uppercase" as const,
-                    }}
-                  >
-                    {line2}
-                  </div>
-                )}
-                {!line2 && (
-                  <div
-                    style={{
-                      fontSize: 26,
-                      fontWeight: 500,
-                      color: "rgba(255,255,255,0.65)",
-                      letterSpacing: "0.04em",
-                      textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-                    }}
-                  >
-                    {line1}
-                  </div>
-                )}
-              </>
-            );
-          })() : (
-            <div
-              style={{
-                fontSize: 26,
-                fontWeight: 500,
-                color: "rgba(255,255,255,0.55)",
-                letterSpacing: "0.04em",
-                textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-              }}
-            >
-              giggen.org
-            </div>
-          )}
-        </div>
-
-        {/* Prosjekt/venue-logo – over CTA, høyre side */}
-        {subjectLogo && (
-          <div
-            style={{
-              position: "absolute",
-              bottom: SAFE_BOTTOM + 36,
-              right: SAFE_RIGHT,
-              zIndex: 10,
-            }}
-          >
+          {/* Subject logo – til venstre for CTA-tekst */}
+          {subjectLogo && (
             <img
               src={subjectLogo}
               alt=""
@@ -317,10 +248,79 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
                 maxWidth: SUBJECT_LOGO_MAX_W,
                 maxHeight: SUBJECT_LOGO_MAX_H,
                 objectFit: "contain",
+                flexShrink: 0,
+                opacity: 0.92,
+                filter: "drop-shadow(0 2px 12px rgba(0,0,0,0.6))",
               }}
             />
+          )}
+
+          {/* CTA-tekst – høyre kolonne */}
+          <div style={{ textAlign: "right" as const, flex: 1, minWidth: 0 }}>
+            {data.cta ? (() => {
+              const [line1, line2] = data.cta.split("\n");
+              return (
+                <>
+                  {line1 && (
+                    <div
+                      style={{
+                        fontSize: 27,
+                        fontWeight: 600,
+                        color: "rgba(255,255,255,0.95)",
+                        letterSpacing: "0.14em",
+                        lineHeight: 1.2,
+                        textShadow: "0 2px 16px rgba(0,0,0,0.9)",
+                        marginBottom: line2 ? 10 : 0,
+                      }}
+                    >
+                      {line1}
+                    </div>
+                  )}
+                  {line2 && (
+                    <div
+                      style={{
+                        fontSize: 50,
+                        fontWeight: 800,
+                        color: "#FFB060",
+                        letterSpacing: "0.05em",
+                        lineHeight: 1.05,
+                        textShadow: "0 3px 24px rgba(0,0,0,0.85)",
+                        textTransform: "uppercase" as const,
+                      }}
+                    >
+                      {line2}
+                    </div>
+                  )}
+                  {!line2 && (
+                    <div
+                      style={{
+                        fontSize: 26,
+                        fontWeight: 500,
+                        color: "rgba(255,255,255,0.65)",
+                        letterSpacing: "0.04em",
+                        textShadow: "0 2px 10px rgba(0,0,0,0.5)",
+                      }}
+                    >
+                      {line1}
+                    </div>
+                  )}
+                </>
+              );
+            })() : (
+              <div
+                style={{
+                  fontSize: 26,
+                  fontWeight: 500,
+                  color: "rgba(255,255,255,0.55)",
+                  letterSpacing: "0.04em",
+                  textShadow: "0 2px 10px rgba(0,0,0,0.5)",
+                }}
+              >
+                giggen.org
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     );
   }
