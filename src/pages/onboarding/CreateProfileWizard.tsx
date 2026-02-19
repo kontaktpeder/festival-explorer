@@ -145,11 +145,11 @@ function StepIntro({ onNext, onCancel }: { onNext: () => void; onCancel: () => v
       secondary={{ label: "Avbryt", onClick: onCancel }}
       icon={<img src={welcomeBg} alt="" className="h-14 w-14 object-contain opacity-70" />}
     >
-      <p className="text-base text-muted-foreground leading-relaxed">
+      <p className="text-lg text-muted-foreground leading-relaxed">
         Her lager du din profesjonelle profil.
         Arrangører, musikere og tilskuere bruker den for å finne deg.
       </p>
-      <p className="text-sm text-muted-foreground/50 mt-3">
+      <p className="text-base text-muted-foreground/50 mt-3">
         Det tar ca. 1 minutt. Du kan endre alt senere.
       </p>
     </StepLayout>
@@ -171,7 +171,7 @@ function StepRole({
   return (
     <StepLayout
       title="Hva gjør du?"
-      subtitle="Velg rollen som best beskriver deg. Du kan lage flere profiler med ulike roller senere."
+      subtitle="Velg rollen som best beskriver deg. Du kan lage flere profiler senere."
       primary={{ label: "Neste", onClick: onNext, disabled: !type }}
       secondary={{ label: "Tilbake", onClick: onBack }}
     >
@@ -180,13 +180,13 @@ function StepRole({
           <button
             key={t}
             onClick={() => setType(t)}
-            className={`group w-full flex items-center gap-4 py-4 px-1 text-left transition-all duration-200 border-b ${
+            className={`group w-full flex items-center gap-4 py-5 px-1 text-left transition-all duration-200 border-b ${
               type === t
                 ? "border-accent/30"
                 : "border-border/10 hover:border-border/30"
             }`}
           >
-            <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200 ${
+            <div className={`h-11 w-11 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200 ${
               type === t ? "bg-accent/15" : "bg-muted/30 group-hover:bg-muted/50"
             }`}>
               <Icon className={`h-5 w-5 transition-colors duration-200 ${
@@ -194,12 +194,12 @@ function StepRole({
               }`} />
             </div>
             <div className="flex-1 min-w-0">
-              <span className={`text-base font-medium transition-colors ${
+              <span className={`text-lg font-medium transition-colors ${
                 type === t ? "text-foreground" : "text-foreground/80"
               }`}>{label}</span>
-              <p className="text-sm text-muted-foreground/60 mt-0.5">{desc}</p>
+              <p className="text-base text-muted-foreground/50 mt-0.5">{desc}</p>
             </div>
-            {type === t && <Check className="h-5 w-5 text-accent shrink-0" />}
+            {type === t && <Check className="h-6 w-6 text-accent shrink-0" />}
           </button>
         ))}
       </div>
@@ -226,16 +226,16 @@ function StepName({
       primary={{ label: "Neste", onClick: onNext, disabled: !name.trim() }}
       secondary={{ label: "Tilbake", onClick: onBack }}
     >
-      <div className="space-y-2">
-        <Label htmlFor="name" className="text-sm text-muted-foreground">Navn</Label>
+      <div className="space-y-3">
+        <Label htmlFor="name" className="text-base text-muted-foreground">Navn</Label>
         <Input
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Fullt navn"
-          className="text-lg h-12 bg-transparent border-border/20 focus:border-accent/40"
+          className="text-xl h-14 bg-transparent border-border/20 focus:border-accent/40"
         />
-        <p className="text-sm text-muted-foreground/40 pt-1">
+        <p className="text-base text-muted-foreground/40 pt-1">
           Band og prosjekter legger du til senere.
         </p>
       </div>
@@ -279,18 +279,18 @@ function StepProfile({
         {/* Role indicator */}
         {roleLabel && (
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground/50">Du vises som</span>
-            <span className="text-sm font-medium text-accent">{roleLabel}</span>
+            <span className="text-base text-muted-foreground/50">Du vises som</span>
+            <span className="text-base font-medium text-accent">{roleLabel}</span>
           </div>
         )}
 
         {/* Avatar */}
-        <div className="flex items-center gap-4">
-          <Avatar className="h-16 w-16 ring-2 ring-border/20 shrink-0">
+        <div className="flex items-center gap-5">
+          <Avatar className="h-20 w-20 ring-2 ring-border/20 shrink-0">
             {avatarUrl ? (
               <AvatarImage src={avatarUrl} style={getCroppedImageStyles(avatarImageSettings)} className="object-cover" />
             ) : null}
-            <AvatarFallback className="text-lg bg-muted/30 text-muted-foreground/50">
+            <AvatarFallback className="text-2xl bg-muted/30 text-muted-foreground/50">
               {name ? name.charAt(0).toUpperCase() : "?"}
             </AvatarFallback>
           </Avatar>
@@ -308,17 +308,17 @@ function StepProfile({
         </div>
 
         {/* Bio */}
-        <div className="space-y-2">
-          <Label htmlFor="bio" className="text-sm text-muted-foreground">Om deg</Label>
+        <div className="space-y-3">
+          <Label htmlFor="bio" className="text-base text-muted-foreground">Om deg</Label>
           <Textarea
             id="bio"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             placeholder="F.eks. «Trommis i Kråkesølv, freelance lydtekniker i Bergen»"
             rows={3}
-            className="text-base bg-transparent border-border/20 focus:border-accent/40 resize-none"
+            className="text-lg bg-transparent border-border/20 focus:border-accent/40 resize-none"
           />
-          <p className="text-sm text-muted-foreground/40">
+          <p className="text-base text-muted-foreground/40">
             Valgfritt – du kan legge til dette senere.
           </p>
         </div>
@@ -366,8 +366,8 @@ function StepVisibility({
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-base font-semibold text-foreground truncate">{name}</p>
-            <p className="text-sm text-muted-foreground/60">{type ? getPersonaTypeLabel(type) : "—"}</p>
+            <p className="text-lg font-semibold text-foreground truncate">{name}</p>
+            <p className="text-base text-muted-foreground/60">{type ? getPersonaTypeLabel(type) : "—"}</p>
           </div>
         </div>
 
@@ -382,10 +382,10 @@ function StepVisibility({
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-base font-medium text-foreground">Offentlig</span>
-              {isPublic && <Check className="h-5 w-5 text-accent shrink-0" />}
+              <span className="text-lg font-medium text-foreground">Offentlig</span>
+              {isPublic && <Check className="h-6 w-6 text-accent shrink-0" />}
             </div>
-            <p className="text-sm text-muted-foreground/60 mt-1">
+            <p className="text-base text-muted-foreground/50 mt-1">
               Synlig gjennom søk for alle i GIGGEN.
             </p>
           </button>
@@ -399,10 +399,10 @@ function StepVisibility({
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-base font-medium text-foreground">Kontrollert</span>
-              {!isPublic && <Check className="h-5 w-5 text-accent shrink-0" />}
+              <span className="text-lg font-medium text-foreground">Kontrollert</span>
+              {!isPublic && <Check className="h-6 w-6 text-accent shrink-0" />}
             </div>
-            <p className="text-sm text-muted-foreground/60 mt-1">
+            <p className="text-base text-muted-foreground/50 mt-1">
               Kun synlig for medlemmer i team og prosjekter du er en del av.
             </p>
           </button>
@@ -435,9 +435,9 @@ function StepLayout({
       {/* Header */}
       <div>
         {icon && <div className="mb-5">{icon}</div>}
-        <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight leading-[1.1]">{title}</h1>
+        <h1 className="text-4xl sm:text-5xl font-bold text-foreground tracking-tight leading-[1.05]">{title}</h1>
         {subtitle && (
-          <p className="text-base text-muted-foreground/60 mt-3 leading-relaxed max-w-md">{subtitle}</p>
+          <p className="text-lg text-muted-foreground/60 mt-4 leading-relaxed max-w-md">{subtitle}</p>
         )}
       </div>
 
@@ -448,7 +448,7 @@ function StepLayout({
       <div className="flex items-center justify-between pt-4">
         <div>
           {secondary && (
-            <button onClick={secondary.onClick} className="text-sm text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+            <button onClick={secondary.onClick} className="text-base text-muted-foreground/40 hover:text-muted-foreground transition-colors">
               {secondary.label}
             </button>
           )}
@@ -456,7 +456,7 @@ function StepLayout({
         <Button
           onClick={primary.onClick}
           disabled={primary.disabled}
-          className="h-11 px-7 text-sm font-semibold group"
+          className="h-12 px-8 text-base font-semibold group"
         >
           {primary.label}
           <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-0.5 transition-transform duration-200" />
