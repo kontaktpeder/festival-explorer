@@ -2,6 +2,7 @@ export type ShareModel = {
   title: string;
   subtitle?: string;
   heroImageUrl?: string | null;
+  heroImageSettings?: unknown | null;
   /** 'with_name' = logo i header til høyre for navn, 'instead_of_name' = kun logo, ingen tittel */
   logoDisplayMode?: 'with_name' | 'instead_of_name';
   cta?: string;
