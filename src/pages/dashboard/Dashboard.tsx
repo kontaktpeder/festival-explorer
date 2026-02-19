@@ -325,9 +325,9 @@ export default function Dashboard() {
                     to={`/dashboard/entities/${entity.id}/edit`}
                     className="group relative rounded-xl border border-border/30 bg-card/40 overflow-hidden hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
                   >
-                    {entity.hero_image_url ? (
+                    {(entity.hero_image_url || (entity as any).logo_url) ? (
                       <div className="relative h-24 sm:h-28 w-full overflow-hidden">
-                        <EntityHeroImage imageUrl={entity.hero_image_url} imageSettings={entity.hero_image_settings} name={entity.name} />
+                        <EntityHeroImage imageUrl={entity.hero_image_url || (entity as any).logo_url} imageSettings={entity.hero_image_url ? entity.hero_image_settings : (entity as any).logo_image_settings} name={entity.name} />
                         <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
                       </div>
                     ) : (
@@ -347,9 +347,9 @@ export default function Dashboard() {
                     to={`/dashboard/entities/${entity.id}/edit`}
                     className="group relative rounded-xl border border-border/30 bg-card/40 overflow-hidden hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
                   >
-                    {entity.hero_image_url ? (
+                    {(entity.hero_image_url || (entity as any).logo_url) ? (
                       <div className="relative h-24 sm:h-28 w-full overflow-hidden">
-                        <EntityHeroImage imageUrl={entity.hero_image_url} imageSettings={entity.hero_image_settings} name={entity.name} />
+                        <EntityHeroImage imageUrl={entity.hero_image_url || (entity as any).logo_url} imageSettings={entity.hero_image_url ? entity.hero_image_settings : (entity as any).logo_image_settings} name={entity.name} />
                         <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
                       </div>
                     ) : (
