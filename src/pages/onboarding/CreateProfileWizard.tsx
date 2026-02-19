@@ -280,7 +280,7 @@ function StepBio({
   return (
     <StepLayout
       title="Beskriv deg selv"
-      subtitle={roleLabel ? `Knyttet til rollen din som ${roleLabel}.` : undefined}
+      subtitle={roleLabel ? `Knyttet til rollen din som ${roleLabel}. Du kan lage ny profil senere, med en annen rolle.` : undefined}
       primary={{ label: bio.trim() ? "Neste" : "Hopp over", onClick: onNext }}
       secondary={{ label: "Tilbake", onClick: onBack }}
     >
