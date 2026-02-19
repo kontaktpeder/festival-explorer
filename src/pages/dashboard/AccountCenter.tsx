@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useContactInfo, useUpsertContactInfo } from "@/hooks/useContactInfo";
 import { toast as sonnerToast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
+import gIconImg from "@/assets/giggen-g-icon.png";
 import { 
   LogOut, 
   Trash2, 
@@ -198,7 +199,10 @@ export default function AccountCenter() {
           <Link to="/dashboard" className="text-lg sm:text-xl font-bold text-primary hover:opacity-80 transition-opacity">
             GIGGEN <span className="text-muted-foreground font-normal text-xs sm:text-base">BACKSTAGE</span>
           </Link>
-          {!USE_PERSONA_MODUS_BAR && <PersonaSelector />}
+          <div className="flex items-center gap-2">
+            {!USE_PERSONA_MODUS_BAR && <PersonaSelector />}
+            <img src={gIconImg} alt="" className="h-6 w-6 object-contain opacity-50" />
+          </div>
         </div>
       </header>
       {USE_PERSONA_MODUS_BAR && <PersonaModusBar />}
