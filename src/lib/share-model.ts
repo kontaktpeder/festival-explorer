@@ -27,9 +27,9 @@ export function shareModelFromProject(params: {
   let cta = `${params.title} på giggen.org`;
   if (params.venueName && params.startAt) {
     const dateStr = format(new Date(params.startAt), "d. MMMM", { locale: nb }).toUpperCase();
-    cta = `${dateStr} · ${params.venueName.toUpperCase()}\nBilletter ute nå`;
+    cta = `${dateStr} · ${params.venueName.toUpperCase()}\nKJØP BILLETTER NÅ`;
   } else if (params.venueName) {
-    cta = `${params.venueName.toUpperCase()}\nBilletter ute nå`;
+    cta = `${params.venueName.toUpperCase()}\nKJØP BILLETTER NÅ`;
   }
 
   return {
@@ -77,15 +77,15 @@ export function shareModelFromEvent(params: {
 }): ShareModel {
   const base = getPublicUrl().replace(/\/$/, "");
 
-  let cta = "Billetter ute nå på giggen.org";
+  let cta = "Kjøp billetter på giggen.org";
   if (params.venueName && params.startAt) {
     const dateStr = format(new Date(params.startAt), "d. MMMM", { locale: nb }).toUpperCase();
-    cta = `${dateStr} · ${params.venueName.toUpperCase()}\nBilletter ute nå`;
+    cta = `${dateStr} · ${params.venueName.toUpperCase()}\nKJØP BILLETTER NÅ`;
   } else if (params.venueName) {
-    cta = `${params.venueName.toUpperCase()}\nBilletter ute nå`;
+    cta = `${params.venueName.toUpperCase()}\nKJØP BILLETTER NÅ`;
   } else if (params.startAt) {
     const dateStr = format(new Date(params.startAt), "d. MMMM", { locale: nb }).toUpperCase();
-    cta = `${dateStr}\nBilletter ute nå`;
+    cta = `${dateStr}\nKJØP BILLETTER NÅ`;
   }
 
   return {
