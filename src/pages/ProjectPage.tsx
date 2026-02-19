@@ -124,48 +124,43 @@ export default function ProjectPage() {
 
       {/* NAME + TAGLINE */}
       <div className="max-w-6xl mx-auto px-4 md:px-8 pt-5 md:pt-8 relative z-10">
-        <div className="flex-1 min-w-0">
-          <h1 className="font-black text-4xl md:text-6xl uppercase tracking-tight leading-[0.95]">
-            {entity.name}
-          </h1>
-          {entity.tagline && (
-            <p className="text-base md:text-lg text-muted-foreground/60 mt-2 leading-snug">
-              {entity.tagline}
-            </p>
-          )}
-        </div>
-
-        {/* Location + socials bar */}
-        {(locationDisplay || (entitySocialLinks && entitySocialLinks.length > 0)) && (
-          <div className="flex items-center gap-4 mt-4 flex-wrap">
-            {locationDisplay && (
-              <div className="flex items-center gap-1.5 text-base text-muted-foreground/50">
-                <MapPin className="w-4 h-4" />
-                <span>{locationDisplay}</span>
+        <div className="flex items-start gap-6 md:gap-10">
+          {/* Title + tagline */}
+          <div className="flex-1 min-w-0">
+            <h1 className="font-black text-4xl md:text-6xl uppercase tracking-tight leading-[0.95]">
+              {entity.name}
+            </h1>
+            {entity.tagline && (
+              <p className="text-base md:text-lg text-muted-foreground/60 mt-3 leading-snug">
+                {entity.tagline}
+              </p>
+            )}
+            {/* Location + socials bar */}
+            {(locationDisplay || (entitySocialLinks && entitySocialLinks.length > 0)) && (
+              <div className="flex items-center gap-4 mt-3 flex-wrap">
+                {locationDisplay && (
+                  <div className="flex items-center gap-1.5 text-base text-muted-foreground/50">
+                    <MapPin className="w-4 h-4" />
+                    <span>{locationDisplay}</span>
+                  </div>
+                )}
+                <EntitySocialLinks links={entitySocialLinks} />
               </div>
             )}
-            <EntitySocialLinks links={entitySocialLinks} />
-            {logoUrl && (
+          </div>
+
+          {/* Logo – right of title, premium placement */}
+          {logoUrl && (
+            <div className="flex-shrink-0 flex items-start pt-1">
               <img
                 src={logoUrl}
                 alt={`${entity.name} logo`}
-                className="h-5 w-auto object-contain opacity-70 ml-auto flex-shrink-0"
-                style={{ maxWidth: "120px" }}
+                className="w-auto object-contain opacity-85"
+                style={{ maxHeight: "80px", maxWidth: "160px" }}
               />
-            )}
-          </div>
-        )}
-        {/* Logo only (no location/social) */}
-        {logoUrl && !locationDisplay && !(entitySocialLinks && entitySocialLinks.length > 0) && (
-          <div className="flex justify-end mt-4">
-            <img
-              src={logoUrl}
-              alt={`${entity.name} logo`}
-              className="h-5 w-auto object-contain opacity-70"
-              style={{ maxWidth: "120px" }}
-            />
-          </div>
-        )}
+            </div>
+          )}
+        </div>
 
         <div className="border-b border-border/20 mt-7 mb-0" />
       </div>
