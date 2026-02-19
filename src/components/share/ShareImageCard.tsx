@@ -106,16 +106,22 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
     const HEADER_GAP = 32;
     const TITLE_COL_W = SHARE_WIDTH - HEADER_PADDING_X * 2 - HEADER_GAP - LOGO_BOX_W;
 
+    // 1-line vs 2-line title detection (~15 chars fits on one line at 76px / 705px col)
+    const isOneLineTitle = logoDisplayMode === 'instead_of_name' ? false : (data.title?.length ?? 0) <= 15;
+    const titleFontSize = isOneLineTitle ? 92 : 66;
+    const subtitleMarginTop = isOneLineTitle ? 24 : 40;
+
     // Dynamic hero top: measure header height so 1-line titles sit closer to image
     const headerRef = useRef<HTMLDivElement>(null);
     const [heroTop, setHeroTop] = useState(HERO_ZONE_TOP);
     useEffect(() => {
       if (!headerRef.current) return;
       const h = headerRef.current.offsetHeight;
-      // fixed gap of 90px between header bottom and hero image
-      const computed = SAFE_TOP + h + 90;
-      setHeroTop(Math.min(computed, HERO_ZONE_TOP));
-    }, [data.title, data.subtitle]);
+      const gap = isOneLineTitle ? 52 : 90;
+      const computed = SAFE_TOP + h + gap;
+      const maxTop = isOneLineTitle ? 320 : HERO_ZONE_TOP;
+      setHeroTop(Math.min(computed, maxTop));
+    }, [data.title, data.subtitle, isOneLineTitle]);
 
     return (
       <div
@@ -287,7 +293,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
               <>
                 <div
                   style={{
-                    fontSize: 76,
+                    fontSize: titleFontSize,
                     fontWeight: 900,
                     lineHeight: 0.92,
                     color: "#ffffff",
@@ -310,7 +316,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
                       WebkitLineClamp: 3,
                       WebkitBoxOrient: "vertical" as const,
                       overflow: "hidden",
-                      marginTop: 40,
+                      marginTop: subtitleMarginTop,
                       paddingBottom: 12,
                     }}
                   >
