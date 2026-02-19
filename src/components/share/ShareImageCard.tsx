@@ -143,7 +143,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.38) 22%, rgba(0,0,0,0.08) 42%, transparent 58%)",
+              "linear-gradient(to bottom, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.22) 20%, rgba(0,0,0,0.04) 40%, transparent 56%)",
             pointerEvents: "none",
             zIndex: 3,
           }}
@@ -155,7 +155,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.28) 25%, rgba(0,0,0,0.06) 48%, rgba(0,0,0,0) 64%)",
+              "linear-gradient(to top, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.20) 28%, rgba(0,0,0,0.04) 52%, rgba(0,0,0,0) 68%)",
             pointerEvents: "none",
             zIndex: 3,
           }}
@@ -254,12 +254,12 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
                 {line1 && (
                   <div
                     style={{
-                      fontSize: 26,
-                      fontWeight: 500,
-                      color: "rgba(255,255,255,0.90)",
-                      letterSpacing: "0.12em",
+                      fontSize: 27,
+                      fontWeight: 600,
+                      color: "rgba(255,255,255,0.95)",
+                      letterSpacing: "0.14em",
                       lineHeight: 1.2,
-                      textShadow: "0 2px 14px rgba(0,0,0,0.8)",
+                      textShadow: "0 2px 16px rgba(0,0,0,0.9)",
                       marginBottom: line2 ? 10 : 0,
                     }}
                   >
