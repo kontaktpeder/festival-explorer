@@ -6,7 +6,7 @@ import { SHARE_WIDTH, SHARE_HEIGHT } from "@/types/share";
 
 const SAFE_LEFT = 96;
 const SAFE_RIGHT = 96;
-const SAFE_TOP = 120;
+const SAFE_TOP = 160;
 const SAFE_BOTTOM = 140;
 
 const GIGGEN_SIZE = 140;
