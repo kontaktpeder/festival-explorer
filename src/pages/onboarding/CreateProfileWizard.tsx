@@ -114,6 +114,7 @@ export default function CreateProfileWizard() {
         )}
         {step === 3 && (
           <StepProfile
+            type={type}
             name={name}
             bio={bio}
             setBio={setBio}
@@ -253,6 +254,7 @@ function StepName({
 /* ── Step 3: Profilbilde + Bio ── */
 function StepProfile({
   name,
+  type,
   bio,
   setBio,
   avatarUrl,
@@ -263,6 +265,7 @@ function StepProfile({
   onBack,
 }: {
   name: string;
+  type: string | null;
   bio: string;
   setBio: (v: string) => void;
   avatarUrl: string;
@@ -272,14 +275,23 @@ function StepProfile({
   onNext: () => void;
   onBack: () => void;
 }) {
+  const roleLabel = type ? getPersonaTypeLabel(type) : null;
   return (
     <StepLayout
       title="Skriv litt om deg"
-      subtitle="Skriv litt om hvilken tilknytning du har til musikkbransjen"
+      subtitle={`Beskriv din tilknytning til musikkbransjen – knyttet til rollen din som ${roleLabel ?? "…"}.`}
       primary={{ label: "Neste", onClick: onNext }}
       secondary={{ label: "Tilbake", onClick: onBack }}
     >
       <div className="space-y-6">
+        {/* Role badge */}
+        {roleLabel && (
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20">
+            <span className="text-xs text-muted-foreground">Du vises som</span>
+            <span className="text-xs font-semibold text-accent">{roleLabel}</span>
+          </div>
+        )}
+
         {/* Avatar */}
         <div className="flex items-center gap-3 rounded-xl border border-border/20 bg-card/40 backdrop-blur-sm p-4">
           <Avatar className="h-12 w-12 ring-2 ring-border/30 shrink-0">
