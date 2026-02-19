@@ -127,7 +127,7 @@ export default function ProjectPage() {
         <div className="flex items-start gap-6 md:gap-10">
           {/* Title + tagline */}
           <div className="flex-1 min-w-0">
-            <h1 className="font-black text-4xl md:text-6xl uppercase tracking-tight leading-[0.95]">
+            <h1 className="font-black text-3xl md:text-5xl uppercase tracking-tight leading-[0.95] line-clamp-2">
               {entity.name}
             </h1>
             {entity.tagline && (
