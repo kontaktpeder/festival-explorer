@@ -236,7 +236,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           )}
         </div>
 
-        {/* CTA – tydelig tekst, nederst høyre */}
+        {/* CTA – 2-linjers plakatstruktur, nederst høyre */}
         <div
           style={{
             position: "absolute",
@@ -247,21 +247,56 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
             maxWidth: SHARE_WIDTH - SAFE_LEFT - GIGGEN_LEFT - GIGGEN_SIZE - 48,
           }}
         >
-          {data.cta ? (
-            <div
-              style={{
-                fontSize: 34,
-                fontWeight: 700,
-                color: "rgba(255,255,255,0.92)",
-                letterSpacing: "0.01em",
-                lineHeight: 1.25,
-                textShadow: "0 2px 14px rgba(0,0,0,0.7)",
-                whiteSpace: "pre-line" as const,
-              }}
-            >
-              {data.cta}
-            </div>
-          ) : (
+          {data.cta ? (() => {
+            const [line1, line2] = data.cta.split("\n");
+            return (
+              <>
+                {line1 && (
+                  <div
+                    style={{
+                      fontSize: 26,
+                      fontWeight: 500,
+                      color: "rgba(255,255,255,0.65)",
+                      letterSpacing: "0.06em",
+                      lineHeight: 1.2,
+                      textShadow: "0 2px 12px rgba(0,0,0,0.7)",
+                      marginBottom: line2 ? 8 : 0,
+                    }}
+                  >
+                    {line1}
+                  </div>
+                )}
+                {line2 && (
+                  <div
+                    style={{
+                      fontSize: 40,
+                      fontWeight: 800,
+                      color: "#ffffff",
+                      letterSpacing: "-0.01em",
+                      lineHeight: 1.1,
+                      textShadow: "0 3px 20px rgba(0,0,0,0.8)",
+                      textTransform: "uppercase" as const,
+                    }}
+                  >
+                    {line2}
+                  </div>
+                )}
+                {!line2 && (
+                  <div
+                    style={{
+                      fontSize: 26,
+                      fontWeight: 500,
+                      color: "rgba(255,255,255,0.65)",
+                      letterSpacing: "0.04em",
+                      textShadow: "0 2px 10px rgba(0,0,0,0.5)",
+                    }}
+                  >
+                    {line1}
+                  </div>
+                )}
+              </>
+            );
+          })() : (
             <div
               style={{
                 fontSize: 26,
