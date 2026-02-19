@@ -11,7 +11,7 @@ import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import type { ImageSettings } from "@/types/database";
-import { Music, Camera, Wrench, Building2, Check, ChevronRight } from "lucide-react";
+import { Music, Camera, Wrench, Building2, Check, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import welcomeBg from "@/assets/giggen-welcome-bg.png";
 
@@ -24,21 +24,17 @@ const WIZARD_ROLES = [
   { type: "organizer", label: "Arrangør", icon: Building2, desc: "Venue, booking eller arrangør" },
 ] as const;
 
-function ProgressDots({ current, total }: { current: number; total: number }) {
+function ProgressBar({ current, total }: { current: number; total: number }) {
+  const pct = ((current + 1) / total) * 100;
   return (
-    <div className="flex items-center gap-2.5">
-      {Array.from({ length: total }).map((_, i) => (
+    <div className="flex items-center gap-3">
+      <span className="text-xs text-muted-foreground tabular-nums">{current + 1}/{total}</span>
+      <div className="w-20 h-1 rounded-full bg-border/30 overflow-hidden">
         <div
-          key={i}
-          className={`h-1.5 rounded-full transition-all duration-300 ${
-            i === current
-              ? "w-8 bg-accent"
-              : i < current
-                ? "w-2 bg-accent/50"
-                : "w-2 bg-border/30"
-          }`}
+          className="h-full rounded-full bg-accent transition-all duration-500 ease-out"
+          style={{ width: `${pct}%` }}
         />
-      ))}
+      </div>
     </div>
   );
 }
@@ -82,26 +78,22 @@ export default function CreateProfileWizard() {
   const stepCount = 5;
 
   return (
-    <div className="min-h-[100svh] bg-background flex flex-col relative overflow-hidden">
-      {/* Ambient gradient glows */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-accent-warm/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/4 pointer-events-none" />
-
-      {/* Top bar – glassmorphism */}
+    <div className="min-h-[100svh] bg-background flex flex-col">
+      {/* Top bar */}
       <header
-        className="relative z-20 w-full bg-background/60 backdrop-blur-xl border-b border-border/20"
+        className="relative z-20 w-full border-b border-border/10"
         style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
       >
-        <div className="w-full max-w-2xl mx-auto px-6 sm:px-10 py-3 flex items-center justify-between">
+        <div className="w-full max-w-xl mx-auto px-6 sm:px-8 py-4 flex items-center justify-between">
           <Link to="/" className="text-sm font-semibold text-foreground tracking-tight">
-            GIGGEN <span className="text-muted-foreground/50 font-normal text-[10px] tracking-[0.15em]">BACKSTAGE</span>
+            GIGGEN <span className="text-muted-foreground/40 font-normal text-[10px] tracking-[0.2em] ml-1">BACKSTAGE</span>
           </Link>
-          <ProgressDots current={step} total={stepCount} />
+          <ProgressBar current={step} total={stepCount} />
         </div>
       </header>
 
       {/* Content area */}
-      <div className="relative z-10 flex-1 flex flex-col justify-center w-full max-w-2xl mx-auto px-6 sm:px-10">
+      <div className="relative z-10 flex-1 flex flex-col justify-center w-full max-w-xl mx-auto px-6 sm:px-8">
         {step === 0 && <StepIntro onNext={() => setStep(1)} onCancel={() => navigate("/dashboard")} />}
         {step === 1 && <StepRole type={type} setType={setType} onNext={() => setStep(2)} onBack={() => setStep(0)} />}
         {step === 2 && (
@@ -148,20 +140,18 @@ export default function CreateProfileWizard() {
 function StepIntro({ onNext, onCancel }: { onNext: () => void; onCancel: () => void }) {
   return (
     <StepLayout
-      title="Velkommen til GIGGEN Backstage"
+      title="Velkommen til Backstage"
       primary={{ label: "Kom i gang", onClick: onNext }}
       secondary={{ label: "Avbryt", onClick: onCancel }}
-      icon={<img src={welcomeBg} alt="" className="h-16 w-16 sm:h-20 sm:w-20 object-contain opacity-80" />}
+      icon={<img src={welcomeBg} alt="" className="h-14 w-14 object-contain opacity-70" />}
     >
-      <div className="space-y-3">
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          Her lager du din profesjonelle profil.<br />
-          Arrangører, musikere og tilskuere bruker den for å finne deg.
-        </p>
-        <p className="text-xs text-muted-foreground/60">
-          Det tar ca. 1 minutt. Du kan endre alt senere.
-        </p>
-      </div>
+      <p className="text-base text-muted-foreground leading-relaxed">
+        Her lager du din profesjonelle profil.
+        Arrangører, musikere og tilskuere bruker den for å finne deg.
+      </p>
+      <p className="text-sm text-muted-foreground/50 mt-3">
+        Det tar ca. 1 minutt. Du kan endre alt senere.
+      </p>
     </StepLayout>
   );
 }
@@ -181,33 +171,35 @@ function StepRole({
   return (
     <StepLayout
       title="Hva gjør du?"
-      subtitle="Rollen du velger, gir deg tilgang til relevante verktøy for ditt felt. Senere kan du lage flere profiler med ulike roller."
+      subtitle="Velg rollen som best beskriver deg. Du kan lage flere profiler med ulike roller senere."
       primary={{ label: "Neste", onClick: onNext, disabled: !type }}
       secondary={{ label: "Tilbake", onClick: onBack }}
     >
-      <div className="space-y-2.5">
+      <div className="space-y-3">
         {WIZARD_ROLES.map(({ type: t, label, icon: Icon, desc }) => (
           <button
             key={t}
             onClick={() => setType(t)}
-            className={`group w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-all duration-300 ${
+            className={`group w-full flex items-center gap-4 py-4 px-1 text-left transition-all duration-200 border-b ${
               type === t
-                ? "border-accent/50 bg-accent/10 shadow-lg shadow-accent/5"
-                : "border-border/20 bg-card/40 backdrop-blur-sm hover:border-border/40 hover:bg-card/60"
+                ? "border-accent/30"
+                : "border-border/10 hover:border-border/30"
             }`}
           >
-            <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-300 ${
-              type === t ? "bg-accent/20" : "bg-muted/50 group-hover:bg-accent/10"
+            <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200 ${
+              type === t ? "bg-accent/15" : "bg-muted/30 group-hover:bg-muted/50"
             }`}>
-              <Icon className={`h-5 w-5 transition-colors duration-300 ${
-                type === t ? "text-accent" : "text-muted-foreground group-hover:text-accent/70"
+              <Icon className={`h-5 w-5 transition-colors duration-200 ${
+                type === t ? "text-accent" : "text-muted-foreground/60 group-hover:text-muted-foreground"
               }`} />
             </div>
             <div className="flex-1 min-w-0">
-              <span className="text-sm font-medium text-foreground">{label}</span>
-              <p className="text-xs text-muted-foreground/70">{desc}</p>
+              <span className={`text-base font-medium transition-colors ${
+                type === t ? "text-foreground" : "text-foreground/80"
+              }`}>{label}</span>
+              <p className="text-sm text-muted-foreground/60 mt-0.5">{desc}</p>
             </div>
-            {type === t && <Check className="h-4 w-4 text-accent shrink-0" />}
+            {type === t && <Check className="h-5 w-5 text-accent shrink-0" />}
           </button>
         ))}
       </div>
@@ -234,16 +226,16 @@ function StepName({
       primary={{ label: "Neste", onClick: onNext, disabled: !name.trim() }}
       secondary={{ label: "Tilbake", onClick: onBack }}
     >
-      <div className="rounded-xl border border-border/20 bg-card/40 backdrop-blur-sm p-5">
-        <Label htmlFor="name" className="text-xs text-muted-foreground">Navn</Label>
+      <div className="space-y-2">
+        <Label htmlFor="name" className="text-sm text-muted-foreground">Navn</Label>
         <Input
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Fullt navn"
-          className="mt-1.5 text-base bg-background/50 border-border/30"
+          className="text-lg h-12 bg-transparent border-border/20 focus:border-accent/40"
         />
-        <p className="text-[10px] text-muted-foreground/50 mt-1.5">
+        <p className="text-sm text-muted-foreground/40 pt-1">
           Band og prosjekter legger du til senere.
         </p>
       </div>
@@ -283,22 +275,22 @@ function StepProfile({
       primary={{ label: "Neste", onClick: onNext }}
       secondary={{ label: "Tilbake", onClick: onBack }}
     >
-      <div className="space-y-6">
-        {/* Role badge */}
+      <div className="space-y-8">
+        {/* Role indicator */}
         {roleLabel && (
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20">
-            <span className="text-xs text-muted-foreground">Du vises som</span>
-            <span className="text-xs font-semibold text-accent">{roleLabel}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground/50">Du vises som</span>
+            <span className="text-sm font-medium text-accent">{roleLabel}</span>
           </div>
         )}
 
         {/* Avatar */}
-        <div className="flex items-center gap-3 rounded-xl border border-border/20 bg-card/40 backdrop-blur-sm p-4">
-          <Avatar className="h-12 w-12 ring-2 ring-border/30 shrink-0">
+        <div className="flex items-center gap-4">
+          <Avatar className="h-16 w-16 ring-2 ring-border/20 shrink-0">
             {avatarUrl ? (
               <AvatarImage src={avatarUrl} style={getCroppedImageStyles(avatarImageSettings)} className="object-cover" />
             ) : null}
-            <AvatarFallback className="text-sm bg-muted text-muted-foreground">
+            <AvatarFallback className="text-lg bg-muted/30 text-muted-foreground/50">
               {name ? name.charAt(0).toUpperCase() : "?"}
             </AvatarFallback>
           </Avatar>
@@ -311,22 +303,22 @@ function StepProfile({
               cropMode="avatar"
               placeholder="Profilbilde"
             />
-            <p className="text-[9px] text-muted-foreground/40 mt-0.5">Valgfritt</p>
+            <p className="text-xs text-muted-foreground/40 mt-1">Valgfritt</p>
           </div>
         </div>
 
         {/* Bio */}
-        <div className="rounded-xl border border-border/20 bg-card/40 backdrop-blur-sm p-5">
-          <Label htmlFor="bio" className="text-xs text-muted-foreground">Om deg</Label>
+        <div className="space-y-2">
+          <Label htmlFor="bio" className="text-sm text-muted-foreground">Om deg</Label>
           <Textarea
             id="bio"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             placeholder="F.eks. «Trommis i Kråkesølv, freelance lydtekniker i Bergen»"
             rows={3}
-            className="mt-1.5 text-base bg-background/50 border-border/30 resize-none"
+            className="text-base bg-transparent border-border/20 focus:border-accent/40 resize-none"
           />
-          <p className="text-[10px] text-muted-foreground/50 mt-1.5">
+          <p className="text-sm text-muted-foreground/40">
             Valgfritt – du kan legge til dette senere.
           </p>
         </div>
@@ -364,55 +356,57 @@ function StepVisibility({
       secondary={{ label: "Tilbake", onClick: onBack }}
       showLegal
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* Preview */}
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-card/60 backdrop-blur-sm border border-border/20">
-          <Avatar className="h-10 w-10 ring-2 ring-border/30 shrink-0">
+        <div className="flex items-center gap-3 py-4 border-b border-border/10">
+          <Avatar className="h-11 w-11 ring-2 ring-border/20 shrink-0">
             {avatarUrl ? <AvatarImage src={avatarUrl} style={getCroppedImageStyles(avatarImageSettings)} className="object-cover" /> : null}
-            <AvatarFallback className="text-xs bg-muted text-muted-foreground">
+            <AvatarFallback className="text-sm bg-muted/30 text-muted-foreground/50">
               {name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground truncate">{name}</p>
-            <p className="text-xs text-muted-foreground">{type ? getPersonaTypeLabel(type) : "—"}</p>
+            <p className="text-base font-semibold text-foreground truncate">{name}</p>
+            <p className="text-sm text-muted-foreground/60">{type ? getPersonaTypeLabel(type) : "—"}</p>
           </div>
         </div>
 
         {/* Visibility options */}
-        <button
-          onClick={() => setIsPublic(true)}
-          className={`group w-full text-left p-4 rounded-xl border transition-all duration-300 ${
-            isPublic
-              ? "border-accent/50 bg-accent/10 shadow-lg shadow-accent/5"
-              : "border-border/20 bg-card/40 backdrop-blur-sm hover:border-border/40 hover:bg-card/60"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-foreground">Offentlig</span>
-            {isPublic && <Check className="h-4 w-4 text-accent shrink-0" />}
-          </div>
-          <p className="text-xs text-muted-foreground/70 mt-0.5">
-            Synlig gjennom søk for alle i GIGGEN.
-          </p>
-        </button>
+        <div className="space-y-3">
+          <button
+            onClick={() => setIsPublic(true)}
+            className={`group w-full text-left py-4 px-1 border-b transition-all duration-200 ${
+              isPublic
+                ? "border-accent/30"
+                : "border-border/10 hover:border-border/30"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-base font-medium text-foreground">Offentlig</span>
+              {isPublic && <Check className="h-5 w-5 text-accent shrink-0" />}
+            </div>
+            <p className="text-sm text-muted-foreground/60 mt-1">
+              Synlig gjennom søk for alle i GIGGEN.
+            </p>
+          </button>
 
-        <button
-          onClick={() => setIsPublic(false)}
-          className={`group w-full text-left p-4 rounded-xl border transition-all duration-300 ${
-            !isPublic
-              ? "border-accent/50 bg-accent/10 shadow-lg shadow-accent/5"
-              : "border-border/20 bg-card/40 backdrop-blur-sm hover:border-border/40 hover:bg-card/60"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-foreground">Kontrollert</span>
-            {!isPublic && <Check className="h-4 w-4 text-accent shrink-0" />}
-          </div>
-          <p className="text-xs text-muted-foreground/70 mt-0.5">
-            Kun synlig for medlemmer i team og prosjekter du er en del av.
-          </p>
-        </button>
+          <button
+            onClick={() => setIsPublic(false)}
+            className={`group w-full text-left py-4 px-1 border-b transition-all duration-200 ${
+              !isPublic
+                ? "border-accent/30"
+                : "border-border/10 hover:border-border/30"
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-base font-medium text-foreground">Kontrollert</span>
+              {!isPublic && <Check className="h-5 w-5 text-accent shrink-0" />}
+            </div>
+            <p className="text-sm text-muted-foreground/60 mt-1">
+              Kun synlig for medlemmer i team og prosjekter du er en del av.
+            </p>
+          </button>
+        </div>
       </div>
     </StepLayout>
   );
@@ -437,13 +431,13 @@ function StepLayout({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-8 py-8 sm:py-12 animate-fade-in">
+    <div className="flex flex-col gap-10 py-10 sm:py-16 animate-fade-in">
       {/* Header */}
       <div>
-        {icon && <div className="mb-4">{icon}</div>}
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight leading-[1.1]">{title}</h1>
+        {icon && <div className="mb-5">{icon}</div>}
+        <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight leading-[1.1]">{title}</h1>
         {subtitle && (
-          <p className="text-sm text-muted-foreground/70 mt-2 leading-relaxed">{subtitle}</p>
+          <p className="text-base text-muted-foreground/60 mt-3 leading-relaxed max-w-md">{subtitle}</p>
         )}
       </div>
 
@@ -451,31 +445,30 @@ function StepLayout({
       <div>{children}</div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-2">
+      <div className="flex items-center justify-between pt-4">
         <div>
           {secondary && (
-            <Button variant="ghost" size="sm" onClick={secondary.onClick} className="text-muted-foreground/50 hover:text-muted-foreground">
+            <button onClick={secondary.onClick} className="text-sm text-muted-foreground/40 hover:text-muted-foreground transition-colors">
               {secondary.label}
-            </Button>
+            </button>
           )}
         </div>
         <Button
-          size="sm"
           onClick={primary.onClick}
           disabled={primary.disabled}
-          className="sm:h-10 sm:px-6 font-semibold group"
+          className="h-11 px-7 text-sm font-semibold group"
         >
           {primary.label}
-          <ChevronRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform duration-300" />
+          <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-0.5 transition-transform duration-200" />
         </Button>
       </div>
 
       {showLegal && (
-        <p className="text-[10px] text-muted-foreground/40 text-center -mt-4">
+        <p className="text-xs text-muted-foreground/30 text-center -mt-6">
           Ved å fortsette godtar du våre{" "}
-          <Link to="/vilkar" className="underline hover:text-muted-foreground">vilkår</Link>
+          <Link to="/vilkar" className="underline hover:text-muted-foreground/50">vilkår</Link>
           {" "}og{" "}
-          <Link to="/personvern" className="underline hover:text-muted-foreground">personvern</Link>.
+          <Link to="/personvern" className="underline hover:text-muted-foreground/50">personvern</Link>.
         </p>
       )}
     </div>
