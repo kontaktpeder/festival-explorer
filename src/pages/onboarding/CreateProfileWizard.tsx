@@ -91,7 +91,7 @@ export default function CreateProfileWizard() {
         </div>
       </header>
 
-      <div className="relative z-10 flex-1 flex flex-col justify-center w-full max-w-xl mx-auto px-6 sm:px-8">
+      <div className="relative z-10 flex-1 flex flex-col w-full max-w-xl mx-auto px-6 sm:px-8">
         {step === 0 && <StepIntro onNext={() => setStep(1)} onCancel={() => navigate("/dashboard")} />}
         {step === 1 && <StepRole type={type} setType={setType} onNext={() => setStep(2)} onBack={() => setStep(0)} />}
         {step === 2 && <StepName name={name} setName={setName} onNext={() => setStep(3)} onBack={() => setStep(1)} />}
@@ -166,29 +166,29 @@ function StepRole({
       primary={{ label: "Neste", onClick: onNext, disabled: !type }}
       secondary={{ label: "Tilbake", onClick: onBack }}
     >
-      <div className="space-y-3">
+      <div className="space-y-1">
         {WIZARD_ROLES.map(({ type: t, label, icon: Icon, desc }) => (
           <button
             key={t}
             onClick={() => setType(t)}
-            className={`group w-full flex items-center gap-4 py-5 px-1 text-left transition-all duration-200 border-b ${
+            className={`group w-full flex items-center gap-3 py-3 px-1 text-left transition-all duration-200 border-b ${
               type === t ? "border-accent/30" : "border-border/10 hover:border-border/30"
             }`}
           >
-            <div className={`h-11 w-11 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200 ${
+            <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-200 ${
               type === t ? "bg-accent/15" : "bg-muted/30 group-hover:bg-muted/50"
             }`}>
-              <Icon className={`h-5 w-5 transition-colors duration-200 ${
+              <Icon className={`h-4 w-4 transition-colors duration-200 ${
                 type === t ? "text-accent" : "text-muted-foreground/60 group-hover:text-muted-foreground"
               }`} />
             </div>
             <div className="flex-1 min-w-0">
-              <span className={`text-lg font-medium transition-colors ${
+              <span className={`text-base font-medium transition-colors ${
                 type === t ? "text-foreground" : "text-foreground/80"
               }`}>{label}</span>
-              <p className="text-base text-muted-foreground/50 mt-0.5">{desc}</p>
+              <p className="text-sm text-muted-foreground/50">{desc}</p>
             </div>
-            {type === t && <Check className="h-6 w-6 text-accent shrink-0" />}
+            {type === t && <Check className="h-5 w-5 text-accent shrink-0" />}
           </button>
         ))}
       </div>
@@ -370,43 +370,47 @@ function StepLayout({
   showLegal?: boolean; icon?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-10 py-10 sm:py-16 animate-fade-in">
-      <div>
-        {icon && <div className="mb-5">{icon}</div>}
-        <h1 className="text-4xl sm:text-5xl font-bold text-foreground tracking-tight leading-[1.05]">{title}</h1>
-        {subtitle && (
-          <p className="text-lg text-muted-foreground/60 mt-4 leading-relaxed max-w-md">{subtitle}</p>
-        )}
-      </div>
-
-      <div>{children}</div>
-
-      <div className="flex items-center justify-between pt-4">
+    <div className="flex flex-col flex-1 animate-fade-in">
+      <div className="flex-1 flex flex-col justify-center py-8 sm:py-12">
         <div>
-          {secondary && (
-            <button onClick={secondary.onClick} className="text-base text-muted-foreground/40 hover:text-muted-foreground transition-colors">
-              {secondary.label}
-            </button>
+          {icon && <div className="mb-5">{icon}</div>}
+          <h1 className="text-4xl sm:text-5xl font-bold text-foreground tracking-tight leading-[1.05]">{title}</h1>
+          {subtitle && (
+            <p className="text-lg text-muted-foreground/60 mt-4 leading-relaxed max-w-md">{subtitle}</p>
           )}
         </div>
-        <Button
-          onClick={primary.onClick}
-          disabled={primary.disabled}
-          className="h-12 px-8 text-base font-semibold group"
-        >
-          {primary.label}
-          <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-0.5 transition-transform duration-200" />
-        </Button>
+
+        <div className="mt-8">{children}</div>
       </div>
 
-      {showLegal && (
-        <p className="text-xs text-muted-foreground/30 text-center -mt-6">
-          Ved å fortsette godtar du våre{" "}
-          <Link to="/vilkar" className="underline hover:text-muted-foreground/50">vilkår</Link>
-          {" "}og{" "}
-          <Link to="/personvern" className="underline hover:text-muted-foreground/50">personvern</Link>.
-        </p>
-      )}
+      <div className="py-6">
+        <div className="flex items-center justify-between">
+          <div>
+            {secondary && (
+              <button onClick={secondary.onClick} className="text-base text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+                {secondary.label}
+              </button>
+            )}
+          </div>
+          <Button
+            onClick={primary.onClick}
+            disabled={primary.disabled}
+            className="h-12 px-8 text-base font-semibold group"
+          >
+            {primary.label}
+            <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-0.5 transition-transform duration-200" />
+          </Button>
+        </div>
+
+        {showLegal && (
+          <p className="text-xs text-muted-foreground/30 text-center mt-4">
+            Ved å fortsette godtar du våre{" "}
+            <Link to="/vilkar" className="underline hover:text-muted-foreground/50">vilkår</Link>
+            {" "}og{" "}
+            <Link to="/personvern" className="underline hover:text-muted-foreground/50">personvern</Link>.
+          </p>
+        )}
+      </div>
     </div>
   );
 }
