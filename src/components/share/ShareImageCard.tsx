@@ -6,7 +6,7 @@ import { SHARE_WIDTH, SHARE_HEIGHT } from "@/types/share";
 
 const SAFE_LEFT = 96;
 const SAFE_RIGHT = 96;
-const SAFE_TOP = 160;
+const SAFE_TOP = 72;
 const SAFE_BOTTOM = 140;
 
 const GIGGEN_SIZE = 140;
@@ -208,7 +208,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
               lineHeight: 0.88,
               color: "#ffffff",
               textTransform: "uppercase" as const,
-              letterSpacing: "-0.03em",
+              letterSpacing: "0.08em",
               textShadow: "0 6px 40px rgba(0,0,0,0.7)",
               marginBottom: 24,
             }}
