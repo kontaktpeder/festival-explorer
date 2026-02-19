@@ -19,13 +19,24 @@ export function shareModelFromProject(params: {
   logoUrl?: string | null;
   brandLogoUrl?: string;
   brandBackgroundUrl?: string;
+  venueName?: string | null;
+  startAt?: string | null;
 }): ShareModel {
   const base = getPublicUrl().replace(/\/$/, "");
+
+  let cta = `${params.title} på giggen.org`;
+  if (params.venueName && params.startAt) {
+    const dateStr = format(new Date(params.startAt), "d. MMMM", { locale: nb });
+    cta = `Live på ${params.venueName} – ${dateStr}. Billetter ute nå.`;
+  } else if (params.venueName) {
+    cta = `Live på ${params.venueName}. Billetter ute nå.`;
+  }
+
   return {
     title: truncate(params.title, TITLE_MAX),
     subtitle: params.tagline ? truncate(params.tagline, SUBTITLE_MAX) : undefined,
     heroImageUrl: params.heroImageUrl ?? null,
-    cta: `${params.title} på giggen.org`,
+    cta,
     url: `${base}/project/${params.slug}`,
     brandLogoUrl: params.brandLogoUrl,
     brandBackgroundUrl: params.brandBackgroundUrl,
