@@ -36,6 +36,7 @@ import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
 import { ShareImageSection } from "@/components/share/ShareImageSection";
 import { shareModelFromProject } from "@/lib/share-model";
 import { CroppedImage } from "@/components/ui/CroppedImage";
+import { getObjectPositionFromFocal } from "@/lib/image-crop-helpers";
 import { UpcomingGigsSection } from "@/components/ui/UpcomingGigsSection";
 import { useUpcomingGigsForEntity } from "@/hooks/useUpcomingGigs";
 
@@ -86,26 +87,31 @@ export default function ProjectPage() {
       <div className="relative w-full md:h-[580px] bg-background md:bg-black overflow-hidden">
         {heroImageUrl ? (
           <>
-            {/* Mobile: cropped cover */}
+            {/* Mobile: cropped cover with focal point */}
             <div className="block md:hidden h-[300px]">
               <CroppedImage
                 src={heroImageUrl}
                 alt={entity.name}
                 imageSettings={heroImageSettings ?? { focal_x: 0.5, focal_y: 0.4, zoom: 1 }}
-                className="w-full h-full object-cover"
+                className="object-cover"
+                containerClassName="w-full h-full"
               />
             </div>
-            {/* Desktop: contain with blurred bg fill */}
+            {/* Desktop: contain with blurred bg fill, focal point on background */}
             <div className="hidden md:block relative h-full">
-              {/* Blurred background fill */}
+              {/* Blurred background fill – uses focal point for positioning */}
               <img
                 src={heroImageUrl}
                 alt=""
                 className="absolute inset-0 w-full h-full object-cover scale-110"
-                style={{ filter: "blur(44px)", opacity: 0.18 }}
+                style={{
+                  filter: "blur(44px)",
+                  opacity: 0.18,
+                  objectPosition: getObjectPositionFromFocal(heroImageSettings),
+                }}
               />
               <div className="absolute inset-0 bg-black/20" />
-              {/* Sharp foreground – contained */}
+              {/* Sharp foreground – contained, centered on focal point */}
               <div className="relative flex items-center justify-center h-full z-[1]">
                 <img
                   src={heroImageUrl}
