@@ -6,7 +6,7 @@ import { SHARE_WIDTH, SHARE_HEIGHT } from "@/types/share";
 
 const SAFE_LEFT = 96;
 const SAFE_RIGHT = 96;
-const SAFE_TOP = 116;
+const SAFE_TOP = 64;
 const SAFE_BOTTOM = 140;
 
 // Fast hero-sone: samme rektangel for alle prosjekter (crop med object-fit: cover)
@@ -213,11 +213,6 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
                       textTransform: "uppercase" as const,
                       letterSpacing: "0.08em",
                       textShadow: "0 6px 40px rgba(0,0,0,0.7)",
-                      marginBottom: 20,
-                      display: "-webkit-box",
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: "vertical" as const,
-                      overflow: "hidden",
                     }}
                   >
                   {data.title}
@@ -234,7 +229,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
                       WebkitLineClamp: 3,
                       WebkitBoxOrient: "vertical" as const,
                       overflow: "hidden",
-                      marginTop: 14,
+                      marginTop: 40,
                       paddingBottom: 12,
                     }}
                   >
