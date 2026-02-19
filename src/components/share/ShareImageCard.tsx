@@ -224,11 +224,11 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
                 color: ACCENT_COLOR,
                 textShadow: "0 3px 16px rgba(0,0,0,0.6)",
                 display: "-webkit-box",
-                WebkitLineClamp: 2,
+                WebkitLineClamp: 3,
                 WebkitBoxOrient: "vertical" as const,
                 overflow: "hidden",
                 marginTop: 14,
-                paddingBottom: 8,
+                paddingBottom: 12,
               }}
             >
               {data.subtitle}
