@@ -151,12 +151,12 @@ export default function ProjectPage() {
 
           {/* Logo – right of title, premium placement */}
           {logoUrl && (
-            <div className="flex-shrink-0 flex items-start pt-1">
+            <div className="flex-shrink-0 flex items-start pt-0 pl-8 md:pl-12">
               <img
                 src={logoUrl}
                 alt={`${entity.name} logo`}
-                className="w-auto object-contain opacity-85"
-                style={{ maxHeight: "80px", maxWidth: "160px" }}
+                className="w-auto object-contain"
+                style={{ maxHeight: "60px", maxWidth: "140px", opacity: 0.90, filter: "drop-shadow(0 0 0.5px rgba(255,255,255,0.25))" }}
               />
             </div>
           )}
