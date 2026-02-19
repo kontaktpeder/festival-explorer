@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
+import gIcon from "@/assets/giggen-g-icon-red.png";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
@@ -147,16 +148,19 @@ export default function VenueSettingsRoom() {
         className="sticky top-0 z-50 bg-background/60 backdrop-blur-xl border-b border-border/20"
         style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
       >
-        <div className="w-full px-4 sm:px-8 lg:px-12 py-3 flex items-center gap-3">
-          <button
-            onClick={() => navigate(`/dashboard/venue/${id}`)}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <span className="text-sm font-semibold tracking-tight text-foreground">
-            BACKSTAGE · Innstillinger
-          </span>
+        <div className="w-full px-4 sm:px-8 lg:px-12 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(`/dashboard/venue/${id}`)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <span className="text-sm font-semibold tracking-tight text-foreground">
+              BACKSTAGE · Innstillinger
+            </span>
+          </div>
+          <img src={gIcon} alt="" className="h-8 w-8 object-contain" />
         </div>
       </header>
 
