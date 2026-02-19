@@ -10,9 +10,9 @@ const SAFE_TOP = 116;
 const SAFE_BOTTOM = 140;
 
 // Fast hero-sone: samme rektangel for alle prosjekter (crop med object-fit: cover)
-const HERO_ZONE_TOP = 300;
-const HERO_ZONE_BOTTOM_RESERVE = 220;
-const HERO_ZONE_HEIGHT = SHARE_HEIGHT - HERO_ZONE_TOP - HERO_ZONE_BOTTOM_RESERVE; // 830
+const HERO_ZONE_TOP = 380;
+const HERO_ZONE_BOTTOM_RESERVE = 340;
+const HERO_ZONE_HEIGHT = SHARE_HEIGHT - HERO_ZONE_TOP - HERO_ZONE_BOTTOM_RESERVE; // 630
 
 const GIGGEN_SIZE = 76;
 const GIGGEN_INSET = 16;
