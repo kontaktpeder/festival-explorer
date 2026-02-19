@@ -155,7 +155,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.35) 10%, rgba(0,0,0,0) 30%)",
+              "linear-gradient(to top, rgba(0,0,0,0.70) 0%, rgba(0,0,0,0.30) 18%, rgba(0,0,0,0.08) 38%, rgba(0,0,0,0) 55%)",
             pointerEvents: "none",
             zIndex: 3,
           }}
