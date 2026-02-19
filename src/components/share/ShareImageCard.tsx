@@ -171,15 +171,15 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           }}
         />
 
-        {/* GIGGEN-ikon – større, mer inn, svak skygge */}
+        {/* GIGGEN-ikon – nederst venstre */}
         <img
           src={brandLogo}
           alt=""
           crossOrigin="anonymous"
           style={{
             position: "absolute",
-            top: SAFE_TOP + GIGGEN_INSET,
-            right: SAFE_RIGHT + GIGGEN_INSET,
+            bottom: SAFE_BOTTOM,
+            left: SAFE_LEFT,
             width: GIGGEN_SIZE,
             height: GIGGEN_SIZE,
             objectFit: "contain",
@@ -189,13 +189,13 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           }}
         />
 
-        {/* Tittel + tagline – tydeligere hierarki */}
+        {/* Tittel + tagline – full bredde øverst */}
         <div
           style={{
             position: "absolute",
             top: SAFE_TOP,
             left: SAFE_LEFT,
-            width: SHARE_WIDTH - SAFE_LEFT - SAFE_RIGHT - GIGGEN_SIZE - 32,
+            width: SHARE_WIDTH - SAFE_LEFT - SAFE_RIGHT,
             zIndex: 10,
           }}
         >
@@ -234,35 +234,34 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           )}
         </div>
 
-        {/* CTA – mer tyngde, svak glow */}
+        {/* CTA – liten tekst, nederst høyre */}
         <div
           style={{
             position: "absolute",
             bottom: SAFE_BOTTOM,
-            left: SAFE_LEFT,
+            right: SAFE_RIGHT,
             zIndex: 10,
           }}
         >
           <div
             style={{
-              fontSize: 36,
-              fontWeight: 600,
-              color: "rgba(255,255,255,0.92)",
-              letterSpacing: "0.06em",
-              textShadow:
-                "0 2px 14px rgba(0,0,0,0.6), 0 0 30px rgba(255,255,255,0.08)",
+              fontSize: 22,
+              fontWeight: 500,
+              color: "rgba(255,255,255,0.55)",
+              letterSpacing: "0.04em",
+              textShadow: "0 2px 10px rgba(0,0,0,0.5)",
             }}
           >
             {data.cta ?? "Les mer på giggen.org"}
           </div>
         </div>
 
-        {/* Prosjekt/venue-logo – nederst høyre */}
+        {/* Prosjekt/venue-logo – over CTA, høyre side */}
         {subjectLogo && (
           <div
             style={{
               position: "absolute",
-              bottom: SAFE_BOTTOM,
+              bottom: SAFE_BOTTOM + 36,
               right: SAFE_RIGHT,
               zIndex: 10,
             }}
