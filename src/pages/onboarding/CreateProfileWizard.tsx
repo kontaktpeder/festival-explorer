@@ -288,7 +288,7 @@ function StepBio({
         id="bio"
         value={bio}
         onChange={(e) => setBio(e.target.value)}
-        placeholder="F.eks. «Trommis i Kråkesølv, freelance lydtekniker i Bergen»"
+        placeholder="Trommis i Kråkesølv, freelance lydtekniker i Bergen"
         rows={4}
         className="text-lg bg-transparent border-border/20 focus:border-accent/40 resize-none"
       />
