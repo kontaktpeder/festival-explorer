@@ -250,7 +250,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
             display: "grid",
             gridTemplateColumns: hasSubjectLogo ? `${TITLE_COL_W}px ${LOGO_BOX_W}px` : "1fr",
             columnGap: hasSubjectLogo ? HEADER_GAP : 0,
-            alignItems: "start",
+            alignItems: "center",
             zIndex: 10,
           }}
         >
@@ -335,9 +335,8 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
             <div
               style={{
                 display: "flex",
-                alignItems: "flex-start",
+                alignItems: "center",
                 justifyContent: "flex-end",
-                paddingTop: 8,
               }}
             >
               <img
