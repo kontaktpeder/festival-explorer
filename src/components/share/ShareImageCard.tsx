@@ -77,7 +77,7 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
           backgroundColor: "#0a0a0a",
         }}
       >
-        {/* Lag 1: Bakgrunn – hero cover + blur + mørk overlay */}
+        {/* Lag 1: Bakgrunn – hero cover + blur + mørk overlay (HELE kortet) */}
         {heroUrl ? (
           <>
             <img
@@ -86,10 +86,9 @@ export const ShareImageCard = forwardRef<HTMLDivElement, ShareImageCardProps>(
               crossOrigin="anonymous"
               style={{
                 position: "absolute",
-                top: HERO_ZONE_TOP,
-                left: 0,
+                inset: 0,
                 width: SHARE_WIDTH,
-                height: HERO_ZONE_HEIGHT,
+                height: SHARE_HEIGHT,
                 objectFit: "cover",
                 objectPosition: "center",
                 filter: "blur(44px)",
