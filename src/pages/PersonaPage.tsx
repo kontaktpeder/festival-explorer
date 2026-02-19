@@ -179,26 +179,26 @@ export default function PersonaPage() {
           {/* Large avatar with glow */}
           <div className="relative mb-10">
             <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl scale-110 animate-pulse" />
-            <Avatar className="relative h-36 w-36 md:h-44 md:w-44 ring-2 ring-border/20 shadow-2xl">
+            <Avatar className="relative h-40 w-40 md:h-52 md:w-52 ring-2 ring-border/20 shadow-2xl">
               <AvatarImage 
                 src={avatarUrl || undefined} 
                 style={avatarStyles}
               />
-              <AvatarFallback className="text-4xl font-light bg-muted">
+              <AvatarFallback className="text-5xl font-light bg-muted">
                 {persona.name.substring(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </div>
           
           {/* Name - large editorial */}
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-medium tracking-tight mb-6">
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-medium tracking-tight mb-6">
             {persona.name}
           </h1>
           
           {/* Primary role type */}
           {(persona as any).type && (
-            <div className="mb-4">
-              <span className="px-5 py-2 rounded-full border border-accent/40 text-accent text-base font-medium">
+            <div className="mb-5">
+              <span className="px-5 py-2 rounded-full border border-accent/40 text-accent text-lg font-medium">
                 {getPersonaTypeLabel((persona as any).type)}
               </span>
             </div>
@@ -210,7 +210,7 @@ export default function PersonaPage() {
               {persona.category_tags.map((tag) => (
                 <span 
                   key={tag} 
-                  className="px-4 py-1.5 rounded-full border border-primary/30 text-primary/80 text-sm capitalize"
+                  className="px-4 py-1.5 rounded-full border border-primary/30 text-primary/80 text-base capitalize"
                 >
                   {tag}
                 </span>
@@ -224,7 +224,7 @@ export default function PersonaPage() {
               {availableFor.map((key) => (
                 <span 
                   key={key} 
-                  className="px-3 py-1 rounded-full bg-secondary/50 text-secondary-foreground/70 text-xs"
+                  className="px-4 py-1.5 rounded-full bg-secondary/50 text-secondary-foreground/70 text-sm"
                 >
                   {getAvailableForLabel(key)}
                 </span>
@@ -234,8 +234,8 @@ export default function PersonaPage() {
 
           {/* Location - only show if populated */}
           {locationDisplay && (
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground/60 mb-8">
-              <MapPin className="w-3.5 h-3.5" />
+            <div className="flex items-center justify-center gap-2 text-base text-muted-foreground/60 mb-8">
+              <MapPin className="w-4 h-4" />
               <span>{locationDisplay}</span>
             </div>
           )}
@@ -247,9 +247,9 @@ export default function PersonaPage() {
           {showContactButton && (
             <button
               onClick={() => setContactModalOpen(true)}
-              className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-accent text-accent-foreground font-medium hover:bg-accent/90 transition-colors duration-300"
+              className="mt-6 inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-accent text-accent-foreground font-medium text-base hover:bg-accent/90 transition-colors duration-300"
             >
-              <Mail className="w-4 h-4" />
+              <Mail className="w-5 h-5" />
               Book / samarbeid
             </button>
           )}
@@ -265,7 +265,7 @@ export default function PersonaPage() {
               ${bioReveal.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}
             `}
           >
-            <p className="text-lg md:text-xl text-muted-foreground/80 leading-relaxed text-center font-light whitespace-pre-line">
+            <p className="text-xl md:text-2xl text-muted-foreground/80 leading-relaxed text-center font-light whitespace-pre-line">
               {persona.bio}
             </p>
           </section>
@@ -282,7 +282,7 @@ export default function PersonaPage() {
             `}
           >
             <div className="max-w-3xl mx-auto">
-              <h2 className="text-2xl md:text-3xl font-display font-light text-center text-muted-foreground/60 mb-12 md:mb-16 tracking-wide">
+              <h2 className="text-3xl md:text-4xl font-display font-light text-center text-muted-foreground/60 mb-12 md:mb-16 tracking-wide">
                 Min reise
               </h2>
               
@@ -304,7 +304,7 @@ export default function PersonaPage() {
             `}
           >
             <div className="max-w-3xl mx-auto">
-              <h2 className="text-2xl md:text-3xl font-display font-light text-center text-muted-foreground/60 mb-12 md:mb-16 tracking-wide">
+              <h2 className="text-3xl md:text-4xl font-display font-light text-center text-muted-foreground/60 mb-12 md:mb-16 tracking-wide">
                 Medvirker på
               </h2>
               
@@ -330,36 +330,36 @@ export default function PersonaPage() {
                           <img
                             src={entity.hero_image_url}
                             alt={entity.name}
-                            className="h-16 w-16 md:h-20 md:w-20 rounded-xl object-cover ring-1 ring-border/10 group-hover:ring-primary/30 transition-all duration-300"
+                            className="h-20 w-20 md:h-24 md:w-24 rounded-xl object-cover ring-1 ring-border/10 group-hover:ring-primary/30 transition-all duration-300"
                           />
                         ) : (
-                          <div className="h-16 w-16 md:h-20 md:w-20 rounded-xl bg-muted/50 flex items-center justify-center ring-1 ring-border/10 group-hover:ring-primary/30 transition-all duration-300">
-                            <Icon className="h-6 w-6 text-muted-foreground/50" />
+                          <div className="h-20 w-20 md:h-24 md:w-24 rounded-xl bg-muted/50 flex items-center justify-center ring-1 ring-border/10 group-hover:ring-primary/30 transition-all duration-300">
+                            <Icon className="h-7 w-7 text-muted-foreground/50" />
                           </div>
                         )}
                       </div>
                       
                       {/* Entity info */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-xl md:text-2xl font-medium tracking-tight group-hover:text-primary transition-colors duration-300">
+                        <p className="text-2xl md:text-3xl font-medium tracking-tight group-hover:text-primary transition-colors duration-300">
                           {entity.name}
                         </p>
                         
                         {/* Tagline as teaser */}
                         {entity.tagline && (
-                          <p className="text-sm text-muted-foreground/70 mt-1 line-clamp-1">
+                          <p className="text-base text-muted-foreground/70 mt-1 line-clamp-1">
                             {entity.tagline}
                           </p>
                         )}
 
-                        <div className="flex items-center gap-3 mt-1.5">
-                          <span className="text-sm text-muted-foreground/60">
+                        <div className="flex items-center gap-3 mt-2">
+                          <span className="text-base text-muted-foreground/60">
                             {TYPE_LABELS[entity.type as EntityType]}
                           </span>
                           {binding.role_label && (
                             <>
                               <span className="text-muted-foreground/30">·</span>
-                              <span className="text-sm text-primary/60">
+                              <span className="text-base text-primary/60">
                                 {binding.role_label}
                               </span>
                             </>
