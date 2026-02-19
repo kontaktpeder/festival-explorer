@@ -37,18 +37,16 @@ import { ShareImageSection } from "@/components/share/ShareImageSection";
 import { shareModelFromProject } from "@/lib/share-model";
 import { CroppedImage } from "@/components/ui/CroppedImage";
 import { UpcomingGigsSection } from "@/components/ui/UpcomingGigsSection";
+import { useUpcomingGigsForEntity } from "@/hooks/useUpcomingGigs";
 
 export default function ProjectPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data: entity, isLoading, error } = useEntity(slug || "");
+  const { data: upcomingGigs } = useUpcomingGigsForEntity(entity?.id);
+  const nextGig = upcomingGigs?.[0] ?? null;
   const timelineSource = entity?.id ? { type: "entity" as const, id: entity.id } : undefined;
   const { data: timelineEvents } = useUnifiedTimelineEvents(timelineSource, { visibility: "public" });
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [slug]);
-
-  const heroImageUrl = useSignedMediaUrl(entity?.hero_image_url, 'public');
+  const heroImageUrl = useSignedMediaUrl((entity as any)?.hero_image_url, 'public');
   const logoUrl = useSignedMediaUrl((entity as any)?.logo_url, 'public');
 
   const publicTeamMembers = entity?.team ?? [];
@@ -229,6 +227,8 @@ export default function ProjectPage() {
                 tagline: entity.tagline ?? null,
                 heroImageUrl: heroImageUrl ?? null,
                 logoUrl: logoUrl ?? null,
+                venueName: nextGig?.venueName ?? null,
+                startAt: nextGig?.startsAt ?? null,
               })}
               compact
             />
