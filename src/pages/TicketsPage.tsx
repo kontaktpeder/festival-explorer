@@ -5,9 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Ticket, Music, ShieldCheck, Smartphone, Lock } from "lucide-react";
+import { Loader2, Ticket, Music, ShieldCheck, Smartphone, Lock, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
+import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
 
 interface TicketTypeWithCount {
   id: string;
@@ -196,7 +197,21 @@ export default function TicketsPage() {
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
+    <div className="min-h-screen">
+      {/* Navigation header */}
+      <div className="px-4 md:px-8 pt-4">
+        <div className="max-w-2xl mx-auto">
+          <Link
+            to="/festival"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-accent transition-colors py-3"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Tilbake til festivalen</span>
+          </Link>
+        </div>
+      </div>
+
+      <div className="p-4 md:p-8 pt-2">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
@@ -257,6 +272,10 @@ export default function TicketsPage() {
           <span>Sikker betaling via Stripe. Billetter leveres som QR-kode på mobil.</span>
         </div>
       </div>
+      </div>
+
+      {/* Les mer om GIGGEN */}
+      <WhatIsGiggenFooter />
     </div>
   );
 }
