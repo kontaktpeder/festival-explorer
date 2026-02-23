@@ -111,7 +111,9 @@ function FaqSlot({
         <dl className="space-y-4">
           {items.map(({ q, a }) => (
             <div key={q}>
-              <dt className="font-semibold text-foreground text-base">{q}</dt>
+              <dt>
+                <h3 className="font-semibold text-foreground text-base">{q}</h3>
+              </dt>
               <dd className="text-foreground/70 text-sm mt-1">{a}</dd>
             </div>
           ))}
@@ -121,16 +123,89 @@ function FaqSlot({
   );
 }
 
-function PraktiskFallbackSlot() {
+// ─── Practical info helpers ──────────────────────────────────────
+function getFirstString(
+  obj: Record<string, unknown> | null | undefined,
+  keys: string[]
+): string | null {
+  if (!obj || typeof obj !== "object") return null;
+  for (const k of keys) {
+    const v = obj[k];
+    if (v != null && typeof v === "string" && v.trim()) return v.trim();
+  }
+  return null;
+}
+
+function formatTimeIfNeeded(value: string | null): string | null {
+  if (!value || !value.trim()) return null;
+  const trimmed = value.trim();
+  if (/^\d{1,2}:\d{2}$/.test(trimmed)) return trimmed;
+  try {
+    const d = new Date(trimmed);
+    if (!Number.isNaN(d.getTime()))
+      return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  } catch {
+    // fallthrough
+  }
+  return trimmed;
+}
+
+const PRACTICAL_ROW_CONFIG: Array<{
+  label: string;
+  festivalKeys: string[];
+  venueKeys: string[];
+  formatValue?: (v: string | null) => string | null;
+}> = [
+  { label: "Dører åpner", festivalKeys: ["doors_open_at", "doors_time", "practical_doors"], venueKeys: [], formatValue: formatTimeIfNeeded },
+  { label: "Aldersgrense", festivalKeys: ["age_limit", "practical_age"], venueKeys: ["age_limit"] },
+  { label: "Garderobe", festivalKeys: ["practical_wardrobe", "wardrobe_info"], venueKeys: ["wardrobe_info"] },
+  { label: "Tilgjengelighet", festivalKeys: ["practical_accessibility"], venueKeys: ["accessibility"] },
+  { label: "Mat og bar", festivalKeys: ["practical_food_bar"], venueKeys: [] },
+  { label: "Transport", festivalKeys: ["practical_transport"], venueKeys: ["address", "transport_info"] },
+  { label: "Kontakt", festivalKeys: ["practical_contact"], venueKeys: ["contact_email", "contact_phone", "website"] },
+];
+
+function buildPracticalRows({
+  festival,
+  venue,
+}: {
+  festival: Record<string, unknown> | null | undefined;
+  venue: Record<string, unknown> | null | undefined;
+}): Array<{ label: string; value: string }> {
+  const rows: Array<{ label: string; value: string }> = [];
+  for (const { label, festivalKeys, venueKeys, formatValue } of PRACTICAL_ROW_CONFIG) {
+    let value =
+      getFirstString(festival as Record<string, unknown>, festivalKeys) ??
+      getFirstString(venue as Record<string, unknown>, venueKeys);
+    if (value != null && formatValue) value = formatValue(value) ?? value;
+    if (value != null && value !== "") rows.push({ label, value });
+  }
+  return rows;
+}
+
+function PracticalInfoSlot({
+  festival,
+  venue,
+}: {
+  festival: Record<string, unknown> | null | undefined;
+  venue: Record<string, unknown> | null | undefined;
+}) {
+  const rows = buildPracticalRows({ festival, venue });
+  if (rows.length === 0) return null;
+
   return (
     <section className="relative bg-background py-16 md:py-24 px-6">
       <div className="max-w-md mx-auto space-y-4">
         <h2 className="text-display text-xl md:text-2xl font-bold tracking-tight">
           Praktisk informasjon
         </h2>
-        <div className="text-foreground/70 text-base space-y-1">
-          <p>Dører åpner: 20:00</p>
-          <p>Aldersgrense: 18 år</p>
+        <div className="space-y-3">
+          {rows.map(({ label, value }) => (
+            <div key={label} className="flex flex-col">
+              <span className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</span>
+              <p className="text-foreground/70 text-base">{value}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -525,7 +600,7 @@ export default function FestivalPage() {
               />
             );
           }
-          return <PraktiskFallbackSlot key={slot} />;
+          return <PracticalInfoSlot key={slot} festival={shell as Record<string, unknown>} venue={venue ?? undefined} />;
         }
 
         // ── FAQ ──
