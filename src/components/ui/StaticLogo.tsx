@@ -83,7 +83,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
     
     return (
       <>
-        {/* ========== DESKTOP: FIXED HEADER WITH LARGE CENTERED LOGO ========== */}
+        {/* ========== DESKTOP: FIXED HEADER – no large center logo ========== */}
         {!isMobile && (
           <div
             className="fixed inset-x-0 top-0 z-50"
@@ -107,42 +107,41 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
             />
             
             {/* Content bar */}
-            <div className="relative flex items-start justify-between px-6 py-4">
-              {/* Left: Backstage link */}
-              <Link
-                to={session ? "/dashboard" : "/admin/login"}
-                className="text-foreground/60 hover:text-foreground font-bold text-sm uppercase tracking-wider transition-colors pt-2"
-              >
-                Backstage
-              </Link>
-
-              {/* Center: Large logo extending beyond header - moves up on scroll */}
+            <div className="relative flex items-center justify-between px-6 py-4">
+              {/* Left: Logo (compact) */}
               <Link
                 to="/"
                 onClick={handleClick}
-                className="absolute left-1/2 -translate-x-1/2 transition-transform duration-100 ease-out"
-                style={{
-                  top: isLargeDesktop ? -8 - logoOffset : 4 - logoOffset,
-                  transform: `translateX(-50%) scale(${1 - logoOffset * 0.002})`
-                }}
+                className="flex-shrink-0"
               >
                 <img 
                   src={giggenLogo} 
-                  alt="GIGGEN - festival for en kveld"
-                  className="h-40 lg:h-52"
-                  style={{
-                    filter: 'drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))'
-                  }}
+                  alt="GIGGEN"
+                  className="h-10 lg:h-12 drop-shadow-lg"
                 />
               </Link>
 
-              {/* Right: CTA button */}
-              <Link
-                to="/tickets"
-                className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-7 py-3 text-base transition-all shadow-lg"
-              >
-                Kjøp festivalpass
-              </Link>
+              {/* Right: Actions */}
+              <div className="flex items-center gap-3">
+                <Link
+                  to={session ? "/dashboard" : "/admin/login"}
+                  className="text-foreground/60 hover:text-foreground font-bold text-sm uppercase tracking-wider transition-colors"
+                >
+                  Backstage
+                </Link>
+                <a
+                  href="#program"
+                  className="text-foreground/70 hover:text-foreground font-bold rounded-full px-5 py-3 text-sm transition-colors border border-foreground/20 hover:border-foreground/40"
+                >
+                  Se program
+                </a>
+                <Link
+                  to="/tickets"
+                  className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-7 py-3 text-base transition-all shadow-lg"
+                >
+                  Kjøp festivalpass
+                </Link>
+              </div>
             </div>
           </div>
         )}
@@ -198,35 +197,25 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
               </div>
             </div>
 
-            {/* FADING: Large centered logo that disappears on scroll */}
-            <div
-              className={`fixed inset-x-0 z-40 flex justify-center pointer-events-none transition-opacity duration-300 ${
-                isScrolled ? 'opacity-0' : 'opacity-100'
-              }`}
-              style={{
-                top: 'calc(var(--safe-top, 0px) + 60px)'
-              }}
-            >
-              <img 
-                src={giggenLogo} 
-                alt=""
-                className="h-28"
-                style={{
-                  filter: 'drop-shadow(0 4px 20px rgba(0, 0, 0, 0.6)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4))'
-                }}
-              />
-            </div>
 
-            {/* ALWAYS VISIBLE: Fixed bottom CTA button - positioned above Safari UI zone */}
+
+            {/* ALWAYS VISIBLE: Fixed bottom CTAs – Se program + Kjøp festivalpass */}
             <div
-              className="fixed inset-x-0 z-50 flex justify-center pointer-events-none"
+              className="fixed inset-x-0 z-50 flex justify-center gap-3 pointer-events-none"
               style={{
                 bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)'
               }}
             >
+              <a
+                href="#program"
+                className="pointer-events-auto text-foreground/90 font-bold rounded-full px-5 py-3 text-sm shadow-lg backdrop-blur-md border border-foreground/20"
+                style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+              >
+                Se program
+              </a>
               <Link
                 to="/tickets"
-                 className="pointer-events-auto bg-accent text-accent-foreground font-black rounded-full px-6 py-3 text-sm shadow-lg"
+                className="pointer-events-auto bg-accent text-accent-foreground font-black rounded-full px-6 py-3 text-sm shadow-lg"
               >
                 Kjøp festivalpass
               </Link>

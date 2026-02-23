@@ -417,27 +417,6 @@ export default function FestivalPage() {
                       {showDescription}
                     </p>
                   )}
-                  <div className="animate-slide-up delay-300 flex flex-wrap gap-3 mt-6">
-                    <Link
-                      to="/tickets"
-                      className={`btn-accent text-center text-sm ${
-                        !TICKET_SALES_ENABLED
-                          ? "opacity-50 cursor-not-allowed pointer-events-none"
-                          : ""
-                      }`}
-                      onClick={(e) => {
-                        if (!TICKET_SALES_ENABLED) e.preventDefault();
-                      }}
-                    >
-                      Kjøp billetter
-                    </Link>
-                    <a
-                      href="#program"
-                      className="btn-ghost text-center text-sm"
-                    >
-                      Se program
-                    </a>
-                  </div>
                 </div>
               </HeroSection>
             );
@@ -464,24 +443,6 @@ export default function FestivalPage() {
                     {shortDescription}
                   </p>
                 )}
-                <div className="flex flex-wrap gap-3 mt-6">
-                  <Link
-                    to="/tickets"
-                    className={`btn-accent text-center ${
-                      !TICKET_SALES_ENABLED
-                        ? "opacity-50 cursor-not-allowed pointer-events-none"
-                        : ""
-                    }`}
-                    onClick={(e) => {
-                      if (!TICKET_SALES_ENABLED) e.preventDefault();
-                    }}
-                  >
-                    Kjøp billetter
-                  </Link>
-                  <a href="#program" className="btn-ghost text-center">
-                    Se program
-                  </a>
-                </div>
               </div>
             </HeroSection>
           );
