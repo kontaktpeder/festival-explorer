@@ -139,6 +139,12 @@ export default function FestivalPage() {
             />
           );
         })}
+        {/* SEO internal link */}
+        <div className="bg-black/80 text-center py-6">
+          <Link to="/festival-oslo-2026" className="text-xs text-white/25 hover:text-white/50 transition-colors">
+            Les mer: Festival i Oslo 2026
+          </Link>
+        </div>
         <div className="fixed bottom-4 right-4 z-40">
           <Link to="/admin" className="text-muted-foreground/20 hover:text-muted-foreground/40 transition-colors" title="Admin">
             <Settings className="w-3 h-3" />
