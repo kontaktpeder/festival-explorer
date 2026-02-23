@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import type { FestivalSeoParams } from "@/lib/festival-seo";
 import {
   festivalPageTitle,
@@ -8,13 +8,12 @@ import {
 } from "@/lib/festival-seo";
 
 const SCRIPT_ID = "festival-page-jsonld";
+const SEO_MARKER = "data-giggen-seo";
 
 export function useFestivalPageSeo(
   params: FestivalSeoParams | null,
   seoDescriptionOverride?: string | null
 ) {
-  const addedRef = useRef<Set<string>>(new Set());
-
   useEffect(() => {
     if (!params) return;
 
@@ -37,8 +36,10 @@ export function useFestivalPageSeo(
       if (!el) {
         el = document.createElement("meta");
         el.setAttribute(attr, nameOrProp);
+        el.setAttribute(SEO_MARKER, "1");
         document.head.appendChild(el);
-        addedRef.current.add(`${attr}-${nameOrProp}`);
+      } else {
+        el.setAttribute(SEO_MARKER, "1");
       }
       el.setAttribute("content", content);
     };
@@ -59,8 +60,10 @@ export function useFestivalPageSeo(
     if (!linkCanonical) {
       linkCanonical = document.createElement("link");
       linkCanonical.setAttribute("rel", "canonical");
+      linkCanonical.setAttribute(SEO_MARKER, "1");
       document.head.appendChild(linkCanonical);
-      addedRef.current.add("canonical");
+    } else {
+      linkCanonical.setAttribute(SEO_MARKER, "1");
     }
     linkCanonical.setAttribute("href", canonical);
 
@@ -70,15 +73,14 @@ export function useFestivalPageSeo(
       scriptEl = document.createElement("script");
       scriptEl.id = SCRIPT_ID;
       scriptEl.type = "application/ld+json";
+      scriptEl.setAttribute(SEO_MARKER, "1");
       document.head.appendChild(scriptEl);
-      addedRef.current.add("jsonld");
     }
     scriptEl.textContent = JSON.stringify(jsonLd);
 
     return () => {
       document.title = "GIGGEN";
-      if (addedRef.current.has("canonical"))
-        document.querySelector('link[rel="canonical"]')?.remove();
+      document.querySelectorAll(`[${SEO_MARKER}="1"]`).forEach((el) => el.remove());
       document.getElementById(SCRIPT_ID)?.remove();
     };
   }, [

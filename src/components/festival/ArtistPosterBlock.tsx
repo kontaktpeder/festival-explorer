@@ -123,7 +123,8 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
             <>
               <img
                 src={displayLogoUrl}
-                alt={artist.name}
+                alt=""
+                aria-hidden="true"
                 className={cn(
                   "w-auto h-auto max-h-20 md:max-h-28 lg:max-h-36 object-contain drop-shadow-2xl",
                   shouldInvert && "invert"
@@ -137,7 +138,8 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
               {displayLogoUrl && artist.slug !== "maya-estrela" ? (
                 <img
                   src={displayLogoUrl}
-                  alt={artist.name}
+                  alt=""
+                  aria-hidden="true"
                   className={cn(
                     "w-auto h-auto max-h-16 md:max-h-24 lg:max-h-32 object-contain drop-shadow-2xl",
                     shouldInvert && "invert"
