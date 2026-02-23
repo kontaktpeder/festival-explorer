@@ -17,7 +17,7 @@ const VENUE_NAME = "Josefines Vertshus";
 const VENUE_SLUG = "josefines-vertshus";
 const DEFAULT_OG_IMAGE = "https://lovable.dev/opengraph-image-p98pqg.png";
 
-const META_TITLE = "Festival i Oslo 2026 – GIGGEN Festival | Billetter";
+const META_TITLE = "Festival Oslo 2026 – GIGGEN Festival på Josefines Vertshus";
 const META_DESCRIPTION =
   "Festival i Oslo 2026 på Josefines Vertshus. GIGGEN Festival – live musikk i Oslo. Kjøp billetter nå.";
 
@@ -25,7 +25,9 @@ function useFestivalOslo2026Seo(heroImageUrl: string | null) {
   const addedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    const canonicalUrl = `${getPublicUrl().replace(/\/$/, "")}${PAGE_PATH}`;
+    const baseUrl = getPublicUrl().replace(/\/$/, "");
+    const canonicalUrl = `${baseUrl}${PAGE_PATH}`;
+    const ticketsUrl = `${baseUrl}/tickets`;
     const ogImage = heroImageUrl || DEFAULT_OG_IMAGE;
 
     document.title = META_TITLE;
@@ -48,6 +50,7 @@ function useFestivalOslo2026Seo(heroImageUrl: string | null) {
     setMeta("og:image", ogImage, true);
     setMeta("og:type", "event", true);
     setMeta("og:url", canonicalUrl, true);
+    setMeta("og:site_name", "Giggen", true);
     setMeta("twitter:card", "summary_large_image");
     setMeta("twitter:title", META_TITLE);
     setMeta("twitter:description", META_DESCRIPTION);
@@ -81,8 +84,15 @@ function useFestivalOslo2026Seo(heroImageUrl: string | null) {
       organizer: { "@type": "Organization", name: "Giggen" },
       image: ogImage,
       url: canonicalUrl,
+      offers: {
+        "@type": "Offer",
+        url: ticketsUrl,
+        priceCurrency: "NOK",
+        availability: "https://schema.org/InStock",
+      },
     };
 
+    const jsonStr = JSON.stringify(jsonLd);
     let scriptLd = document.getElementById("festival-oslo-2026-jsonld") as HTMLScriptElement | null;
     if (!scriptLd) {
       scriptLd = document.createElement("script");
@@ -91,7 +101,7 @@ function useFestivalOslo2026Seo(heroImageUrl: string | null) {
       document.head.appendChild(scriptLd);
       addedRef.current.add("jsonld");
     }
-    scriptLd.textContent = JSON.stringify(jsonLd);
+    scriptLd.textContent = jsonStr;
 
     return () => {
       document.title = "GIGGEN";
@@ -131,7 +141,7 @@ export default function FestivalOslo2026Page() {
           {/* H1 + intro */}
           <header className="space-y-4">
             <h1 className="text-display text-3xl md:text-5xl font-black uppercase tracking-tight leading-tight">
-              Festival i Oslo 2026 – GIGGEN Festival
+              Festival Oslo 2026 – GIGGEN Festival på Josefines Vertshus
             </h1>
             <p className="text-foreground/70 text-lg md:text-xl leading-relaxed max-w-2xl">
               GIGGEN Festival er festival i Oslo 2026 med live musikk i Oslo på Josefines Vertshus.
