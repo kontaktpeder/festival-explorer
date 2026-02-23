@@ -5,6 +5,8 @@ import { Calendar, Settings } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useFestivalShell, useFestivalDetails } from "@/hooks/useFestival";
+import { useFestivalPageSeo } from "@/hooks/useFestivalPageSeo";
+import type { FestivalSeoParams } from "@/lib/festival-seo";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { parseImageSettings } from "@/types/database";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -14,34 +16,248 @@ import { SectionRenderer } from "@/components/festival/SectionRenderer";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { DualLineupSection } from "@/components/festival/DualLineupSection";
-import giggenLogo from "@/assets/giggen-logo.png";
-import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
+import { FestivalFooter } from "@/components/festival/FestivalFooter";
 import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
+import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
+
+// ─── Slot system ────────────────────────────────────────────────
+const SLOT_ORDER = [
+  { slot: "hero", sectionType: "hero" },
+  { slot: "seo_intro", sectionType: "seo_intro" },
+  { slot: "program", sectionType: "program" },
+  { slot: "lineup", sectionType: "artister" },
+  { slot: "venue", sectionType: "venue-plakat" },
+  { slot: "praktisk", sectionType: "praktisk" },
+  { slot: "faq", sectionType: "faq" },
+  { slot: "cta", sectionType: "cta" },
+  { slot: "team", sectionType: "team" },
+  { slot: "footer", sectionType: "footer" },
+] as const;
+
+function getSectionByType(
+  sections: Array<{ type: string; [k: string]: unknown }>,
+  type: string
+) {
+  return sections?.find((s) => s.type === type) ?? null;
+}
+
+// ─── Slot components ────────────────────────────────────────────
+
+function SEOIntroSlot({
+  city,
+  year,
+  venueName,
+  seoIntroText,
+}: {
+  city: string;
+  year: string;
+  venueName: string;
+  seoIntroText?: string | null;
+}) {
+  const h2 = `Festival i ${city} ${year} på ${venueName}`;
+  const templateText = `Velkommen til festivalen – en kveld med live musikk i ${city}. ${venueName} er vertskap for konserter og opplevelser. Her møtes artister og publikum for levende musikk. Sjekk program og billetter for ${year}.`;
+  const body =
+    seoIntroText && seoIntroText.trim() ? seoIntroText.trim() : templateText;
+
+  return (
+    <section className="relative bg-background py-16 md:py-24 px-6">
+      <div className="max-w-2xl mx-auto space-y-4">
+        <h2 className="text-display text-2xl md:text-3xl font-bold tracking-tight">
+          {h2}
+        </h2>
+        <p className="text-foreground/70 text-base md:text-lg leading-relaxed">
+          {body}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+const DEFAULT_FAQ = [
+  { q: "Når er festivalen?", a: "Se dato under hero og i program." },
+  {
+    q: "Hvor er festivalen?",
+    a: "Festivalen er på spillestedet som er oppgitt over.",
+  },
+  { q: "Hva slags musikk er det?", a: "Live musikk – ulike artister og sjangre." },
+  {
+    q: "Kan jeg kjøpe billett i døra?",
+    a: "Ja, hvis det er ledige plasser. Vi anbefaler forhåndskjøp.",
+  },
+  {
+    q: "Aldersgrense?",
+    a: "18 år, med mindre annet er oppgitt under praktisk info.",
+  },
+  {
+    q: "Hvordan kommer jeg meg dit?",
+    a: "Se praktisk info og venue-siden for adresse og kollektiv.",
+  },
+];
+
+function FaqSlot({
+  faqItems,
+}: {
+  faqItems?: Array<{ q: string; a: string }> | null;
+}) {
+  const items =
+    faqItems && faqItems.length >= 6 ? faqItems : DEFAULT_FAQ;
+  return (
+    <section className="relative bg-background py-16 md:py-24 px-6">
+      <div className="max-w-2xl mx-auto space-y-6">
+        <h2 className="text-display text-xl md:text-2xl font-bold tracking-tight">
+          Ofte stilte spørsmål
+        </h2>
+        <dl className="space-y-4">
+          {items.map(({ q, a }) => (
+            <div key={q}>
+              <dt className="font-semibold text-foreground text-base">{q}</dt>
+              <dd className="text-foreground/70 text-sm mt-1">{a}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+  );
+}
+
+function PraktiskFallbackSlot() {
+  return (
+    <section className="relative bg-background py-16 md:py-24 px-6">
+      <div className="max-w-md mx-auto space-y-4">
+        <h2 className="text-display text-xl md:text-2xl font-bold tracking-tight">
+          Praktisk informasjon
+        </h2>
+        <div className="text-foreground/70 text-base space-y-1">
+          <p>Dører åpner: 20:00</p>
+          <p>Aldersgrense: 18 år</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CtaSlot({
+  festivalName,
+  city,
+  year,
+}: {
+  festivalName: string;
+  city: string;
+  year: string;
+}) {
+  return (
+    <section className="relative bg-background py-16 md:py-24 px-6 text-center">
+      <div className="max-w-xl mx-auto space-y-6">
+        <h2 className="text-display text-2xl md:text-3xl font-bold tracking-tight">
+          Sikre deg billett til {festivalName} {city} {year}
+        </h2>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            to="/tickets"
+            className={`btn-accent text-center ${
+              !TICKET_SALES_ENABLED
+                ? "opacity-50 cursor-not-allowed pointer-events-none"
+                : ""
+            }`}
+            onClick={(e) => {
+              if (!TICKET_SALES_ENABLED) e.preventDefault();
+            }}
+          >
+            Kjøp billetter
+          </Link>
+          <a href="#program" className="btn-ghost text-center">
+            Se program
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Main component ─────────────────────────────────────────────
 
 export default function FestivalPage() {
   const { slug } = useParams<{ slug: string }>();
   const festivalSlug = slug || "giggen-festival-for-en-kveld";
 
-  // Shell loads fast: festival metadata + sections → render hero immediately
-  const { data: shell, isLoading: shellLoading, error: shellError } = useFestivalShell(festivalSlug);
-
-  // Details load after shell: events, lineup, team
+  const {
+    data: shell,
+    isLoading: shellLoading,
+    error: shellError,
+  } = useFestivalShell(festivalSlug);
   const { data: details } = useFestivalDetails(shell?.id);
 
   const { data: venue } = useQuery({
     queryKey: ["venue", shell?.venue_id],
     queryFn: async () => {
       if (!shell?.venue_id) return null;
-      const { data } = await supabase.from("venues").select("*").eq("id", shell.venue_id).eq("is_published", true).maybeSingle();
+      const { data } = await supabase
+        .from("venues")
+        .select("*")
+        .eq("id", shell.venue_id)
+        .eq("is_published", true)
+        .maybeSingle();
       return data;
     },
     enabled: !!shell?.venue_id,
   });
 
-  const themeHeroUrl = useSignedMediaUrl(shell?.theme?.hero_image_url, 'public');
-  const venueHeroUrl = useSignedMediaUrl(venue?.hero_image_url, 'public');
+  const themeHeroUrl = useSignedMediaUrl(shell?.theme?.hero_image_url, "public");
 
+  // ─── Derived data ───────────────────────────────────────────
+  const city =
+    (venue?.city as string) ?? (shell as any)?.city ?? "Oslo";
+  const year = shell?.start_at
+    ? String(new Date(shell.start_at).getFullYear())
+    : shell?.end_at
+      ? String(new Date(shell.end_at).getFullYear())
+      : String(new Date().getFullYear());
+  const venueName =
+    venue?.name ?? (shell as any)?.venue_name ?? "spillestedet";
+  const startDateIso = shell?.start_at
+    ? new Date(shell.start_at).toISOString().slice(0, 10)
+    : "";
+  const endDateIso = shell?.end_at
+    ? new Date(shell.end_at).toISOString().slice(0, 10)
+    : undefined;
+
+  const seoParams: FestivalSeoParams | null = shell
+    ? {
+        festivalName: shell.name,
+        city,
+        year,
+        venueName,
+        startDate: startDateIso || new Date().toISOString().slice(0, 10),
+        endDate: endDateIso ?? null,
+        heroImageUrl: themeHeroUrl || null,
+        slug: festivalSlug,
+      }
+    : null;
+
+  useFestivalPageSeo(seoParams, (shell as any)?.seo_description);
+
+  const dateRange =
+    shell?.start_at && shell?.end_at
+      ? `${format(new Date(shell.start_at), "d. MMM", { locale: nb })} – ${format(new Date(shell.end_at), "d. MMM yyyy", { locale: nb })}`
+      : shell?.start_at
+        ? format(new Date(shell.start_at), "d. MMMM yyyy", { locale: nb })
+        : null;
+
+  const heroImage = themeHeroUrl || undefined;
+
+  const validEvents = (details?.festivalEvents || []).filter(
+    (fe) => fe.event && fe.event.status === "published"
+  );
+  const allArtistsWithEventSlug = details?.allArtistsWithEventSlug || [];
+  const festivalTeam = details?.festivalTeam;
+
+  const shortDescription = shell?.description
+    ? shell.description.split(" ").slice(0, 15).join(" ") +
+      (shell.description.split(" ").length > 15 ? "..." : "")
+    : null;
+
+  // ─── Loading / error states ──────────────────────────────────
   if (shellLoading) {
     return (
       <PageLayout>
@@ -62,44 +278,47 @@ export default function FestivalPage() {
     );
   }
 
-  const dateRange =
-    shell.start_at && shell.end_at
-      ? `${format(new Date(shell.start_at), "d. MMM", { locale: nb })} – ${format(new Date(shell.end_at), "d. MMM yyyy", { locale: nb })}`
-      : shell.start_at
-        ? format(new Date(shell.start_at), "d. MMMM yyyy", { locale: nb })
-        : null;
+  // ─── Slot-based render ────────────────────────────────────────
+  const sections = shell.sections || [];
 
-  const heroImage = themeHeroUrl || undefined;
+  return (
+    <PageLayout>
+      <StaticLogo heroMode />
 
-  const validEvents = (details?.festivalEvents || []).filter(
-    (fe) => fe.event && fe.event.status === "published"
-  );
-  const allArtistsWithEventSlug = details?.allArtistsWithEventSlug || [];
-  const festivalTeam = details?.festivalTeam;
+      {SLOT_ORDER.map(({ slot, sectionType }) => {
+        const section = getSectionByType(sections, sectionType);
 
-  const shortDescription = shell.description
-    ? shell.description.split(" ").slice(0, 15).join(" ") +
-      (shell.description.split(" ").length > 15 ? "..." : "")
-    : null;
+        // ── HERO ──
+        if (slot === "hero") {
+          if (section && section.type === "hero") {
+            const heroFitMode = (
+              section.image_fit_mode === "contain" ? "contain" : "cover"
+            ) as "cover" | "contain";
+            const sectionImageSettings = parseImageSettings(
+              section.bg_image_settings
+            );
+            const showDateRange =
+              section.id === shell.date_range_section_id ? dateRange : null;
+            const showDescription =
+              section.id === shell.description_section_id
+                ? shortDescription
+                : null;
+            const showName =
+              section.id === shell.name_section_id ? shell.name : null;
 
-  // Sections-based render
-  if (shell.sections && shell.sections.length > 0) {
-    return (
-      <PageLayout>
-        <StaticLogo heroMode />
-        {shell.sections.map((section) => {
-          const showDateRange = section.id === shell.date_range_section_id ? dateRange : null;
-          const showDescription = section.id === shell.description_section_id ? shortDescription : null;
-          const showName = section.id === shell.name_section_id ? shell.name : null;
-
-          if (section.type === "hero") {
-            const heroFitMode = (section.image_fit_mode === 'contain' ? 'contain' : 'cover') as 'cover' | 'contain';
-            const sectionImageSettings = parseImageSettings(section.bg_image_settings);
             return (
               <HeroSection
-                key={section.id}
-                imageUrl={section.bg_image_url_desktop || section.bg_image_url || heroImage}
-                imageUrlMobile={section.bg_image_url_mobile || section.bg_image_url || heroImage}
+                key={slot}
+                imageUrl={
+                  (section.bg_image_url_desktop as string) ||
+                  (section.bg_image_url as string) ||
+                  heroImage
+                }
+                imageUrlMobile={
+                  (section.bg_image_url_mobile as string) ||
+                  (section.bg_image_url as string) ||
+                  heroImage
+                }
                 imageSettings={sectionImageSettings}
                 fullScreen
                 backgroundFixed={section.bg_mode === "fixed"}
@@ -113,171 +332,316 @@ export default function FestivalPage() {
                     </div>
                   )}
                   {showName && (
-                    <h1 className="animate-slide-up delay-100 text-display text-hero text-balance">{showName}</h1>
+                    <h1 className="animate-slide-up delay-100 text-display text-hero text-balance">
+                      {showName} {city} {year}
+                    </h1>
                   )}
                   {showDescription && (
                     <p className="animate-slide-up delay-200 text-foreground/50 text-base md:text-lg max-w-sm leading-relaxed mt-4">
                       {showDescription}
                     </p>
                   )}
+                  <div className="animate-slide-up delay-300 flex flex-wrap gap-3 mt-6">
+                    <Link
+                      to="/tickets"
+                      className={`btn-accent text-center text-sm ${
+                        !TICKET_SALES_ENABLED
+                          ? "opacity-50 cursor-not-allowed pointer-events-none"
+                          : ""
+                      }`}
+                      onClick={(e) => {
+                        if (!TICKET_SALES_ENABLED) e.preventDefault();
+                      }}
+                    >
+                      Kjøp billetter
+                    </Link>
+                    <a
+                      href="#program"
+                      className="btn-ghost text-center text-sm"
+                    >
+                      Se program
+                    </a>
+                  </div>
                 </div>
               </HeroSection>
             );
           }
 
+          // Fallback hero
           return (
-            <SectionRenderer
-              key={section.id}
-              section={section}
-              validEvents={validEvents as any}
-              featuredArtists={allArtistsWithEventSlug}
-              venue={venue}
-              dateRange={showDateRange}
-              festivalDescription={showDescription}
-              festivalName={showName}
+            <HeroSection
+              key={slot}
+              imageUrl={heroImage}
+              imageSettings={parseImageSettings(shell?.theme?.hero_image_settings)}
+              fullScreen
+              backgroundFixed
+            >
+              <div className="animate-slide-up pb-8">
+                {dateRange && (
+                  <div className="text-mono text-accent mb-3">{dateRange}</div>
+                )}
+                <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">
+                  {shell.name} {city} {year}
+                </h1>
+                {shortDescription && (
+                  <p className="text-foreground/70 text-lg md:text-xl max-w-lg leading-relaxed">
+                    {shortDescription}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-3 mt-6">
+                  <Link
+                    to="/tickets"
+                    className={`btn-accent text-center ${
+                      !TICKET_SALES_ENABLED
+                        ? "opacity-50 cursor-not-allowed pointer-events-none"
+                        : ""
+                    }`}
+                    onClick={(e) => {
+                      if (!TICKET_SALES_ENABLED) e.preventDefault();
+                    }}
+                  >
+                    Kjøp billetter
+                  </Link>
+                  <a href="#program" className="btn-ghost text-center">
+                    Se program
+                  </a>
+                </div>
+              </div>
+            </HeroSection>
+          );
+        }
+
+        // ── SEO INTRO ──
+        if (slot === "seo_intro") {
+          return (
+            <SEOIntroSlot
+              key={slot}
+              city={city}
+              year={year}
+              venueName={venueName}
+              seoIntroText={(shell as any)?.seo_intro}
+            />
+          );
+        }
+
+        // ── PROGRAM ──
+        if (slot === "program") {
+          if (section) {
+            const showDateRange =
+              section.id === shell.date_range_section_id ? dateRange : null;
+            const showDescription =
+              section.id === shell.description_section_id
+                ? shortDescription
+                : null;
+            const showName =
+              section.id === shell.name_section_id ? shell.name : null;
+            return (
+              <SectionRenderer
+                key={slot}
+                section={section as any}
+                validEvents={validEvents as any}
+                featuredArtists={allArtistsWithEventSlug}
+                venue={venue}
+                dateRange={showDateRange}
+                festivalDescription={showDescription}
+                festivalName={showName}
+                festivalTeam={festivalTeam}
+              />
+            );
+          }
+          // Fallback program
+          return (
+            <section
+              key={slot}
+              className="fullscreen-section relative"
+              id="program"
+            >
+              <div className="relative z-10 max-w-4xl mx-auto w-full">
+                <h2 className="section-title">Program</h2>
+                {validEvents.length > 0 ? (
+                  <FestivalEventAccordion events={validEvents as any} />
+                ) : (
+                  <EmptyState
+                    title="Ingen events ennå"
+                    description="Programmet for denne festivalen er ikke klart ennå."
+                  />
+                )}
+              </div>
+            </section>
+          );
+        }
+
+        // ── LINEUP ──
+        if (slot === "lineup") {
+          if (section) {
+            return (
+              <SectionRenderer
+                key={slot}
+                section={section as any}
+                validEvents={validEvents as any}
+                featuredArtists={allArtistsWithEventSlug}
+                venue={venue}
+                festivalTeam={festivalTeam}
+              />
+            );
+          }
+          return (
+            <DualLineupSection
+              key={slot}
+              artists={allArtistsWithEventSlug}
               festivalTeam={festivalTeam}
             />
           );
-        })}
-        {/* SEO internal link */}
-        <div className="bg-black/80 text-center py-6">
-          <Link to="/festival-oslo-2026" className="text-xs text-white/25 hover:text-white/50 transition-colors">
-            Les mer: Festival i Oslo 2026
-          </Link>
-        </div>
-        <div className="fixed bottom-4 right-4 z-40">
-          <Link to="/admin" className="text-muted-foreground/20 hover:text-muted-foreground/40 transition-colors" title="Admin">
-            <Settings className="w-3 h-3" />
-          </Link>
-        </div>
-      </PageLayout>
-    );
-  }
+        }
 
-  // Fallback hardcoded layout
-  const sectionBackgrounds = {
-    program: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1920",
-    about: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1920",
-    practical: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1920",
-    footer: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1920",
-  };
+        // ── VENUE ──
+        if (slot === "venue") {
+          if (section) {
+            return (
+              <SectionRenderer
+                key={slot}
+                section={section as any}
+                validEvents={validEvents as any}
+                featuredArtists={allArtistsWithEventSlug}
+                venue={venue}
+                festivalTeam={festivalTeam}
+              />
+            );
+          }
+          return null; // No fallback venue section without CMS data
+        }
 
-  const fallbackArtists = allArtistsWithEventSlug.length > 0
-    ? allArtistsWithEventSlug
-    : [
-        { id: "1", name: "Lunar Echo", tagline: "Ambient soundscapes", slug: "lunar-echo", event_slug: "festival" },
-        { id: "2", name: "Erik Nordahl", tagline: "Electronic experiments", slug: "erik-nordahl", event_slug: "festival" },
-        { id: "3", name: "Neon Shapes", tagline: "Live eksperiment", slug: "neon-shapes", event_slug: "festival" },
-      ];
+        // ── PRAKTISK ──
+        if (slot === "praktisk") {
+          if (section) {
+            return (
+              <SectionRenderer
+                key={slot}
+                section={section as any}
+                validEvents={validEvents as any}
+                featuredArtists={allArtistsWithEventSlug}
+                venue={venue}
+                festivalTeam={festivalTeam}
+              />
+            );
+          }
+          return <PraktiskFallbackSlot key={slot} />;
+        }
 
-  return (
-    <PageLayout>
-      <StaticLogo heroMode />
-      <HeroSection imageUrl={heroImage} imageSettings={parseImageSettings(shell?.theme?.hero_image_settings)} fullScreen backgroundFixed>
-        <div className="animate-slide-up pb-8">
-          {dateRange && <div className="text-mono text-accent mb-3">{dateRange}</div>}
-          <h1 className="text-display text-5xl md:text-7xl mb-4 leading-none">{shell.name}</h1>
-          {shortDescription && <p className="text-foreground/70 text-lg md:text-xl max-w-lg leading-relaxed">{shortDescription}</p>}
-        </div>
-      </HeroSection>
+        // ── FAQ ──
+        if (slot === "faq") {
+          const rawContent = (section as any)?.content_json;
+          const faqFromSection =
+            rawContent?.content?.faq ?? rawContent?.faq ?? null;
+          return <FaqSlot key={slot} faqItems={faqFromSection} />;
+        }
 
-      <section className="fullscreen-section relative" id="program" style={{ backgroundImage: `url(${sectionBackgrounds.program})`, backgroundSize: "cover", backgroundPosition: "center" }}>
-        <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-        <div className="relative z-10 max-w-4xl mx-auto w-full">
-          <h2 className="section-title">Program</h2>
-          {validEvents.length > 0
-            ? <FestivalEventAccordion events={validEvents as any} />
-            : <EmptyState title="Ingen events ennå" description="Programmet for denne festivalen er ikke klart ennå." />}
-        </div>
-      </section>
+        // ── CTA ──
+        if (slot === "cta") {
+          return (
+            <CtaSlot
+              key={slot}
+              festivalName={shell.name}
+              city={city}
+              year={year}
+            />
+          );
+        }
 
-      <section className="fullscreen-section relative" style={{ backgroundImage: `url(${sectionBackgrounds.about})`, backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" }}>
-        <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-        <div className="relative z-10 max-w-xl">
-          <h2 className="section-title">Om Giggen</h2>
-          <div className="space-y-4 text-foreground/90 text-xl md:text-2xl leading-relaxed">
-            <p>Giggen er et rom for levende musikk.</p>
-            <p>Vi bygger der det vanligvis ikke bygges.</p>
-            <p className="text-muted-foreground">Dette er første kapittel.</p>
-          </div>
-        </div>
-      </section>
+        // ── TEAM ──
+        if (slot === "team") {
+          if (
+            festivalTeam &&
+            ((festivalTeam.hostRoles?.length ?? 0) > 0 ||
+              (festivalTeam.backstage?.length ?? 0) > 0)
+          ) {
+            return (
+              <section key={slot} className="fullscreen-section relative bg-background">
+                <div className="relative z-10 max-w-3xl mx-auto px-6 py-20 md:py-28">
+                  <h2 className="section-title">
+                    Bli kjent med festival-teamet
+                  </h2>
+                  <p className="text-foreground/70 text-base md:text-lg mb-10 max-w-xl">
+                    Folkene bak scenen som får festivalen til å skje.
+                  </p>
+                  <div className="space-y-6">
+                    {[
+                      ...(festivalTeam.hostRoles || []),
+                      ...(festivalTeam.backstage || []),
+                    ]
+                      .sort(
+                        (a: any, b: any) =>
+                          (a.sort_order ?? 0) - (b.sort_order ?? 0)
+                      )
+                      .map((item: any, i: number) => {
+                        const displayRole =
+                          item.role_label ||
+                          getPersonaTypeLabel(item.persona?.type) ||
+                          (item.persona?.category_tags &&
+                            item.persona.category_tags[0]) ||
+                          item.entity?.type ||
+                          null;
+                        return (
+                          <div
+                            key={item.participant_id || i}
+                            className="flex flex-col gap-1"
+                          >
+                            {displayRole && (
+                              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                                {displayRole}
+                              </p>
+                            )}
+                            <EventParticipantItem item={item} />
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              </section>
+            );
+          }
+          return null;
+        }
 
-      <DualLineupSection artists={fallbackArtists} festivalTeam={festivalTeam} />
+        // ── FOOTER ──
+        if (slot === "footer") {
+          if (section) {
+            return (
+              <SectionRenderer
+                key={slot}
+                section={section as any}
+                validEvents={validEvents as any}
+                featuredArtists={allArtistsWithEventSlug}
+                venue={venue}
+                festivalTeam={festivalTeam}
+              />
+            );
+          }
+          return <FestivalFooter key={slot} />;
+        }
 
-      <section className="fullscreen-section-end relative" style={{ backgroundImage: `url(${venueHeroUrl || sectionBackgrounds.about})`, backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" }}>
-        <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-        <div className="relative z-10 max-w-xl">
-          <h2 className="section-title">Venue</h2>
-          {venue ? (
-            <>
-              <h3 className="text-display text-4xl md:text-5xl mb-4">{venue.name}</h3>
-              {venue.description && <p className="text-foreground/70 text-lg leading-relaxed mb-6">{venue.description}</p>}
-              {venue.slug && <Link to={`/venue/${venue.slug}`} className="text-sm text-muted-foreground hover:text-accent transition-colors">Utforsk venue →</Link>}
-            </>
-          ) : (
-            <p className="text-foreground/60">Venue-informasjon kommer snart.</p>
-          )}
-        </div>
-      </section>
+        return null;
+      })}
 
-      <section className="fullscreen-section relative" style={{ backgroundImage: `url(${sectionBackgrounds.practical})`, backgroundSize: "cover", backgroundPosition: "center" }}>
-        <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-        <div className="relative z-10 max-w-md">
-          <h2 className="section-title">Praktisk</h2>
-          <div className="space-y-4 text-foreground/80 text-lg mb-10">
-            <p>Dører åpner: 20:00</p>
-            <p>Aldersgrense: 18 år</p>
-            <p>Billetter: Kjøp på døren eller forhåndsbestill</p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link to="/tickets" className={`btn-accent text-center ${!TICKET_SALES_ENABLED ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`} onClick={(e) => { if (!TICKET_SALES_ENABLED) e.preventDefault(); }}>
-              Kjøp billett
-            </Link>
-            <button className="btn-ghost text-center">Følg festivalen</button>
-          </div>
-        </div>
-      </section>
+      {/* SEO internal link */}
+      <div className="bg-black/80 text-center py-6">
+        <Link
+          to="/festival-oslo-2026"
+          className="text-xs text-white/25 hover:text-white/50 transition-colors"
+        >
+          Les mer: Festival i Oslo 2026
+        </Link>
+      </div>
 
-      {(festivalTeam?.hostRoles?.length > 0 || festivalTeam?.backstage?.length > 0) && (
-        <section className="fullscreen-section relative bg-background">
-          <div className="relative z-10 max-w-3xl mx-auto px-6 py-20 md:py-28">
-            <h2 className="section-title">Bli kjent med festival-teamet</h2>
-            <p className="text-foreground/70 text-base md:text-lg mb-10 max-w-xl">Folkene bak scenen som får festivalen til å skje.</p>
-            <div className="space-y-6">
-              {[...(festivalTeam.hostRoles || []), ...(festivalTeam.backstage || [])]
-                .sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-                .map((item: any, i: number) => {
-                  const displayRole = item.role_label || getPersonaTypeLabel(item.persona?.type) || (item.persona?.category_tags && item.persona.category_tags[0]) || item.entity?.type || null;
-                  return (
-                    <div key={item.participant_id || i} className="flex flex-col gap-1">
-                      {displayRole && <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{displayRole}</p>}
-                      <EventParticipantItem item={item} />
-                    </div>
-                  );
-                })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      <footer className="fullscreen-section relative" style={{ backgroundImage: `url(${sectionBackgrounds.footer})`, backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" }}>
-        <div className="absolute inset-0 section-vignette pointer-events-none z-[2]" />
-        <div className="relative z-10 max-w-xl">
-          <img src={giggenLogo} alt="Giggen" className="h-32 md:h-40 w-auto mb-6" />
-          <p className="text-muted-foreground text-lg mb-8">En plattform for levende musikk og opplevelser.</p>
-          <div className="flex flex-wrap gap-6 text-sm mb-8">
-            <span className="text-foreground/60">Utforsk</span>
-            <span className="text-foreground/60">Artister</span>
-            <span className="text-foreground/60">Kommende events</span>
-          </div>
-          <div className="pt-4 border-t border-border/10">
-            <Link to="/admin" className="text-muted-foreground/20 hover:text-muted-foreground/40 transition-colors" title="Admin">
-              <Settings className="w-3 h-3" />
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <div className="fixed bottom-4 right-4 z-40">
+        <Link
+          to="/admin"
+          className="text-muted-foreground/20 hover:text-muted-foreground/40 transition-colors"
+          title="Admin"
+        >
+          <Settings className="w-3 h-3" />
+        </Link>
+      </div>
     </PageLayout>
   );
 }
