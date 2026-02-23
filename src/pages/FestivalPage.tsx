@@ -307,6 +307,7 @@ export default function FestivalPage() {
         endDate: endDateIso ?? null,
         heroImageUrl: themeHeroUrl || null,
         slug: festivalSlug,
+        updatedAt: (shell as any)?.updated_at ?? null,
       }
     : null;
 

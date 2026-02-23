@@ -15,6 +15,8 @@ import { shareModelFromVenue } from "@/lib/share-model";
 import { UnifiedTimeline } from "@/components/ui/UnifiedTimeline";
 import { VENUE_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
 import { CroppedImage } from "@/components/ui/CroppedImage";
+import { usePageSeo } from "@/hooks/usePageSeo";
+import { getPublicUrl } from "@/lib/utils";
 
 export default function VenuePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -26,6 +28,30 @@ export default function VenuePage() {
 
   const heroImageUrl = useSignedMediaUrl(venue?.hero_image_url, 'public');
   const heroImageSettings = parseImageSettings(venue?.hero_image_settings);
+
+  // SEO – must be before early returns
+  const venueBaseUrl = getPublicUrl().replace(/\/$/, "");
+  const venueOgImage = heroImageUrl || `${venueBaseUrl}/og-festival.png`;
+  const venuePageTitle = venue
+    ? `${venue.name} – spillested i ${(venue as any).city || "Norge"} | GIGGEN`
+    : "GIGGEN";
+  const venuePageDesc = venue
+    ? venue.description
+      ? venue.description.slice(0, 155).replace(/\n/g, " ") + (venue.description.length > 155 ? "…" : "")
+      : `${venue.name}${(venue as any).city ? ` i ${(venue as any).city}` : ""}. Events og konserter.`
+    : "";
+
+  usePageSeo(
+    venue
+      ? {
+          title: venuePageTitle,
+          description: venuePageDesc,
+          canonical: `/venue/${venue.slug}`,
+          ogImage: venueOgImage,
+          ogType: "place" as const,
+        }
+      : null
+  );
 
   if (isLoading) {
     return (

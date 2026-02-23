@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -21,6 +22,9 @@ import { USE_ZONE_TABS_ON_EVENT } from "@/lib/ui-features";
 import { shareModelFromEvent } from "@/lib/share-model";
 import { getEntityPublicRoute } from "@/lib/entity-types";
 import { useEntityTypes } from "@/hooks/useEntityTypes";
+import { usePageSeo } from "@/hooks/usePageSeo";
+import { getPublicUrl } from "@/lib/utils";
+import { eventBreadcrumbJsonLd } from "@/lib/event-seo";
 
 export default function EventPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -28,6 +32,48 @@ export default function EventPage() {
   const { data: entityTypes } = useEntityTypes();
   
   const heroImageUrl = useSignedMediaUrl(event?.hero_image_url, 'public');
+
+  // SEO – compute values safely (may be null before data loads)
+  const startDate = event ? new Date(event.start_at) : null;
+  const baseUrl = getPublicUrl().replace(/\/$/, "");
+  const eventOgImage = heroImageUrl || `${baseUrl}/og-festival.png`;
+  const eventVenueName = event?.venue?.name ?? "";
+  const eventDateStr = startDate
+    ? format(startDate, "d. MMM yyyy", { locale: nb })
+    : "";
+  const eventPageTitle = event
+    ? `${event.title} – ${eventVenueName} ${eventDateStr} | GIGGEN`
+    : "GIGGEN";
+  const eventPageDesc = event
+    ? event.description
+      ? event.description.slice(0, 155).replace(/\n/g, " ") + (event.description.length > 155 ? "…" : "")
+      : `${event.title} ${eventDateStr}${eventVenueName ? ` på ${eventVenueName}` : ""}. Billetter og program.`
+    : "";
+
+  usePageSeo(
+    event
+      ? {
+          title: eventPageTitle,
+          description: eventPageDesc,
+          canonical: `/event/${event.slug}`,
+          ogImage: eventOgImage,
+          ogType: "event",
+        }
+      : null
+  );
+
+  // BreadcrumbList JSON-LD
+  useEffect(() => {
+    if (!event?.slug) return;
+    const ld = eventBreadcrumbJsonLd({ eventName: event.title, slug: event.slug });
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.setAttribute("data-giggen-seo", "1");
+    script.setAttribute("data-key", "event-breadcrumb");
+    script.textContent = JSON.stringify(ld);
+    document.head.appendChild(script);
+    return () => { script.remove(); };
+  }, [event?.slug, event?.title]);
 
   if (isLoading) {
     return (
@@ -49,12 +95,11 @@ export default function EventPage() {
     );
   }
 
-  const startDate = new Date(event.start_at);
   const endDate = event.end_at ? new Date(event.end_at) : null;
   const heroImageSettings = parseImageSettings(event.hero_image_settings);
   const timeRange = endDate 
-    ? `${format(startDate, "HH:mm")} – ${format(endDate, "HH:mm")}`
-    : format(startDate, "HH:mm");
+    ? `${format(startDate!, "HH:mm")} – ${format(endDate, "HH:mm")}`
+    : format(startDate!, "HH:mm");
 
   return (
     <PageLayout>
@@ -105,7 +150,7 @@ export default function EventPage() {
       {/* Title + microcopy */}
       <div className="max-w-6xl mx-auto px-4 md:px-8 pt-5 md:pt-8 relative z-10">
         <div className="text-mono text-accent/70 mb-2 text-sm uppercase tracking-[0.3em] text-right">
-          {format(startDate, "EEEE", { locale: nb })}
+          {format(startDate!, "EEEE", { locale: nb })}
         </div>
         <h1 className="font-black text-4xl md:text-6xl lg:text-7xl uppercase tracking-tight leading-[0.9] text-right">
           {event.title}
@@ -118,7 +163,7 @@ export default function EventPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3 mt-5 text-base text-foreground/70">
           <span className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-muted-foreground/40" strokeWidth={1.5} />
-            {format(startDate, "d. MMM", { locale: nb })}
+            {format(startDate!, "d. MMM", { locale: nb })}
           </span>
           <span className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-muted-foreground/40" strokeWidth={1.5} />

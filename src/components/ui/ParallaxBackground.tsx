@@ -114,6 +114,7 @@ export function ParallaxBackground({
         <img 
           src={activeImage} 
           alt=""
+          loading="eager"
           decoding="async"
           className={`w-full h-full ${imageFitMode === 'contain' ? 'object-contain' : 'object-cover'}`}
           style={{ 

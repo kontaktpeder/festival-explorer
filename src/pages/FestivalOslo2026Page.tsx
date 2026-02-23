@@ -5,7 +5,6 @@ import { StaticLogo } from "@/components/ui/StaticLogo";
 import { useFestivalShell, useFestivalDetails } from "@/hooks/useFestival";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { getPublicUrl } from "@/lib/utils";
-import { getEntityPublicRoute } from "@/lib/entity-types";
 import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
 import { Button } from "@/components/ui/button";
 import { FestivalFooter } from "@/components/festival/FestivalFooter";
@@ -21,9 +20,11 @@ const META_TITLE = "Festival Oslo 2026 – GIGGEN Festival på Josefines Vertshu
 const META_DESCRIPTION =
   "Festival i Oslo 2026 på Josefines Vertshus. GIGGEN Festival – live musikk i Oslo. Kjøp billetter nå.";
 
-function useFestivalOslo2026Seo(heroImageUrl: string | null) {
-  const addedRef = useRef<Set<string>>(new Set());
+const SEO_MARKER = "data-giggen-seo";
+const SEO_DATA_KEY = "data-key";
+const SCRIPT_ID = "festival-oslo-2026-jsonld";
 
+function useFestivalOslo2026Seo(heroImageUrl: string | null) {
   useEffect(() => {
     const baseUrl = getPublicUrl().replace(/\/$/, "");
     const canonicalUrl = `${baseUrl}${PAGE_PATH}`;
@@ -32,82 +33,121 @@ function useFestivalOslo2026Seo(heroImageUrl: string | null) {
 
     document.title = META_TITLE;
 
-    const setMeta = (nameOrProp: string, content: string, isProperty = false) => {
+    const setMeta = (
+      key: string,
+      nameOrProp: string,
+      content: string,
+      isProperty = false
+    ) => {
       const attr = isProperty ? "property" : "name";
-      let el = document.querySelector(`meta[${attr}="${nameOrProp}"]`);
+      let el = document.querySelector(
+        `meta[${SEO_MARKER}="1"][${SEO_DATA_KEY}="${key}"]`
+      );
       if (!el) {
         el = document.createElement("meta");
         el.setAttribute(attr, nameOrProp);
+        el.setAttribute(SEO_MARKER, "1");
+        el.setAttribute(SEO_DATA_KEY, key);
         document.head.appendChild(el);
-        addedRef.current.add(`${attr}-${nameOrProp}`);
       }
       el.setAttribute("content", content);
     };
 
-    setMeta("description", META_DESCRIPTION);
-    setMeta("og:title", META_TITLE, true);
-    setMeta("og:description", META_DESCRIPTION, true);
-    setMeta("og:image", ogImage, true);
-    setMeta("og:type", "event", true);
-    setMeta("og:url", canonicalUrl, true);
-    setMeta("og:site_name", "Giggen", true);
-    setMeta("twitter:card", "summary_large_image");
-    setMeta("twitter:title", META_TITLE);
-    setMeta("twitter:description", META_DESCRIPTION);
-    setMeta("twitter:image", ogImage);
+    setMeta("description", "description", META_DESCRIPTION);
+    setMeta("og:title", "og:title", META_TITLE, true);
+    setMeta("og:description", "og:description", META_DESCRIPTION, true);
+    setMeta("og:image", "og:image", ogImage, true);
+    setMeta("og:type", "og:type", "event", true);
+    setMeta("og:url", "og:url", canonicalUrl, true);
+    setMeta("og:site_name", "og:site_name", "Giggen", true);
+    setMeta("twitter:card", "twitter:card", "summary_large_image");
+    setMeta("twitter:title", "twitter:title", META_TITLE);
+    setMeta("twitter:description", "twitter:description", META_DESCRIPTION);
+    setMeta("twitter:image", "twitter:image", ogImage);
 
-    let linkCanonical = document.querySelector('link[rel="canonical"]');
+    let linkCanonical = document.querySelector(
+      `link[${SEO_MARKER}="1"][${SEO_DATA_KEY}="canonical"]`
+    );
     if (!linkCanonical) {
       linkCanonical = document.createElement("link");
       linkCanonical.setAttribute("rel", "canonical");
+      linkCanonical.setAttribute(SEO_MARKER, "1");
+      linkCanonical.setAttribute(SEO_DATA_KEY, "canonical");
       document.head.appendChild(linkCanonical);
-      addedRef.current.add("canonical");
     }
     linkCanonical.setAttribute("href", canonicalUrl);
 
     const jsonLd = {
       "@context": "https://schema.org",
-      "@type": "Event",
-      name: "GIGGEN Festival 2026",
-      startDate: DEFAULT_START_DATE,
-      eventStatus: "https://schema.org/EventScheduled",
-      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-      location: {
-        "@type": "Place",
-        name: VENUE_NAME,
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: "Oslo",
-          addressCountry: "NO",
+      "@graph": [
+        {
+          "@type": "WebPage",
+          "@id": `${canonicalUrl}#webpage`,
+          url: canonicalUrl,
+          name: META_TITLE,
+          description: META_DESCRIPTION,
+          isPartOf: {
+            "@type": "WebSite",
+            "@id": `${baseUrl}/#website`,
+            name: "GIGGEN",
+          },
+          ...(ogImage
+            ? {
+                primaryImageOfPage: {
+                  "@type": "ImageObject",
+                  url: ogImage,
+                },
+              }
+            : {}),
         },
-      },
-      organizer: { "@type": "Organization", name: "Giggen" },
-      image: ogImage,
-      url: canonicalUrl,
-      offers: {
-        "@type": "Offer",
-        url: ticketsUrl,
-        priceCurrency: "NOK",
-        availability: "https://schema.org/InStock",
-      },
+        {
+          "@type": "Event",
+          "@id": `${canonicalUrl}#event`,
+          name: "GIGGEN Festival 2026",
+          startDate: DEFAULT_START_DATE,
+          eventStatus: "https://schema.org/EventScheduled",
+          eventAttendanceMode:
+            "https://schema.org/OfflineEventAttendanceMode",
+          location: {
+            "@type": "Place",
+            name: VENUE_NAME,
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: "Oslo",
+              addressCountry: "NO",
+            },
+          },
+          organizer: { "@type": "Organization", name: "Giggen" },
+          image: ogImage,
+          url: canonicalUrl,
+          offers: {
+            "@type": "Offer",
+            url: ticketsUrl,
+            priceCurrency: "NOK",
+            availability: "https://schema.org/InStock",
+          },
+          mainEntityOfPage: { "@id": `${canonicalUrl}#webpage` },
+        },
+      ],
     };
 
-    const jsonStr = JSON.stringify(jsonLd);
-    let scriptLd = document.getElementById("festival-oslo-2026-jsonld") as HTMLScriptElement | null;
+    let scriptLd = document.getElementById(SCRIPT_ID) as HTMLScriptElement | null;
     if (!scriptLd) {
       scriptLd = document.createElement("script");
-      scriptLd.id = "festival-oslo-2026-jsonld";
+      scriptLd.id = SCRIPT_ID;
       scriptLd.type = "application/ld+json";
+      scriptLd.setAttribute(SEO_MARKER, "1");
+      scriptLd.setAttribute(SEO_DATA_KEY, "jsonld");
       document.head.appendChild(scriptLd);
-      addedRef.current.add("jsonld");
     }
-    scriptLd.textContent = jsonStr;
+    scriptLd.textContent = JSON.stringify(jsonLd);
 
     return () => {
       document.title = "GIGGEN";
-      const c = document.querySelector('link[rel="canonical"]');
-      if (c && addedRef.current.has("canonical")) c.remove();
-      document.getElementById("festival-oslo-2026-jsonld")?.remove();
+      document
+        .querySelectorAll(`[${SEO_MARKER}="1"]`)
+        .forEach((el) => el.remove());
+      document.getElementById(SCRIPT_ID)?.remove();
     };
   }, [heroImageUrl]);
 }
