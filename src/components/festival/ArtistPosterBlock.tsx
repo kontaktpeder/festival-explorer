@@ -118,18 +118,21 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
           "max-w-[85%] md:max-w-[70%]",
           !isMobile && "transition-all duration-500 group-hover:translate-y-[-10px]"
         )}>
-          {/* instead_of_name: kun logo, ingen navnetekst */}
+          {/* instead_of_name: kun logo, men alltid H3 i DOM for SEO */}
           {logoDisplayMode === 'instead_of_name' && displayLogoUrl ? (
-            <img
-              src={displayLogoUrl}
-              alt={artist.name}
-              className={cn(
-                "w-auto h-auto max-h-20 md:max-h-28 lg:max-h-36 object-contain drop-shadow-2xl",
-                shouldInvert && "invert"
-              )}
-            />
+            <>
+              <img
+                src={displayLogoUrl}
+                alt={artist.name}
+                className={cn(
+                  "w-auto h-auto max-h-20 md:max-h-28 lg:max-h-36 object-contain drop-shadow-2xl",
+                  shouldInvert && "invert"
+                )}
+              />
+              <h3 className="sr-only">{artist.name}</h3>
+            </>
           ) : (
-            /* with_name: logo (om tilgjengelig) + alltid navn under på mobil */
+            /* with_name: logo (om tilgjengelig) + alltid navn */
             <>
               {displayLogoUrl && artist.slug !== "maya-estrela" ? (
                 <img
@@ -147,21 +150,25 @@ export function ArtistPosterBlock({ artist, index, variant }: ArtistPosterBlockP
               )}
             </>
           )}
-          
-          {/* Mobile: Show "Utforsk", Desktop: Tagline on hover */}
-          {isMobile ? (
+
+          {/* 2–3 lines: tagline, genre, city when available */}
+          {(artist.tagline || (artist as any).genre || (artist as any).city) && (
+            <div className={cn(
+              "mt-3 space-y-0.5 text-sm md:text-base",
+              !isMobile && "opacity-0 group-hover:opacity-100 transition-opacity duration-500",
+              styles.accent
+            )}>
+              {(artist as any).genre && <p>{(artist as any).genre}</p>}
+              {(artist as any).city && <p className="text-foreground/40">{(artist as any).city}</p>}
+              {artist.tagline && <p>{artist.tagline}</p>}
+            </div>
+          )}
+
+          {/* Mobile: Show "Utforsk" */}
+          {isMobile && !artist.tagline && !(artist as any).genre && (
             <p className="mt-4 text-sm text-white/50">
               Utforsk →
             </p>
-          ) : (
-            artist.tagline && (
-              <p className={cn(
-                "mt-4 text-base md:text-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500",
-                styles.accent
-              )}>
-                {artist.tagline}
-              </p>
-            )
           )}
         </div>
         
