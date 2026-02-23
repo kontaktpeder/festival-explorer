@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import FestivalPage from "./pages/FestivalPage";
+import FestivalOslo2026Page from "./pages/FestivalOslo2026Page";
 import EventPage from "./pages/EventPage";
 import ProjectPage from "./pages/ProjectPage";
 import ExplorePage from "./pages/ExplorePage";
@@ -92,6 +93,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/festival" element={<FestivalPage />} />
           <Route path="/festival/:slug" element={<FestivalPage />} />
+          <Route path="/festival-oslo-2026" element={<FestivalOslo2026Page />} />
           <Route path="/event-room/:id" element={<EventRoomPage />} />
           <Route path="/event/:slug" element={<EventPage />} />
           <Route path="/project/:slug" element={<ProjectPage />} />

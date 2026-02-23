@@ -244,6 +244,11 @@ export default function EventPage() {
         </div>
       </div>
 
+      <div className="max-w-6xl mx-auto px-4 md:px-8 pb-4">
+        <Link to="/festival-oslo-2026" className="text-xs text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors">
+          Les mer: Festival i Oslo 2026
+        </Link>
+      </div>
       <WhatIsGiggenFooter />
     </PageLayout>
   );
