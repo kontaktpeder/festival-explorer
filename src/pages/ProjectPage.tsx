@@ -39,6 +39,8 @@ import { CroppedImage } from "@/components/ui/CroppedImage";
 import { getObjectPositionFromFocal } from "@/lib/image-crop-helpers";
 import { UpcomingGigsSection } from "@/components/ui/UpcomingGigsSection";
 import { useUpcomingGigsForEntity } from "@/hooks/useUpcomingGigs";
+import { usePageSeo } from "@/hooks/usePageSeo";
+import { getPublicUrl } from "@/lib/utils";
 
 export default function ProjectPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -51,6 +53,33 @@ export default function ProjectPage() {
   const logoUrl = useSignedMediaUrl((entity as any)?.logo_url, 'public');
 
   const publicTeamMembers = entity?.team ?? [];
+
+  // SEO – must be before early returns
+  const projectBaseUrl = getPublicUrl().replace(/\/$/, "");
+  const projectOgImage = heroImageUrl || `${projectBaseUrl}/og-festival.png`;
+  const projectPageTitle = entity
+    ? `${entity.name} – artist / band | GIGGEN`
+    : "GIGGEN";
+  const projectPageDescRaw = entity
+    ? (entity as any).tagline ||
+      (entity as any).short_bio ||
+      `${entity.name} på GIGGEN. Konserter og events.`
+    : "";
+  const projectPageDesc =
+    String(projectPageDescRaw).slice(0, 155) +
+    (String(projectPageDescRaw).length > 155 ? "…" : "");
+
+  usePageSeo(
+    entity
+      ? {
+          title: projectPageTitle,
+          description: projectPageDesc,
+          canonical: `/project/${entity.slug}`,
+          ogImage: projectOgImage,
+          ogType: "website" as const,
+        }
+      : null
+  );
 
   if (isLoading) {
     return (
