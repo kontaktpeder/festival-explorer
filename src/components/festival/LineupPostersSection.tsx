@@ -51,7 +51,7 @@ const ZONES = [
     accentClass: "text-emerald-400",
     borderClass: "border-emerald-500/30",
     glowClass: "shadow-emerald-500/20",
-    overlayClass: "",
+    overlayClass: "from-black/50 via-black/30 to-black/60",
   },
   {
     key: "1-etasje",
@@ -61,7 +61,7 @@ const ZONES = [
     accentClass: "text-accent",
     borderClass: "border-accent/30",
     glowClass: "shadow-accent/20",
-    overlayClass: "",
+    overlayClass: "from-black/50 via-black/30 to-black/60",
   },
   {
     key: "boiler-room",
@@ -150,7 +150,7 @@ export function LineupPostersSection({ artists }: LineupPostersSectionProps) {
 
   return (
     <div className={cn(
-      "grid gap-0",
+      "grid gap-0 w-full",
       isMobile ? "grid-cols-1" : "grid-cols-3"
     )}>
       {ZONES.map((zone) => {
