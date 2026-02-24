@@ -1009,12 +1009,60 @@ export type Database = {
           },
         ]
       }
+      festival_media: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          festival_id: string
+          file_type: string
+          id: string
+          mime_type: string
+          original_filename: string
+          public_url: string
+          size_bytes: number
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          festival_id: string
+          file_type: string
+          id?: string
+          mime_type?: string
+          original_filename: string
+          public_url: string
+          size_bytes?: number
+          storage_path: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          festival_id?: string
+          file_type?: string
+          id?: string
+          mime_type?: string
+          original_filename?: string
+          public_url?: string
+          size_bytes?: number
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "festival_media_festival_id_fkey"
+            columns: ["festival_id"]
+            isOneToOne: false
+            referencedRelation: "festivals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       festival_participants: {
         Row: {
           can_access_media: boolean | null
           can_create_internal_ticket: boolean | null
           can_edit_events: boolean | null
           can_edit_festival: boolean | null
+          can_edit_festival_media: boolean
           can_scan_tickets: boolean | null
           can_see_report: boolean | null
           can_see_revenue: boolean | null
@@ -1034,6 +1082,7 @@ export type Database = {
           can_create_internal_ticket?: boolean | null
           can_edit_events?: boolean | null
           can_edit_festival?: boolean | null
+          can_edit_festival_media?: boolean
           can_scan_tickets?: boolean | null
           can_see_report?: boolean | null
           can_see_revenue?: boolean | null
@@ -1053,6 +1102,7 @@ export type Database = {
           can_create_internal_ticket?: boolean | null
           can_edit_events?: boolean | null
           can_edit_festival?: boolean | null
+          can_edit_festival_media?: boolean
           can_scan_tickets?: boolean | null
           can_see_report?: boolean | null
           can_see_revenue?: boolean | null

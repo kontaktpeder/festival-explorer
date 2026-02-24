@@ -63,27 +63,8 @@ export default function AdminMedia() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      // Non-admins: only see own files + files from entities they're members of
       if (!isAdmin) {
-        // Get all entities where user is a team member
-        const { data: userEntities } = await supabase
-          .from("entity_team")
-          .select("entity_id, entity:entities(created_by)")
-          .eq("user_id", user.id)
-          .is("left_at", null);
-
-        // Collect all user IDs whose files the user should see
-        const allowedUserIds = new Set<string>([user.id]);
-        
-        if (userEntities) {
-          userEntities.forEach((ue: any) => {
-            if (ue.entity?.created_by) {
-              allowedUserIds.add(ue.entity.created_by);
-            }
-          });
-        }
-
-        query = query.in("created_by", Array.from(allowedUserIds));
+        query = query.eq("created_by", user.id);
       }
 
       if (selectedType !== "all") {

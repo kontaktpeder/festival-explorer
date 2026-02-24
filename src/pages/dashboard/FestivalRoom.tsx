@@ -64,6 +64,7 @@ export default function FestivalRoom() {
           can_create_internal_ticket: true,
           can_see_report: true,
           can_see_revenue: true,
+          can_edit_festival_media: true,
         };
       }
 
@@ -78,7 +79,7 @@ export default function FestivalRoom() {
       const { data: fp } = await supabase
         .from("festival_participants")
         .select(
-          "can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue"
+          "can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue, can_edit_festival_media"
         )
         .eq("festival_id", id!)
         .eq("participant_kind", "persona")
@@ -95,6 +96,7 @@ export default function FestivalRoom() {
         can_create_internal_ticket: fp.some((f) => f.can_create_internal_ticket),
         can_see_report: fp.some((f) => f.can_see_report),
         can_see_revenue: fp.some((f) => f.can_see_revenue),
+        can_edit_festival_media: fp.some((f) => f.can_edit_festival_media),
       };
     },
     enabled: !!id,

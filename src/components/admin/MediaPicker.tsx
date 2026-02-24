@@ -69,29 +69,11 @@ export function MediaPicker({
         .order("created_at", { ascending: false })
         .limit(50);
 
-      // Sikkerhetskontroll: Vis kun egne filer + prosjektfiler med mindre admin med showAllForAdmin
+      // Privat filbank: kun egne filer
       if (isAdmin && showAllForAdmin) {
         // Admin kan se alle filer hvis eksplisitt aktivert
-      } else if (userOnly || !isAdmin) {
-        // Standard: kun egne filer + filer fra prosjekter brukeren er medlem av
-        const { data: userEntities } = await supabase
-          .from("entity_team")
-          .select("entity_id, entity:entities(created_by)")
-          .eq("user_id", user.id)
-          .is("left_at", null);
-
-        // Collect all user IDs whose files the user should see
-        const allowedUserIds = new Set<string>([user.id]);
-        
-        if (userEntities) {
-          userEntities.forEach((ue: any) => {
-            if (ue.entity?.created_by) {
-              allowedUserIds.add(ue.entity.created_by);
-            }
-          });
-        }
-
-        query = query.in("created_by", Array.from(allowedUserIds));
+      } else {
+        query = query.eq("created_by", user.id);
       }
 
       if (selectedType !== "all") {
