@@ -305,9 +305,11 @@ export function SectionRenderer({
               {section.title || "Praktisk"}
             </h2>
             
-            {getText() && <div className="animate-slide-up delay-100 prose-rich-text text-foreground/60 text-base leading-relaxed mb-10" dangerouslySetInnerHTML={{
-            __html: getText()
-          }} />}
+            {getText() && (
+              <div className="animate-slide-up delay-100 text-foreground/60 text-base leading-relaxed mb-10 whitespace-pre-wrap">
+                {getText()}
+              </div>
+            )}
             
             {/* CTA removed - now in header */}
           </div>
@@ -326,9 +328,9 @@ export function SectionRenderer({
             </div>
             
             {/* Tagline - clearer text */}
-            {getText() ? <div className="animate-slide-up delay-200 prose-rich-text text-foreground/80 text-base leading-relaxed mb-6 max-w-sm drop-shadow-md" dangerouslySetInnerHTML={{
-            __html: getText()
-          }} /> : <p className="animate-slide-up delay-200 text-foreground/80 text-base leading-relaxed mb-6 max-w-sm drop-shadow-md">
+            {getText() ? <div className="animate-slide-up delay-200 text-foreground/80 text-base leading-relaxed mb-6 max-w-sm drop-shadow-md whitespace-pre-wrap">
+                {getText()}
+              </div> : <p className="animate-slide-up delay-200 text-foreground/80 text-base leading-relaxed mb-6 max-w-sm drop-shadow-md">
                 Et engasjement for å løfte frem dem som jobber med eksisterende musikkarenaer, og dem som ønsker å skape nye.
               </p>}
             
