@@ -23,6 +23,7 @@ import { LineupPostersSection } from "@/components/festival/LineupPostersSection
 import lineupCtaBg from "@/assets/lineup-cta-bg.jpg";
 import { FestivalFooter } from "@/components/festival/FestivalFooter";
 import { PraktiskSection } from "@/components/festival/PraktiskSection";
+import { UtforskMerSection } from "@/components/festival/UtforskMerSection";
 import { SocialSection } from "@/components/festival/SocialSection";
 import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
@@ -37,6 +38,7 @@ const SLOT_ORDER = [
   { slot: "faq", sectionType: "faq" },
   { slot: "cta", sectionType: "cta" },
   { slot: "venue", sectionType: "venue-plakat" },
+  { slot: "utforsk", sectionType: "utforsk" },
   { slot: "team", sectionType: "team" },
   { slot: "footer", sectionType: "footer" },
 ] as const;
@@ -615,6 +617,11 @@ export default function FestivalPage() {
             );
           }
           return null; // No fallback venue section without CMS data
+        }
+
+        // ── UTFORSK MER ──
+        if (slot === "utforsk") {
+          return <UtforskMerSection key={slot} />;
         }
 
         // ── PRAKTISK ──
