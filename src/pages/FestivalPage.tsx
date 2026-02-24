@@ -525,6 +525,16 @@ export default function FestivalPage() {
             >
               <div className="relative z-10 max-w-4xl mx-auto w-full">
                 <h2 className="section-title">Program</h2>
+
+                <div className="flex justify-center pb-6">
+                  <a
+                    href="#lineup"
+                    className="text-sm uppercase tracking-widest text-accent hover:text-accent/80 transition-colors font-semibold"
+                  >
+                    Se lineup ↓
+                  </a>
+                </div>
+
                 {validEvents.length > 0 ? (
                   <FestivalEventAccordion events={validEvents as any} />
                 ) : (
@@ -533,15 +543,6 @@ export default function FestivalPage() {
                     description="Programmet for denne festivalen er ikke klart ennå."
                   />
                 )}
-
-                <div className="flex justify-center pt-8">
-                  <a
-                    href="#lineup"
-                    className="text-sm uppercase tracking-widest text-accent hover:text-accent/80 transition-colors font-semibold"
-                  >
-                    Se lineup ↓
-                  </a>
-                </div>
               </div>
             </section>
           );
