@@ -258,7 +258,7 @@ export function SectionRenderer({
     case "artister":
       {
         // NEW: Use DualLineupSection for Festival + Boiler Room split
-        return <DualLineupSection artists={featuredArtists} festivalTeam={festivalTeam} />;
+        return <DualLineupSection artists={featuredArtists} festivalTeam={festivalTeam} showPosters={false} />;
       }
     case "venue-plakat":
       {
