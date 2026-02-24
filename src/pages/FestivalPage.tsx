@@ -61,10 +61,8 @@ function SEOIntroSlot({
   venueName: string;
   seoIntroText?: string | null;
 }) {
+  const [expanded, setExpanded] = useState(false);
   const h2 = `Festival i ${city} ${year} på ${venueName}`;
-  const templateText = `Velkommen til festivalen – en kveld med live musikk i ${city}. ${venueName} er vertskap for konserter og opplevelser. Her møtes artister og publikum for levende musikk. Sjekk program og billetter for ${year}.`;
-  const body =
-    seoIntroText && seoIntroText.trim() ? seoIntroText.trim() : templateText;
 
   const seoIntro = "GIGGEN Festival 2026 er en festival i Oslo på legendariske Josefines Vertshus. En kveld med live musikk, konserter og kunst midt i Oslo sentrum.";
 
@@ -75,8 +73,8 @@ function SEOIntroSlot({
   ];
 
   return (
-    <section className="relative bg-background py-20 md:py-28 px-6">
-      <div className="max-w-2xl mx-auto space-y-8">
+    <section className="relative bg-background py-10 md:py-16 px-6">
+      <div className="max-w-2xl mx-auto space-y-4">
         <h2 className="text-display text-2xl md:text-4xl font-black uppercase tracking-tight leading-tight">
           {h2}
         </h2>
@@ -85,16 +83,29 @@ function SEOIntroSlot({
           {seoIntro}
         </p>
 
-        <div className="space-y-4 border-l-2 border-accent/40 pl-5">
-          {vibes.map((line, i) => (
-            <p
-              key={i}
-              className="text-foreground/90 text-base md:text-lg leading-relaxed"
-            >
-              {line}
-            </p>
-          ))}
+        {/* Collapsible vibes section */}
+        <div className={cn(
+          "overflow-hidden transition-all duration-400",
+          expanded ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
+        )}>
+          <div className="space-y-4 border-l-2 border-accent/40 pl-5 pt-2">
+            {vibes.map((line, i) => (
+              <p
+                key={i}
+                className="text-foreground/90 text-base md:text-lg leading-relaxed"
+              >
+                {line}
+              </p>
+            ))}
+          </div>
         </div>
+
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="text-accent/70 hover:text-accent text-sm font-medium transition-colors"
+        >
+          {expanded ? "Vis mindre ↑" : "Om festivalen →"}
+        </button>
       </div>
     </section>
   );
@@ -514,9 +525,13 @@ export default function FestivalPage() {
         // ── LINEUP CTA (collapsible poster section) ──
         if (slot === "lineup_cta") {
           const hasArtists = (allArtistsWithEventSlug?.length ?? 0) > 0;
+          const artistCount = allArtistsWithEventSlug?.length ?? 0;
+          const eventCount = validEvents?.length ?? 0;
+          // Preview: first 5 unique artist names
+          const previewNames = (allArtistsWithEventSlug ?? []).slice(0, 5).map(a => a.name);
           return (
             <div key={slot} id="lineup" className="relative bg-background">
-              <div className="max-w-2xl mx-auto px-6 py-10">
+              <div className="max-w-2xl mx-auto px-6 py-6">
                 <button
                   onClick={() => {
                     setLineupOpen((o) => !o);
@@ -536,7 +551,6 @@ export default function FestivalPage() {
                   aria-expanded={lineupOpen}
                   aria-controls="lineup-collapsible"
                 >
-                  {/* Background image */}
                   <img
                     src={lineupCtaBg}
                     alt=""
@@ -554,6 +568,18 @@ export default function FestivalPage() {
                     lineupOpen && "rotate-180"
                   )} />
                 </button>
+
+                {/* Preview stripe – visible only when closed */}
+                {!lineupOpen && hasArtists && (
+                  <div className="mt-3 flex items-center justify-center gap-2 flex-wrap">
+                    <span className="text-[11px] text-muted-foreground tracking-wide">
+                      {previewNames.join(" · ")}{artistCount > 5 ? " +" + (artistCount - 5) : ""}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground/50">
+                      — {artistCount} artister · {eventCount} events
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div
@@ -604,26 +630,13 @@ export default function FestivalPage() {
           return (
             <section
               key={slot}
-              className="fullscreen-section relative"
+              className="relative bg-background py-10 md:py-16 px-6"
               id="program"
             >
-              <div className="relative z-10 max-w-4xl mx-auto w-full">
-                <h2 className="section-title mb-2">Program</h2>
-
-                <div className="flex justify-center mb-6">
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setLineupOpen(true);
-                      requestAnimationFrame(() => {
-                        document.getElementById("lineup")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                      });
-                    }}
-                    className="text-xs uppercase tracking-widest text-accent/60 hover:text-accent transition-colors font-medium"
-                  >
-                    Se lineup ↓
-                  </button>
-                </div>
+              <div className="relative z-10 max-w-2xl mx-auto w-full">
+                <h2 className="text-display text-xl md:text-2xl font-bold tracking-tight mb-6">
+                  Program
+                </h2>
 
                 {programCategories.some((c) => c.items.length > 0) ? (
                   <ProgramView
