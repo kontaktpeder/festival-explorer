@@ -21,6 +21,7 @@ import { StaticLogo } from "@/components/ui/StaticLogo";
 import { DualLineupSection } from "@/components/festival/DualLineupSection";
 import { LineupPostersSection } from "@/components/festival/LineupPostersSection";
 import lineupCtaBg from "@/assets/lineup-cta-bg.jpg";
+import lineupCtaBgWarm from "@/assets/lineup-cta-bg-warm.jpg";
 import { FestivalFooter } from "@/components/festival/FestivalFooter";
 import { PraktiskSection } from "@/components/festival/PraktiskSection";
 import { UtforskMerSection } from "@/components/festival/UtforskMerSection";
@@ -519,41 +520,57 @@ export default function FestivalPage() {
                     }}
                     className={cn(
                       "group relative w-full overflow-hidden rounded-2xl",
-                      "border border-accent/40",
-                      "bg-gradient-to-r from-[hsl(24_30%_12%)] via-[hsl(24_40%_18%)] to-[hsl(24_30%_12%)]",
-                      "shadow-[0_20px_80px_-40px_hsl(24_100%_50%/0.35)]",
-                      "transition-transform duration-300 hover:scale-[1.01]",
-                      "px-6 md:px-8 py-7",
-                      "focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
+                      "border border-accent/20",
+                      "shadow-[0_24px_80px_-20px_hsl(24_100%_50%/0.25)]",
+                      "transition-all duration-500 hover:scale-[1.015] hover:shadow-[0_28px_90px_-20px_hsl(24_100%_50%/0.35)]",
+                      "px-6 md:px-10 py-8 md:py-10",
+                      "focus:outline-none focus:ring-2 focus:ring-accent/50 focus:ring-offset-2 focus:ring-offset-background"
                     )}
                     aria-expanded={lineupOpen}
                     aria-controls="lineup-collapsible"
                   >
-                    <div className="relative flex items-center justify-center gap-4">
-                      <span
-                        className="text-2xl md:text-3xl font-black tracking-[0.35em] text-foreground/95"
-                        style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                      >
-                        LINEUP
-                      </span>
-                      <ChevronDown
-                        className={cn(
-                          "h-6 w-6 text-foreground/60 transition-transform duration-300",
-                          lineupOpen && "rotate-180"
-                        )}
-                        aria-hidden
-                      />
-                    </div>
+                    {/* Background image */}
+                    <img
+                      src={lineupCtaBgWarm}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover"
+                      aria-hidden="true"
+                    />
+                    {/* Subtle dark overlay for text legibility */}
+                    <div className="absolute inset-0 bg-black/30" />
 
-                    {/* Preview stripe – condensed poster line */}
-                    {hasArtists && !lineupOpen && (
-                      <div
-                        className="relative mt-3 text-sm md:text-base text-foreground/70 font-semibold tracking-wider uppercase"
-                        style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                      >
-                        {previewNames.map(n => n.toUpperCase()).join(" · ")}{artistCount > 5 ? ` +${artistCount - 5}` : ""}
+                    <div className="relative z-10 flex flex-col items-center gap-3">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className="text-2xl md:text-4xl font-black tracking-[0.4em] text-white drop-shadow-lg"
+                          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                        >
+                          LINEUP
+                        </span>
+                        <ChevronDown
+                          className={cn(
+                            "h-5 w-5 text-white/60 transition-transform duration-300",
+                            lineupOpen && "rotate-180"
+                          )}
+                          aria-hidden
+                        />
                       </div>
-                    )}
+
+                      {/* Thin accent divider */}
+                      {hasArtists && !lineupOpen && (
+                        <div className="w-12 h-px bg-accent/50" />
+                      )}
+
+                      {/* Preview stripe */}
+                      {hasArtists && !lineupOpen && (
+                        <div
+                          className="text-xs md:text-sm text-white/65 font-medium tracking-[0.2em] uppercase"
+                          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                        >
+                          {previewNames.map(n => n.toUpperCase()).join("  ·  ")}{artistCount > 5 ? `  +${artistCount - 5}` : ""}
+                        </div>
+                      )}
+                    </div>
                   </button>
                 </div>
 
