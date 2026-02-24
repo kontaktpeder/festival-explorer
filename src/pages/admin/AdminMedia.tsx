@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MediaUpload } from "@/components/admin/MediaUpload";
-import { Search, Trash2, ImageIcon, Video, Music, FileText, Upload, ExternalLink, X } from "lucide-react";
+import { Search, Trash2, ImageIcon, Video, Music, FileText, Upload, ExternalLink, Download, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingState } from "@/components/ui/LoadingState";
 import {
@@ -217,7 +217,17 @@ export default function AdminMedia() {
                   )}
                 </div>
               )}
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <a
+                  href={item.public_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download={item.original_filename}
+                  className="inline-flex items-center justify-center rounded-md bg-background p-2 hover:bg-accent"
+                  title="Last ned"
+                >
+                  <Download className="h-4 w-4" />
+                </a>
                 <Button
                   variant="destructive"
                   size="sm"

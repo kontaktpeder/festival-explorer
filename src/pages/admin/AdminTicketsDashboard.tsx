@@ -513,7 +513,7 @@ export default function AdminTicketsDashboard() {
     },
   });
 
-  const showInternal = isAdmin || canCreateInternal;
+  const showInternal = isAdmin || canCreateInternal || canSeeTicketStats;
   const showReport = isAdmin || canSeeReport;
   const showRevenue = isAdmin || canSeeRevenue;
   const showSoldTickets = isAdmin || canSeeTicketStats;
