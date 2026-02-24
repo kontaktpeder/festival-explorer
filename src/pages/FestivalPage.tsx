@@ -20,6 +20,7 @@ import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { DualLineupSection } from "@/components/festival/DualLineupSection";
 import { LineupPostersSection } from "@/components/festival/LineupPostersSection";
+import lineupCtaBg from "@/assets/lineup-cta-bg.jpg";
 import { FestivalFooter } from "@/components/festival/FestivalFooter";
 import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
@@ -526,22 +527,28 @@ export default function FestivalPage() {
                     }
                   }}
                   className={cn(
-                    "group relative w-full flex items-center justify-center gap-3 py-5 px-8",
+                    "group relative w-full flex items-center justify-center gap-3 py-6 px-8",
                     "rounded-2xl overflow-hidden",
-                    "bg-gradient-to-r from-amber-600/90 via-orange-500/90 to-amber-600/90",
-                    "hover:from-amber-500 hover:via-orange-400 hover:to-amber-500",
                     "text-white font-black text-xl md:text-2xl uppercase tracking-wider",
-                    "shadow-lg shadow-orange-950/30 hover:shadow-orange-500/20",
+                    "shadow-xl shadow-black/40 hover:shadow-black/60",
                     "transition-all duration-300 hover:scale-[1.02]",
                     "focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
                   )}
                   aria-expanded={lineupOpen}
                   aria-controls="lineup-collapsible"
                 >
-                  <Music className="w-5 h-5" />
-                  Se LINEUP
+                  {/* Background image */}
+                  <img
+                    src={lineupCtaBg}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                  />
+                  {/* Overlay for text legibility */}
+                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors duration-300 pointer-events-none" />
+                  <Music className="w-5 h-5 relative z-10 drop-shadow-md" />
+                  <span className="relative z-10 drop-shadow-md">Se LINEUP</span>
                   <ChevronDown className={cn(
-                    "w-5 h-5 transition-transform duration-300",
+                    "w-5 h-5 relative z-10 drop-shadow-md transition-transform duration-300",
                     lineupOpen && "rotate-180"
                   )} />
                 </button>
