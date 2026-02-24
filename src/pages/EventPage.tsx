@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -15,7 +15,8 @@ import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
 import { TeamCreditsSection } from "@/components/ui/TeamCreditsSection";
 import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
 import { ShareImageSection } from "@/components/share/ShareImageSection";
-import { EventProgramSlots } from "@/components/festival/EventProgramSlots";
+import { ProgramView } from "@/components/program/ProgramView";
+import { mapEventSlotsToProgramCategory } from "@/lib/program-mappers";
 import { EventZoneTabs } from "@/components/festival/EventZoneTabs";
 import { EventHeroCollage } from "@/components/festival/EventHeroCollage";
 import { USE_ZONE_TABS_ON_EVENT } from "@/lib/ui-features";
@@ -74,6 +75,19 @@ export default function EventPage() {
     document.head.appendChild(script);
     return () => { script.remove(); };
   }, [event?.slug, event?.title]);
+
+  // Program categories from slots
+  const programCategories = useMemo(() => {
+    const slots = (event as any)?.programSlots;
+    if (!slots?.length) return [];
+    return [
+      mapEventSlotsToProgramCategory(slots, (entity) =>
+        entity?.type && entity?.slug
+          ? getEntityPublicRoute(entity.type, entity.slug, entityTypes || [])
+          : undefined
+      ),
+    ];
+  }, [(event as any)?.programSlots, entityTypes]);
 
   if (isLoading) {
     return (
@@ -215,19 +229,14 @@ export default function EventPage() {
               </div>
             )}
 
-              {/* PROGRAM SLOTS or LINEUP / ZONE TABS */}
               {(event as any).programSlots && (event as any).programSlots.length > 0 ? (
-                <>
-                  <EventProgramSlots
-                    slots={(event as any).programSlots}
-                    headlinerEntityIds={
-                      (event.lineup || [])
-                        .filter((i: any) => i.is_featured)
-                        .map((i: any) => i.entity_id || i.participant_id)
-                        .filter(Boolean)
-                    }
-                  />
-                </>
+                <ProgramView
+                  categories={programCategories}
+                  title="Program"
+                  showTime
+                  accordion={false}
+                  showEmptyState={false}
+                />
               ) : USE_ZONE_TABS_ON_EVENT ? (
                 <EventZoneTabs
                   lineup={event.lineup || []}
