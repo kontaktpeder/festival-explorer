@@ -28,6 +28,7 @@ import { SocialSection } from "@/components/festival/SocialSection";
 import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 // ─── Slot system ────────────────────────────────────────────────
 const SLOT_ORDER = [
@@ -80,23 +81,25 @@ function FaqSlot({
   faqItems?: Array<{ q: string; a: string }> | null;
 }) {
   const items =
-    faqItems && faqItems.length >= 6 ? faqItems : DEFAULT_FAQ;
+    faqItems && faqItems.length > 0 ? faqItems : DEFAULT_FAQ;
   return (
     <section className="relative bg-background py-16 md:py-24 px-6">
       <div className="max-w-2xl mx-auto space-y-6">
         <h2 className="text-display text-xl md:text-2xl font-bold tracking-tight">
           Ofte stilte spørsmål
         </h2>
-        <dl className="space-y-4">
-          {items.map(({ q, a }) => (
-            <div key={q}>
-              <dt>
-                <h3 className="font-semibold text-foreground text-base">{q}</h3>
-              </dt>
-              <dd className="text-foreground/70 text-sm mt-1">{a}</dd>
-            </div>
+        <Accordion type="single" collapsible className="w-full">
+          {items.map(({ q, a }, i) => (
+            <AccordionItem key={i} value={`faq-${i}`} className="border-foreground/10">
+              <AccordionTrigger className="text-left text-foreground text-base hover:no-underline">
+                {q || "Spørsmål"}
+              </AccordionTrigger>
+              <AccordionContent className="text-foreground/70 text-sm">
+                {a || "Svar"}
+              </AccordionContent>
+            </AccordionItem>
           ))}
-        </dl>
+        </Accordion>
       </div>
     </section>
   );

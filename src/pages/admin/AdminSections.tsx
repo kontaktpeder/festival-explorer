@@ -71,6 +71,15 @@ const SECTION_TYPES = [
     supports_artists: false,
     supports_venue: false,
     supports_text: true,
+  },
+  { 
+    value: "faq", 
+    label: "Ofte stilte spørsmål",
+    supports_events: false,
+    supports_artists: false,
+    supports_venue: false,
+    supports_text: false,
+    supports_faq: true,
   }
 ] as const;
 
@@ -82,13 +91,17 @@ function getSectionContent(section: { content_json?: unknown }) {
     artists: [] as string[],
     venue: null as string | null,
     text: "",
+    faq: [] as Array<{ q: string; a: string }>,
   };
   if (!contentJson) return empty;
 
   const getText = (c: Record<string, unknown> | null) =>
     (c?.text ?? c?.intro ?? c?.info ?? c?.description ?? "") as string;
+  const getFaq = (c: Record<string, unknown> | null): Array<{ q: string; a: string }> => {
+    const raw = (c?.faq ?? []) as Array<{ q?: string; a?: string }>;
+    return raw.map((x) => ({ q: String(x?.q ?? ""), a: String(x?.a ?? "") }));
+  };
 
-  // New structure: {content: {...}}
   if (contentJson.content) {
     const content = contentJson.content as Record<string, unknown>;
     return {
@@ -96,15 +109,16 @@ function getSectionContent(section: { content_json?: unknown }) {
       artists: (content.artists as string[]) || [],
       venue: (content.venue as string) || null,
       text: getText(content),
+      faq: getFaq(content),
     };
   }
 
-  // Legacy structure
   return {
     events: (contentJson.events as string[]) || [],
     artists: (contentJson.artists as string[]) || [],
     venue: (contentJson.venue as string) || null,
     text: getText(contentJson),
+    faq: getFaq(contentJson),
   };
 }
 
@@ -113,11 +127,16 @@ function buildContentJson(content: {
   artists: string[];
   venue: string | null;
   text?: string | null;
+  faq?: Array<{ q: string; a: string }>;
 }) {
-  const { text, ...rest } = content;
+  const { text, faq, ...rest } = content;
   return {
     content_json: {
-      content: { ...rest, ...(text !== undefined ? { text: text ?? "" } : {}) },
+      content: {
+        ...rest,
+        ...(text !== undefined ? { text: text ?? "" } : {}),
+        ...(faq !== undefined ? { faq } : {}),
+      },
     },
   };
 }
@@ -1147,7 +1166,122 @@ export default function AdminSections() {
                       </div>
                     )}
 
-                    {/* Bakgrunnsbilder */}
+                    {/* Ofte stilte spørsmål (FAQ) */}
+                    {(sectionType as any)?.supports_faq && (
+                      <div className="space-y-3">
+                        <Label>Spørsmål og svar</Label>
+                        <p className="text-xs text-muted-foreground">
+                          Legg til, rediger eller fjern spørsmål. Rekkefølgen vises på forsiden.
+                        </p>
+
+                        <div className="space-y-3">
+                          {(content.faq as Array<{ q: string; a: string }>).map((item, index) => (
+                            <div key={index} className="flex items-start gap-2 border border-border rounded p-3 bg-background">
+                              <div className="flex flex-col gap-1 pt-1">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  disabled={index === 0}
+                                  onClick={() => {
+                                    const next = [...(content.faq as Array<{ q: string; a: string }>)];
+                                    const removed = next.splice(index, 1)[0];
+                                    next.splice(index - 1, 0, removed);
+                                    updateSection.mutate({
+                                      sectionId: section.id,
+                                      updates: buildContentJson({ ...content, faq: next }),
+                                    });
+                                  }}
+                                  title="Flytt opp"
+                                >
+                                  <ArrowUp className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                  disabled={index === (content.faq as Array<{ q: string; a: string }>).length - 1}
+                                  onClick={() => {
+                                    const next = [...(content.faq as Array<{ q: string; a: string }>)];
+                                    const removed = next.splice(index, 1)[0];
+                                    next.splice(index + 1, 0, removed);
+                                    updateSection.mutate({
+                                      sectionId: section.id,
+                                      updates: buildContentJson({ ...content, faq: next }),
+                                    });
+                                  }}
+                                  title="Flytt ned"
+                                >
+                                  <ArrowDown className="h-3 w-3" />
+                                </Button>
+                              </div>
+                              <div className="flex-1 space-y-2">
+                                <Input
+                                  value={item.q}
+                                  onChange={(e) => {
+                                    const next = [...(content.faq as Array<{ q: string; a: string }>)];
+                                    next[index] = { ...next[index], q: e.target.value };
+                                    updateSection.mutate({
+                                      sectionId: section.id,
+                                      updates: buildContentJson({ ...content, faq: next }),
+                                    });
+                                  }}
+                                  placeholder="Spørsmål"
+                                  className="font-medium"
+                                />
+                                <Textarea
+                                  value={item.a}
+                                  onChange={(e) => {
+                                    const next = [...(content.faq as Array<{ q: string; a: string }>)];
+                                    next[index] = { ...next[index], a: e.target.value };
+                                    updateSection.mutate({
+                                      sectionId: section.id,
+                                      updates: buildContentJson({ ...content, faq: next }),
+                                    });
+                                  }}
+                                  placeholder="Svar"
+                                  rows={2}
+                                  className="resize-none text-sm"
+                                />
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="mt-1 shrink-0 text-destructive hover:text-destructive"
+                                onClick={() => {
+                                  const next = (content.faq as Array<{ q: string; a: string }>).filter((_, i) => i !== index);
+                                  updateSection.mutate({
+                                    sectionId: section.id,
+                                    updates: buildContentJson({ ...content, faq: next }),
+                                  });
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const next = [...(content.faq as Array<{ q: string; a: string }>), { q: "", a: "" }];
+                            updateSection.mutate({
+                              sectionId: section.id,
+                              updates: buildContentJson({ ...content, faq: next }),
+                            });
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Legg til spørsmål
+                        </Button>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border">
                       <div className="space-y-2">
                         <label className="text-sm font-medium flex items-center gap-2">
