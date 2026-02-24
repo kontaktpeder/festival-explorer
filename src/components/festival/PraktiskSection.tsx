@@ -35,16 +35,15 @@ export function PraktiskSection() {
           aria-hidden="true"
         />
         <div className="absolute inset-0 bg-black/20" />
-        <div className="relative z-10 mx-auto max-w-xs py-10 flex flex-col items-center gap-2">
-          <div className="w-px h-8 bg-gradient-to-b from-transparent via-white/30 to-white/10" />
+        <div className="relative z-10 flex items-center justify-center py-16 md:py-20">
           <span
-            className="text-xs uppercase tracking-[0.3em] text-white/90 font-bold"
+            className="text-3xl md:text-5xl font-black uppercase tracking-[0.4em] text-white"
             style={{
               fontFamily: "'Space Grotesk', sans-serif",
-              textShadow: "0 1px 8px rgba(0,0,0,0.4)",
+              textShadow: "0 4px 30px rgba(0,0,0,0.5), 0 0 60px rgba(0,0,0,0.2)",
             }}
           >
-            Praktisk info
+            Praktisk
           </span>
         </div>
       </div>
