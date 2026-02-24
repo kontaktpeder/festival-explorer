@@ -527,9 +527,8 @@ export default function FestivalPage() {
                     }
                   }}
                   className={cn(
-                    "group relative w-full flex items-center justify-center gap-3 py-6 px-8",
+                    "group relative w-full flex flex-col items-center justify-center gap-2 py-10 px-8",
                     "rounded-2xl overflow-hidden",
-                    "text-white font-black text-xl md:text-2xl uppercase tracking-wider",
                     "shadow-xl shadow-black/40 hover:shadow-black/60",
                     "transition-all duration-300 hover:scale-[1.02]",
                     "focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
@@ -545,16 +544,17 @@ export default function FestivalPage() {
                   />
                   {/* Overlay for text legibility */}
                   <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors duration-300 pointer-events-none" />
-                  <Music className="w-5 h-5 relative z-10 drop-shadow-md" />
-                  <span className="relative z-10 drop-shadow-md">Se LINEUP</span>
+                  <span
+                    className="relative z-10 text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight text-white drop-shadow-lg"
+                    style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                  >
+                    LINEUP
+                  </span>
                   <ChevronDown className={cn(
-                    "w-5 h-5 relative z-10 drop-shadow-md transition-transform duration-300",
+                    "w-5 h-5 relative z-10 text-white/60 drop-shadow-md transition-transform duration-300",
                     lineupOpen && "rotate-180"
                   )} />
                 </button>
-                <p className="text-center text-xs text-muted-foreground mt-3">
-                  Artister og DJs
-                </p>
               </div>
 
               <div
