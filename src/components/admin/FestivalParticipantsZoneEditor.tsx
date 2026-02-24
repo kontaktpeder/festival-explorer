@@ -23,6 +23,7 @@ interface FestivalParticipantPermissions {
   can_create_internal_ticket: boolean;
   can_see_report: boolean;
   can_see_revenue: boolean;
+  can_edit_festival_media: boolean;
 }
 
 interface FestivalParticipantRow {
@@ -41,6 +42,7 @@ interface FestivalParticipantRow {
   can_create_internal_ticket?: boolean;
   can_see_report?: boolean;
   can_see_revenue?: boolean;
+  can_edit_festival_media?: boolean;
 }
 
 interface ResolvedRef {
@@ -131,7 +133,7 @@ export function FestivalParticipantsZoneEditor({
     setLoading(true);
     const { data, error } = await supabase
       .from("festival_participants")
-      .select("id, festival_id, zone, participant_kind, participant_id, role_label, sort_order, can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue")
+      .select("id, festival_id, zone, participant_kind, participant_id, role_label, sort_order, can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue, can_edit_festival_media")
       .eq("festival_id", festivalId)
       .eq("zone", zone)
       .order("sort_order", { ascending: true });
@@ -197,6 +199,7 @@ export function FestivalParticipantsZoneEditor({
       can_create_internal_ticket: false,
       can_see_report: false,
       can_see_revenue: false,
+      can_edit_festival_media: false,
     });
 
     if (error) {
@@ -350,7 +353,8 @@ export function FestivalParticipantsZoneEditor({
                        {([
                         { key: "can_edit_festival", label: "Redigere festival" },
                         { key: "can_edit_events", label: "Redigere events" },
-                        { key: "can_access_media", label: "Filbank" },
+                        { key: "can_access_media", label: "Filbank (tilgang)" },
+                        { key: "can_edit_festival_media", label: "Filbank – kan redigere" },
                         { key: "can_scan_tickets", label: "Skanne billetter" },
                         { key: "can_see_ticket_stats", label: "Se billettstatistikk" },
                         { key: "can_create_internal_ticket", label: "Internbillett" },
@@ -370,6 +374,7 @@ export function FestivalParticipantsZoneEditor({
                                 can_create_internal_ticket: !!row.can_create_internal_ticket,
                                 can_see_report: !!row.can_see_report,
                                 can_see_revenue: !!row.can_see_revenue,
+                                can_edit_festival_media: !!row.can_edit_festival_media,
                                 [key]: !!v,
                               })
                             }
