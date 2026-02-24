@@ -176,6 +176,26 @@ export function LineupPostersSection({ artists }: LineupPostersSectionProps) {
                     Kommer snart...
                   </p>
                 )}
+                {/* Upcoming placeholders for 2. etasje */}
+                {zone.key === "2-etasje" && (
+                  <div className="flex flex-col items-center gap-3 mt-2">
+                    <span
+                      className="text-xl md:text-2xl lg:text-3xl font-black uppercase text-white/25 tracking-wide"
+                      style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                    >
+                      ???
+                    </span>
+                    <span
+                      className="text-xl md:text-2xl lg:text-3xl font-black uppercase text-white/25 tracking-wide"
+                      style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                    >
+                      ???
+                    </span>
+                    <p className="text-[10px] md:text-xs tracking-[0.2em] uppercase text-white/30 mt-1">
+                      Slippes snart
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
