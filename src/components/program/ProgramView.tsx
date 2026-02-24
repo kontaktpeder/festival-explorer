@@ -15,6 +15,8 @@ type Props = {
   accordion?: boolean;
   showEmptyState?: boolean;
   hideCategoryTitleInAccordion?: boolean;
+  /** Hide categories with zero items (default true) */
+  hideEmptyCategories?: boolean;
 };
 
 function formatTime(iso?: string | null): string {
@@ -48,6 +50,7 @@ function ItemRow({
     : true;
 
   const primaryLabel = item.label || (slotCfg?.label ?? "Program");
+  const hasValidHref = !!(item.href && item.href.trim() && !isCanceled);
 
   const content = (
     <div className="flex items-center gap-3 w-full">
@@ -85,7 +88,7 @@ function ItemRow({
         )}
       </div>
 
-      {item.href && !isCanceled && (
+      {hasValidHref && (
         <span className="text-muted-foreground/30 text-sm shrink-0">›</span>
       )}
     </div>
@@ -97,9 +100,9 @@ function ItemRow({
     isCanceled && "opacity-50"
   );
 
-  if (item.href && !isCanceled) {
+  if (hasValidHref) {
     return (
-      <Link to={item.href} className={cn(wrapperClassName, "block hover:bg-muted/10 rounded-md px-2")}>
+      <Link to={item.href!} className={cn(wrapperClassName, "block hover:bg-muted/10 rounded-md px-2")}>
         {highlightLabel && (
           <span className="text-[9px] uppercase tracking-widest text-accent font-bold mb-0.5 block">
             {highlightLabel}
@@ -149,7 +152,7 @@ function CategoryBlock({
       {items.length === 0 ? (
         showEmptyState ? (
           <p className="text-sm text-muted-foreground/40 py-4">
-            Ingenting her enda.
+            Kommer snart.
           </p>
         ) : null
       ) : (
@@ -175,13 +178,25 @@ export function ProgramView({
   accordion = true,
   showEmptyState = false,
   hideCategoryTitleInAccordion = true,
+  hideEmptyCategories = true,
 }: Props) {
-  const nonEmpty = (categories ?? []).filter((c) => (c.items?.length ?? 0) > 0);
-  const finalCategories = nonEmpty.length > 0 ? nonEmpty : categories ?? [];
+  const allCategories = categories ?? [];
+  const finalCategories = hideEmptyCategories
+    ? allCategories.filter((c) => (c.items?.length ?? 0) > 0)
+    : allCategories;
 
   const [openId, setOpenId] = React.useState<string | null>(
     accordion && finalCategories.length > 0 ? finalCategories[0].id : null
   );
+
+  // Sync openId if categories change and current is gone
+  React.useEffect(() => {
+    if (accordion && openId && !finalCategories.some((c) => c.id === openId)) {
+      setOpenId(finalCategories.length > 0 ? finalCategories[0].id : null);
+    }
+  }, [accordion, openId, finalCategories]);
+
+  if (finalCategories.length === 0 && !showEmptyState) return null;
 
   return (
     <div>
@@ -222,7 +237,7 @@ export function ProgramView({
                   </span>
                   <span className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground/40">
-                      {cat.items?.length ?? 0} elementer
+                      {cat.items?.length ?? 0}
                     </span>
                     <span className="text-muted-foreground/40 text-sm w-5 text-center">
                       {isOpen ? "−" : "+"}
