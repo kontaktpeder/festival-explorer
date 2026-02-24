@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
@@ -8,23 +7,6 @@ import { cn } from "@/lib/utils";
 import zoneBg2Etasje from "@/assets/zone-bg-2etasje.jpg";
 import zoneBg1Etasje from "@/assets/zone-bg-1etasje.jpg";
 import zoneBgBoilerroom from "@/assets/zone-bg-boilerroom.jpg";
-
-// Static artist logo imports
-import brorLogo from "@/assets/artist-logos/bror.png";
-import namiLogo from "@/assets/artist-logos/nami.png";
-import cornicLogo from "@/assets/artist-logos/cornic.png";
-import mastLogo from "@/assets/artist-logos/mast.png";
-import mayaEstrelaLogo from "@/assets/artist-logos/maya-estrela.png";
-import oienOgLurvikLogo from "@/assets/artist-logos/oien-og-lurvik.png";
-
-const artistLogos: Record<string, string> = {
-  bror: brorLogo,
-  nami: namiLogo,
-  cornic: cornicLogo,
-  mast: mastLogo,
-  "maya-estrela": mayaEstrelaLogo,
-  "ien-og-lurvik": oienOgLurvikLogo,
-};
 
 interface Artist {
   id: string;
@@ -76,43 +58,14 @@ const ZONES = [
 ] as const;
 
 function ArtistName({ artist }: { artist: Artist }) {
-  const logoUrlFromApi = useSignedMediaUrl(artist.logo_url ?? null, "public");
-  const displayLogoUrl = logoUrlFromApi || artistLogos[artist.slug] || null;
-  const shouldInvert = !logoUrlFromApi && artist.slug === "mast";
-  const logoDisplayMode = artist.logo_display_mode ?? "with_name";
-
-  if (logoDisplayMode === "instead_of_name" && displayLogoUrl) {
-    return (
-      <>
-        <img
-          src={displayLogoUrl}
-          alt=""
-          aria-hidden="true"
-          className={cn(
-            "w-auto h-auto max-h-10 md:max-h-14 object-contain drop-shadow-lg",
-            shouldInvert && "invert"
-          )}
-        />
-        <span className="sr-only">{artist.name}</span>
-      </>
-    );
-  }
-
-  if (displayLogoUrl && artist.slug !== "maya-estrela") {
-    return (
-      <img
-        src={displayLogoUrl}
-        alt={artist.name}
-        className={cn(
-          "w-auto h-auto max-h-8 md:max-h-12 object-contain drop-shadow-lg",
-          shouldInvert && "invert"
-        )}
-      />
-    );
-  }
-
   return (
-    <span className="text-display text-lg md:text-xl lg:text-2xl text-foreground drop-shadow-lg leading-tight">
+    <span
+      className="text-2xl md:text-3xl lg:text-4xl font-black uppercase text-white tracking-wide leading-none"
+      style={{
+        fontFamily: "'Space Grotesk', sans-serif",
+        textShadow: "0 2px 20px rgba(0,0,0,0.6), 0 0 40px rgba(0,0,0,0.3)",
+      }}
+    >
       {artist.name}
     </span>
   );
@@ -181,17 +134,20 @@ export function LineupPostersSection({ artists }: LineupPostersSectionProps) {
               )}>
                 <h3
                   className={cn(
-                    "text-sm md:text-base font-black tracking-[0.3em] uppercase",
+                    "text-base md:text-lg font-black tracking-[0.35em] uppercase",
                     zone.accentClass
                   )}
-                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                  style={{
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    textShadow: "0 2px 12px rgba(0,0,0,0.4)",
+                  }}
                 >
                   {zone.label}
                 </h3>
               </div>
 
               {/* Artist list */}
-              <div className="flex-1 flex flex-col items-center justify-center gap-4 md:gap-5 px-4 md:px-6 py-8 md:py-10">
+              <div className="flex-1 flex flex-col items-center justify-center gap-6 md:gap-8 px-4 md:px-6 py-10 md:py-14">
                 {zoneArtists.length > 0 ? (
                   zoneArtists.map((artist) => (
                     <Link
