@@ -5,6 +5,7 @@ import praktiskHeaderBg from "@/assets/praktisk-header-bg.jpeg";
 import praktiskInfoBg from "@/assets/praktisk-info-bg.jpeg";
 import praktiskHeaderDesktopBg from "@/assets/section-bg-praktisk-desktop.jpg";
 import praktiskInfoDesktopBg from "@/assets/section-bg-praktisk-info-desktop.jpg";
+import praktiskTransitionBg from "@/assets/praktisk-transition-bg.jpg";
 
 interface InfoItem {
   icon: React.ReactNode;
@@ -25,13 +26,23 @@ export function PraktiskSection() {
   
   return (
     <>
-      {/* Soft transition from lineup */}
-      <div className="relative bg-background">
-        <div className="mx-auto max-w-xs py-8 flex flex-col items-center gap-2">
-          <div className="w-px h-8 bg-gradient-to-b from-transparent via-foreground/15 to-foreground/5" />
+      {/* Soft transition with background image */}
+      <div className="relative overflow-hidden">
+        <img
+          src={praktiskTransitionBg}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-black/20" />
+        <div className="relative z-10 mx-auto max-w-xs py-10 flex flex-col items-center gap-2">
+          <div className="w-px h-8 bg-gradient-to-b from-transparent via-white/30 to-white/10" />
           <span
-            className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 font-medium"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            className="text-xs uppercase tracking-[0.3em] text-white/90 font-bold"
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              textShadow: "0 1px 8px rgba(0,0,0,0.4)",
+            }}
           >
             Praktisk info
           </span>
