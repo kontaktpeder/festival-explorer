@@ -32,12 +32,10 @@ const SLOT_ORDER = [
   { slot: "hero", sectionType: "hero" },
   { slot: "seo_intro", sectionType: "seo_intro" },
   { slot: "lineup_cta", sectionType: "lineup_cta" },
-  { slot: "program", sectionType: "program" },
-  { slot: "lineup", sectionType: "artister" },
-  { slot: "venue", sectionType: "venue-plakat" },
   { slot: "praktisk", sectionType: "praktisk" },
   { slot: "faq", sectionType: "faq" },
   { slot: "cta", sectionType: "cta" },
+  { slot: "venue", sectionType: "venue-plakat" },
   { slot: "team", sectionType: "team" },
   { slot: "footer", sectionType: "footer" },
 ] as const;
@@ -279,9 +277,6 @@ function CtaSlot({
           >
             Kjøp billetter
           </Link>
-          <a href="#program" className="btn-ghost text-center">
-            Se program
-          </a>
         </div>
       </div>
     </section>
@@ -602,85 +597,7 @@ export default function FestivalPage() {
           );
         }
 
-        // ── PROGRAM ──
-        if (slot === "program") {
-          if (section) {
-            const showDateRange =
-              section.id === shell.date_range_section_id ? dateRange : null;
-            const showDescription =
-              section.id === shell.description_section_id
-                ? shortDescription
-                : null;
-            const showName =
-              section.id === shell.name_section_id ? shell.name : null;
-            return (
-              <SectionRenderer
-                key={slot}
-                section={section as any}
-                validEvents={validEvents as any}
-                featuredArtists={allArtistsWithEventSlug}
-                venue={venue}
-                dateRange={showDateRange}
-                festivalDescription={showDescription}
-                festivalName={showName}
-                festivalTeam={festivalTeam}
-              />
-            );
-          }
-          // Fallback program
-          return (
-            <section
-              key={slot}
-              className="relative bg-background py-10 md:py-16 px-6"
-              id="program"
-            >
-              <div className="relative z-10 max-w-2xl mx-auto w-full">
-                <h2 className="text-display text-xl md:text-2xl font-bold tracking-tight mb-6">
-                  Program
-                </h2>
-
-                {programCategories.some((c) => c.items.length > 0) ? (
-                  <ProgramView
-                    categories={programCategories}
-                    title=""
-                    showTime={false}
-                    accordion
-                    showEmptyState={false}
-                  />
-                ) : (
-                  <EmptyState
-                    title="Ingen events ennå"
-                    description="Programmet for denne festivalen er ikke klart ennå."
-                  />
-                )}
-              </div>
-            </section>
-          );
-        }
-
-        // ── LINEUP ──
-        if (slot === "lineup") {
-          if (section) {
-            return (
-              <SectionRenderer
-                key={slot}
-                section={section as any}
-                validEvents={validEvents as any}
-                featuredArtists={allArtistsWithEventSlug}
-                venue={venue}
-                festivalTeam={festivalTeam}
-              />
-            );
-          }
-          return (
-            <DualLineupSection
-              key={slot}
-              artists={allArtistsWithEventSlug}
-              festivalTeam={festivalTeam}
-              showPosters={false}
-            />
-          );
-        }
+        // (program and lineup slots removed from public view)
 
         // ── VENUE ──
         if (slot === "venue") {
