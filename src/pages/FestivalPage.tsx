@@ -527,10 +527,10 @@ export default function FestivalPage() {
                     }
                   }}
                   className={cn(
-                    "group relative w-full flex flex-col items-center justify-center gap-2 py-10 px-8",
-                    "rounded-2xl overflow-hidden",
-                    "shadow-xl shadow-black/40 hover:shadow-black/60",
-                    "transition-all duration-300 hover:scale-[1.02]",
+                    "group relative w-full flex items-center justify-center gap-3 py-4 px-8",
+                    "rounded-xl overflow-hidden",
+                    "shadow-lg shadow-black/30 hover:shadow-black/50",
+                    "transition-all duration-300 hover:scale-[1.01]",
                     "focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
                   )}
                   aria-expanded={lineupOpen}
@@ -542,16 +542,15 @@ export default function FestivalPage() {
                     alt=""
                     className="absolute inset-0 w-full h-full object-cover pointer-events-none"
                   />
-                  {/* Overlay for text legibility */}
-                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors duration-300 pointer-events-none" />
+                  <div className="absolute inset-0 bg-black/25 group-hover:bg-black/15 transition-colors duration-300 pointer-events-none" />
                   <span
-                    className="relative z-10 text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-tight text-white drop-shadow-lg"
+                    className="relative z-10 text-lg sm:text-xl md:text-2xl font-semibold uppercase tracking-[0.2em] text-white/90 drop-shadow-md"
                     style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                   >
                     LINEUP
                   </span>
                   <ChevronDown className={cn(
-                    "w-5 h-5 relative z-10 text-white/60 drop-shadow-md transition-transform duration-300",
+                    "w-4 h-4 relative z-10 text-white/50 transition-transform duration-300",
                     lineupOpen && "rotate-180"
                   )} />
                 </button>
