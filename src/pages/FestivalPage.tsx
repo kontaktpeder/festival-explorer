@@ -648,47 +648,50 @@ export default function FestivalPage() {
               (festivalTeam.backstage?.length ?? 0) > 0)
           ) {
             return (
-              <section key={slot} className="fullscreen-section relative bg-background">
-                <div className="relative z-10 max-w-3xl mx-auto px-6 py-20 md:py-28">
-                  <h2 className="section-title">
-                    Bli kjent med festival-teamet
-                  </h2>
-                  <p className="text-foreground/70 text-base md:text-lg mb-10 max-w-xl">
-                    Folkene bak scenen som får festivalen til å skje.
-                  </p>
-                  <div className="space-y-6">
-                    {[
-                      ...(festivalTeam.hostRoles || []),
-                      ...(festivalTeam.backstage || []),
-                    ]
-                      .sort(
-                        (a: any, b: any) =>
-                          (a.sort_order ?? 0) - (b.sort_order ?? 0)
-                      )
-                      .map((item: any, i: number) => {
-                        const displayRole =
-                          item.role_label ||
-                          getPersonaTypeLabel(item.persona?.type) ||
-                          (item.persona?.category_tags &&
-                            item.persona.category_tags[0]) ||
-                          item.entity?.type ||
-                          null;
-                        return (
-                          <div
-                            key={item.participant_id || i}
-                            className="flex flex-col gap-1"
-                          >
-                            {displayRole && (
-                              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                                {displayRole}
-                              </p>
-                            )}
-                            <EventParticipantItem item={item} />
-                          </div>
-                        );
-                      })}
-                  </div>
-                </div>
+              <section key={slot} className="relative bg-background px-6">
+                <Accordion type="single" collapsible className="max-w-3xl mx-auto">
+                  <AccordionItem value="team" className="border-foreground/10">
+                    <AccordionTrigger className="text-left hover:no-underline py-4">
+                      <span className="text-display text-base md:text-lg font-bold tracking-tight">
+                        Festival-teamet
+                      </span>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-5 pb-4">
+                        {[
+                          ...(festivalTeam.hostRoles || []),
+                          ...(festivalTeam.backstage || []),
+                        ]
+                          .sort(
+                            (a: any, b: any) =>
+                              (a.sort_order ?? 0) - (b.sort_order ?? 0)
+                          )
+                          .map((item: any, i: number) => {
+                            const displayRole =
+                              item.role_label ||
+                              getPersonaTypeLabel(item.persona?.type) ||
+                              (item.persona?.category_tags &&
+                                item.persona.category_tags[0]) ||
+                              item.entity?.type ||
+                              null;
+                            return (
+                              <div
+                                key={item.participant_id || i}
+                                className="flex flex-col gap-1"
+                              >
+                                {displayRole && (
+                                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                                    {displayRole}
+                                  </p>
+                                )}
+                                <EventParticipantItem item={item} />
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </section>
             );
           }
