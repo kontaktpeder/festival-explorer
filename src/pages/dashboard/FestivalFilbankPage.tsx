@@ -21,6 +21,7 @@ import {
   Music,
   FileText,
   Upload,
+  Download,
   FolderOpen,
   User,
 } from "lucide-react";
@@ -256,6 +257,16 @@ export default function FestivalFilbankPage() {
               </div>
             )}
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+              <a
+                href={item.public_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                download={item.original_filename}
+                className="inline-flex items-center justify-center rounded-md bg-background p-2 hover:bg-accent"
+                title="Last ned"
+              >
+                <Download className="h-4 w-4" />
+              </a>
               {(isPrivat || (permissions?.canEdit ?? false)) && (
                 <Button
                   variant="destructive"
