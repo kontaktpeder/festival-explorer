@@ -60,15 +60,35 @@ function SEOIntroSlot({
   const body =
     seoIntroText && seoIntroText.trim() ? seoIntroText.trim() : templateText;
 
+  const seoIntro = "GIGGEN Festival 2026 er en festival i Oslo på legendariske Josefines Vertshus. En kveld med live musikk, konserter og kunst midt i Oslo sentrum.";
+
+  const vibes = [
+    "Vi sparker i gang våren på legendariske Josefines Vertshus med live musikk, BOILER ROOM, kunst, mat og drikke 🚀",
+    "Ta med deg vennene dine og bli med på en helaften der fremadstormende musikere, DJs og kunstnere fra hele Sør-Norge får fritt spillerom og fyller huset med energi.",
+    "Det blir dans. Det blir stemning. Det blir en fullspekket festivalkveld du ikke vil gå glipp av. Velkommen 🪩",
+  ];
+
   return (
-    <section className="relative bg-background py-16 md:py-24 px-6">
-      <div className="max-w-2xl mx-auto space-y-4">
-        <h2 className="text-display text-2xl md:text-3xl font-bold tracking-tight">
+    <section className="relative bg-background py-20 md:py-28 px-6">
+      <div className="max-w-2xl mx-auto space-y-8">
+        <h2 className="text-display text-2xl md:text-4xl font-black uppercase tracking-tight leading-tight">
           {h2}
         </h2>
-        <p className="text-foreground/70 text-base md:text-lg leading-relaxed">
-          {body}
+
+        <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
+          {seoIntro}
         </p>
+
+        <div className="space-y-4 border-l-2 border-accent/40 pl-5">
+          {vibes.map((line, i) => (
+            <p
+              key={i}
+              className="text-foreground/90 text-base md:text-lg leading-relaxed"
+            >
+              {line}
+            </p>
+          ))}
+        </div>
       </div>
     </section>
   );
