@@ -548,18 +548,20 @@ export default function FestivalPage() {
                   </button>
                 </div>
 
-                {/* ── Collapsible lineup posters ── */}
-                {lineupOpen && (
-                  <div className="mt-8">
-                    {hasArtists ? (
-                      <LineupPostersSection artists={allArtistsWithEventSlug} />
-                    ) : (
-                      <div className="py-16 text-center text-muted-foreground">
-                        Lineup kommer snart.
-                      </div>
-                    )}
-                  </div>
-                )}
+                {/* ── Collapsible lineup posters (full width breakout) ── */}
+              </div>
+              {lineupOpen && (
+                <div className="mt-8 w-full">
+                  {hasArtists ? (
+                    <LineupPostersSection artists={allArtistsWithEventSlug} />
+                  ) : (
+                    <div className="py-16 text-center text-muted-foreground">
+                      Lineup kommer snart.
+                    </div>
+                  )}
+                </div>
+              )}
+              <div> {/* spacer to close structure */}
               </div>
             </section>
           );
