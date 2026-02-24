@@ -67,11 +67,11 @@ const ZONES = [
     key: "boiler-room",
     label: "BOILER ROOM",
     slugMatch: "boiler-room",
-    bgImage: zoneBgBoilerroom,
+    bgImage: null as unknown as string,
     accentClass: "text-foreground/60",
     borderClass: "border-foreground/10",
     glowClass: "shadow-white/5",
-    overlayClass: "from-black/80 via-black/60 to-black/90",
+    overlayClass: "from-black via-black to-black",
   },
 ] as const;
 
@@ -161,12 +161,14 @@ export function LineupPostersSection({ artists }: LineupPostersSectionProps) {
             className="relative overflow-hidden"
           >
             {/* Background image */}
-            <img
-              src={zone.bgImage}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover"
-              loading="lazy"
-            />
+            {zone.bgImage && (
+              <img
+                src={zone.bgImage}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="lazy"
+              />
+            )}
             {/* Gradient overlay */}
             <div className={cn("absolute inset-0 bg-gradient-to-b", zone.overlayClass)} />
 
