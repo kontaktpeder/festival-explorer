@@ -533,6 +533,15 @@ export default function FestivalPage() {
                     description="Programmet for denne festivalen er ikke klart ennå."
                   />
                 )}
+
+                <div className="flex justify-center pt-8">
+                  <a
+                    href="#lineup"
+                    className="text-sm uppercase tracking-widest text-accent hover:text-accent/80 transition-colors font-semibold"
+                  >
+                    Se lineup ↓
+                  </a>
+                </div>
               </div>
             </section>
           );
