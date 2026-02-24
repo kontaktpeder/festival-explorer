@@ -22,6 +22,7 @@ import { DualLineupSection } from "@/components/festival/DualLineupSection";
 import { LineupPostersSection } from "@/components/festival/LineupPostersSection";
 import lineupCtaBg from "@/assets/lineup-cta-bg.jpg";
 import { FestivalFooter } from "@/components/festival/FestivalFooter";
+import { SocialSection } from "@/components/festival/SocialSection";
 import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
@@ -792,19 +793,22 @@ export default function FestivalPage() {
 
         // ── FOOTER ──
         if (slot === "footer") {
-          if (section) {
-            return (
-              <SectionRenderer
-                key={slot}
-                section={section as any}
-                validEvents={validEvents as any}
-                featuredArtists={allArtistsWithEventSlug}
-                venue={venue}
-                festivalTeam={festivalTeam}
-              />
-            );
-          }
-          return <FestivalFooter key={slot} />;
+          return (
+            <div key={slot}>
+              <SocialSection />
+              {section ? (
+                <SectionRenderer
+                  section={section as any}
+                  validEvents={validEvents as any}
+                  featuredArtists={allArtistsWithEventSlug}
+                  venue={venue}
+                  festivalTeam={festivalTeam}
+                />
+              ) : (
+                <FestivalFooter />
+              )}
+            </div>
+          );
         }
 
         return null;

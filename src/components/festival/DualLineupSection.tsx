@@ -1,8 +1,6 @@
 import { LineupPostersSection } from "./LineupPostersSection";
 import { PraktiskSection } from "./PraktiskSection";
 import { UtforskMerSection } from "./UtforskMerSection";
-import { SocialSection } from "./SocialSection";
-import { FestivalFooter } from "./FestivalFooter";
 
 interface Artist {
   id: string;
@@ -35,8 +33,6 @@ export function DualLineupSection({
 
       <PraktiskSection />
       <UtforskMerSection />
-      <SocialSection />
-      <FestivalFooter />
     </>
   );
 }
