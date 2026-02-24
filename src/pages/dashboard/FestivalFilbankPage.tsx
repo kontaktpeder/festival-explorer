@@ -44,6 +44,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { FestivalMediaUpload } from "@/components/admin/FestivalMediaUpload";
+import { downloadFile } from "@/lib/download-helpers";
 
 const CATEGORIES = [
   { value: "all", label: "Alle typer" },
@@ -257,16 +258,14 @@ export default function FestivalFilbankPage() {
               </div>
             )}
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-              <a
-                href={item.public_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                download={item.original_filename}
-                className="inline-flex items-center justify-center rounded-md bg-background p-2 hover:bg-accent"
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => downloadFile(item.public_url, item.original_filename)}
                 title="Last ned"
               >
                 <Download className="h-4 w-4" />
-              </a>
+              </Button>
               {(isPrivat || (permissions?.canEdit ?? false)) && (
                 <Button
                   variant="destructive"
