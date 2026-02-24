@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -11,7 +12,8 @@ import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { parseImageSettings } from "@/types/database";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { HeroSection } from "@/components/ui/HeroSection";
-import { FestivalEventAccordion } from "@/components/ui/FestivalEventAccordion";
+import { ProgramView } from "@/components/program/ProgramView";
+import { mapFestivalToProgramCategories } from "@/lib/program-mappers";
 import { SectionRenderer } from "@/components/festival/SectionRenderer";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
@@ -358,6 +360,18 @@ export default function FestivalPage() {
   const allArtistsWithEventSlug = details?.allArtistsWithEventSlug || [];
   const festivalTeam = details?.festivalTeam;
 
+  const programCategories = useMemo(() => {
+    const events = (validEvents ?? [])
+      .filter((fe: any) => fe.event)
+      .map((fe: any) => fe.event!);
+    const lineup = allArtistsWithEventSlug ?? [];
+    const team = [
+      ...(festivalTeam?.hostRoles ?? []),
+      ...(festivalTeam?.backstage ?? []),
+    ];
+    return mapFestivalToProgramCategories({ events, lineup, team });
+  }, [validEvents, allArtistsWithEventSlug, festivalTeam]);
+
   const shortDescription = shell?.description
     ? shell.description.split(" ").slice(0, 15).join(" ") +
       (shell.description.split(" ").length > 15 ? "..." : "")
@@ -535,8 +549,14 @@ export default function FestivalPage() {
                   </a>
                 </div>
 
-                {validEvents.length > 0 ? (
-                  <FestivalEventAccordion events={validEvents as any} />
+                {programCategories.some((c) => c.items.length > 0) ? (
+                  <ProgramView
+                    categories={programCategories}
+                    title=""
+                    showTime={false}
+                    accordion
+                    showEmptyState={false}
+                  />
                 ) : (
                   <EmptyState
                     title="Ingen events ennå"
