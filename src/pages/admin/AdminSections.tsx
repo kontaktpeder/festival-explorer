@@ -21,63 +21,73 @@ const SECTION_TYPES = [
     label: "Hero",
     supports_events: false,
     supports_artists: false,
-    supports_venue: false
+    supports_venue: false,
+    supports_text: false,
   },
   { 
     value: "program", 
     label: "Program",
     supports_events: true,
     supports_artists: false,
-    supports_venue: false
+    supports_venue: false,
+    supports_text: false,
   },
   { 
     value: "om", 
     label: "Om Giggen",
     supports_events: false,
     supports_artists: false,
-    supports_venue: false
+    supports_venue: false,
+    supports_text: false,
   },
   { 
     value: "artister", 
     label: "Artister",
     supports_events: false,
     supports_artists: true,
-    supports_venue: false
+    supports_venue: false,
+    supports_text: false,
   },
   { 
     value: "venue-plakat", 
     label: "Venue-plakat",
     supports_events: false,
     supports_artists: false,
-    supports_venue: true
+    supports_venue: true,
+    supports_text: false,
   },
   { 
     value: "praktisk", 
     label: "Praktisk",
     supports_events: false,
     supports_artists: false,
-    supports_venue: false
+    supports_venue: false,
+    supports_text: true,
   },
   { 
     value: "footer", 
     label: "Footer",
     supports_events: false,
     supports_artists: false,
-    supports_venue: false
+    supports_venue: false,
+    supports_text: true,
   }
 ] as const;
 
 // Helper functions for content_json structure
 function getSectionContent(section: { content_json?: unknown }) {
   const contentJson = section.content_json as Record<string, unknown> | null;
-  if (!contentJson) {
-    return { 
-      events: [] as string[],
-      artists: [] as string[],
-      venue: null as string | null,
-    };
-  }
-  
+  const empty = {
+    events: [] as string[],
+    artists: [] as string[],
+    venue: null as string | null,
+    text: "",
+  };
+  if (!contentJson) return empty;
+
+  const getText = (c: Record<string, unknown> | null) =>
+    (c?.text ?? c?.intro ?? c?.info ?? c?.description ?? "") as string;
+
   // New structure: {content: {...}}
   if (contentJson.content) {
     const content = contentJson.content as Record<string, unknown>;
@@ -85,22 +95,30 @@ function getSectionContent(section: { content_json?: unknown }) {
       events: (content.events as string[]) || [],
       artists: (content.artists as string[]) || [],
       venue: (content.venue as string) || null,
+      text: getText(content),
     };
   }
-  
+
   // Legacy structure
   return {
     events: (contentJson.events as string[]) || [],
     artists: (contentJson.artists as string[]) || [],
     venue: (contentJson.venue as string) || null,
+    text: getText(contentJson),
   };
 }
 
-function buildContentJson(content: { events: string[]; artists: string[]; venue: string | null }) {
+function buildContentJson(content: {
+  events: string[];
+  artists: string[];
+  venue: string | null;
+  text?: string | null;
+}) {
+  const { text, ...rest } = content;
   return {
     content_json: {
-      content
-    }
+      content: { ...rest, ...(text !== undefined ? { text: text ?? "" } : {}) },
+    },
   };
 }
 
@@ -1100,6 +1118,32 @@ export default function AdminSections() {
                             ))}
                           </SelectContent>
                         </Select>
+                      </div>
+                    )}
+
+                    {/* Tekst (Praktisk / Footer) */}
+                    {sectionType?.supports_text && (
+                      <div className="space-y-2">
+                        <Label>Innhold (praktisk info / footer-tekst)</Label>
+                        <Textarea
+                          value={content.text}
+                          onChange={(e) => {
+                            updateSection.mutate({
+                              sectionId: section.id,
+                              updates: buildContentJson({ ...content, text: e.target.value }),
+                            });
+                          }}
+                          placeholder={
+                            section.type === "praktisk"
+                              ? "F.eks. Dørene åpner kl 18. Felles snakk fra scenen kl 18:30. …"
+                              : "Footer-tekst som vises nederst på siden."
+                          }
+                          rows={6}
+                          className="resize-y font-mono text-sm"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Støtter linjeskift. HTML er ikke tillatt.
+                        </p>
                       </div>
                     )}
 
