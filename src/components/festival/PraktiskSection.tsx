@@ -25,52 +25,21 @@ export function PraktiskSection() {
   
   return (
     <>
-      {/* Header section with background */}
-      <section className="relative min-h-[30vh] md:min-h-[35vh] flex flex-col items-center justify-center px-6 py-12">
-        {/* Background image - same style as lineup headers */}
-        <div className="absolute inset-0">
-          <img 
-            src={isMobile ? praktiskHeaderBg : praktiskHeaderDesktopBg}
-            alt="" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/30" />
+      {/* Soft transition from lineup */}
+      <div className="relative bg-background">
+        <div className="mx-auto max-w-xs py-8 flex flex-col items-center gap-2">
+          <div className="w-px h-8 bg-gradient-to-b from-transparent via-foreground/15 to-foreground/5" />
+          <span
+            className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 font-medium"
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            Praktisk info
+          </span>
         </div>
-        
-        {/* Decorative line above */}
-        <div className={cn(
-          "absolute top-0 left-1/2 -translate-x-1/2 w-px h-16 bg-gradient-to-b z-10",
-          "from-white/40 via-white/20 to-transparent"
-        )} />
-        
-        {/* Serif tagline */}
-        <p className={cn(
-          "relative z-10 text-center text-sm md:text-base italic font-light mb-4",
-          "animate-blur-in",
-          "text-white/80"
-        )} style={{ fontFamily: "'Crimson Pro', 'Source Serif 4', Georgia, serif" }}>
-          alt du trenger å vite
-        </p>
-        
-        {/* Main title - Space Grotesk */}
-        <h2 className={cn(
-          "relative z-10 text-4xl sm:text-5xl md:text-6xl tracking-tight text-center font-bold uppercase",
-          "animate-blur-in delay-100",
-          "text-white"
-        )} style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-          Praktisk
-        </h2>
-        
-        {/* Decorative line below */}
-        <div className={cn(
-          "relative z-10 mt-8 w-24 h-px bg-gradient-to-r",
-          "from-white/40 via-white/20 to-transparent",
-          "animate-line-grow delay-200"
-        )} />
-      </section>
-      
-      {/* Info section - separate, dark background */}
-      <section className="relative px-6 py-16 overflow-hidden">
+      </div>
+
+      {/* Info section - compact card style */}
+      <section className="relative px-4 md:px-6 py-10 md:py-16 overflow-hidden">
         {/* Background image */}
         <div className="absolute inset-0">
           <img 

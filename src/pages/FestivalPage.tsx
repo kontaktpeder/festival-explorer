@@ -467,22 +467,22 @@ export default function FestivalPage() {
           ];
 
           return (
-            <section key={slot} className="relative bg-background py-10 md:py-16 px-6" id="lineup">
-              <div className="mx-auto w-full max-w-3xl text-center space-y-8 lg:space-y-10">
+            <section key={slot} className="relative bg-background py-10 md:py-16 px-4 md:px-6" id="lineup">
+              <div className="mx-auto w-full max-w-3xl text-center space-y-5 lg:space-y-6">
 
                 {/* ── SEO Intro ── */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <h2 className="text-display text-3xl md:text-4xl lg:text-5xl font-extrabold uppercase tracking-tight leading-tight">
                     {h2}
                   </h2>
-                  <p className="mx-auto max-w-2xl text-base md:text-lg text-muted-foreground leading-relaxed">
-                    {seoIntro}
+                  <p className="mx-auto max-w-xl text-sm md:text-base text-muted-foreground leading-relaxed">
+                    Live musikk, konserter og kunst på Josefines Vertshus – én kveld, fullt hus.
                   </p>
 
                   {/* Collapsible vibes */}
                   <div className={cn(
                     "overflow-hidden transition-all duration-400",
-                    lineupOpen ? "max-h-0 opacity-0" : "", // hide vibes when lineup is open
+                    lineupOpen ? "max-h-0 opacity-0" : "",
                     expanded ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
                   )}>
                     <div className="space-y-4 text-left mx-auto max-w-2xl border-l-2 border-accent/40 pl-5 pt-2">
@@ -496,7 +496,10 @@ export default function FestivalPage() {
 
                   <button
                     onClick={() => setExpanded(!expanded)}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-accent/70 hover:text-accent transition-colors"
+                    className={cn(
+                      "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase",
+                      "border border-accent/30 text-accent/80 hover:text-accent hover:border-accent/50 transition-colors"
+                    )}
                   >
                     {expanded ? "Vis mindre ↑" : "Om festivalen →"}
                   </button>
@@ -520,7 +523,7 @@ export default function FestivalPage() {
                       "bg-gradient-to-r from-[hsl(24_30%_12%)] via-[hsl(24_40%_18%)] to-[hsl(24_30%_12%)]",
                       "shadow-[0_20px_80px_-40px_hsl(24_100%_50%/0.35)]",
                       "transition-transform duration-300 hover:scale-[1.01]",
-                      "px-8 py-7",
+                      "px-6 md:px-8 py-7",
                       "focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
                     )}
                     aria-expanded={lineupOpen}
@@ -542,10 +545,13 @@ export default function FestivalPage() {
                       />
                     </div>
 
-                    {/* Preview stripe inside the panel */}
+                    {/* Preview stripe – condensed poster line */}
                     {hasArtists && !lineupOpen && (
-                      <div className="relative mt-3 text-xs md:text-sm text-foreground/50 tracking-wide">
-                        {previewNames.join(" · ")}{artistCount > 5 ? ` +${artistCount - 5}` : ""} — {artistCount} artister · {eventCount} events
+                      <div
+                        className="relative mt-3 text-sm md:text-base text-foreground/70 font-semibold tracking-wider uppercase"
+                        style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                      >
+                        {previewNames.map(n => n.toUpperCase()).join(" · ")}{artistCount > 5 ? ` +${artistCount - 5}` : ""}
                       </div>
                     )}
                   </button>
@@ -554,7 +560,7 @@ export default function FestivalPage() {
                 {/* ── Collapsible lineup posters (full width breakout) ── */}
               </div>
               {lineupOpen && (
-                <div className="mt-8 w-full">
+                <div className="mt-5 w-full">
                   {hasArtists ? (
                     <LineupPostersSection artists={allArtistsWithEventSlug} />
                   ) : (
@@ -564,8 +570,6 @@ export default function FestivalPage() {
                   )}
                 </div>
               )}
-              <div> {/* spacer to close structure */}
-              </div>
             </section>
           );
         }
