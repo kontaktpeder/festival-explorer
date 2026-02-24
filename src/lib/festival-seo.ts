@@ -77,13 +77,12 @@ export function festivalCanonicalUrl(slug: string): string {
 }
 
 function buildOffers(
-  base: string,
+  offerUrl: string,
   priceLow: number | null | undefined,
   priceHigh: number | null | undefined
 ): Record<string, unknown> {
-  const ticketUrl = `${base}/tickets`;
   const baseOffer = {
-    url: ticketUrl,
+    url: offerUrl,
     priceCurrency: "NOK" as const,
     availability: "https://schema.org/InStock" as const,
   };
@@ -152,7 +151,7 @@ export function festivalJsonLd(p: FestivalSeoParams): object {
       url: SITE_URL,
     },
     url: pageUrl,
-    offers: buildOffers(base, p.priceLow, p.priceHigh),
+    offers: buildOffers(`${pageUrl}#billetter`, p.priceLow, p.priceHigh),
     mainEntityOfPage: { "@id": pageId },
   };
 
