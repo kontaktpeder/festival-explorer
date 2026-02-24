@@ -37,9 +37,9 @@ const SLOT_ORDER = [
   { slot: "poster_body", sectionType: "poster_body" },
   { slot: "praktisk", sectionType: "praktisk" },
   { slot: "cta", sectionType: "cta" },
-  { slot: "faq", sectionType: "faq" },
   { slot: "venue", sectionType: "venue-plakat" },
   { slot: "utforsk", sectionType: "utforsk" },
+  { slot: "faq", sectionType: "faq" },
   { slot: "team", sectionType: "team" },
   { slot: "footer", sectionType: "footer" },
 ] as const;
