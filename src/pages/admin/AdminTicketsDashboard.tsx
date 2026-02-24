@@ -464,6 +464,7 @@ export default function AdminTicketsDashboard() {
   const [internalEmail, setInternalEmail] = useState("");
   const [internalType, setInternalType] = useState("LISTE");
   const [internalNote, setInternalNote] = useState("");
+  const [capacityDraft, setCapacityDraft] = useState<Record<string, number>>({});
 
   const { data: stats, isLoading: statsLoading } = useTicketStats();
   const { data: issues, isLoading: issuesLoading } = useTicketIssues();
@@ -537,6 +538,24 @@ export default function AdminTicketsDashboard() {
     },
     onError: (error: Error) => {
       toast.error("Feil: " + error.message);
+    },
+  });
+
+  const updateCapacity = useMutation({
+    mutationFn: async ({ ticketTypeId, capacity }: { ticketTypeId: string; capacity: number }) => {
+      const { error } = await supabase
+        .from("ticket_types")
+        .update({ capacity })
+        .eq("id", ticketTypeId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ticket-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["ticket-types-with-counts"] });
+      toast.success("Kapasitet oppdatert");
+    },
+    onError: (error: Error) => {
+      toast.error("Kunne ikke oppdatere kapasitet: " + error.message);
     },
   });
 
@@ -914,18 +933,20 @@ export default function AdminTicketsDashboard() {
             )}
           </div>
 
-          {/* Per-type tabell med indikatorer */}
+          {/* Kapasitet per billettype – redigerbar */}
           <Card>
             <CardHeader>
-              <CardTitle>Per billettype</CardTitle>
-              <CardDescription>Kapasitet, utstedt, sjekket inn</CardDescription>
+              <CardTitle>Sett kapasitet per billettype</CardTitle>
+              <CardDescription>
+                Maks antall billetter per type. Når antallet er nådd, låses valget på /tickets. Maks kan ikke settes lavere enn allerede utstedt.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Type</TableHead>
-                    <TableHead className="text-right">Maks</TableHead>
+                    <TableHead className="text-right w-28">Maks</TableHead>
                     <TableHead className="text-right">Utstedt</TableHead>
                     <TableHead className="text-right">Igjen</TableHead>
                     <TableHead className="text-right">Sjekket inn</TableHead>
@@ -942,13 +963,57 @@ export default function AdminTicketsDashboard() {
                       red: 'bg-red-500',
                       locked: 'bg-red-600',
                     };
+                    const displayCapacity = capacityDraft[type.id] ?? type.capacity;
+                    const minCapacity = type.sold;
                     return (
                       <TableRow key={type.id}>
                         <TableCell>
                           <span className="font-medium">{type.name}</span>
                           <span className="text-muted-foreground text-xs ml-1">({type.code})</span>
                         </TableCell>
-                        <TableCell className="text-right">{type.capacity}</TableCell>
+                        <TableCell className="text-right">
+                          <Input
+                            type="number"
+                            min={minCapacity}
+                            value={displayCapacity}
+                            onChange={(e) => {
+                              const v = parseInt(e.target.value, 10);
+                              if (!Number.isNaN(v)) setCapacityDraft((prev) => ({ ...prev, [type.id]: v }));
+                            }}
+                            onBlur={() => {
+                              const next = capacityDraft[type.id];
+                              if (next === undefined) return;
+                              if (next < minCapacity) {
+                                toast.error(`${type.name}: Maks kan ikke være lavere enn utstedt (${minCapacity})`);
+                                setCapacityDraft((prev) => {
+                                  const p = { ...prev };
+                                  delete p[type.id];
+                                  return p;
+                                });
+                                return;
+                              }
+                              if (next === type.capacity) {
+                                setCapacityDraft((prev) => {
+                                  const p = { ...prev };
+                                  delete p[type.id];
+                                  return p;
+                                });
+                                return;
+                              }
+                              updateCapacity.mutate({ ticketTypeId: type.id, capacity: next }, {
+                                onSettled: () => {
+                                  setCapacityDraft((prev) => {
+                                    const p = { ...prev };
+                                    delete p[type.id];
+                                    return p;
+                                  });
+                                },
+                              });
+                            }}
+                            className="h-8 w-20 text-right tabular-nums"
+                            disabled={updateCapacity.isPending}
+                          />
+                        </TableCell>
                         <TableCell className="text-right">{type.sold}</TableCell>
                         <TableCell className="text-right">{type.capacityLeft}</TableCell>
                         <TableCell className="text-right">{type.used}</TableCell>
