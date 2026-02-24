@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BackstageShell } from "@/components/layout/BackstageShell";
 import { LoadingState } from "@/components/ui/LoadingState";
-import AdminFestivalProgram from "@/pages/admin/AdminFestivalProgram";
+import { FestivalProgramTabs } from "@/components/dashboard/FestivalProgramTabs";
 
 export default function FestivalProgramRoom() {
   const { id } = useParams<{ id: string }>();
@@ -40,7 +40,11 @@ export default function FestivalProgramRoom() {
           : undefined
       }
     >
-      <AdminFestivalProgram />
+      <FestivalProgramTabs
+        festivalId={id!}
+        festivalName={festival?.name}
+        festivalSlug={festival?.slug}
+      />
     </BackstageShell>
   );
 }
