@@ -167,12 +167,6 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
                 >
                   Backstage
                 </Link>
-                <a
-                  href="#program"
-                  className="text-foreground/70 hover:text-foreground font-bold rounded-full px-5 py-3 text-sm transition-colors border border-foreground/20 hover:border-foreground/40"
-                >
-                  Se program
-                </a>
                 <Link
                   to="/tickets"
                   className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-7 py-3 text-base transition-all shadow-lg"
