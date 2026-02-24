@@ -30,7 +30,7 @@ interface ArtistPosterBlockProps {
     tagline?: string | null;
     hero_image_url?: string | null;
     logo_url?: string | null;
-    logo_display_mode?: 'with_name' | 'instead_of_name';
+    logo_display_mode?: string;
   };
   index: number;
   variant: "festival" | "boilerroom";

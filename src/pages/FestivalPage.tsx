@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
-import { Calendar, Settings } from "lucide-react";
+import { Calendar, Settings, Music, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useFestivalShell, useFestivalDetails } from "@/hooks/useFestival";
@@ -18,6 +19,7 @@ import { SectionRenderer } from "@/components/festival/SectionRenderer";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { DualLineupSection } from "@/components/festival/DualLineupSection";
+import { LineupPostersSection } from "@/components/festival/LineupPostersSection";
 import { FestivalFooter } from "@/components/festival/FestivalFooter";
 import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
@@ -27,6 +29,7 @@ import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
 const SLOT_ORDER = [
   { slot: "hero", sectionType: "hero" },
   { slot: "seo_intro", sectionType: "seo_intro" },
+  { slot: "lineup_cta", sectionType: "lineup_cta" },
   { slot: "program", sectionType: "program" },
   { slot: "lineup", sectionType: "artister" },
   { slot: "venue", sectionType: "venue-plakat" },
@@ -377,6 +380,8 @@ export default function FestivalPage() {
       (shell.description.split(" ").length > 15 ? "..." : "")
     : null;
 
+  const [lineupOpen, setLineupOpen] = useState(false);
+
   // ─── Loading / error states ──────────────────────────────────
   if (shellLoading) {
     return (
@@ -505,6 +510,65 @@ export default function FestivalPage() {
           );
         }
 
+        // ── LINEUP CTA (collapsible poster section) ──
+        if (slot === "lineup_cta") {
+          const hasArtists = (allArtistsWithEventSlug?.length ?? 0) > 0;
+          return (
+            <div key={slot} id="lineup" className="relative bg-background">
+              <div className="max-w-2xl mx-auto px-6 py-10">
+                <button
+                  onClick={() => {
+                    setLineupOpen((o) => !o);
+                    if (!lineupOpen) {
+                      requestAnimationFrame(() => {
+                        document.getElementById("lineup")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      });
+                    }
+                  }}
+                  className={cn(
+                    "group relative w-full flex items-center justify-center gap-3 py-5 px-8",
+                    "rounded-2xl overflow-hidden",
+                    "bg-gradient-to-r from-amber-600/90 via-orange-500/90 to-amber-600/90",
+                    "hover:from-amber-500 hover:via-orange-400 hover:to-amber-500",
+                    "text-white font-black text-xl md:text-2xl uppercase tracking-wider",
+                    "shadow-lg shadow-orange-950/30 hover:shadow-orange-500/20",
+                    "transition-all duration-300 hover:scale-[1.02]",
+                    "focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
+                  )}
+                  aria-expanded={lineupOpen}
+                  aria-controls="lineup-collapsible"
+                >
+                  <Music className="w-5 h-5" />
+                  Se LINEUP
+                  <ChevronDown className={cn(
+                    "w-5 h-5 transition-transform duration-300",
+                    lineupOpen && "rotate-180"
+                  )} />
+                </button>
+                <p className="text-center text-xs text-muted-foreground mt-3">
+                  Artister og DJs
+                </p>
+              </div>
+
+              <div
+                id="lineup-collapsible"
+                className={cn(
+                  "overflow-hidden transition-all duration-500",
+                  lineupOpen ? "max-h-[99999px] opacity-100" : "max-h-0 opacity-0"
+                )}
+              >
+                {hasArtists ? (
+                  <LineupPostersSection artists={allArtistsWithEventSlug} />
+                ) : (
+                  <div className="py-16 text-center text-muted-foreground">
+                    Lineup kommer snart.
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }
+
         // ── PROGRAM ──
         if (slot === "program") {
           if (section) {
@@ -541,12 +605,18 @@ export default function FestivalPage() {
                 <h2 className="section-title mb-2">Program</h2>
 
                 <div className="flex justify-center mb-6">
-                  <a
-                    href="#lineup"
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setLineupOpen(true);
+                      requestAnimationFrame(() => {
+                        document.getElementById("lineup")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      });
+                    }}
                     className="text-xs uppercase tracking-widest text-accent/60 hover:text-accent transition-colors font-medium"
                   >
                     Se lineup ↓
-                  </a>
+                  </button>
                 </div>
 
                 {programCategories.some((c) => c.items.length > 0) ? (
@@ -587,6 +657,7 @@ export default function FestivalPage() {
               key={slot}
               artists={allArtistsWithEventSlug}
               festivalTeam={festivalTeam}
+              showPosters={false}
             />
           );
         }
