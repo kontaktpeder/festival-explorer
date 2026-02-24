@@ -177,15 +177,25 @@ export function LineupPostersSection({ artists }: LineupPostersSectionProps) {
                     Kommer snart...
                   </p>
                 )}
-                {/* Upcoming placeholders for 2. etasje */}
                 {zone.key === "2-etasje" && (
-                  <div className="flex flex-col items-center gap-3 mt-2">
-                    <Mic className="w-6 h-6 md:w-8 md:h-8 text-white/20" strokeWidth={1.5} />
-                    <Mic className="w-6 h-6 md:w-8 md:h-8 text-white/20" strokeWidth={1.5} />
-                    <p className="text-[10px] md:text-xs tracking-[0.2em] uppercase text-white/30 mt-1">
-                      Slippes snart
-                    </p>
-                  </div>
+                  <>
+                    <div className="flex flex-col items-center text-center">
+                      <span
+                        className="text-2xl md:text-3xl lg:text-4xl font-black uppercase text-white/20 tracking-wide leading-none"
+                        style={{ fontFamily: "'Space Grotesk', sans-serif", textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}
+                      >
+                        Slippes snart
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-center text-center">
+                      <span
+                        className="text-2xl md:text-3xl lg:text-4xl font-black uppercase text-white/20 tracking-wide leading-none"
+                        style={{ fontFamily: "'Space Grotesk', sans-serif", textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}
+                      >
+                        Slippes snart
+                      </span>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
