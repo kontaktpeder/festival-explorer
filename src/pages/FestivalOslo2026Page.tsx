@@ -24,7 +24,10 @@ const SEO_MARKER = "data-giggen-seo";
 const SEO_DATA_KEY = "data-key";
 const SCRIPT_ID = "festival-oslo-2026-jsonld";
 
-function useFestivalOslo2026Seo(heroImageUrl: string | null) {
+function useFestivalOslo2026Seo(
+  heroImageUrl: string | null,
+  artists: Array<{ name?: string }> | null
+) {
   useEffect(() => {
     const baseUrl = getPublicUrl().replace(/\/$/, "");
     const canonicalUrl = `${baseUrl}${PAGE_PATH}`;
@@ -77,6 +80,17 @@ function useFestivalOslo2026Seo(heroImageUrl: string | null) {
     }
     linkCanonical.setAttribute("href", canonicalUrl);
 
+    const eventDesc =
+      META_DESCRIPTION ||
+      `GIGGEN Festival 2026 er en festival i Oslo 2026 på ${VENUE_NAME}. Live musikk, program og billetter.`;
+    const eventImage = heroImageUrl || undefined;
+    const performersFromArtists = (artists ?? [])
+      .slice(0, 8)
+      .map((a) =>
+        a?.name ? { "@type": "MusicGroup" as const, name: a.name } : null
+      )
+      .filter(Boolean);
+
     const jsonLd = {
       "@context": "https://schema.org",
       "@graph": [
@@ -92,19 +106,16 @@ function useFestivalOslo2026Seo(heroImageUrl: string | null) {
             name: "GIGGEN",
           },
           ...(ogImage
-            ? {
-                primaryImageOfPage: {
-                  "@type": "ImageObject",
-                  url: ogImage,
-                },
-              }
+            ? { primaryImageOfPage: { "@type": "ImageObject", url: ogImage } }
             : {}),
         },
         {
           "@type": "Event",
           "@id": `${canonicalUrl}#event`,
           name: "GIGGEN Festival 2026",
+          description: eventDesc,
           startDate: DEFAULT_START_DATE,
+          endDate: DEFAULT_START_DATE,
           eventStatus: "https://schema.org/EventScheduled",
           eventAttendanceMode:
             "https://schema.org/OfflineEventAttendanceMode",
@@ -117,8 +128,12 @@ function useFestivalOslo2026Seo(heroImageUrl: string | null) {
               addressCountry: "NO",
             },
           },
-          organizer: { "@type": "Organization", name: "Giggen" },
-          image: ogImage,
+          organizer: {
+            "@type": "Organization",
+            name: "Giggen",
+            url: "https://giggen.org",
+          },
+          ...(eventImage ? { image: eventImage } : {}),
           url: canonicalUrl,
           offers: {
             "@type": "Offer",
@@ -126,6 +141,9 @@ function useFestivalOslo2026Seo(heroImageUrl: string | null) {
             priceCurrency: "NOK",
             availability: "https://schema.org/InStock",
           },
+          ...(performersFromArtists.length > 0
+            ? { performer: performersFromArtists }
+            : {}),
           mainEntityOfPage: { "@id": `${canonicalUrl}#webpage` },
         },
       ],
@@ -149,7 +167,7 @@ function useFestivalOslo2026Seo(heroImageUrl: string | null) {
         .forEach((el) => el.remove());
       document.getElementById(SCRIPT_ID)?.remove();
     };
-  }, [heroImageUrl]);
+  }, [heroImageUrl, artists]);
 }
 
 const FAQ = [
@@ -167,7 +185,7 @@ export default function FestivalOslo2026Page() {
   const themeHeroUrl = useSignedMediaUrl(shell?.theme?.hero_image_url, "public");
   const heroImageUrl = themeHeroUrl || null;
 
-  useFestivalOslo2026Seo(heroImageUrl);
+  useFestivalOslo2026Seo(heroImageUrl, details?.allArtistsWithEventSlug ?? null);
 
   const artists = details?.allArtistsWithEventSlug || [];
 

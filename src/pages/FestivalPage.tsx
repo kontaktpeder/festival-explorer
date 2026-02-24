@@ -297,6 +297,12 @@ export default function FestivalPage() {
     ? new Date(shell.end_at).toISOString().slice(0, 10)
     : undefined;
 
+  const seoIntroRaw = (shell as any)?.seo_intro?.trim();
+  const eventDescriptionForSeo =
+    seoIntroRaw && seoIntroRaw.length > 0
+      ? seoIntroRaw.slice(0, 220).trim()
+      : null;
+
   const seoParams: FestivalSeoParams | null = shell
     ? {
         festivalName: shell.name,
@@ -308,6 +314,10 @@ export default function FestivalPage() {
         heroImageUrl: themeHeroUrl || null,
         slug: festivalSlug,
         updatedAt: (shell as any)?.updated_at ?? null,
+        eventDescription: eventDescriptionForSeo,
+        performers: (details?.allArtistsWithEventSlug ?? [])
+          .map((a: { name?: string }) => (a?.name ? { name: a.name } : null))
+          .filter(Boolean) as Array<{ name: string }>,
       }
     : null;
 
