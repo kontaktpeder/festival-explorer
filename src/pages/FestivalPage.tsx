@@ -32,8 +32,7 @@ import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
 // ─── Slot system ────────────────────────────────────────────────
 const SLOT_ORDER = [
   { slot: "hero", sectionType: "hero" },
-  { slot: "seo_intro", sectionType: "seo_intro" },
-  { slot: "lineup_cta", sectionType: "lineup_cta" },
+  { slot: "poster_body", sectionType: "poster_body" },
   { slot: "praktisk", sectionType: "praktisk" },
   { slot: "faq", sectionType: "faq" },
   { slot: "cta", sectionType: "cta" },
@@ -52,66 +51,7 @@ function getSectionByType(
 
 // ─── Slot components ────────────────────────────────────────────
 
-function SEOIntroSlot({
-  city,
-  year,
-  venueName,
-  seoIntroText,
-}: {
-  city: string;
-  year: string;
-  venueName: string;
-  seoIntroText?: string | null;
-}) {
-  const [expanded, setExpanded] = useState(false);
-  const h2 = `Festival i ${city} ${year} på ${venueName}`;
-
-  const seoIntro = "GIGGEN Festival 2026 er en festival i Oslo på legendariske Josefines Vertshus. En kveld med live musikk, konserter og kunst midt i Oslo sentrum.";
-
-  const vibes = [
-    "Vi sparker i gang våren på legendariske Josefines Vertshus med live musikk, BOILER ROOM, kunst, mat og drikke 🚀",
-    "Ta med deg vennene dine og bli med på en helaften der fremadstormende musikere, DJs og kunstnere fra hele Sør-Norge får fritt spillerom og fyller huset med energi.",
-    "Det blir dans. Det blir stemning. Det blir en fullspekket festivalkveld du ikke vil gå glipp av. Velkommen 🪩",
-  ];
-
-  return (
-    <section className="relative bg-background py-10 md:py-16 px-6">
-      <div className="max-w-2xl mx-auto space-y-4">
-        <h2 className="text-display text-2xl md:text-4xl font-black uppercase tracking-tight leading-tight">
-          {h2}
-        </h2>
-
-        <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
-          {seoIntro}
-        </p>
-
-        {/* Collapsible vibes section */}
-        <div className={cn(
-          "overflow-hidden transition-all duration-400",
-          expanded ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
-        )}>
-          <div className="space-y-4 border-l-2 border-accent/40 pl-5 pt-2">
-            {vibes.map((line, i) => (
-              <p
-                key={i}
-                className="text-foreground/90 text-base md:text-lg leading-relaxed"
-              >
-                {line}
-              </p>
-            ))}
-          </div>
-        </div>
-
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="text-accent/70 hover:text-accent text-sm font-medium transition-colors"
-        >
-          {expanded ? "Vis mindre ↑" : "Om festivalen →"}
-        </button>
-      </div>
-    </section>
-  );
-}
+// (SEOIntroSlot removed – merged into poster_body slot)
 
 const DEFAULT_FAQ = [
   { q: "Når er festivalen?", a: "Se dato under hero og i program." },
@@ -392,6 +332,7 @@ export default function FestivalPage() {
     : null;
 
   const [lineupOpen, setLineupOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   // ─── Loading / error states ──────────────────────────────────
   if (shellLoading) {
@@ -508,95 +449,119 @@ export default function FestivalPage() {
           );
         }
 
-        // ── SEO INTRO ──
-        if (slot === "seo_intro") {
-          return (
-            <SEOIntroSlot
-              key={slot}
-              city={city}
-              year={year}
-              venueName={venueName}
-              seoIntroText={(shell as any)?.seo_intro}
-            />
-          );
-        }
-
-        // ── LINEUP CTA (collapsible poster section) ──
-        if (slot === "lineup_cta") {
+        // ── POSTER BODY (intro + lineup CTA in one centered column) ──
+        if (slot === "poster_body") {
           const hasArtists = (allArtistsWithEventSlug?.length ?? 0) > 0;
           const artistCount = allArtistsWithEventSlug?.length ?? 0;
           const eventCount = validEvents?.length ?? 0;
-          // Preview: first 5 unique artist names
           const previewNames = (allArtistsWithEventSlug ?? []).slice(0, 5).map(a => a.name);
+          const h2 = `Festival i ${city} ${year} på ${venueName}`;
+          const seoIntro = "GIGGEN Festival 2026 er en festival i Oslo på legendariske Josefines Vertshus. En kveld med live musikk, konserter og kunst midt i Oslo sentrum.";
+          const vibes = [
+            "Vi sparker i gang våren på legendariske Josefines Vertshus med live musikk, BOILER ROOM, kunst, mat og drikke 🚀",
+            "Ta med deg vennene dine og bli med på en helaften der fremadstormende musikere, DJs og kunstnere fra hele Sør-Norge får fritt spillerom og fyller huset med energi.",
+            "Det blir dans. Det blir stemning. Det blir en fullspekket festivalkveld du ikke vil gå glipp av. Velkommen 🪩",
+          ];
+
           return (
-            <div key={slot} id="lineup" className="relative bg-background">
-              <div className="max-w-2xl mx-auto px-6 py-6">
-                <button
-                  onClick={() => {
-                    setLineupOpen((o) => !o);
-                    if (!lineupOpen) {
-                      requestAnimationFrame(() => {
-                        document.getElementById("lineup")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                      });
-                    }
-                  }}
-                  className={cn(
-                    "group relative w-full flex items-center justify-center gap-3 py-4 px-8",
-                    "rounded-xl overflow-hidden",
-                    "shadow-lg shadow-black/30 hover:shadow-black/50",
-                    "transition-all duration-300 hover:scale-[1.01]",
-                    "focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
-                  )}
-                  aria-expanded={lineupOpen}
-                  aria-controls="lineup-collapsible"
-                >
-                  <img
-                    src={lineupCtaBg}
-                    alt=""
-                    className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-                  />
-                  <div className="absolute inset-0 bg-black/25 group-hover:bg-black/15 transition-colors duration-300 pointer-events-none" />
-                  <span
-                    className="relative z-10 text-lg sm:text-xl md:text-2xl font-semibold uppercase tracking-[0.2em] text-white/90 drop-shadow-md"
-                    style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            <section key={slot} className="relative bg-background py-10 md:py-16 px-6" id="lineup">
+              <div className="mx-auto w-full max-w-3xl text-center space-y-8 lg:space-y-10">
+
+                {/* ── SEO Intro ── */}
+                <div className="space-y-4">
+                  <h2 className="text-display text-3xl md:text-4xl lg:text-5xl font-extrabold uppercase tracking-tight leading-tight">
+                    {h2}
+                  </h2>
+                  <p className="mx-auto max-w-2xl text-base md:text-lg text-muted-foreground leading-relaxed">
+                    {seoIntro}
+                  </p>
+
+                  {/* Collapsible vibes */}
+                  <div className={cn(
+                    "overflow-hidden transition-all duration-400",
+                    lineupOpen ? "max-h-0 opacity-0" : "", // hide vibes when lineup is open
+                    expanded ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
+                  )}>
+                    <div className="space-y-4 text-left mx-auto max-w-2xl border-l-2 border-accent/40 pl-5 pt-2">
+                      {vibes.map((line, i) => (
+                        <p key={i} className="text-foreground/90 text-base md:text-lg leading-relaxed">
+                          {line}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setExpanded(!expanded)}
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-accent/70 hover:text-accent transition-colors"
                   >
-                    LINEUP
-                  </span>
-                  <ChevronDown className={cn(
-                    "w-4 h-4 relative z-10 text-white/50 transition-transform duration-300",
-                    lineupOpen && "rotate-180"
-                  )} />
-                </button>
+                    {expanded ? "Vis mindre ↑" : "Om festivalen →"}
+                  </button>
+                </div>
 
-                {/* Preview stripe – visible only when closed */}
-                {!lineupOpen && hasArtists && (
-                  <div className="mt-3 flex items-center justify-center gap-2 flex-wrap">
-                    <span className="text-[11px] text-muted-foreground tracking-wide">
-                      {previewNames.join(" · ")}{artistCount > 5 ? " +" + (artistCount - 5) : ""}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground/50">
-                      — {artistCount} artister · {eventCount} events
-                    </span>
+                {/* ── LINEUP Panel (poster-style) ── */}
+                <div className="mx-auto w-full max-w-2xl">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLineupOpen((o) => !o);
+                      if (!lineupOpen) {
+                        requestAnimationFrame(() => {
+                          document.getElementById("lineup")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        });
+                      }
+                    }}
+                    className={cn(
+                      "group relative w-full overflow-hidden rounded-2xl",
+                      "border border-accent/40",
+                      "bg-gradient-to-r from-[hsl(24_30%_12%)] via-[hsl(24_40%_18%)] to-[hsl(24_30%_12%)]",
+                      "shadow-[0_20px_80px_-40px_hsl(24_100%_50%/0.35)]",
+                      "transition-transform duration-300 hover:scale-[1.01]",
+                      "px-8 py-7",
+                      "focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background"
+                    )}
+                    aria-expanded={lineupOpen}
+                    aria-controls="lineup-collapsible"
+                  >
+                    <div className="relative flex items-center justify-center gap-4">
+                      <span
+                        className="text-2xl md:text-3xl font-black tracking-[0.35em] text-foreground/95"
+                        style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                      >
+                        LINEUP
+                      </span>
+                      <ChevronDown
+                        className={cn(
+                          "h-6 w-6 text-foreground/60 transition-transform duration-300",
+                          lineupOpen && "rotate-180"
+                        )}
+                        aria-hidden
+                      />
+                    </div>
+
+                    {/* Preview stripe inside the panel */}
+                    {hasArtists && !lineupOpen && (
+                      <div className="relative mt-3 text-xs md:text-sm text-foreground/50 tracking-wide">
+                        {previewNames.join(" · ")}{artistCount > 5 ? ` +${artistCount - 5}` : ""} — {artistCount} artister · {eventCount} events
+                      </div>
+                    )}
+                  </button>
+                </div>
+
+                {/* ── Collapsible lineup posters ── */}
+                {lineupOpen && (
+                  <div className="mt-8">
+                    {hasArtists ? (
+                      <LineupPostersSection artists={allArtistsWithEventSlug} />
+                    ) : (
+                      <div className="py-16 text-center text-muted-foreground">
+                        Lineup kommer snart.
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-
-              <div
-                id="lineup-collapsible"
-                className={cn(
-                  "overflow-hidden transition-all duration-500",
-                  lineupOpen ? "max-h-[99999px] opacity-100" : "max-h-0 opacity-0"
-                )}
-              >
-                {hasArtists ? (
-                  <LineupPostersSection artists={allArtistsWithEventSlug} />
-                ) : (
-                  <div className="py-16 text-center text-muted-foreground">
-                    Lineup kommer snart.
-                  </div>
-                )}
-              </div>
-            </div>
+            </section>
           );
         }
 
