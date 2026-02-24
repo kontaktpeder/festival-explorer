@@ -1,8 +1,46 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import giggenLogo from "@/assets/giggen-logo-final.png";
+
+/** Smart bottom CTA that hides on scroll-down, shows on scroll-up */
+function SmartBottomCta() {
+  const [visible, setVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY > lastScrollY.current + 8) {
+        setVisible(false); // scrolling down
+      } else if (currentY < lastScrollY.current - 4) {
+        setVisible(true); // scrolling up
+      }
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <div
+      className="fixed inset-x-0 z-50 flex justify-center pointer-events-none transition-all duration-300"
+      style={{
+        bottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateY(0)' : 'translateY(20px)',
+      }}
+    >
+      <Link
+        to="/tickets"
+        className="pointer-events-auto bg-accent text-accent-foreground font-black rounded-full px-5 py-2.5 text-sm shadow-lg"
+      >
+        Kjøp festivalpass
+      </Link>
+    </div>
+  );
+}
 
 interface StaticLogoProps {
   /** If true, logo starts large and centered (for festival/homepage hero) */
@@ -199,27 +237,8 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
 
 
 
-            {/* ALWAYS VISIBLE: Fixed bottom CTAs – Se program + Kjøp festivalpass */}
-            <div
-              className="fixed inset-x-0 z-50 flex justify-center gap-3 pointer-events-none"
-              style={{
-                bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)'
-              }}
-            >
-              <a
-                href="#program"
-                className="pointer-events-auto text-foreground/90 font-bold rounded-full px-5 py-3 text-sm shadow-lg backdrop-blur-md border border-foreground/20"
-                style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
-              >
-                Se program
-              </a>
-              <Link
-                to="/tickets"
-                className="pointer-events-auto bg-accent text-accent-foreground font-black rounded-full px-6 py-3 text-sm shadow-lg"
-              >
-                Kjøp festivalpass
-              </Link>
-            </div>
+            {/* ALWAYS VISIBLE: Fixed bottom CTA – only ticket button, smart hide on scroll */}
+            <SmartBottomCta />
           </>
         )}
       </>
