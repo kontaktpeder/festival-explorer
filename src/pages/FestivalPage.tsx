@@ -524,12 +524,12 @@ export default function FestivalPage() {
               id="program"
             >
               <div className="relative z-10 max-w-4xl mx-auto w-full">
-                <h2 className="section-title">Program</h2>
+                <h2 className="section-title mb-2">Program</h2>
 
-                <div className="flex justify-center pb-6">
+                <div className="flex justify-center mb-6">
                   <a
                     href="#lineup"
-                    className="text-sm uppercase tracking-widest text-accent hover:text-accent/80 transition-colors font-semibold"
+                    className="text-xs uppercase tracking-widest text-accent/60 hover:text-accent transition-colors font-medium"
                   >
                     Se lineup ↓
                   </a>
