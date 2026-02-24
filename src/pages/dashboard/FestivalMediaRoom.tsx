@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BackstageShell } from "@/components/layout/BackstageShell";
 import { LoadingState } from "@/components/ui/LoadingState";
-import AdminMedia from "@/pages/admin/AdminMedia";
+import FestivalFilbankPage from "@/pages/dashboard/FestivalFilbankPage";
 
 export default function FestivalMediaRoom() {
   const { id } = useParams<{ id: string }>();
@@ -35,7 +35,7 @@ export default function FestivalMediaRoom() {
       subtitle={festival?.name}
       backTo={`/dashboard/festival/${id}`}
     >
-      <AdminMedia />
+      <FestivalFilbankPage />
     </BackstageShell>
   );
 }
