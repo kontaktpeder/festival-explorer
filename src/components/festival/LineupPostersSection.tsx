@@ -67,7 +67,7 @@ const ZONES = [
     key: "boiler-room",
     label: "BOILER ROOM",
     slugMatch: "boiler-room",
-    bgImage: null as unknown as string,
+    bgImage: zoneBgBoilerroom,
     accentClass: "text-foreground/60",
     borderClass: "border-foreground/10",
     glowClass: "shadow-white/5",
