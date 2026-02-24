@@ -51,7 +51,7 @@ const ZONES = [
     accentClass: "text-emerald-400",
     borderClass: "border-emerald-500/30",
     glowClass: "shadow-emerald-500/20",
-    overlayClass: "from-emerald-950/60 via-black/40 to-black/80",
+    overlayClass: "",
   },
   {
     key: "1-etasje",
@@ -61,7 +61,7 @@ const ZONES = [
     accentClass: "text-accent",
     borderClass: "border-accent/30",
     glowClass: "shadow-accent/20",
-    overlayClass: "from-orange-950/60 via-black/40 to-black/80",
+    overlayClass: "",
   },
   {
     key: "boiler-room",
@@ -71,7 +71,7 @@ const ZONES = [
     accentClass: "text-foreground/60",
     borderClass: "border-foreground/10",
     glowClass: "shadow-white/5",
-    overlayClass: "from-black via-black to-black",
+    overlayClass: "",
   },
 ] as const;
 
