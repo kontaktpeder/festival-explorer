@@ -10,7 +10,7 @@ export function PageLayout({ children }: PageLayoutProps) {
   const location = useLocation();
   
   // Only show BottomNav on explore and search pages
-  const showBottomNav = location.pathname === "/explore" || location.pathname === "/search";
+  const showBottomNav = location.pathname === "/utforsk" || location.pathname === "/search";
 
   return (
     <div className="min-h-screen flex flex-col">
