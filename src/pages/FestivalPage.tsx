@@ -20,6 +20,8 @@ import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { DualLineupSection } from "@/components/festival/DualLineupSection";
 import { LineupPostersSection } from "@/components/festival/LineupPostersSection";
+import { LineupWithTimeSection } from "@/components/festival/LineupWithTimeSection";
+import { ProgramTimelineSection } from "@/components/festival/ProgramTimelineSection";
 import lineupCtaBg from "@/assets/lineup-cta-bg.jpg";
 import lineupCtaBgWarm from "@/assets/lineup-cta-bg-warm.jpg";
 import { FestivalFooter } from "@/components/festival/FestivalFooter";
@@ -34,7 +36,9 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 // ─── Slot system ────────────────────────────────────────────────
 const SLOT_ORDER = [
   { slot: "hero", sectionType: "hero" },
+  { slot: "facts_bar", sectionType: null },
   { slot: "poster_body", sectionType: "poster_body" },
+  { slot: "program", sectionType: null },
   { slot: "praktisk", sectionType: "praktisk" },
   { slot: "cta", sectionType: "cta" },
   { slot: "venue", sectionType: "venue-plakat" },
@@ -224,6 +228,16 @@ function CtaSlot({
           >
             Kjøp billetter
           </Link>
+          <a
+            href="#program"
+            className="btn-secondary text-center text-sm font-semibold uppercase tracking-wider"
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById("program")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
+            Se hele programmet
+          </a>
         </div>
       </div>
     </section>
@@ -317,6 +331,17 @@ export default function FestivalPage() {
   );
   const allArtistsWithEventSlug = details?.allArtistsWithEventSlug || [];
   const festivalTeam = details?.festivalTeam;
+  const festivalProgramSlots = details?.festivalProgramSlots || [];
+
+  const eventIdToSlug = useMemo(() => {
+    const m: Record<string, string> = {};
+    (validEvents ?? []).forEach((fe: any) => {
+      if (fe?.event?.id) m[fe.event.id] = fe.event.slug;
+    });
+    return m;
+  }, [validEvents]);
+
+  const hasProgramSlots = festivalProgramSlots.length > 0;
 
   const programCategories = useMemo(() => {
     const events = (validEvents ?? [])
@@ -453,6 +478,26 @@ export default function FestivalPage() {
           );
         }
 
+        // ── FACTS BAR ──
+        if (slot === "facts_bar") {
+          const factsItems = [
+            shell?.start_at
+              ? format(new Date(shell.start_at), "d. MMMM yyyy", { locale: nb })
+              : null,
+            "17:00–01:00",
+            venueName,
+            "18 år",
+            TICKET_SALES_ENABLED ? "Billetter fra 229 kr" : null,
+          ].filter(Boolean);
+          return (
+            <div key={slot} className="bg-background py-4 px-4 text-center border-b border-foreground/5">
+              <p className="text-xs md:text-sm text-muted-foreground tracking-wide">
+                {factsItems.join(" · ")}
+              </p>
+            </div>
+          );
+        }
+
         // ── POSTER BODY (intro + lineup CTA in one centered column) ──
         if (slot === "poster_body") {
           const hasArtists = (allArtistsWithEventSlug?.length ?? 0) > 0;
@@ -577,7 +622,7 @@ export default function FestivalPage() {
                 {/* ── Collapsible lineup posters (full width breakout) ── */}
               </div>
               {lineupOpen && (
-                <div className="mt-5 w-full">
+                <div className="mt-5 w-full space-y-0">
                   {hasArtists ? (
                     <LineupPostersSection artists={allArtistsWithEventSlug} />
                   ) : (
@@ -585,13 +630,40 @@ export default function FestivalPage() {
                       Lineup kommer snart.
                     </div>
                   )}
+                  {/* Time-based lineup below posters */}
+                  {hasProgramSlots && (
+                    <LineupWithTimeSection
+                      slots={festivalProgramSlots}
+                      eventIdToSlug={eventIdToSlug}
+                    />
+                  )}
                 </div>
               )}
             </section>
           );
         }
 
-        // (program and lineup slots removed from public view)
+        // ── PROGRAM TIMELINE ──
+        if (slot === "program") {
+          if (!hasProgramSlots) return null;
+          const eventsForProgram = validEvents
+            .filter((fe: any) => fe?.event)
+            .slice(0, 3)
+            .map((fe: any) => ({
+              id: fe.event.id,
+              title: fe.event.title,
+              slug: fe.event.slug,
+              start_at: fe.event.start_at,
+              hero_image_url: fe.event.hero_image_url,
+            }));
+          return (
+            <ProgramTimelineSection
+              key={slot}
+              events={eventsForProgram}
+              slots={festivalProgramSlots}
+            />
+          );
+        }
 
         // ── VENUE ──
         if (slot === "venue") {
