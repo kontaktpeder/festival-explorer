@@ -21,25 +21,32 @@ export function FestivalFooter() {
         </p>
         
         {/* Links */}
-        <div className="flex items-center justify-center gap-8 text-xs text-white/25">
-          <Link 
-            to="/request-access"
-            className="hover:text-white/50 transition-colors"
-          >
-            Be om tilgang
-          </Link>
-          <Link 
-            to="/personvern"
-            className="hover:text-white/50 transition-colors"
-          >
-            Personvern
-          </Link>
-          <Link 
-            to="/vilkar"
-            className="hover:text-white/50 transition-colors"
-          >
-            Vilkår
-          </Link>
+        <div className="flex flex-col items-center gap-6">
+          {/* Primary links */}
+          <div className="flex items-center justify-center gap-8 text-xs text-white/40">
+            <Link to="/festival" className="hover:text-white/70 transition-colors">
+              Festival
+            </Link>
+            <Link to="/utforsk" className="hover:text-white/70 transition-colors">
+              Utforsk
+            </Link>
+            <Link to="/om-giggen" className="hover:text-white/70 transition-colors">
+              Om GIGGEN
+            </Link>
+            <Link to="/request-access" className="hover:text-white/70 transition-colors">
+              Be om tilgang
+            </Link>
+          </div>
+
+          {/* Secondary links */}
+          <div className="flex items-center justify-center gap-6 text-[11px] text-white/20">
+            <Link to="/personvern" className="hover:text-white/40 transition-colors">
+              Personvern
+            </Link>
+            <Link to="/vilkar" className="hover:text-white/40 transition-colors">
+              Vilkår
+            </Link>
+          </div>
         </div>
         
         {/* Copyright */}

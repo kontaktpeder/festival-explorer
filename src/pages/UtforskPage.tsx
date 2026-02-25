@@ -302,7 +302,7 @@ export default function UtforskPage() {
       </div>
 
       {/* ── Festival banner ──────────────────── */}
-      {mode === "publikum" && !hasActiveFilters && <FestivalBanner />}
+      {!hasActiveFilters && <FestivalBanner />}
 
       {/* ── Content ──────────────────────────── */}
       <main className="flex-1 max-w-5xl mx-auto w-full">
