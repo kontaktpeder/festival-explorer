@@ -226,16 +226,12 @@ function CtaSlot({
           >
             Kjøp billetter
           </Link>
-          <a
-            href="#program"
-            className="btn-secondary text-center text-sm font-semibold uppercase tracking-wider"
-            onClick={(e) => {
-              e.preventDefault();
-              document.getElementById("program")?.scrollIntoView({ behavior: "smooth" });
-            }}
+          <Link
+            to="/festival/program"
+            className="border border-foreground/30 hover:border-foreground/60 text-foreground text-center text-sm font-bold uppercase tracking-wider rounded-full px-6 py-3 transition-all"
           >
-            Se hele programmet
-          </a>
+            Program
+          </Link>
         </div>
       </div>
     </section>
