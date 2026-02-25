@@ -488,8 +488,8 @@ export default function FestivalPage() {
             TICKET_SALES_ENABLED ? "Billetter fra 229 kr" : null,
           ].filter(Boolean);
           return (
-            <div key={slot} className="bg-background py-4 px-4 text-center border-b border-foreground/5">
-              <p className="text-xs md:text-sm text-muted-foreground tracking-wide">
+            <div key={slot} className="w-screen relative left-1/2 -translate-x-1/2 bg-background py-4 px-4 text-center border-b border-foreground/5">
+              <p className="text-sm md:text-base font-bold text-foreground/80 tracking-wide">
                 {factsItems.join(" · ")}
               </p>
             </div>
