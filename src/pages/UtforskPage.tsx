@@ -14,6 +14,13 @@ import {
   Ticket,
 } from "lucide-react";
 import { EventCard } from "@/components/ui/EventCard";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { CroppedImage } from "@/components/ui/CroppedImage";
@@ -212,43 +219,31 @@ export default function UtforskPage() {
         </div>
       </div>
 
-      {/* ── Type filters ─────────────────────── */}
-      <div className="px-4 pb-5 max-w-5xl mx-auto w-full">
-        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+      {/* ── Type filter ──────────────────────── */}
+      <div className="px-4 pb-5 max-w-5xl mx-auto w-full flex items-center gap-2">
+        <Select
+          value={typeFilter || "alle"}
+          onValueChange={(v) => setTypeFilter(v === "alle" ? undefined : v)}
+        >
+          <SelectTrigger className="w-[180px] bg-secondary border-border">
+            <SelectValue placeholder="Filtrer på type" />
+          </SelectTrigger>
+          <SelectContent className="bg-popover border-border z-50">
+            <SelectItem value="alle">Alle typer</SelectItem>
+            {Object.entries(TYPE_LABELS).map(([key, { label }]) => (
+              <SelectItem key={key} value={key}>{label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {hasActiveFilters && (
           <button
-            onClick={() => setTypeFilter(undefined)}
-            className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider transition-all border ${
-              !typeFilter
-                ? "border-accent/40 bg-accent/10 text-accent"
-                : "border-border/40 text-muted-foreground hover:text-foreground hover:border-foreground/20"
-            }`}
+            onClick={() => { setSearchQuery(""); setTypeFilter(undefined); }}
+            className="flex items-center gap-1 px-3 py-2 rounded-md text-xs text-destructive hover:bg-destructive/10 transition-all"
           >
-            Alle
+            <X className="w-3 h-3" />
+            Nullstill
           </button>
-          {Object.entries(TYPE_LABELS).map(([key, { label, icon }]) => (
-            <button
-              key={key}
-              onClick={() => setTypeFilter(typeFilter === key ? undefined : key)}
-              className={`shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium uppercase tracking-wider transition-all border ${
-                typeFilter === key
-                  ? "border-accent/40 bg-accent/10 text-accent"
-                  : "border-border/40 text-muted-foreground hover:text-foreground hover:border-foreground/20"
-              }`}
-            >
-              {icon}
-              {label}
-            </button>
-          ))}
-          {hasActiveFilters && (
-            <button
-              onClick={() => { setSearchQuery(""); setTypeFilter(undefined); }}
-              className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs text-destructive border border-destructive/30 hover:bg-destructive/10 transition-all"
-            >
-              <X className="w-3 h-3" />
-              Nullstill
-            </button>
-          )}
-        </div>
+        )}
       </div>
 
       {/* ── Festival banner ──────────────────── */}
