@@ -484,24 +484,45 @@ export default function FestivalPage() {
 
         // ── FACTS BAR ──
         if (slot === "facts_bar") {
-          const factsItems = [
+          const venueSlug = venue?.slug;
+          const factsParts: React.ReactNode[] = [
             shell?.start_at
               ? format(new Date(shell.start_at), "d. MMMM yyyy", { locale: nb })
               : null,
             "17:00–01:00",
-            venueName,
+            venueSlug ? (
+              <Link
+                key="venue"
+                to={`/venue/${venueSlug}`}
+                className="underline decoration-foreground/30 hover:decoration-accent hover:text-accent transition-colors"
+              >
+                {venueName}
+              </Link>
+            ) : (
+              venueName
+            ),
             "18 år",
             TICKET_SALES_ENABLED ? "Billetter fra 229 kr" : null,
           ].filter(Boolean);
           return (
             <div key={slot} className="w-screen relative left-1/2 -translate-x-1/2 bg-background py-4 px-4 text-center border-b border-foreground/5">
-              <p className="hidden md:block text-base font-bold text-foreground/80 tracking-wide">
-                {factsItems.join(" · ")}
+              <p className="hidden md:flex items-center justify-center gap-0 text-base font-bold text-foreground/80 tracking-wide">
+                {factsParts.reduce<React.ReactNode[]>((acc, part, i) => {
+                  if (i > 0) acc.push(<span key={`dot-${i}`} className="mx-2">·</span>);
+                  acc.push(<span key={`part-${i}`}>{part}</span>);
+                  return acc;
+                }, [])}
               </p>
               <div className="flex flex-col gap-0.5 md:hidden">
-                {factsItems.map((item, i) => (
+                {[
+                  shell?.start_at ? format(new Date(shell.start_at), "d. MMMM yyyy", { locale: nb }) : null,
+                  "17:00–01:00",
+                  venueName,
+                  "18 år",
+                  TICKET_SALES_ENABLED ? "Billetter fra 229 kr" : null,
+                ].filter(Boolean).map((item, i) => (
                   <span key={i} className="text-xs font-bold text-foreground/80 tracking-wide">
-                    {item}
+                    {String(item)}
                   </span>
                 ))}
               </div>
@@ -517,9 +538,25 @@ export default function FestivalPage() {
           const previewNames = (allArtistsWithEventSlug ?? []).slice(0, 5).map(a => a.name);
           const h2 = `Festival i ${city} ${year} på ${venueName}`;
           const seoIntro = "GIGGEN Festival 2026 er en festival i Oslo på legendariske Josefines Vertshus. En kveld med live musikk, konserter og kunst midt i Oslo sentrum.";
-          const vibes = [
-            "Vi sparker i gang våren på legendariske Josefines Vertshus med live musikk, BOILER ROOM, kunst, mat og drikke 🚀",
-            "Ta med deg vennene dine og bli med på en helaften der fremadstormende musikere, DJs og kunstnere fra hele Sør-Norge får fritt spillerom og fyller huset med energi.",
+          
+          const venueSlug = venue?.slug;
+          const vibesNodes: React.ReactNode[] = [
+            <>Vi sparker i gang våren på legendariske{" "}
+              {venueSlug ? (
+                <Link to={`/venue/${venueSlug}`} className="underline hover:text-accent transition-colors font-medium">
+                  {venueName}
+                </Link>
+              ) : (
+                venueName
+              )}
+              {" "}med live musikk, BOILER ROOM, kunst, mat og drikke 🚀
+            </>,
+            <>Ta med deg vennene dine og bli med på en helaften der fremadstormende musikere, DJs og kunstnere fra hele Sør-Norge får fritt spillerom og fyller huset med energi.{" "}
+              <Link to="/utforsk" className="underline hover:text-accent transition-colors font-medium">
+                Oppdag artister på GIGGEN
+              </Link>
+              {" "}→
+            </>,
             "Det blir dans. Det blir stemning. Det blir en fullspekket festivalkveld du ikke vil gå glipp av. Velkommen 🪩",
           ];
 
@@ -533,7 +570,15 @@ export default function FestivalPage() {
                     {h2}
                   </h2>
                   <p className="mx-auto max-w-xl text-sm md:text-base text-muted-foreground leading-relaxed">
-                    Live musikk, konserter og kunst på Josefines Vertshus – én kveld, fullt hus.
+                    Live musikk, konserter og kunst på{" "}
+                    {venueSlug ? (
+                      <Link to={`/venue/${venueSlug}`} className="underline hover:text-accent transition-colors">
+                        {venueName}
+                      </Link>
+                    ) : (
+                      venueName
+                    )}
+                    {" "}– én kveld, fullt hus.
                   </p>
 
                   {/* Collapsible vibes */}
@@ -543,7 +588,7 @@ export default function FestivalPage() {
                     expanded ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
                   )}>
                     <div className="space-y-4 text-left mx-auto max-w-2xl border-l-2 border-accent/40 pl-5 pt-2">
-                      {vibes.map((line, i) => (
+                      {vibesNodes.map((line, i) => (
                         <p key={i} className="text-foreground/90 text-base md:text-lg leading-relaxed">
                           {line}
                         </p>

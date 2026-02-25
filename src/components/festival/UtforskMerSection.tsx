@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Users, Mail, Sparkles } from "lucide-react";
+import { Users, Mail, Sparkles, Compass, Calendar, HelpCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { VenuePosterBlock } from "./VenuePosterBlock";
@@ -10,17 +10,32 @@ interface ExploreLink {
   subtitle: string;
   to: string;
 }
-const exploreLinks: ExploreLink[] = [{
-  icon: <Sparkles className="w-5 h-5" />,
-  title: "Lær mer om GIGGEN",
-  subtitle: "Historien bak",
-  to: "/om-giggen"
-}, {
-  icon: <Users className="w-5 h-5" />,
-  title: "Backstage",
-  subtitle: "For artister, arrangører og crew",
-  to: "/dashboard"
-}];
+const exploreLinks: ExploreLink[] = [
+  {
+    icon: <Compass className="w-5 h-5" />,
+    title: "Utforsk GIGGEN",
+    subtitle: "Venues, artister og arrangementer",
+    to: "/utforsk",
+  },
+  {
+    icon: <Calendar className="w-5 h-5" />,
+    title: "Kommende arrangementer",
+    subtitle: "Se alle events",
+    to: "/utforsk?mode=publikum",
+  },
+  {
+    icon: <Sparkles className="w-5 h-5" />,
+    title: "Lær mer om GIGGEN",
+    subtitle: "Historien bak",
+    to: "/om-giggen",
+  },
+  {
+    icon: <Users className="w-5 h-5" />,
+    title: "Backstage",
+    subtitle: "For artister, arrangører og crew",
+    to: "/dashboard",
+  },
+];
 export function UtforskMerSection() {
   // Hent venue fra database for dynamisk oppdatering
   const {

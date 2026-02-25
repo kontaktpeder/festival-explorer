@@ -230,6 +230,14 @@ export function LineupPostersSection({
                             {slot.name ?? "TBA"}
                           </span>
                         )}
+                        {/* Sub-links */}
+                        {slot.slug && (
+                          <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 text-[10px] md:text-xs tracking-wide uppercase text-white/40">
+                            <Link to={`/project/${slot.slug}`} className="hover:text-accent transition-colors">
+                              Les mer
+                            </Link>
+                          </div>
+                        )}
                       </div>
                     ))
                   ) : (
@@ -241,34 +249,49 @@ export function LineupPostersSection({
                   /* ── Fallback: artist names ── */
                   hasContent ? (
                     zoneArtists.map((artist) => (
-                      <Link
-                        key={artist.id}
-                        to={`/project/${artist.slug}`}
-                        className={cn(
-                          "group flex flex-col items-center text-center",
-                          "transition-all duration-300",
-                          "hover:scale-105"
-                        )}
-                      >
-                        <span
-                          className="text-2xl md:text-3xl lg:text-4xl font-black uppercase text-white tracking-wide leading-none"
-                          style={{
-                            fontFamily: "'Space Grotesk', sans-serif",
-                            textShadow: "0 2px 20px rgba(0,0,0,0.6), 0 0 40px rgba(0,0,0,0.3)",
-                          }}
+                      <div key={artist.id} className="flex flex-col items-center text-center">
+                        <Link
+                          to={`/project/${artist.slug}`}
+                          className={cn(
+                            "group flex flex-col items-center text-center",
+                            "transition-all duration-300",
+                            "hover:scale-105"
+                          )}
                         >
-                          {artist.name}
-                        </span>
-                        {artist.tagline && (
-                          <p className={cn(
-                            "mt-1 text-[10px] md:text-xs tracking-wide",
-                            zone.accentClass,
-                            "opacity-60 group-hover:opacity-100 transition-opacity"
-                          )}>
-                            {artist.tagline}
-                          </p>
-                        )}
-                      </Link>
+                          <span
+                            className="text-2xl md:text-3xl lg:text-4xl font-black uppercase text-white tracking-wide leading-none"
+                            style={{
+                              fontFamily: "'Space Grotesk', sans-serif",
+                              textShadow: "0 2px 20px rgba(0,0,0,0.6), 0 0 40px rgba(0,0,0,0.3)",
+                            }}
+                          >
+                            {artist.name}
+                          </span>
+                          {artist.tagline && (
+                            <p className={cn(
+                              "mt-1 text-[10px] md:text-xs tracking-wide",
+                              zone.accentClass,
+                              "opacity-60 group-hover:opacity-100 transition-opacity"
+                            )}>
+                              {artist.tagline}
+                            </p>
+                          )}
+                        </Link>
+                        {/* Sub-links */}
+                        <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 text-[10px] md:text-xs tracking-wide uppercase text-white/40">
+                          <Link to={`/project/${artist.slug}`} className="hover:text-accent transition-colors">
+                            Les mer
+                          </Link>
+                          {artist.event_slug && (
+                            <>
+                              <span className="text-white/20">·</span>
+                              <Link to={`/event/${artist.event_slug}`} className="hover:text-accent transition-colors">
+                                Se hvor de spiller
+                              </Link>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     ))
                   ) : (
                     <p className={cn("text-sm tracking-widest uppercase", zone.accentClass, "opacity-40")}>
