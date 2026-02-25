@@ -170,8 +170,8 @@ export function LineupPostersSection({
               <div className="flex-1 flex flex-col items-center justify-center gap-6 md:gap-8 px-4 md:px-6 py-10 md:py-14">
                 {useSlots ? (
                   /* ── Program slots: time centered above name ── */
-                  zoneSlots.length > 0 ? (
-                    zoneSlots.map((slot, i) => (
+                    zoneSlots.filter((s) => s.entity_id && s.name).length > 0 ? (
+                    zoneSlots.filter((s) => s.entity_id && s.name).map((slot, i) => (
                       <div
                         key={`${slot.event_id}-${i}`}
                         className="flex flex-col items-center text-center"
