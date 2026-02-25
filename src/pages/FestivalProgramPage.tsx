@@ -5,6 +5,8 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { ProgramTimelineSection } from "@/components/festival/ProgramTimelineSection";
+import { FestivalFooter } from "@/components/festival/FestivalFooter";
+import { BackToFestival } from "@/components/ui/BackToFestival";
 import { Calendar } from "lucide-react";
 
 export default function FestivalProgramPage() {
@@ -58,7 +60,10 @@ export default function FestivalProgramPage() {
   return (
     <PageLayout>
       <StaticLogo />
-      <div className="pt-20 md:pt-24">
+      <div className="pt-20 md:pt-24 pb-8 px-4">
+        <BackToFestival festivalSlug={festivalSlug} festivalName={shell.name} />
+      </div>
+      <div>
         {festivalProgramSlots.length > 0 ? (
           <ProgramTimelineSection
             events={eventsForProgram}
@@ -70,6 +75,7 @@ export default function FestivalProgramPage() {
           </div>
         )}
       </div>
+      <FestivalFooter />
     </PageLayout>
   );
 }
