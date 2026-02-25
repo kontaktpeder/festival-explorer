@@ -339,6 +339,16 @@ export default function FestivalPage() {
     return m;
   }, [validEvents]);
 
+  // Map zone keys to event page slugs for linking zone headers
+  const zoneEventSlugs = useMemo(() => {
+    const m: Record<string, string> = {};
+    (validEvents ?? []).forEach((fe: any) => {
+      const slug = fe?.event?.slug;
+      if (slug) m[slug] = slug;
+    });
+    return m;
+  }, [validEvents]);
+
   const hasProgramSlots = festivalProgramSlots.length > 0;
 
   const programCategories = useMemo(() => {
@@ -626,6 +636,7 @@ export default function FestivalPage() {
                       artists={allArtistsWithEventSlug}
                       programSlots={festivalProgramSlots}
                       eventIdToSlug={eventIdToSlug}
+                      zoneEventSlugs={zoneEventSlugs}
                     />
                   ) : (
                     <div className="py-16 text-center text-muted-foreground">
