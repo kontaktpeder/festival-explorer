@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import FestivalPage from "./pages/FestivalPage";
 import FestivalOslo2026Page from "./pages/FestivalOslo2026Page";
+import FestivalProgramPage from "./pages/FestivalProgramPage";
 import EventPage from "./pages/EventPage";
 import ProjectPage from "./pages/ProjectPage";
 import ExplorePage from "./pages/ExplorePage";
@@ -92,6 +93,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/festival" element={<FestivalPage />} />
+          <Route path="/festival/program" element={<FestivalProgramPage />} />
           <Route path="/festival/:slug" element={<FestivalPage />} />
           <Route path="/festival-oslo-2026" element={<FestivalOslo2026Page />} />
           <Route path="/event-room/:id" element={<EventRoomPage />} />

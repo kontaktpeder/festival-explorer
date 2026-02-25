@@ -161,16 +161,12 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
 
               {/* Right: Actions */}
               <div className="flex items-center gap-3">
-                <a
-                  href="#lineup"
+                <Link
+                  to="/festival/program"
                   className="text-foreground/60 hover:text-foreground font-bold text-sm uppercase tracking-wider transition-colors"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.getElementById("lineup")?.scrollIntoView({ behavior: "smooth" });
-                  }}
                 >
-                  Se lineup
-                </a>
+                  Program
+                </Link>
                 <Link
                   to={session ? "/dashboard" : "/admin/login"}
                   className="text-foreground/60 hover:text-foreground font-bold text-sm uppercase tracking-wider transition-colors"
@@ -229,13 +225,21 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
                   />
                 </Link>
 
-                {/* Right: Only Backstage */}
-                <Link
-                  to={session ? "/dashboard" : "/admin/login"}
-                  className="text-foreground/60 font-bold text-xs uppercase tracking-wider"
-                >
-                  Backstage
-                </Link>
+                {/* Right: Program + Backstage */}
+                <div className="flex items-center gap-3">
+                  <Link
+                    to="/festival/program"
+                    className="text-foreground/60 font-bold text-xs uppercase tracking-wider"
+                  >
+                    Program
+                  </Link>
+                  <Link
+                    to={session ? "/dashboard" : "/admin/login"}
+                    className="text-foreground/60 font-bold text-xs uppercase tracking-wider"
+                  >
+                    Backstage
+                  </Link>
+                </div>
               </div>
             </div>
 

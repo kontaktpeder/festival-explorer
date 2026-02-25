@@ -21,7 +21,6 @@ import { StaticLogo } from "@/components/ui/StaticLogo";
 import { DualLineupSection } from "@/components/festival/DualLineupSection";
 import { LineupPostersSection } from "@/components/festival/LineupPostersSection";
 import { LineupWithTimeSection } from "@/components/festival/LineupWithTimeSection";
-import { ProgramTimelineSection } from "@/components/festival/ProgramTimelineSection";
 import lineupCtaBg from "@/assets/lineup-cta-bg.jpg";
 import lineupCtaBgWarm from "@/assets/lineup-cta-bg-warm.jpg";
 import { FestivalFooter } from "@/components/festival/FestivalFooter";
@@ -38,7 +37,6 @@ const SLOT_ORDER = [
   { slot: "hero", sectionType: "hero" },
   { slot: "facts_bar", sectionType: null },
   { slot: "poster_body", sectionType: "poster_body" },
-  { slot: "program", sectionType: null },
   { slot: "praktisk", sectionType: "praktisk" },
   { slot: "cta", sectionType: "cta" },
   { slot: "venue", sectionType: "venue-plakat" },
@@ -640,27 +638,6 @@ export default function FestivalPage() {
           );
         }
 
-        // ── PROGRAM TIMELINE ──
-        if (slot === "program") {
-          if (!hasProgramSlots) return null;
-          const eventsForProgram = validEvents
-            .filter((fe: any) => fe?.event)
-            .slice(0, 3)
-            .map((fe: any) => ({
-              id: fe.event.id,
-              title: fe.event.title,
-              slug: fe.event.slug,
-              start_at: fe.event.start_at,
-              hero_image_url: fe.event.hero_image_url,
-            }));
-          return (
-            <ProgramTimelineSection
-              key={slot}
-              events={eventsForProgram}
-              slots={festivalProgramSlots}
-            />
-          );
-        }
 
         // ── VENUE ──
         if (slot === "venue") {
