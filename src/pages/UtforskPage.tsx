@@ -11,6 +11,10 @@ import {
   ChevronRight,
   Ticket,
   SlidersHorizontal,
+  Mic2,
+  Briefcase,
+  Eye,
+  RefreshCw,
 } from "lucide-react";
 import { EventCard } from "@/components/ui/EventCard";
 import {
@@ -34,11 +38,49 @@ import {
 import type { Entity, Event } from "@/types/database";
 
 /* ── Mode config ────────────────────────────────── */
-const MODES: { key: UtforskMode; label: string }[] = [
-  { key: "publikum", label: "Publikum" },
-  { key: "musiker", label: "Musikere" },
-  { key: "arrangor", label: "Arrangører" },
+const MODES: { key: UtforskMode; label: string; description: string; icon: React.ReactNode }[] = [
+  { key: "publikum", label: "Publikum", description: "Finn events, artister og spillesteder", icon: <Eye className="w-5 h-5" /> },
+  { key: "musiker", label: "Musiker", description: "Se spillesteder og andre artister", icon: <Mic2 className="w-5 h-5" /> },
+  { key: "arrangor", label: "Arrangør", description: "Finn artister og band til bookinger", icon: <Briefcase className="w-5 h-5" /> },
 ];
+
+const MODE_LABEL_MAP: Record<UtforskMode, string> = {
+  publikum: "Publikum",
+  musiker: "Musiker",
+  arrangor: "Arrangør",
+};
+
+/* ── Mode picker modal ───────────────────────────── */
+function ModePickerModal({ onSelect }: { onSelect: (mode: UtforskMode) => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-6">
+      <div className="w-full max-w-sm bg-popover border border-border p-6 space-y-5 animate-slide-up">
+        <div className="text-center space-y-1">
+          <h2 className="text-lg font-bold text-foreground">Hva utforsker du som i dag?</h2>
+          <p className="text-xs text-muted-foreground">Du kan bytte visning når som helst</p>
+        </div>
+        <div className="space-y-2">
+          {MODES.map((m) => (
+            <button
+              key={m.key}
+              onClick={() => onSelect(m.key)}
+              className="w-full flex items-center gap-4 px-4 py-3.5 text-left border border-border/50 hover:border-accent/50 hover:bg-accent/5 transition-all group"
+            >
+              <span className="text-muted-foreground group-hover:text-accent transition-colors">
+                {m.icon}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">{m.label}</p>
+                <p className="text-xs text-muted-foreground">{m.description}</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-accent transition-colors" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const TYPE_LABELS: Record<string, { label: string; icon: React.ReactNode }> = {
   solo: { label: "Soloartist", icon: <User className="w-3 h-3" /> },
@@ -129,14 +171,19 @@ export default function UtforskPage() {
   const autoMode = useAutoMode();
 
   const urlMode = searchParams.get("mode") as UtforskMode | null;
-  const [mode, setMode] = useState<UtforskMode>(urlMode || "publikum");
+  const hasChosenMode = !!urlMode || !!sessionStorage.getItem("utforsk-mode");
+  const [mode, setMode] = useState<UtforskMode>(urlMode || (sessionStorage.getItem("utforsk-mode") as UtforskMode) || "publikum");
+  const [showModePicker, setShowModePicker] = useState(!hasChosenMode && !autoMode);
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
   const [typeFilter, setTypeFilter] = useState<string | undefined>(
     searchParams.get("type") || undefined
   );
 
   useEffect(() => {
-    if (!urlMode && autoMode) setMode(autoMode);
+    if (!urlMode && autoMode) {
+      setMode(autoMode);
+      setShowModePicker(false);
+    }
   }, [autoMode, urlMode]);
 
   useEffect(() => {
@@ -164,10 +211,18 @@ export default function UtforskPage() {
   function handleModeChange(newMode: UtforskMode) {
     setMode(newMode);
     setTypeFilter(undefined);
+    sessionStorage.setItem("utforsk-mode", newMode);
+  }
+
+  function handleModalSelect(newMode: UtforskMode) {
+    handleModeChange(newMode);
+    setShowModePicker(false);
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      {/* ── Mode picker modal ────────────────── */}
+      {showModePicker && <ModePickerModal onSelect={handleModalSelect} />}
       {/* ── Header ─────────────────────────────── */}
       <header className="px-4 pt-12 pb-3 max-w-5xl mx-auto w-full">
         <h1 className="text-display text-3xl sm:text-4xl tracking-tight">Utforsk</h1>
@@ -204,9 +259,15 @@ export default function UtforskPage() {
             onValueChange={(v) => handleModeChange(v as UtforskMode)}
           >
             <SelectTrigger className="w-auto gap-1.5 h-8 px-3 text-xs bg-transparent border-border/50">
-              <SelectValue />
+              <span className="flex items-center gap-1.5">
+                <RefreshCw className="w-3 h-3 text-muted-foreground/60" />
+                {MODE_LABEL_MAP[mode]}
+              </span>
             </SelectTrigger>
             <SelectContent className="bg-popover border-border z-50">
+              <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                Bytt visning
+              </div>
               {MODES.map((m) => (
                 <SelectItem key={m.key} value={m.key}>{m.label}</SelectItem>
               ))}
