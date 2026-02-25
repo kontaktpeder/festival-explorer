@@ -169,15 +169,17 @@ export function LineupPostersSection({
               {/* Content list */}
               <div className="flex-1 flex flex-col items-center justify-center gap-6 md:gap-8 px-4 md:px-6 py-10 md:py-14">
                 {useSlots ? (
-                  /* ── Program slots: time + name ── */
+                  /* ── Program slots: time centered above name ── */
                   zoneSlots.length > 0 ? (
-                    zoneSlots.map((slot, i) => (
+                    zoneSlots
+                      .filter((s) => s.slot_kind === "concert" || s.slot_kind === "performance" || !s.slot_kind)
+                      .map((slot, i) => (
                       <div
                         key={`${slot.event_id}-${i}`}
-                        className="flex items-baseline gap-4 text-center flex-col items-center"
+                        className="flex flex-col items-center text-center"
                       >
                         <span
-                          className="text-xs text-white/40 font-mono tabular-nums tracking-wider"
+                          className="text-[10px] text-white/35 font-mono tabular-nums tracking-[0.2em] uppercase mb-1"
                           style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}
                         >
                           {formatTime(slot.starts_at)}
