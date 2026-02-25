@@ -40,7 +40,10 @@ function SmartBottomCta() {
       </Link>
       <button
         type="button"
-        onClick={() => document.getElementById("lineup")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+        onClick={() => {
+          window.dispatchEvent(new CustomEvent("giggen:open-lineup"));
+          document.getElementById("lineup")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }}
         className="pointer-events-auto font-bold text-xs uppercase tracking-wider text-foreground/80 hover:text-accent transition-colors py-2.5 px-3"
       >
         Se lineup

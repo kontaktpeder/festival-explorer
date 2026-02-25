@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -366,6 +366,16 @@ export default function FestivalPage() {
 
   const [lineupOpen, setLineupOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
+
+  // Listen for "Se lineup" button from SmartBottomCta
+  useEffect(() => {
+    const handler = () => {
+      setLineupOpen(true);
+      setExpanded(true);
+    };
+    window.addEventListener("giggen:open-lineup", handler);
+    return () => window.removeEventListener("giggen:open-lineup", handler);
+  }, []);
 
   // ─── Loading / error states ──────────────────────────────────
   if (shellLoading) {
