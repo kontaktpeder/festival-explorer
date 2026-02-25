@@ -55,8 +55,8 @@ function EntityGridCard({ entity }: { entity: Entity }) {
               src={imageUrl}
               alt={entity.name}
               imageSettings={entity.hero_image_settings}
-              aspect="hero"
-              className="w-full h-full transition-transform duration-700 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              containerClassName="w-full h-full"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
           </>
