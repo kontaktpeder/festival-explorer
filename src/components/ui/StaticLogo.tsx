@@ -161,6 +161,16 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
 
               {/* Right: Actions */}
               <div className="flex items-center gap-3">
+                <a
+                  href="#lineup"
+                  className="text-foreground/60 hover:text-foreground font-bold text-sm uppercase tracking-wider transition-colors"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById("lineup")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
+                  Se lineup
+                </a>
                 <Link
                   to={session ? "/dashboard" : "/admin/login"}
                   className="text-foreground/60 hover:text-foreground font-bold text-sm uppercase tracking-wider transition-colors"

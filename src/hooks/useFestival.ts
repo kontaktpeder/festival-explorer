@@ -74,7 +74,7 @@ export function useFestivalDetails(festivalId: string | null | undefined) {
 
       const eventIds = (festivalEvents || []).map((fe) => fe.event?.id).filter(Boolean) as string[];
 
-      const [participantsResult, legacyLineupResult, festivalParticipantsResult] = await Promise.all([
+      const [participantsResult, legacyLineupResult, festivalParticipantsResult, programSlotsResult] = await Promise.all([
         eventIds.length > 0
           ? supabase.from("event_participants").select("event_id, participant_kind, participant_id, role_label, sort_order").in("event_id", eventIds).eq("zone", "on_stage").order("sort_order", { ascending: true })
           : Promise.resolve({ data: [], error: null }),
@@ -82,6 +82,9 @@ export function useFestivalDetails(festivalId: string | null | undefined) {
           ? supabase.from("event_entities").select(`*, entity:entities(*)`).in("event_id", eventIds).order("billing_order", { ascending: true })
           : Promise.resolve({ data: [], error: null }),
         supabase.from("festival_participants").select("*").eq("festival_id", festivalId).in("zone", ["backstage", "host"]).order("zone", { ascending: true }).order("sort_order", { ascending: true }),
+        eventIds.length > 0
+          ? supabase.from("event_program_slots").select(`event_id, starts_at, ends_at, slot_kind, entity:entities(id, name, slug)`).in("event_id", eventIds).eq("is_visible_public", true).eq("is_canceled", false).order("starts_at", { ascending: true })
+          : Promise.resolve({ data: [], error: null }),
       ]);
 
       const allParticipants = participantsResult.data || [];
@@ -178,10 +181,22 @@ export function useFestivalDetails(festivalId: string | null | undefined) {
         });
       }
 
+      // Map program slots
+      const festivalProgramSlots = (programSlotsResult.data || []).map((row: any) => ({
+        event_id: row.event_id,
+        starts_at: row.starts_at,
+        ends_at: row.ends_at ?? null,
+        name: row.entity?.name ?? null,
+        slug: row.entity?.slug ?? null,
+        entity_id: row.entity?.id ?? null,
+        slot_kind: row.slot_kind,
+      }));
+
       return {
         festivalEvents: sortedEvents,
         allArtistsWithEventSlug,
         festivalTeam: { backstage: festivalBackstage, hostRoles: festivalHostRoles },
+        festivalProgramSlots,
       };
     },
     enabled: !!festivalId,
