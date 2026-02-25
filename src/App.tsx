@@ -10,6 +10,7 @@ import FestivalProgramPage from "./pages/FestivalProgramPage";
 import EventPage from "./pages/EventPage";
 import ProjectPage from "./pages/ProjectPage";
 import ExplorePage from "./pages/ExplorePage";
+import UtforskPage from "./pages/UtforskPage";
 import SearchPage from "./pages/SearchPage";
 import OmGiggenPage from "./pages/OmGiggenPage";
 import AcceptInvitation from "./pages/AcceptInvitation";
@@ -101,8 +102,7 @@ const App = () => (
           <Route path="/project/:slug" element={<ProjectPage />} />
           <Route path="/venue/:slug" element={<VenuePage />} />
           <Route path="/om-giggen" element={<OmGiggenPage />} />
-          {/* TODO: Reaktiver etter MVP - explore blir global navigasjon */}
-          {/* <Route path="/explore" element={<ExplorePage />} /> */}
+          <Route path="/utforsk" element={<UtforskPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/tickets" element={<TicketsPage />} />
           <Route path="/success" element={<SuccessPage />} />
