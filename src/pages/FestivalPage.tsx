@@ -371,7 +371,12 @@ export default function FestivalPage() {
   useEffect(() => {
     const handler = () => {
       setLineupOpen(true);
-      setExpanded(true);
+      // Scroll to lineup after DOM updates
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          document.getElementById("lineup")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+      });
     };
     window.addEventListener("giggen:open-lineup", handler);
     return () => window.removeEventListener("giggen:open-lineup", handler);
