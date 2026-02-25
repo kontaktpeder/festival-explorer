@@ -3,8 +3,6 @@ import { useSearchParams, Link } from "react-router-dom";
 import {
   Search,
   Users,
-  Mic2,
-  Briefcase,
   Calendar,
   MapPin,
   Building2,
@@ -12,6 +10,7 @@ import {
   X,
   ChevronRight,
   Ticket,
+  SlidersHorizontal,
 } from "lucide-react";
 import { EventCard } from "@/components/ui/EventCard";
 import {
@@ -35,10 +34,10 @@ import {
 import type { Entity, Event } from "@/types/database";
 
 /* ── Mode config ────────────────────────────────── */
-const MODES: { key: UtforskMode; label: string; icon: React.ReactNode }[] = [
-  { key: "publikum", label: "Publikum", icon: <Users className="w-4 h-4" /> },
-  { key: "musiker", label: "Musikere", icon: <Mic2 className="w-4 h-4" /> },
-  { key: "arrangor", label: "Arrangører", icon: <Briefcase className="w-4 h-4" /> },
+const MODES: { key: UtforskMode; label: string }[] = [
+  { key: "publikum", label: "Publikum" },
+  { key: "musiker", label: "Musikere" },
+  { key: "arrangor", label: "Arrangører" },
 ];
 
 const TYPE_LABELS: Record<string, { label: string; icon: React.ReactNode }> = {
@@ -55,7 +54,7 @@ function EntityGridCard({ entity }: { entity: Entity }) {
 
   return (
     <Link to={route} className="group block">
-      <div className="relative aspect-[3/4] rounded-sm overflow-hidden bg-secondary">
+      <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
         {imageUrl ? (
           <>
             <CroppedImage
@@ -77,7 +76,7 @@ function EntityGridCard({ entity }: { entity: Entity }) {
 
         {/* Type badge */}
         {typeInfo && (
-          <span className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-medium bg-black/50 text-white/70 backdrop-blur-sm">
+          <span className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2 py-0.5 text-[10px] uppercase tracking-wider font-medium bg-black/50 text-white/70 backdrop-blur-sm">
             {typeInfo.icon}
             {typeInfo.label}
           </span>
@@ -108,13 +107,11 @@ function FestivalBanner() {
   return (
     <Link
       to="/festival"
-      className="group block mx-4 mb-6 relative overflow-hidden rounded-sm"
+      className="group block mx-4 mb-6 relative overflow-hidden"
     >
-      <div className="relative bg-gradient-to-r from-accent/15 via-accent/5 to-transparent border border-accent/20 px-5 py-4 flex items-center justify-between">
+      <div className="relative bg-accent/5 border-l-2 border-accent/40 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-accent/15 flex items-center justify-center">
-            <Ticket className="w-4 h-4 text-accent" />
-          </div>
+          <Ticket className="w-4 h-4 text-accent/70" />
           <div>
             <p className="text-sm font-semibold text-foreground">GIGGEN Festival 2026</p>
             <p className="text-xs text-muted-foreground">14. mars · Josefines Vertshus, Oslo</p>
@@ -176,29 +173,9 @@ export default function UtforskPage() {
         <h1 className="text-display text-3xl sm:text-4xl tracking-tight">Utforsk</h1>
       </header>
 
-      {/* ── Mode selector – pill style ────────── */}
-      <div className="px-4 pb-4 max-w-5xl mx-auto w-full flex items-center gap-3">
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground/60 shrink-0">Utforsk som</span>
-        <div className="inline-flex bg-secondary/60 rounded-full p-1 gap-0.5">
-          {MODES.map((m) => (
-            <button
-              key={m.key}
-              onClick={() => handleModeChange(m.key)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                mode === m.key
-                  ? "bg-accent text-accent-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {m.icon}
-              {m.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Search bar ───────────────────────── */}
-      <div className="px-4 pb-3 max-w-5xl mx-auto w-full">
+      {/* ── Toolbar: search + filters ────────── */}
+      <div className="px-4 pb-4 max-w-5xl mx-auto w-full space-y-3">
+        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
           <input
@@ -206,7 +183,7 @@ export default function UtforskPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Søk etter navn..."
-            className="w-full bg-secondary/40 text-foreground placeholder:text-muted-foreground/40 pl-10 pr-10 py-3 rounded-sm text-base border border-border/50 focus:border-accent/50 focus:bg-secondary/60 focus:outline-none transition-all"
+            className="w-full bg-transparent text-foreground placeholder:text-muted-foreground/40 pl-10 pr-10 py-2.5 text-base border-b border-border/50 focus:border-accent/50 focus:outline-none transition-all"
           />
           {searchQuery && (
             <button
@@ -217,33 +194,50 @@ export default function UtforskPage() {
             </button>
           )}
         </div>
-      </div>
 
-      {/* ── Type filter ──────────────────────── */}
-      <div className="px-4 pb-5 max-w-5xl mx-auto w-full flex items-center gap-2">
-        <Select
-          value={typeFilter || "alle"}
-          onValueChange={(v) => setTypeFilter(v === "alle" ? undefined : v)}
-        >
-          <SelectTrigger className="w-[180px] bg-secondary border-border">
-            <SelectValue placeholder="Filtrer på type" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border z-50">
-            <SelectItem value="alle">Alle typer</SelectItem>
-            {Object.entries(TYPE_LABELS).map(([key, { label }]) => (
-              <SelectItem key={key} value={key}>{label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {hasActiveFilters && (
-          <button
-            onClick={() => { setSearchQuery(""); setTypeFilter(undefined); }}
-            className="flex items-center gap-1 px-3 py-2 rounded-md text-xs text-destructive hover:bg-destructive/10 transition-all"
+        {/* Mode + type in one row */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
+
+          <Select
+            value={mode}
+            onValueChange={(v) => handleModeChange(v as UtforskMode)}
           >
-            <X className="w-3 h-3" />
-            Nullstill
-          </button>
-        )}
+            <SelectTrigger className="w-auto gap-1.5 h-8 px-3 text-xs bg-transparent border-border/50">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border z-50">
+              {MODES.map((m) => (
+                <SelectItem key={m.key} value={m.key}>{m.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={typeFilter || "alle"}
+            onValueChange={(v) => setTypeFilter(v === "alle" ? undefined : v)}
+          >
+            <SelectTrigger className="w-auto gap-1.5 h-8 px-3 text-xs bg-transparent border-border/50">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border z-50">
+              <SelectItem value="alle">Alle typer</SelectItem>
+              {Object.entries(TYPE_LABELS).map(([key, { label }]) => (
+                <SelectItem key={key} value={key}>{label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {hasActiveFilters && (
+            <button
+              onClick={() => { setSearchQuery(""); setTypeFilter(undefined); }}
+              className="flex items-center gap-1 px-2 py-1 text-xs text-destructive hover:bg-destructive/10 transition-all"
+            >
+              <X className="w-3 h-3" />
+              Nullstill
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ── Festival banner ──────────────────── */}
