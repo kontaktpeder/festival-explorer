@@ -495,9 +495,16 @@ export default function FestivalPage() {
           ].filter(Boolean);
           return (
             <div key={slot} className="w-screen relative left-1/2 -translate-x-1/2 bg-background py-4 px-4 text-center border-b border-foreground/5">
-              <p className="text-sm md:text-base font-bold text-foreground/80 tracking-wide">
+              <p className="hidden md:block text-base font-bold text-foreground/80 tracking-wide">
                 {factsItems.join(" · ")}
               </p>
+              <div className="flex flex-col gap-0.5 md:hidden">
+                {factsItems.map((item, i) => (
+                  <span key={i} className="text-xs font-bold text-foreground/80 tracking-wide">
+                    {item}
+                  </span>
+                ))}
+              </div>
             </div>
           );
         }
