@@ -24,6 +24,7 @@ interface LineupPostersSectionProps {
   artists: Artist[];
   programSlots?: ProgramSlotItem[];
   eventIdToSlug?: Record<string, string>;
+  zoneEventSlugs?: Record<string, string>; // zone key → event page slug
 }
 
 // Zone configuration
@@ -75,6 +76,7 @@ export function LineupPostersSection({
   artists,
   programSlots,
   eventIdToSlug,
+  zoneEventSlugs,
 }: LineupPostersSectionProps) {
   const isMobile = useIsMobile();
 
@@ -152,18 +154,38 @@ export function LineupPostersSection({
                 "px-4 md:px-6 pt-8 md:pt-10 pb-4 text-center border-b",
                 zone.borderClass
               )}>
-                <h3
-                  className={cn(
-                    "text-base md:text-lg font-black tracking-[0.35em] uppercase",
-                    zone.accentClass
-                  )}
-                  style={{
-                    fontFamily: "'Space Grotesk', sans-serif",
-                    textShadow: "0 2px 12px rgba(0,0,0,0.4)",
-                  }}
-                >
-                  {zone.label}
-                </h3>
+                {zoneEventSlugs?.[zone.key] ? (
+                  <Link
+                    to={`/event/${zoneEventSlugs[zone.key]}`}
+                    className="group"
+                  >
+                    <h3
+                      className={cn(
+                        "text-base md:text-lg font-black tracking-[0.35em] uppercase group-hover:opacity-80 transition-opacity",
+                        zone.accentClass
+                      )}
+                      style={{
+                        fontFamily: "'Space Grotesk', sans-serif",
+                        textShadow: "0 2px 12px rgba(0,0,0,0.4)",
+                      }}
+                    >
+                      {zone.label}
+                    </h3>
+                  </Link>
+                ) : (
+                  <h3
+                    className={cn(
+                      "text-base md:text-lg font-black tracking-[0.35em] uppercase",
+                      zone.accentClass
+                    )}
+                    style={{
+                      fontFamily: "'Space Grotesk', sans-serif",
+                      textShadow: "0 2px 12px rgba(0,0,0,0.4)",
+                    }}
+                  >
+                    {zone.label}
+                  </h3>
+                )}
               </div>
 
               {/* Content list */}
