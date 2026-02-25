@@ -622,20 +622,17 @@ export default function FestivalPage() {
                 {/* ── Collapsible lineup posters (full width breakout) ── */}
               </div>
               {lineupOpen && (
-                <div className="mt-5 w-full space-y-0">
+                <div className="mt-5 w-full">
                   {hasArtists ? (
-                    <LineupPostersSection artists={allArtistsWithEventSlug} />
+                    <LineupPostersSection
+                      artists={allArtistsWithEventSlug}
+                      programSlots={festivalProgramSlots}
+                      eventIdToSlug={eventIdToSlug}
+                    />
                   ) : (
                     <div className="py-16 text-center text-muted-foreground">
                       Lineup kommer snart.
                     </div>
-                  )}
-                  {/* Time-based lineup below posters */}
-                  {hasProgramSlots && (
-                    <LineupWithTimeSection
-                      slots={festivalProgramSlots}
-                      eventIdToSlug={eventIdToSlug}
-                    />
                   )}
                 </div>
               )}
