@@ -171,9 +171,7 @@ export function LineupPostersSection({
                 {useSlots ? (
                   /* ── Program slots: time centered above name ── */
                   zoneSlots.length > 0 ? (
-                    zoneSlots
-                      .filter((s) => s.slot_kind === "concert" || s.slot_kind === "performance" || !s.slot_kind)
-                      .map((slot, i) => (
+                    zoneSlots.map((slot, i) => (
                       <div
                         key={`${slot.event_id}-${i}`}
                         className="flex flex-col items-center text-center"
