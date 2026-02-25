@@ -170,7 +170,8 @@ export default function UtforskPage() {
       </header>
 
       {/* ── Mode selector – pill style ────────── */}
-      <div className="px-4 pb-4 max-w-5xl mx-auto w-full">
+      <div className="px-4 pb-4 max-w-5xl mx-auto w-full flex items-center gap-3">
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground/60 shrink-0">Utforsk som</span>
         <div className="inline-flex bg-secondary/60 rounded-full p-1 gap-0.5">
           {MODES.map((m) => (
             <button
