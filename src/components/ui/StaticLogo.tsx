@@ -25,7 +25,7 @@ function SmartBottomCta() {
 
   return (
     <div
-      className="fixed inset-x-0 z-50 flex justify-center pointer-events-none transition-all duration-300"
+      className="fixed inset-x-0 z-50 flex justify-center items-center gap-3 pointer-events-none transition-all duration-300"
       style={{
         bottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
         opacity: visible ? 1 : 0,
@@ -38,6 +38,13 @@ function SmartBottomCta() {
       >
         Kjøp festivalpass
       </Link>
+      <button
+        type="button"
+        onClick={() => document.getElementById("lineup")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+        className="pointer-events-auto font-bold text-xs uppercase tracking-wider text-foreground/80 hover:text-accent transition-colors py-2.5 px-3"
+      >
+        Se lineup
+      </button>
     </div>
   );
 }
@@ -245,7 +252,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
 
 
 
-            {/* ALWAYS VISIBLE: Fixed bottom CTA – only ticket button, smart hide on scroll */}
+            {/* ALWAYS VISIBLE: Fixed bottom CTA – ticket + Se lineup, smart hide on scroll */}
             <SmartBottomCta />
           </>
         )}
