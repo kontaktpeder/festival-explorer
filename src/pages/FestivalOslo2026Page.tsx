@@ -14,7 +14,7 @@ const PAGE_PATH = "/festival-oslo-2026";
 const DEFAULT_START_DATE = "2026-03-14";
 const VENUE_NAME = "Josefines Vertshus";
 const VENUE_SLUG = "josefines-vertshus";
-const DEFAULT_OG_IMAGE = "https://lovable.dev/opengraph-image-p98pqg.png";
+const DEFAULT_OG_IMAGE = "https://giggen.org/images/giggen-festival-share-2026.png";
 
 const META_TITLE = "Festival Oslo 2026 – GIGGEN Festival på Josefines Vertshus";
 const META_DESCRIPTION =

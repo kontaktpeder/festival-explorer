@@ -25,7 +25,7 @@ export function useFestivalPageSeo(
     const canonical = festivalCanonicalUrl(params.slug);
     const ogImage =
       params.heroImageUrl ||
-      `${import.meta.env.VITE_PUBLIC_URL || ""}/og-festival.png`;
+      "https://giggen.org/images/giggen-festival-share-2026.png";
 
     document.title = title;
 
@@ -53,6 +53,9 @@ export function useFestivalPageSeo(
     setMeta("og:title", "og:title", title, true);
     setMeta("og:description", "og:description", description, true);
     setMeta("og:image", "og:image", ogImage, true);
+    setMeta("og:image:width", "og:image:width", "1200", true);
+    setMeta("og:image:height", "og:image:height", "630", true);
+    setMeta("og:image:type", "og:image:type", "image/png", true);
     setMeta("og:type", "og:type", "event", true);
     setMeta("og:url", "og:url", canonical, true);
     setMeta("og:site_name", "og:site_name", "Giggen", true);
