@@ -370,13 +370,20 @@ export default function FestivalPage() {
   // Listen for "Se lineup" button from SmartBottomCta
   useEffect(() => {
     const handler = () => {
-      setLineupOpen(true);
-      // Scroll to lineup after DOM updates
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          document.getElementById("lineup")?.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 100);
-      });
+      const el = document.getElementById("lineup");
+      if (!el) return;
+      // First scroll to lineup while it's still collapsed
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Wait for scroll to finish, then open
+      const checkScroll = () => {
+        const rect = el.getBoundingClientRect();
+        if (Math.abs(rect.top) < 60) {
+          setLineupOpen(true);
+        } else {
+          requestAnimationFrame(checkScroll);
+        }
+      };
+      requestAnimationFrame(checkScroll);
     };
     window.addEventListener("giggen:open-lineup", handler);
     return () => window.removeEventListener("giggen:open-lineup", handler);
