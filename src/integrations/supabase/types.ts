@@ -1015,7 +1015,9 @@ export type Database = {
           created_by: string | null
           festival_id: string
           file_type: string
+          folder_path: string | null
           id: string
+          is_signed: boolean | null
           mime_type: string
           original_filename: string
           public_url: string
@@ -1027,7 +1029,9 @@ export type Database = {
           created_by?: string | null
           festival_id: string
           file_type: string
+          folder_path?: string | null
           id?: string
+          is_signed?: boolean | null
           mime_type?: string
           original_filename: string
           public_url: string
@@ -1039,7 +1043,9 @@ export type Database = {
           created_by?: string | null
           festival_id?: string
           file_type?: string
+          folder_path?: string | null
           id?: string
+          is_signed?: boolean | null
           mime_type?: string
           original_filename?: string
           public_url?: string
