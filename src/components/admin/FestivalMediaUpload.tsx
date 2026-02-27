@@ -43,7 +43,7 @@ export function FestivalMediaUpload({ festivalId, onUploadComplete, initialFolde
   const [folderPath, setFolderPath] = useState<string>(
     initialFolderPath && initialFolderPath !== ALL_FOLDERS && initialFolderPath !== UNSTRUCTURED_FOLDER
       ? initialFolderPath
-      : ""
+      : UNSTRUCTURED_FOLDER
   );
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -69,7 +69,7 @@ export function FestivalMediaUpload({ festivalId, onUploadComplete, initialFolde
 
         const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(storagePath);
 
-        const chosenFolder = folderPath || null;
+        const chosenFolder = folderPath === UNSTRUCTURED_FOLDER ? null : folderPath;
         const isSigned = deriveIsSigned(chosenFolder, ft);
 
         const { data: row, error: insertError } = await supabase
@@ -116,7 +116,7 @@ export function FestivalMediaUpload({ festivalId, onUploadComplete, initialFolde
           onChange={(e) => {
             const selected = Array.from(e.target.files ?? []);
             setFiles(selected);
-            if (selected[0] && !folderPath) {
+            if (selected[0] && folderPath === UNSTRUCTURED_FOLDER) {
               const ft = detectFileType(selected[0]);
               setFolderPath(getDefaultFolderForFileType(ft));
             }
@@ -134,7 +134,7 @@ export function FestivalMediaUpload({ festivalId, onUploadComplete, initialFolde
             <SelectValue placeholder="Velg mappe (valgfritt)" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Ustrukturert</SelectItem>
+            <SelectItem value={UNSTRUCTURED_FOLDER}>Ustrukturert</SelectItem>
             {LEAF_FOLDERS.map((f) => (
               <SelectItem key={f.value} value={f.value}>
                 {f.value}

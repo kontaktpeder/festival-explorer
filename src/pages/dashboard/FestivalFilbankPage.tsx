@@ -507,14 +507,14 @@ export default function FestivalFilbankPage() {
           {moveItem && (
             <div className="space-y-4">
               <Select
-                value={moveItem.folder_path ?? ""}
-                onValueChange={(v) => setMoveItem((prev) => (prev ? { ...prev, folder_path: v || null } : prev))}
+                value={moveItem.folder_path ?? UNSTRUCTURED_FOLDER}
+                onValueChange={(v) => setMoveItem((prev) => (prev ? { ...prev, folder_path: v === UNSTRUCTURED_FOLDER ? null : v } : prev))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Velg mappe" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Ustrukturert</SelectItem>
+                  <SelectItem value={UNSTRUCTURED_FOLDER}>Ustrukturert</SelectItem>
                   {LEAF_FOLDERS.map((f) => (
                     <SelectItem key={f.value} value={f.value}>{f.value}</SelectItem>
                   ))}
