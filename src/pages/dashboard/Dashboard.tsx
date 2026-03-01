@@ -18,7 +18,7 @@ import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { parseImageSettings, type ImageSettings } from "@/types/database";
 import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Users, Building2, ExternalLink, User, Eye, Sparkles, Plus, ChevronRight, ChevronDown, QrCode, Info, MapPin, Settings, Shield, Calendar } from "lucide-react";
+import { Users, Building2, ExternalLink, User, Eye, Sparkles, Plus, ChevronRight, ChevronDown, QrCode, Info, MapPin, Settings, Shield, Calendar, Pencil } from "lucide-react";
 import gIcon from "@/assets/giggen-g-icon-red.png";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CroppedImage } from "@/components/ui/CroppedImage";
@@ -338,6 +338,10 @@ export default function Dashboard() {
                     <div className="p-4">
                       <h3 className="text-sm font-semibold text-foreground mb-1 truncate">{entity.name}</h3>
                       <p className="text-xs text-muted-foreground">{ACCESS_DESCRIPTIONS[entity.access]}</p>
+                      <span className="inline-flex items-center gap-1 mt-2 text-[10px] font-medium text-accent">
+                        <Pencil className="h-3 w-3" />
+                        Rediger prosjekt
+                      </span>
                     </div>
                   </Link>
                 ))}
@@ -360,6 +364,10 @@ export default function Dashboard() {
                     <div className="p-4">
                       <h3 className="text-sm font-semibold text-foreground mb-1 truncate">{entity.name}</h3>
                       <p className="text-xs text-muted-foreground">{ACCESS_DESCRIPTIONS[entity.access]}</p>
+                      <span className="inline-flex items-center gap-1 mt-2 text-[10px] font-medium text-accent">
+                        <Pencil className="h-3 w-3" />
+                        Rediger prosjekt
+                      </span>
                     </div>
                   </Link>
                 ))}
