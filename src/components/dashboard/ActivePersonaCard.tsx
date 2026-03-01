@@ -63,12 +63,6 @@ export function ActivePersonaCard({ persona }: ActivePersonaCardProps) {
         </div>
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        <Button asChild variant="outline" size="sm" className="border-border/30 hover:border-accent/40">
-          <Link to={`/dashboard/personas/${persona.id}`}>
-            <Pencil className="h-3 w-3 mr-1.5" />
-            <span className="hidden sm:inline">Rediger</span>
-          </Link>
-        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
@@ -80,6 +74,13 @@ export function ActivePersonaCard({ persona }: ActivePersonaCardProps) {
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Velg profil
             </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to={`/dashboard/personas/${persona.id}`}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Rediger profil
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             {personas?.map((p) => (
               <DropdownMenuItem key={p.id} onClick={() => handleSelect(p.id)}>
