@@ -57,23 +57,28 @@ export default function Settings() {
             <div className="space-y-1">
               <Label className="text-xs sm:text-sm">E-post</Label>
               <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1.5">
-                <Lock className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+                <Mail className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
                 <span className="truncate">{authUser?.email}</span>
-                <span className="shrink-0">· Kan ikke endres</span>
               </p>
             </div>
 
             <div className="flex flex-col gap-2">
               <Button asChild variant="outline" size="sm" className="justify-start h-9">
                 <Link to="/dashboard/account">
-                  <User className="h-3.5 w-3.5 mr-2" />
-                  Kontosenter
+                  <Mail className="h-3.5 w-3.5 mr-2" />
+                  Endre e-post
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="justify-start h-9">
+              <Button asChild variant="default" size="sm" className="justify-start h-9">
                 <Link to="/dashboard/settings/change-password">
                   <Lock className="h-3.5 w-3.5 mr-2" />
                   Endre passord
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="justify-start h-9">
+                <Link to="/dashboard/account">
+                  <User className="h-3.5 w-3.5 mr-2" />
+                  Kontosenter
                 </Link>
               </Button>
             </div>
