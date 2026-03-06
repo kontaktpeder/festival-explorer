@@ -56,15 +56,13 @@ export default function TicketsPage() {
         .order("sort_order");
       if (error) throw error;
 
-      const { data: tickets, error: ticketsError } = await supabase
-        .from("tickets")
-        .select("ticket_type_id")
-        .neq("status", "CANCELLED");
-      if (ticketsError) throw ticketsError;
+      const { data: soldCounts, error: countsError } = await supabase
+        .rpc("get_ticket_sold_counts");
+      if (countsError) throw countsError;
 
       const countByType = new Map<string, number>();
-      tickets?.forEach((t) => {
-        countByType.set(t.ticket_type_id, (countByType.get(t.ticket_type_id) || 0) + 1);
+      (soldCounts ?? []).forEach((row: { ticket_type_id: string; sold_count: number }) => {
+        countByType.set(row.ticket_type_id, row.sold_count);
       });
 
       return (types || []).map((t) => ({
