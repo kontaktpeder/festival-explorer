@@ -42,6 +42,9 @@ export default function AccountCenter() {
   const navigate = useNavigate();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [confirmDeleteText, setConfirmDeleteText] = useState("");
+  const [editingEmail, setEditingEmail] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [emailLoading, setEmailLoading] = useState(false);
 
   // Contact info editing
   const { data: contactInfo, isLoading: isLoadingContact } = useContactInfo();
