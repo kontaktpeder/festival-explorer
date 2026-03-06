@@ -33,7 +33,9 @@ import {
   Lock,
   Pencil,
   Save,
-  X
+  X,
+  Mail,
+  Check
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
@@ -42,6 +44,9 @@ export default function AccountCenter() {
   const navigate = useNavigate();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [confirmDeleteText, setConfirmDeleteText] = useState("");
+  const [editingEmail, setEditingEmail] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [emailLoading, setEmailLoading] = useState(false);
 
   // Contact info editing
   const { data: contactInfo, isLoading: isLoadingContact } = useContactInfo();
@@ -128,6 +133,29 @@ export default function AccountCenter() {
     setContactPhone(contactInfo?.contact_phone || "");
     setUseAsDefault(contactInfo?.use_as_default ?? true);
     setEditingContact(false);
+  };
+
+  const handleChangeEmail = async () => {
+    if (!newEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail.trim())) {
+      sonnerToast.error("Ugyldig e-postadresse");
+      return;
+    }
+    if (newEmail.trim().toLowerCase() === session?.user?.email?.toLowerCase()) {
+      sonnerToast.error("Dette er allerede din e-post");
+      return;
+    }
+    setEmailLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ email: newEmail.trim() });
+      if (error) throw error;
+      sonnerToast.success("Bekreftelseslenke sendt til ny e-post. Sjekk innboksen din.");
+      setEditingEmail(false);
+      setNewEmail("");
+    } catch (err: any) {
+      sonnerToast.error(err.message || "Kunne ikke endre e-post");
+    } finally {
+      setEmailLoading(false);
+    }
   };
 
   // Logout mutation
@@ -287,10 +315,37 @@ export default function AccountCenter() {
         {/* Account & Actions */}
         <div className="space-y-1">
           <div className="flex items-center justify-between py-3">
-            <div>
-              <p className="text-sm text-muted-foreground">E-post</p>
-              <p className="text-foreground">{session.user.email}</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                <Mail className="h-3.5 w-3.5" />
+                E-post
+              </p>
+              {editingEmail ? (
+                <div className="flex items-center gap-2 mt-1.5">
+                  <Input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder={session.user.email || "ny@epost.no"}
+                    className="bg-transparent border-border/50 focus:border-accent text-sm h-8"
+                  />
+                  <Button size="sm" variant="ghost" onClick={() => { setEditingEmail(false); setNewEmail(""); }} disabled={emailLoading} className="h-8 px-2">
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button size="sm" onClick={handleChangeEmail} disabled={emailLoading} className="h-8 px-2">
+                    <Check className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-foreground truncate">{session.user.email}</p>
+              )}
             </div>
+            {!editingEmail && (
+              <Button variant="ghost" size="sm" onClick={() => { setEditingEmail(true); setNewEmail(""); }}>
+                <Pencil className="h-3.5 w-3.5 mr-1" />
+                Endre
+              </Button>
+            )}
           </div>
 
           <Separator />
