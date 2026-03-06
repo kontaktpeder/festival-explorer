@@ -33,7 +33,9 @@ import {
   Lock,
   Pencil,
   Save,
-  X
+  X,
+  Mail,
+  Check
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
