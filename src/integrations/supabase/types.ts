@@ -2480,6 +2480,13 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["access_level"]
       }
+      get_ticket_sold_counts: {
+        Args: never
+        Returns: {
+          sold_count: number
+          ticket_type_id: string
+        }[]
+      }
       get_user_entities: {
         Args: never
         Returns: {
