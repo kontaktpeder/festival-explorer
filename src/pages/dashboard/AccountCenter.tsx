@@ -315,10 +315,37 @@ export default function AccountCenter() {
         {/* Account & Actions */}
         <div className="space-y-1">
           <div className="flex items-center justify-between py-3">
-            <div>
-              <p className="text-sm text-muted-foreground">E-post</p>
-              <p className="text-foreground">{session.user.email}</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                <Mail className="h-3.5 w-3.5" />
+                E-post
+              </p>
+              {editingEmail ? (
+                <div className="flex items-center gap-2 mt-1.5">
+                  <Input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder={session.user.email || "ny@epost.no"}
+                    className="bg-transparent border-border/50 focus:border-accent text-sm h-8"
+                  />
+                  <Button size="sm" variant="ghost" onClick={() => { setEditingEmail(false); setNewEmail(""); }} disabled={emailLoading} className="h-8 px-2">
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button size="sm" onClick={handleChangeEmail} disabled={emailLoading} className="h-8 px-2">
+                    <Check className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-foreground truncate">{session.user.email}</p>
+              )}
             </div>
+            {!editingEmail && (
+              <Button variant="ghost" size="sm" onClick={() => { setEditingEmail(true); setNewEmail(""); }}>
+                <Pencil className="h-3.5 w-3.5 mr-1" />
+                Endre
+              </Button>
+            )}
           </div>
 
           <Separator />
