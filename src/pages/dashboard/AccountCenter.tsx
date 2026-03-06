@@ -135,6 +135,29 @@ export default function AccountCenter() {
     setEditingContact(false);
   };
 
+  const handleChangeEmail = async () => {
+    if (!newEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail.trim())) {
+      sonnerToast.error("Ugyldig e-postadresse");
+      return;
+    }
+    if (newEmail.trim().toLowerCase() === session?.user?.email?.toLowerCase()) {
+      sonnerToast.error("Dette er allerede din e-post");
+      return;
+    }
+    setEmailLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ email: newEmail.trim() });
+      if (error) throw error;
+      sonnerToast.success("Bekreftelseslenke sendt til ny e-post. Sjekk innboksen din.");
+      setEditingEmail(false);
+      setNewEmail("");
+    } catch (err: any) {
+      sonnerToast.error(err.message || "Kunne ikke endre e-post");
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
   // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
