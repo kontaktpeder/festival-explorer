@@ -100,34 +100,71 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     },
   });
 
-  // Prosjekter (entities) tilknyttet festivalens events
+  // Prosjekter (entities) fra alle kilder: event_participants, event_entities (legacy), festival_participants
   const { data: festivalEntities = [] } = useQuery({
     queryKey: ["festival-entities", festivalId],
     queryFn: async () => {
+      // 1) Finn alle events i festivalen
       const { data: feRows, error: feError } = await supabase
         .from("festival_events")
         .select("event_id")
         .eq("festival_id", festivalId);
       if (feError) throw feError;
-      const eventIds = (feRows ?? []).map((r) => r.event_id).filter(Boolean);
-      if (eventIds.length === 0) return [];
+      const eventIds = (feRows ?? []).map((r) => r.event_id).filter(Boolean) as string[];
+      const hasEvents = eventIds.length > 0;
 
-      const { data: eeRows, error: eeError } = await supabase
-        .from("event_entities")
-        .select("entity:entities(id, name, slug)")
-        .in("event_id", eventIds);
-      if (eeError) throw eeError;
+      // 2) Hent fra alle tre kilder parallelt
+      const [epRes, eeRes, fpRes] = await Promise.all([
+        hasEvents
+          ? supabase
+              .from("event_participants")
+              .select("participant_kind, participant_id")
+              .in("event_id", eventIds)
+          : Promise.resolve({ data: [], error: null } as any),
+        hasEvents
+          ? supabase
+              .from("event_entities")
+              .select("entity_id")
+              .in("event_id", eventIds)
+          : Promise.resolve({ data: [], error: null } as any),
+        supabase
+          .from("festival_participants")
+          .select("participant_kind, participant_id")
+          .eq("festival_id", festivalId),
+      ]);
+      if (epRes.error) throw epRes.error;
+      if (eeRes.error) throw eeRes.error;
+      if (fpRes.error) throw fpRes.error;
 
-      const seen = new Set<string>();
-      const entities: { id: string; name: string; slug: string }[] = [];
-      (eeRows ?? []).forEach((row: any) => {
-        const e = row.entity;
-        if (e && !seen.has(e.id)) {
-          seen.add(e.id);
-          entities.push(e);
+      const entityIds = new Set<string>();
+
+      // event_participants: alle som ikke er persona
+      (epRes.data ?? []).forEach((p: any) => {
+        if (p.participant_kind !== "persona" && p.participant_id) {
+          entityIds.add(p.participant_id);
         }
       });
-      return entities.sort((a, b) => a.name.localeCompare(b.name));
+      // event_entities (legacy)
+      (eeRes.data ?? []).forEach((row: any) => {
+        if (row.entity_id) entityIds.add(row.entity_id);
+      });
+      // festival_participants (host/backstage – ikke persona)
+      (fpRes.data ?? []).forEach((fp: any) => {
+        if (fp.participant_kind !== "persona" && fp.participant_id) {
+          entityIds.add(fp.participant_id);
+        }
+      });
+
+      if (entityIds.size === 0) return [];
+
+      // 3) Hent entities
+      const { data: entitiesRows, error: entitiesError } = await supabase
+        .from("entities")
+        .select("id, name, slug")
+        .in("id", Array.from(entityIds));
+      if (entitiesError) throw entitiesError;
+
+      return (entitiesRows ?? []).sort((a, b) => a.name.localeCompare(b.name));
     },
     enabled: !!festivalId,
   });
