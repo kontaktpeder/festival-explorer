@@ -281,7 +281,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
                           onValueChange={(v) =>
                             updateSlot.mutate({
                               id: slot.id,
-                              visibility: v,
+                              visibility: v as any,
                             })
                           }
                         >
