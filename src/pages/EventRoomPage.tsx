@@ -234,6 +234,7 @@ export default function EventRoomPage() {
         end_at: isoToLocalDatetimeString(event.end_at),
         venue_id: event.venue_id || "",
         city: event.city || "",
+        scene_id: (event as any).scene_id || "",
         hero_image_url: event.hero_image_url || "",
         status: event.status || "draft",
         age_limit: (event as any).age_limit ?? "",
