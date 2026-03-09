@@ -7,6 +7,7 @@ interface RunSheetMetaBadgesProps {
   internalStatus: string;
   hasContract: boolean;
   slotTypeLabel?: string;
+  isLydprøve?: boolean;
 }
 
 const STATUS_LABELS: Record<string, string> = {
