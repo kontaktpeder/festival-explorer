@@ -69,7 +69,7 @@ export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete 
           </div>
 
           {/* Performer(s) – show each item's scene + performer */}
-          <div className={cn("flex flex-col gap-1.5", isParallel && "pl-6")}>
+          <div className={cn("flex gap-1.5", isParallel ? "flex-row justify-between" : "flex-col")}>
             {group.items.map((item) => {
               const performer = getPerformerDisplay(item);
               const showPerformer = performer.name !== "Ukjent prosjekt" && performer.name !== "TBA";
