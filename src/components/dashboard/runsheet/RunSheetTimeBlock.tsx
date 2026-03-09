@@ -29,7 +29,7 @@ function fmtDuration(minutes: number | null, startsAt: string, endsAt: string | 
 
 export function RunSheetTimeBlock({ startsAt, endsAt, durationMinutes }: RunSheetTimeBlockProps) {
   return (
-    <div className="flex flex-col gap-0.5 tabular-nums font-mono select-none">
+    <div className="flex flex-col justify-between h-full tabular-nums font-mono select-none">
       <div className="flex items-baseline gap-1.5">
         <span className="text-[9px] uppercase tracking-wider text-muted-foreground/50 w-8">Start</span>
         <span className="text-sm font-semibold text-foreground">{fmtTime(startsAt)}</span>
