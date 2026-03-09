@@ -467,6 +467,8 @@ export default function AdminEventEdit() {
             </div>
           )}
 
+          <div className="space-y-2">
+            <Label htmlFor="city">By</Label>
             <Input
               id="city"
               value={formData.city}
