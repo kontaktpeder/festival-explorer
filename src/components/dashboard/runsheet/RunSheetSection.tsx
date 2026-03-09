@@ -151,7 +151,7 @@ export function RunSheetSection({
       </div>
 
       {/* Rows */}
-      {!collapsed && (
+      {!collapsed && !isEmpty && (
         <div className="space-y-2 pt-2">
           {groups.map((group, i) => (
             <RunSheetRowCard
@@ -163,6 +163,13 @@ export function RunSheetSection({
               onDelete={onDelete}
             />
           ))}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!collapsed && isEmpty && (
+        <div className="py-6 text-center border border-dashed border-border/20 rounded-lg mt-2">
+          <p className="text-xs text-muted-foreground/40">Ingen punkter ennå</p>
         </div>
       )}
     </div>
