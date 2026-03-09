@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { ChevronDown, ChevronRight, Plus, Pencil } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
 import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
 import { RunSheetRowCard, type ParallelGroup } from "./RunSheetRowCard";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ interface RunSheetSectionProps {
   onDelete: (slot: ExtendedEventProgramSlot) => void;
   onAddToSection?: (sectionKey: string) => void;
   onRenameSection?: (sectionKey: string, newName: string) => void;
+  onDeleteSection?: (sectionKey: string) => void;
 }
 
 /** Group slots by parallel_group_id; singletons become groups of 1 */
@@ -57,6 +58,7 @@ export function RunSheetSection({
   onDelete,
   onAddToSection,
   onRenameSection,
+  onDeleteSection,
 }: RunSheetSectionProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -146,6 +148,19 @@ export function RunSheetSection({
             title={`Ny rad i ${shownName}`}
           >
             <Plus className="h-4 w-4" />
+          </Button>
+        )}
+
+        {/* Delete section */}
+        {onDeleteSection && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 shrink-0 text-destructive/30 hover:text-destructive hover:bg-muted/70"
+            onClick={() => onDeleteSection(title)}
+            title={`Slett ${shownName}`}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
           </Button>
         )}
       </div>

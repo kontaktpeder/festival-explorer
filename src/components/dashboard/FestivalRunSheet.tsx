@@ -184,6 +184,33 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     setSectionNames((prev) => ({ ...prev, [sectionKey]: newName }));
   };
 
+  /** Delete all slots in a section */
+  const deleteSection = useMutation({
+    mutationFn: async (slotIds: string[]) => {
+      const { error } = await supabase
+        .from("event_program_slots" as any)
+        .delete()
+        .in("id", slotIds);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
+      toast({ title: "Seksjon slettet" });
+    },
+    onError: (e: Error) =>
+      toast({ title: "Feil", description: e.message, variant: "destructive" }),
+  });
+
+  const handleDeleteSection = (sectionTitle: string) => {
+    // Find all slots belonging to this section
+    const sectionSlots = (data?.slots ?? []).filter(
+      (s) => getSectionForSlot(s) === sectionTitle
+    );
+    if (sectionSlots.length === 0) return;
+    if (!window.confirm(`Slette seksjonen «${sectionNames[sectionTitle] || sectionTitle}» og alle ${sectionSlots.length} punkter?`)) return;
+    deleteSection.mutate(sectionSlots.map((s) => s.id));
+  };
+
   const deleteSlot = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -360,6 +387,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
                       onDelete={handleDelete}
                       onAddToSection={handleAddToSection}
                       onRenameSection={handleRenameSection}
+                      onDeleteSection={handleDeleteSection}
                     />
                   );
                 })}
