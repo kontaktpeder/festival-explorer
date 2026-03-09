@@ -618,7 +618,16 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
               <div className="space-y-1.5">
                 <Select
                   value={performerEntityId || "__none__"}
-                  onValueChange={(v) => setPerformerEntityId(v === "__none__" ? "" : v)}
+                  onValueChange={(v) => {
+                    const newId = v === "__none__" ? "" : v;
+                    const selected = festivalEntities.find((e) => e.id === newId);
+                    const prevName = getCurrentPerformerName();
+                    setPerformerEntityId(newId);
+                    // Auto-fill title if empty or was previous performer name
+                    if (!titleOverride || titleOverride === prevName) {
+                      setTitleOverride(selected?.name ?? "");
+                    }
+                  }}
                 >
                   <SelectTrigger className="h-9">
                     <SelectValue placeholder="Velg prosjekt..." />
