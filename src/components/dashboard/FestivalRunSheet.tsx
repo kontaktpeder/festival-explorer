@@ -600,6 +600,27 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
               </div>
             </RadioGroup>
 
+            {performerKind === "entity" && (
+              <div className="space-y-1.5">
+                <Select
+                  value={performerEntityId || "__none__"}
+                  onValueChange={(v) => setPerformerEntityId(v === "__none__" ? "" : v)}
+                >
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="Velg prosjekt..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">Ingen prosjekt</SelectItem>
+                    {festivalEntities.map((e) => (
+                      <SelectItem key={e.id} value={e.id}>
+                        {e.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             {performerKind === "persona" && (
               <div className="space-y-1.5">
                 <Input
