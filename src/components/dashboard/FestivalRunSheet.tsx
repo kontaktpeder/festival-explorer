@@ -45,7 +45,12 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       const [slotsRes, typesRes] = await Promise.all([
         supabase
           .from("event_program_slots" as any)
-          .select("*, entity:entities(id, name, slug)")
+          .select(`
+            *,
+            entity:entities!event_program_slots_entity_id_fkey(id, name, slug),
+            performer_entity:entities!event_program_slots_performer_entity_id_fkey(id, name, slug, is_published),
+            performer_persona:personas!event_program_slots_performer_persona_id_fkey(id, name, slug, is_public)
+          `)
           .eq("festival_id", festivalId)
           .order("starts_at", { ascending: true }),
         supabase
