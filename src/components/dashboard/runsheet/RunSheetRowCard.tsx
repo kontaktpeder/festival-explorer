@@ -19,10 +19,9 @@ interface RunSheetRowCardProps {
   slotTypeLabel?: string;
   onEdit: (slot: ExtendedEventProgramSlot) => void;
   onDelete: (slot: ExtendedEventProgramSlot) => void;
-  onAddParallel?: (slot: ExtendedEventProgramSlot) => void;
 }
 
-export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete, onAddParallel }: RunSheetRowCardProps) {
+export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete }: RunSheetRowCardProps) {
   const slot = group.primary;
   const kindConfig = getSlotKindConfig(slot.slot_kind as any);
   const isLydprøve = slot.slot_kind === "soundcheck" ||
