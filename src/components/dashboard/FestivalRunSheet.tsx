@@ -452,11 +452,29 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
       const eventIds = feRows.map((r) => r.event_id);
       const { data: events, error: evError } = await supabase
         .from("events")
-        .select("id, title, start_at, end_at, city, venue:venues(id, name)")
+        .select("id, title, start_at, end_at, city, venue:venues(id, name), scene_id")
         .in("id", eventIds)
         .order("start_at", { ascending: true });
       if (evError) throw evError;
-      return (events ?? []) as unknown as FestivalEvent[];
+
+      // Resolve scene names for events that have scene_id
+      const eventsWithScene = (events ?? []) as unknown as (Omit<FestivalEvent, 'scene_name'>)[];
+      const sceneIds = eventsWithScene.map((e) => e.scene_id).filter(Boolean) as string[];
+      let sceneMap = new Map<string, string>();
+      if (sceneIds.length > 0) {
+        const { data: scenes } = await supabase
+          .from("venue_scenes" as any)
+          .select("id, name")
+          .in("id", sceneIds);
+        if (scenes) {
+          (scenes as unknown as { id: string; name: string }[]).forEach((s) => sceneMap.set(s.id, s.name));
+        }
+      }
+
+      return eventsWithScene.map((e) => ({
+        ...e,
+        scene_name: e.scene_id ? sceneMap.get(e.scene_id) ?? null : null,
+      })) as FestivalEvent[];
     },
     enabled: open,
   });
