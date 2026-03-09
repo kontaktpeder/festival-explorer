@@ -791,48 +791,76 @@ export type Database = {
       }
       event_program_slots: {
         Row: {
+          contract_media_id: string | null
           created_at: string
           ends_at: string | null
           entity_id: string | null
           event_id: string
+          festival_id: string | null
+          hosp_rider_media_id: string | null
           id: string
           internal_note: string | null
           internal_status: string
           is_canceled: boolean
           is_visible_public: boolean
           slot_kind: string
+          slot_type: string | null
+          source: string
           starts_at: string
+          tech_rider_media_id: string | null
           updated_at: string
+          visibility: string
         }
         Insert: {
+          contract_media_id?: string | null
           created_at?: string
           ends_at?: string | null
           entity_id?: string | null
           event_id: string
+          festival_id?: string | null
+          hosp_rider_media_id?: string | null
           id?: string
           internal_note?: string | null
           internal_status?: string
           is_canceled?: boolean
           is_visible_public?: boolean
           slot_kind?: string
+          slot_type?: string | null
+          source?: string
           starts_at: string
+          tech_rider_media_id?: string | null
           updated_at?: string
+          visibility?: string
         }
         Update: {
+          contract_media_id?: string | null
           created_at?: string
           ends_at?: string | null
           entity_id?: string | null
           event_id?: string
+          festival_id?: string | null
+          hosp_rider_media_id?: string | null
           id?: string
           internal_note?: string | null
           internal_status?: string
           is_canceled?: boolean
           is_visible_public?: boolean
           slot_kind?: string
+          slot_type?: string | null
+          source?: string
           starts_at?: string
+          tech_rider_media_id?: string | null
           updated_at?: string
+          visibility?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "event_program_slots_contract_media_id_fkey"
+            columns: ["contract_media_id"]
+            isOneToOne: false
+            referencedRelation: "festival_media"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "event_program_slots_entity_id_fkey"
             columns: ["entity_id"]
@@ -845,6 +873,27 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_program_slots_festival_id_fkey"
+            columns: ["festival_id"]
+            isOneToOne: false
+            referencedRelation: "festivals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_program_slots_hosp_rider_media_id_fkey"
+            columns: ["hosp_rider_media_id"]
+            isOneToOne: false
+            referencedRelation: "festival_media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_program_slots_tech_rider_media_id_fkey"
+            columns: ["tech_rider_media_id"]
+            isOneToOne: false
+            referencedRelation: "festival_media"
             referencedColumns: ["id"]
           },
         ]
@@ -1203,57 +1252,73 @@ export type Database = {
       }
       festivals: {
         Row: {
+          contract_media_id: string | null
           created_at: string
           created_by: string
           date_range_section_id: string | null
           description: string | null
           description_section_id: string | null
           end_at: string | null
+          hosp_rider_media_id: string | null
           id: string
           name: string
           name_section_id: string | null
           slug: string
           start_at: string | null
           status: Database["public"]["Enums"]["publish_status"]
+          tech_rider_media_id: string | null
           theme_id: string | null
           updated_at: string
           venue_id: string | null
         }
         Insert: {
+          contract_media_id?: string | null
           created_at?: string
           created_by: string
           date_range_section_id?: string | null
           description?: string | null
           description_section_id?: string | null
           end_at?: string | null
+          hosp_rider_media_id?: string | null
           id?: string
           name: string
           name_section_id?: string | null
           slug: string
           start_at?: string | null
           status?: Database["public"]["Enums"]["publish_status"]
+          tech_rider_media_id?: string | null
           theme_id?: string | null
           updated_at?: string
           venue_id?: string | null
         }
         Update: {
+          contract_media_id?: string | null
           created_at?: string
           created_by?: string
           date_range_section_id?: string | null
           description?: string | null
           description_section_id?: string | null
           end_at?: string | null
+          hosp_rider_media_id?: string | null
           id?: string
           name?: string
           name_section_id?: string | null
           slug?: string
           start_at?: string | null
           status?: Database["public"]["Enums"]["publish_status"]
+          tech_rider_media_id?: string | null
           theme_id?: string | null
           updated_at?: string
           venue_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "festivals_contract_media_id_fkey"
+            columns: ["contract_media_id"]
+            isOneToOne: false
+            referencedRelation: "festival_media"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "festivals_created_by_fkey"
             columns: ["created_by"]
@@ -1276,10 +1341,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "festivals_hosp_rider_media_id_fkey"
+            columns: ["hosp_rider_media_id"]
+            isOneToOne: false
+            referencedRelation: "festival_media"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "festivals_name_section_id_fkey"
             columns: ["name_section_id"]
             isOneToOne: false
             referencedRelation: "festival_sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "festivals_tech_rider_media_id_fkey"
+            columns: ["tech_rider_media_id"]
+            isOneToOne: false
+            referencedRelation: "festival_media"
             referencedColumns: ["id"]
           },
           {
@@ -1642,6 +1721,60 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      program_slot_types: {
+        Row: {
+          category: string
+          code: string
+          color: string
+          created_at: string
+          created_by: string | null
+          festival_id: string
+          id: string
+          is_public_visible: boolean
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          category?: string
+          code: string
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          festival_id: string
+          id?: string
+          is_public_visible?: boolean
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          category?: string
+          code?: string
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          festival_id?: string
+          id?: string
+          is_public_visible?: boolean
+          label?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_slot_types_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_slot_types_festival_id_fkey"
+            columns: ["festival_id"]
+            isOneToOne: false
+            referencedRelation: "festivals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       project_members: {
         Row: {
@@ -2429,18 +2562,21 @@ export type Database = {
       get_my_festivals_as_team: {
         Args: never
         Returns: {
+          contract_media_id: string | null
           created_at: string
           created_by: string
           date_range_section_id: string | null
           description: string | null
           description_section_id: string | null
           end_at: string | null
+          hosp_rider_media_id: string | null
           id: string
           name: string
           name_section_id: string | null
           slug: string
           start_at: string | null
           status: Database["public"]["Enums"]["publish_status"]
+          tech_rider_media_id: string | null
           theme_id: string | null
           updated_at: string
           venue_id: string | null

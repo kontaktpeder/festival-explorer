@@ -3,11 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BackstageShell } from "@/components/layout/BackstageShell";
 import { LoadingState } from "@/components/ui/LoadingState";
-import AdminSections from "@/pages/admin/AdminSections";
-import { FestivalDocuments } from "@/components/dashboard/FestivalDocuments";
-import { Separator } from "@/components/ui/separator";
+import { FestivalRunSheet } from "@/components/dashboard/FestivalRunSheet";
 
-export default function FestivalSettingsRoom() {
+export default function FestivalRunSheetRoom() {
   const { id } = useParams<{ id: string }>();
 
   const { data: festival, isLoading } = useQuery({
@@ -33,7 +31,7 @@ export default function FestivalSettingsRoom() {
 
   return (
     <BackstageShell
-      title="Innstillinger"
+      title="Kjøreplan"
       subtitle={festival?.name}
       backTo={`/dashboard/festival/${id}`}
       externalLink={
@@ -42,11 +40,7 @@ export default function FestivalSettingsRoom() {
           : undefined
       }
     >
-      <div className="space-y-8">
-        <FestivalDocuments festivalId={id!} />
-        <Separator className="opacity-20" />
-        <AdminSections />
-      </div>
+      <FestivalRunSheet festivalId={id!} />
     </BackstageShell>
   );
 }
