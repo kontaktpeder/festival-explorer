@@ -251,6 +251,10 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
       internal_note: slot.internal_note || "",
       is_canceled: slot.is_canceled,
       is_visible_public: slot.is_visible_public ?? false,
+      performer_kind: (slot.performer_kind as PerformerKind) || "entity",
+      performer_entity_id: slot.performer_entity_id || slot.entity_id || "",
+      performer_persona_id: slot.performer_persona_id || "",
+      performer_name_override: slot.performer_name_override || "",
     });
     setDialogOpen(true);
   };
