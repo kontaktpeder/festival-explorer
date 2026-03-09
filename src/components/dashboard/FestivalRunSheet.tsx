@@ -535,9 +535,39 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
   };
 
   const handleCreateParallel = async () => {
+    // 1) Save the current slot first so it exists in DB with latest values
+    const savedPayload: any = {
+      event_id: eventId || null,
+      starts_at: startsAt ? new Date(startsAt).toISOString() : slot.starts_at,
+      ends_at: endsAt ? new Date(endsAt).toISOString() : null,
+      duration_minutes: durationMinutes ? Number(durationMinutes) : null,
+      sequence_number: sequenceNumber ? Number(sequenceNumber) : null,
+      title_override: titleOverride || null,
+      stage_label: stageLabel || null,
+      internal_note: internalNote || null,
+      slot_kind: slotKind,
+      slot_type: slotType || null,
+      visibility,
+      internal_status: internalStatus,
+      performer_kind: performerKind,
+      performer_entity_id: performerEntityId || null,
+      performer_persona_id: performerPersonaId || null,
+      performer_name_override: nameOverride || null,
+    };
+
+    const { error: saveErr } = await supabase
+      .from("event_program_slots" as any)
+      .update(savedPayload)
+      .eq("id", slot.id);
+
+    if (saveErr) {
+      toast({ title: "Feil ved lagring", description: saveErr.message, variant: "destructive" });
+      return;
+    }
+
+    // 2) Assign parallel group
     const groupId = slot.parallel_group_id || crypto.randomUUID();
 
-    // Ensure the current slot has the parallel_group_id
     if (!slot.parallel_group_id) {
       const { error: upErr } = await supabase
         .from("event_program_slots" as any)
@@ -549,24 +579,24 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
       }
     }
 
-    // Insert a new parallel slot inheriting shared fields
+    // 3) Insert parallel slot using the just-saved values
     const { error: insErr } = await supabase
       .from("event_program_slots" as any)
       .insert({
         festival_id: slot.festival_id,
-        event_id: slot.event_id,
-        starts_at: slot.starts_at,
-        ends_at: slot.ends_at,
-        duration_minutes: slot.duration_minutes,
-        sequence_number: slot.sequence_number,
-        slot_kind: slot.slot_kind,
-        slot_type: slot.slot_type,
-        internal_status: slot.internal_status,
-        internal_note: slot.internal_note,
-        visibility: slot.visibility,
+        event_id: eventId || null,
+        starts_at: startsAt ? new Date(startsAt).toISOString() : slot.starts_at,
+        ends_at: endsAt ? new Date(endsAt).toISOString() : null,
+        duration_minutes: durationMinutes ? Number(durationMinutes) : null,
+        sequence_number: sequenceNumber ? Number(sequenceNumber) : null,
+        slot_kind: slotKind,
+        slot_type: slotType || null,
+        internal_status: internalStatus,
+        internal_note: internalNote || null,
+        visibility,
         is_canceled: slot.is_canceled,
         is_visible_public: slot.is_visible_public,
-        title_override: slot.title_override,
+        title_override: titleOverride || null,
         stage_label: null,
         performer_kind: "entity",
         performer_entity_id: null,
@@ -582,7 +612,7 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
       return;
     }
 
-    toast({ title: "Parallell rad opprettet" });
+    toast({ title: "Rad lagret og parallell rad opprettet" });
     onOpenChange(false);
     onParallelCreated?.();
   };
