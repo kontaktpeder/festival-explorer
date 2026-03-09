@@ -543,15 +543,80 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
             <Input placeholder="F.eks. LYDPRØVE 1ETG" value={titleOverride} onChange={(e) => setTitleOverride(e.target.value)} className="h-9 text-sm uppercase" />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Scene / sted</Label>
-              <Input placeholder="F.eks. 1ETG, FOH" value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm" />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Performer (fritekst)</Label>
-              <Input placeholder="Overstyr navn" value={nameOverride} onChange={(e) => setNameOverride(e.target.value)} className="h-9 text-sm" />
-            </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Scene / sted</Label>
+            <Input placeholder="F.eks. 1ETG, FOH" value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm" />
+          </div>
+
+          {/* På scenen – performer type */}
+          <div className="space-y-2 rounded-lg border border-border/20 p-3">
+            <Label className="text-xs font-semibold">På scenen</Label>
+            <RadioGroup value={performerKind} onValueChange={handlePerformerKindChange} className="flex gap-4">
+              <div className="flex items-center gap-1.5">
+                <RadioGroupItem value="entity" id="pk-entity" />
+                <Label htmlFor="pk-entity" className="text-xs cursor-pointer">Prosjekt</Label>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <RadioGroupItem value="persona" id="pk-persona" />
+                <Label htmlFor="pk-persona" className="text-xs cursor-pointer">Persona</Label>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <RadioGroupItem value="text" id="pk-text" />
+                <Label htmlFor="pk-text" className="text-xs cursor-pointer">Fri tekst</Label>
+              </div>
+            </RadioGroup>
+
+            {performerKind === "persona" && (
+              <div className="space-y-1.5">
+                <Input
+                  placeholder="Søk persona..."
+                  value={personaQuery}
+                  onChange={(e) => setPersonaQuery(e.target.value)}
+                  className="h-9 text-sm"
+                />
+                {selectedPersonaName && (
+                  <p className="text-xs text-accent font-medium">
+                    Valgt: {selectedPersonaName}
+                  </p>
+                )}
+                {personaResults.length > 0 && (
+                  <div className="max-h-32 overflow-y-auto border border-border/20 rounded-md">
+                    {personaResults.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        className={cn(
+                          "w-full text-left px-3 py-1.5 text-sm hover:bg-muted/50 transition-colors",
+                          p.id === performerPersonaId && "bg-accent/10 font-medium"
+                        )}
+                        onClick={() => {
+                          setPerformerPersonaId(p.id);
+                          setPersonaQuery("");
+                        }}
+                      >
+                        {p.name}
+                        {p.category_tags?.length ? (
+                          <span className="text-[10px] text-muted-foreground ml-2">
+                            {p.category_tags.slice(0, 2).join(", ")}
+                          </span>
+                        ) : null}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {performerKind === "text" && (
+              <div className="space-y-1.5">
+                <Input
+                  placeholder="Navn på scenen"
+                  value={nameOverride}
+                  onChange={(e) => setNameOverride(e.target.value)}
+                  className="h-9 text-sm"
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-1.5">
