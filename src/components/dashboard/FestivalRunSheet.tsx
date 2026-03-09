@@ -865,35 +865,22 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
             <Textarea value={internalNote} onChange={(e) => setInternalNote(e.target.value)} placeholder="Interne instrukser..." rows={3} className="text-sm" />
           </div>
 
-          {/* Type & Status – hidden for lydprøve */}
+          {/* Kategori, Synlighet, Status */}
           {!isLydprøve && (
             <>
-              <div className="grid grid-cols-2 gap-3">
+              {types.length > 0 && (
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Slot-type</Label>
-                  <Select value={slotKind} onValueChange={setSlotKind}>
-                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <Label className="text-xs">Kategori</Label>
+                  <Select value={slotType} onValueChange={setSlotType}>
+                    <SelectTrigger className="h-9"><SelectValue placeholder="—" /></SelectTrigger>
                     <SelectContent>
-                      {SLOT_KIND_OPTIONS.map((o) => (
-                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      {types.map((t) => (
+                        <SelectItem key={t.code} value={t.code}>{t.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                {types.length > 0 && (
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Kategori</Label>
-                    <Select value={slotType} onValueChange={setSlotType}>
-                      <SelectTrigger className="h-9"><SelectValue placeholder="—" /></SelectTrigger>
-                      <SelectContent>
-                        {types.map((t) => (
-                          <SelectItem key={t.code} value={t.code}>{t.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </div>
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
