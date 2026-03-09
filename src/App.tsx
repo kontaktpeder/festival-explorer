@@ -39,6 +39,7 @@ import CreateProfileWizard from "./pages/onboarding/CreateProfileWizard";
 import ResetPassword from "./pages/ResetPassword";
 import FestivalRoom from "./pages/dashboard/FestivalRoom";
 import FestivalProgramRoom from "./pages/dashboard/FestivalProgramRoom";
+import FestivalRunSheetRoom from "./pages/dashboard/FestivalRunSheetRoom";
 import FestivalTicketsRoom from "./pages/dashboard/FestivalTicketsRoom";
 import FestivalMediaRoom from "./pages/dashboard/FestivalMediaRoom";
 import FestivalSettingsRoom from "./pages/dashboard/FestivalSettingsRoom";
