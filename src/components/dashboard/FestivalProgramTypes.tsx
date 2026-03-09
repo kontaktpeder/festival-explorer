@@ -49,7 +49,7 @@ export function FestivalProgramTypes({ festivalId }: FestivalProgramTypesProps) 
         .eq("festival_id", festivalId)
         .order("sort_order", { ascending: true });
       if (error) throw error;
-      return (data || []) as ProgramSlotType[];
+      return (data || []) as unknown as ProgramSlotType[];
     },
   });
 
