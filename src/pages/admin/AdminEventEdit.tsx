@@ -37,6 +37,7 @@ export default function AdminEventEdit() {
     end_at: "",
     venue_id: "",
     city: "",
+    scene_id: "",
     hero_image_url: "",
     status: "draft" as "draft" | "submitted" | "published",
     age_limit: "",
