@@ -24,7 +24,13 @@ import {
 } from "@/components/ui/dialog";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { cn, isoToLocalDatetimeString } from "@/lib/utils";
-import { Plus, ClipboardList } from "lucide-react";
+import { Plus, ClipboardList, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -104,8 +110,14 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   });
 
   const createManualSlot = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (sectionType: "opprigg" | "lydprøve" | "event") => {
       const now = new Date();
+      const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean }> = {
+        opprigg: { slot_kind: "break", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false },
+        lydprøve: { slot_kind: "break", title_override: "LYDPRØVE", visibility: "internal", is_visible_public: false },
+        event: { slot_kind: "concert", title_override: "", visibility: "public", is_visible_public: true },
+      };
+      const preset = presets[sectionType];
       const { error } = await supabase
         .from("event_program_slots" as any)
         .insert({
@@ -116,20 +128,21 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
           ends_at: null,
           duration_minutes: null,
           sequence_number: null,
-          slot_kind: "break",
+          slot_kind: preset.slot_kind,
           slot_type: null,
           source: "manual",
-          visibility: "internal",
+          visibility: preset.visibility,
           internal_status: "contract_pending",
           internal_note: "",
           is_canceled: false,
-          is_visible_public: false,
+          is_visible_public: preset.is_visible_public,
+          title_override: preset.title_override || null,
         } as any);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
-      toast({ title: "Ny intern rad opprettet" });
+      toast({ title: "Ny rad opprettet" });
     },
     onError: (e: Error) =>
       toast({ title: "Feil", description: e.message, variant: "destructive" }),
@@ -208,15 +221,30 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
             </p>
           </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => createManualSlot.mutate()}
-          className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Ny intern rad
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Ny rad
+              <ChevronDown className="h-3 w-3 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => createManualSlot.mutate("opprigg")}>
+              Opprigg
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate("lydprøve")}>
+              Lydprøve
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate("event")}>
+              Event
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {slots.length === 0 ? (
