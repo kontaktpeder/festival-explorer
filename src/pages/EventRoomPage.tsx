@@ -494,7 +494,7 @@ export default function EventRoomPage() {
                               key={venue.id}
                               value={venue.name}
                               onSelect={() => {
-                                setFormData((prev) => ({ ...prev, venue_id: venue.id }));
+                                setFormData((prev) => ({ ...prev, venue_id: venue.id, scene_id: prev.venue_id !== venue.id ? "" : prev.scene_id }));
                                 setVenuePickerOpen(false);
                               }}
                             >
