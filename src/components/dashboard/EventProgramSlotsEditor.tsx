@@ -55,6 +55,7 @@ interface SlotForm {
   internal_note: string;
   is_canceled: boolean;
   is_visible_public: boolean;
+  title_override: string;
   performer_kind: PerformerKind;
   performer_entity_id: string;
   performer_persona_id: string;
@@ -70,6 +71,7 @@ const EMPTY_FORM: SlotForm = {
   internal_note: "",
   is_canceled: false,
   is_visible_public: false,
+  title_override: "",
   performer_kind: "entity",
   performer_entity_id: "",
   performer_persona_id: "",
