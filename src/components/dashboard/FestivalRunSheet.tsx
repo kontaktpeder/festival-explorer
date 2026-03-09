@@ -431,6 +431,20 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
   const [performerPersonaId, setPerformerPersonaId] = useState(slot.performer_persona_id || "");
   const [personaQuery, setPersonaQuery] = useState("");
 
+  // Helper: get current performer name for auto-title comparison
+  const getCurrentPerformerName = (): string => {
+    if (performerKind === "entity") {
+      const e = festivalEntities.find((x) => x.id === performerEntityId);
+      return e?.name || slot.performer_entity?.name || "";
+    }
+    if (performerKind === "persona") {
+      if (slot.performer_persona?.id === performerPersonaId) return slot.performer_persona.name;
+      const found = personaResults.find((p) => p.id === performerPersonaId);
+      return found?.name || "";
+    }
+    return "";
+  };
+
   // Persona search
   const { data: personaResults = [] } = usePersonaSearch({
     query: personaQuery,
