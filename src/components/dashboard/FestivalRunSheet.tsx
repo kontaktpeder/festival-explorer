@@ -408,7 +408,7 @@ interface FestivalEvent {
   venue: { id: string; name: string } | null;
 }
 
-function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, types }: RunSheetEditDialogProps) {
+function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, types, festivalEntities }: RunSheetEditDialogProps) {
   const [eventId, setEventId] = useState(slot.event_id ?? "");
   const [startsAt, setStartsAt] = useState(isoToLocalDatetimeString(slot.starts_at));
   const [endsAt, setEndsAt] = useState(slot.ends_at ? isoToLocalDatetimeString(slot.ends_at) : "");
