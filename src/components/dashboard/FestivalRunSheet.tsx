@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
 import { INTERNAL_STATUS_OPTIONS } from "@/lib/program-slots";
+import { getPerformerDisplay } from "@/lib/program-performers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -43,7 +45,12 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       const [slotsRes, typesRes] = await Promise.all([
         supabase
           .from("event_program_slots" as any)
-          .select("*, entity:entities(id, name, slug)")
+          .select(`
+            *,
+            entity:entities!event_program_slots_entity_id_fkey(id, name, slug),
+            performer_entity:entities!event_program_slots_performer_entity_id_fkey(id, name, slug, is_published),
+            performer_persona:personas!event_program_slots_performer_persona_id_fkey(id, name, slug, is_public)
+          `)
           .eq("festival_id", festivalId)
           .order("starts_at", { ascending: true }),
         supabase
@@ -304,11 +311,26 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
                           />
                         </td>
 
-                        {/* Entity name (read-only) */}
+                        {/* På scenen – performer helper */}
                         <td className="px-2 py-2 align-top">
-                          <div className="text-[11px] font-medium truncate leading-7">
-                            {slot.entity?.name ?? "—"}
-                          </div>
+                          {(() => {
+                            const performer = getPerformerDisplay(slot);
+                            if (performer.href) {
+                              return (
+                                <Link
+                                  to={performer.href}
+                                  className="text-[11px] font-medium truncate leading-7 text-accent hover:underline block"
+                                >
+                                  {performer.name}
+                                </Link>
+                              );
+                            }
+                            return (
+                              <div className="text-[11px] font-medium truncate leading-7 text-muted-foreground">
+                                {performer.name}
+                              </div>
+                            );
+                          })()}
                         </td>
 
                         {/* Stage label */}

@@ -36,6 +36,8 @@ import { Plus, Pencil, Copy, Trash2, Clock, FileText, Eye, EyeOff } from "lucide
 import { useToast } from "@/hooks/use-toast";
 import { isoToLocalDatetimeString } from "@/lib/utils";
 import type { SlotKind, InternalSlotStatus } from "@/types/database";
+import type { PerformerKind } from "@/types/program-slots";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface EventProgramSlotsEditorProps {
   eventId: string;
@@ -53,6 +55,10 @@ interface SlotForm {
   internal_note: string;
   is_canceled: boolean;
   is_visible_public: boolean;
+  performer_kind: PerformerKind;
+  performer_entity_id: string;
+  performer_persona_id: string;
+  performer_name_override: string;
 }
 
 const EMPTY_FORM: SlotForm = {
@@ -64,6 +70,10 @@ const EMPTY_FORM: SlotForm = {
   internal_note: "",
   is_canceled: false,
   is_visible_public: false,
+  performer_kind: "entity",
+  performer_entity_id: "",
+  performer_persona_id: "",
+  performer_name_override: "",
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -143,11 +153,15 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
           slot_kind: payload.slot_kind,
           starts_at: new Date(payload.starts_at).toISOString(),
           ends_at: payload.ends_at ? new Date(payload.ends_at).toISOString() : null,
-          entity_id: payload.entity_id || null,
+          entity_id: payload.performer_kind === "entity" ? payload.performer_entity_id || null : null,
           internal_status: payload.internal_status,
           internal_note: payload.internal_note || null,
           is_canceled: payload.is_canceled,
           is_visible_public: payload.is_visible_public,
+          performer_kind: payload.performer_kind,
+          performer_entity_id: payload.performer_kind === "entity" ? payload.performer_entity_id || null : null,
+          performer_persona_id: payload.performer_kind === "persona" ? payload.performer_persona_id || null : null,
+          performer_name_override: payload.performer_kind === "text" ? payload.performer_name_override || null : null,
         } as any);
       if (error) throw error;
     },
@@ -166,11 +180,20 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
       if (payload.slot_kind !== undefined) updates.slot_kind = payload.slot_kind;
       if (payload.starts_at !== undefined) updates.starts_at = new Date(payload.starts_at).toISOString();
       if (payload.ends_at !== undefined) updates.ends_at = payload.ends_at ? new Date(payload.ends_at).toISOString() : null;
-      if (payload.entity_id !== undefined) updates.entity_id = payload.entity_id || null;
       if (payload.internal_status !== undefined) updates.internal_status = payload.internal_status;
       if (payload.internal_note !== undefined) updates.internal_note = payload.internal_note || null;
       if (payload.is_canceled !== undefined) updates.is_canceled = payload.is_canceled;
       if (payload.is_visible_public !== undefined) updates.is_visible_public = payload.is_visible_public;
+
+      if (payload.performer_kind !== undefined) {
+        updates.performer_kind = payload.performer_kind;
+        updates.performer_entity_id = payload.performer_kind === "entity" ? (payload.performer_entity_id || null) : null;
+        updates.performer_persona_id = payload.performer_kind === "persona" ? (payload.performer_persona_id || null) : null;
+        updates.performer_name_override = payload.performer_kind === "text" ? (payload.performer_name_override || null) : null;
+        updates.entity_id = payload.performer_kind === "entity" ? (payload.performer_entity_id || null) : null;
+      } else if (payload.entity_id !== undefined) {
+        updates.entity_id = payload.entity_id || null;
+      }
 
       const { error } = await supabase
         .from("event_program_slots" as any)
@@ -228,6 +251,10 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
       internal_note: slot.internal_note || "",
       is_canceled: slot.is_canceled,
       is_visible_public: slot.is_visible_public ?? false,
+      performer_kind: (slot.performer_kind as PerformerKind) || "entity",
+      performer_entity_id: slot.performer_entity_id || slot.entity_id || "",
+      performer_persona_id: slot.performer_persona_id || "",
+      performer_name_override: slot.performer_name_override || "",
     });
     setDialogOpen(true);
   };
@@ -243,6 +270,10 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
       internal_note: slot.internal_note || "",
       is_canceled: false,
       is_visible_public: false,
+      performer_kind: (slot.performer_kind as PerformerKind) || "entity",
+      performer_entity_id: slot.performer_entity_id || slot.entity_id || "",
+      performer_persona_id: slot.performer_persona_id || "",
+      performer_name_override: slot.performer_name_override || "",
     });
     setDialogOpen(true);
   };
@@ -504,13 +535,44 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
               </div>
             </div>
 
-            {(form.slot_kind === "concert" || form.slot_kind === "boiler") && (
+            {/* På scenen – performer kind */}
+            <div className="space-y-2">
+              <Label className="text-xs">På scenen – type</Label>
+              <RadioGroup
+                value={form.performer_kind}
+                onValueChange={(v) =>
+                  setForm((f) => ({
+                    ...f,
+                    performer_kind: v as PerformerKind,
+                    performer_entity_id: v === "entity" ? f.performer_entity_id : "",
+                    performer_persona_id: v === "persona" ? f.performer_persona_id : "",
+                    performer_name_override: v === "text" ? f.performer_name_override : "",
+                  }))
+                }
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-1.5">
+                  <RadioGroupItem value="entity" id="pk-entity" />
+                  <Label htmlFor="pk-entity" className="text-xs cursor-pointer">Prosjekt</Label>
+                </div>
+                <div className="flex items-center space-x-1.5">
+                  <RadioGroupItem value="persona" id="pk-persona" />
+                  <Label htmlFor="pk-persona" className="text-xs cursor-pointer">Persona</Label>
+                </div>
+                <div className="flex items-center space-x-1.5">
+                  <RadioGroupItem value="text" id="pk-text" />
+                  <Label htmlFor="pk-text" className="text-xs cursor-pointer">Fri tekst</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {form.performer_kind === "entity" && (
               <div className="space-y-1.5">
-                <Label className="text-xs">Artist / Prosjekt</Label>
+                <Label className="text-xs">Prosjekt på scenen</Label>
                 <EntityPicker
-                  value={form.entity_id}
-                  onChange={(id) => setForm((f) => ({ ...f, entity_id: id }))}
-                  placeholder="Velg artist..."
+                  value={form.performer_entity_id}
+                  onChange={(id) => setForm((f) => ({ ...f, performer_entity_id: id, entity_id: id }))}
+                  placeholder="Velg prosjekt..."
                   allowedEntities={allowedEntities}
                 />
                 {allowedEntities.length === 0 && (
@@ -518,6 +580,30 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
                     Ingen godkjente artister. Inviter prosjekter eller legg dem til som medvirkende først.
                   </p>
                 )}
+              </div>
+            )}
+
+            {form.performer_kind === "persona" && (
+              <div className="space-y-1.5">
+                <Label className="text-xs">Persona på scenen</Label>
+                <Input
+                  placeholder="Skriv inn persona-ID (midlertidig)"
+                  value={form.performer_persona_id}
+                  onChange={(e) => setForm((f) => ({ ...f, performer_persona_id: e.target.value }))}
+                  className="h-9 text-sm"
+                />
+              </div>
+            )}
+
+            {form.performer_kind === "text" && (
+              <div className="space-y-1.5">
+                <Label className="text-xs">Navn på scenen</Label>
+                <Input
+                  placeholder="F.eks. DJ Gjesteartist"
+                  value={form.performer_name_override}
+                  onChange={(e) => setForm((f) => ({ ...f, performer_name_override: e.target.value }))}
+                  className="h-9 text-sm"
+                />
               </div>
             )}
 

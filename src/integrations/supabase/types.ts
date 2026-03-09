@@ -804,6 +804,10 @@ export type Database = {
           internal_status: string
           is_canceled: boolean
           is_visible_public: boolean
+          performer_entity_id: string | null
+          performer_kind: string
+          performer_name_override: string | null
+          performer_persona_id: string | null
           sequence_number: number | null
           slot_kind: string
           slot_type: string | null
@@ -829,6 +833,10 @@ export type Database = {
           internal_status?: string
           is_canceled?: boolean
           is_visible_public?: boolean
+          performer_entity_id?: string | null
+          performer_kind?: string
+          performer_name_override?: string | null
+          performer_persona_id?: string | null
           sequence_number?: number | null
           slot_kind?: string
           slot_type?: string | null
@@ -854,6 +862,10 @@ export type Database = {
           internal_status?: string
           is_canceled?: boolean
           is_visible_public?: boolean
+          performer_entity_id?: string | null
+          performer_kind?: string
+          performer_name_override?: string | null
+          performer_persona_id?: string | null
           sequence_number?: number | null
           slot_kind?: string
           slot_type?: string | null
@@ -899,6 +911,20 @@ export type Database = {
             columns: ["hosp_rider_media_id"]
             isOneToOne: false
             referencedRelation: "festival_media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_program_slots_performer_entity_id_fkey"
+            columns: ["performer_entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_program_slots_performer_persona_id_fkey"
+            columns: ["performer_persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
             referencedColumns: ["id"]
           },
           {
