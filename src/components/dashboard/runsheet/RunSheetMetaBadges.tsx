@@ -30,6 +30,7 @@ export function RunSheetMetaBadges({
   hasContract,
   slotTypeLabel,
   isLydprøve,
+  isParallel,
 }: RunSheetMetaBadgesProps) {
   const isPublic = visibility === "public";
 
