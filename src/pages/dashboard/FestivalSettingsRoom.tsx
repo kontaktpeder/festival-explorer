@@ -5,6 +5,7 @@ import { BackstageShell } from "@/components/layout/BackstageShell";
 import { LoadingState } from "@/components/ui/LoadingState";
 import AdminSections from "@/pages/admin/AdminSections";
 import { FestivalDocuments } from "@/components/dashboard/FestivalDocuments";
+import { FestivalProgramTypes } from "@/components/dashboard/FestivalProgramTypes";
 import { Separator } from "@/components/ui/separator";
 
 export default function FestivalSettingsRoom() {
