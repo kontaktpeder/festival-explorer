@@ -150,6 +150,19 @@ export function RunSheetSection({
             <Plus className="h-4 w-4" />
           </Button>
         )}
+
+        {/* Delete section */}
+        {onDeleteSection && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 shrink-0 text-destructive/30 hover:text-destructive hover:bg-muted/70"
+            onClick={() => onDeleteSection(title)}
+            title={`Slett ${shownName}`}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        )}
       </div>
 
       {/* Rows */}
