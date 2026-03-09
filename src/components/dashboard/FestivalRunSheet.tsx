@@ -49,18 +49,17 @@ interface FestivalRunSheetProps {
 function getSectionForSlot(slot: ExtendedEventProgramSlot): string {
   const kind = slot.slot_kind;
   const title = (slot.title_override ?? "").toUpperCase();
-  if (kind === "doors" || kind === "closing") return "Dører & logistikk";
-  // Lydprøve: internal break/soundcheck rows with LYDPRØVE in title, or slot_kind soundcheck
+  // Lydprøve: soundcheck rows or internal rows with LYDPRØVE in title
   if (
     kind === "soundcheck" ||
     (slot.visibility === "internal" && title.includes("LYDPRØVE"))
   ) return "Lydprøver";
-  if (slot.visibility === "internal" && (kind === "break" || !slot.entity_id)) return "Opprigg & intern";
-  if (kind === "concert" || kind === "boiler" || kind === "stage_talk" || kind === "giggen_info") return "Event";
-  return "Annet";
+  if (slot.visibility === "internal" && (kind === "rigging" || kind === "break" || !slot.entity_id)) return "Opprigg & intern";
+  // Everything else (concert, boiler, stage_talk, giggen_info, doors, closing, etc.) → Event
+  return "Event";
 }
 
-const SECTION_ORDER = ["Opprigg & intern", "Lydprøver", "Dører & logistikk", "Event", "Annet"];
+const SECTION_ORDER = ["Opprigg & intern", "Lydprøver", "Event"];
 
 export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   const queryClient = useQueryClient();
@@ -126,12 +125,17 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   });
 
   const createManualSlot = useMutation({
-    mutationFn: async (sectionType: "opprigg" | "lydprøve" | "event") => {
+    mutationFn: async (sectionType: "opprigg" | "lydprøve" | "event" | "doors" | "closing" | "stage_talk" | "giggen_info" | "break") => {
       const now = new Date();
       const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean }> = {
         opprigg: { slot_kind: "rigging", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false },
         lydprøve: { slot_kind: "soundcheck", title_override: "LYDPRØVE", visibility: "internal", is_visible_public: false },
         event: { slot_kind: "concert", title_override: "", visibility: "public", is_visible_public: true },
+        doors: { slot_kind: "doors", title_override: "", visibility: "public", is_visible_public: true },
+        closing: { slot_kind: "closing", title_override: "", visibility: "public", is_visible_public: true },
+        stage_talk: { slot_kind: "stage_talk", title_override: "", visibility: "public", is_visible_public: true },
+        giggen_info: { slot_kind: "giggen_info", title_override: "", visibility: "public", is_visible_public: true },
+        break: { slot_kind: "break", title_override: "", visibility: "internal", is_visible_public: false },
       };
       const preset = presets[sectionType];
       const { error } = await supabase
@@ -170,8 +174,6 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       "Opprigg & intern": "opprigg",
       "Lydprøver": "lydprøve",
       "Event": "event",
-      "Dører & logistikk": "event",
-      "Annet": "event",
     };
     createManualSlot.mutate(map[sectionTitle] ?? "event");
   };
@@ -275,7 +277,22 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
               Lydprøve
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => createManualSlot.mutate("event")}>
-              Event
+              Konsert
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate("doors")}>
+              Dører
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate("closing")}>
+              Stenging
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate("stage_talk")}>
+              Snakk fra scenen
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate("giggen_info")}>
+              Hva er GIGGEN
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate("break")}>
+              Pause
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
