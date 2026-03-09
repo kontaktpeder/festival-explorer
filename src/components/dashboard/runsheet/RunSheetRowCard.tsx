@@ -3,7 +3,7 @@ import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-
 import { getPerformerDisplay } from "@/lib/program-performers";
 import { getSlotKindConfig } from "@/lib/program-slots";
 import { cn } from "@/lib/utils";
-import { Pencil, Trash2, Plus } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RunSheetTimeBlock } from "./RunSheetTimeBlock";
 import { RunSheetMetaBadges } from "./RunSheetMetaBadges";
