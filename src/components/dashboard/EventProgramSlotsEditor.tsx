@@ -139,6 +139,7 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
         .from("event_program_slots" as any)
         .insert({
           event_id: eventId,
+          festival_id: festivalId ?? null,
           slot_kind: payload.slot_kind,
           starts_at: new Date(payload.starts_at).toISOString(),
           ends_at: payload.ends_at ? new Date(payload.ends_at).toISOString() : null,
