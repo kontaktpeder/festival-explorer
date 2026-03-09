@@ -364,6 +364,10 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
             if (!open) setEditingSlot(null);
           }}
           onSave={handleSave}
+          onParallelCreated={() => {
+            queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
+            setEditingSlot(null);
+          }}
           types={types}
           festivalEntities={festivalEntities}
         />
