@@ -79,7 +79,7 @@ export function RunSheetSection({
     setEditing(false);
   };
 
-  if (slots.length === 0) return null;
+  const isEmpty = slots.length === 0;
 
   const shownName = displayName || title;
 
