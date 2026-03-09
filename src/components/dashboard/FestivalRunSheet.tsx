@@ -110,8 +110,14 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   });
 
   const createManualSlot = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (sectionType: "opprigg" | "lydprøve" | "event") => {
       const now = new Date();
+      const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean }> = {
+        opprigg: { slot_kind: "break", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false },
+        lydprøve: { slot_kind: "break", title_override: "LYDPRØVE", visibility: "internal", is_visible_public: false },
+        event: { slot_kind: "concert", title_override: "", visibility: "public", is_visible_public: true },
+      };
+      const preset = presets[sectionType];
       const { error } = await supabase
         .from("event_program_slots" as any)
         .insert({
@@ -122,20 +128,21 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
           ends_at: null,
           duration_minutes: null,
           sequence_number: null,
-          slot_kind: "break",
+          slot_kind: preset.slot_kind,
           slot_type: null,
           source: "manual",
-          visibility: "internal",
+          visibility: preset.visibility,
           internal_status: "contract_pending",
           internal_note: "",
           is_canceled: false,
-          is_visible_public: false,
+          is_visible_public: preset.is_visible_public,
+          title_override: preset.title_override || null,
         } as any);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
-      toast({ title: "Ny intern rad opprettet" });
+      toast({ title: "Ny rad opprettet" });
     },
     onError: (e: Error) =>
       toast({ title: "Feil", description: e.message, variant: "destructive" }),
