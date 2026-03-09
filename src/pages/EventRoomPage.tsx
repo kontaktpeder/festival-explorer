@@ -209,6 +209,21 @@ export default function EventRoomPage() {
     },
   });
 
+  // Fetch scenes for selected venue
+  const { data: venueScenes = [] } = useQuery({
+    queryKey: ["venue-scenes", formData.venue_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("venue_scenes" as any)
+        .select("id, name, sort_order")
+        .eq("venue_id", formData.venue_id)
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as unknown as { id: string; name: string; sort_order: number }[];
+    },
+    enabled: !!formData.venue_id,
+  });
+
   useEffect(() => {
     if (event) {
       setFormData({
