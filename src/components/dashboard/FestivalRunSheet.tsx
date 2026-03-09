@@ -224,20 +224,21 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     return map;
   }, [data?.types]);
 
+  /* Group into the three fixed sections */
+  const sectionsWithSlots = useMemo(() => {
+    const allSlots = data?.slots ?? [];
+    const grouped = groupSlotsBySection(allSlots);
+    return RUNSHEET_SECTION_KEYS.map((key) => ({
+      sectionKey: key,
+      slots: grouped[key],
+    }));
+  }, [data?.slots]);
+
   if (isLoading || !data) {
     return <LoadingState message="Laster kjøreplan..." />;
   }
 
   const { slots, types } = data;
-
-  /* Group into the three fixed sections */
-  const sectionsWithSlots = useMemo(() => {
-    const grouped = groupSlotsBySection(slots);
-    return RUNSHEET_SECTION_KEYS.map((key) => ({
-      sectionKey: key,
-      slots: grouped[key],
-    }));
-  }, [slots]);
 
   const openEdit = (slot: ExtendedEventProgramSlot) => {
     setEditingSlot(slot);
