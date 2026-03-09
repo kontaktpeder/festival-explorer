@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
 import { INTERNAL_STATUS_OPTIONS } from "@/lib/program-slots";
+import { getPerformerDisplay } from "@/lib/program-performers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
