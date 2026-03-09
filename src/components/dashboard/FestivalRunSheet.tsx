@@ -409,6 +409,8 @@ interface FestivalEvent {
 }
 
 function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, types, festivalEntities }: RunSheetEditDialogProps) {
+  const isLydprøve = slot.slot_kind === "soundcheck" ||
+    (slot.visibility === "internal" && (slot.title_override ?? "").toUpperCase().includes("LYDPRØVE"));
   const [eventId, setEventId] = useState(slot.event_id ?? "");
   const [startsAt, setStartsAt] = useState(isoToLocalDatetimeString(slot.starts_at));
   const [endsAt, setEndsAt] = useState(slot.ends_at ? isoToLocalDatetimeString(slot.ends_at) : "");
