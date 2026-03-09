@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
+import type { RunSheetSectionKey } from "@/lib/runsheet-sections";
 import { getPerformerDisplay } from "@/lib/program-performers";
 import { getSlotKindConfig } from "@/lib/program-slots";
 import { cn } from "@/lib/utils";
@@ -16,19 +17,92 @@ export interface ParallelGroup {
 interface RunSheetRowCardProps {
   group: ParallelGroup;
   index: number;
+  sectionKey?: RunSheetSectionKey;
   slotTypeLabel?: string;
   onEdit: (slot: ExtendedEventProgramSlot) => void;
   onDelete: (slot: ExtendedEventProgramSlot) => void;
 }
 
-export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete }: RunSheetRowCardProps) {
+export function RunSheetRowCard({ group, index, sectionKey, slotTypeLabel, onEdit, onDelete }: RunSheetRowCardProps) {
   const slot = group.primary;
   const kindConfig = getSlotKindConfig(slot.slot_kind as any);
   const isLydprøve = slot.slot_kind === "soundcheck" ||
     (slot.visibility === "internal" && (slot.title_override ?? "").toUpperCase().includes("LYDPRØVE"));
   const seqNum = slot.sequence_number ?? (index + 1);
   const isParallel = group.items.length > 1;
+  const compact = sectionKey === "Opprigg & intern";
 
+  if (compact) {
+    return (
+      <div
+        className={cn(
+          "group relative border border-border/20 rounded-lg bg-card/80 hover:border-border/40 transition-all duration-200",
+          slot.is_canceled && "opacity-40",
+          slot.visibility === "internal" && "border-l-2 border-l-amber-500/30"
+        )}
+      >
+        <div className="flex items-center gap-0 min-h-[48px]">
+          {/* Time block – compact */}
+          <div className="w-[90px] shrink-0 px-3 py-2 border-r border-border/10 flex items-center">
+            <RunSheetTimeBlock
+              startsAt={slot.starts_at}
+              endsAt={slot.ends_at}
+              durationMinutes={slot.duration_minutes}
+            />
+          </div>
+
+          {/* Title + note */}
+          <div className="flex-1 min-w-0 px-4 py-2 flex items-center gap-3">
+            <span className="text-xs font-medium text-foreground/70 truncate">
+              {slot.title_override || "Opprigg"}
+            </span>
+            {slot.stage_label && (
+              <>
+                <span className="text-muted-foreground/20">·</span>
+                <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider shrink-0">
+                  {slot.stage_label}
+                </span>
+              </>
+            )}
+            {slot.internal_note && (
+              <>
+                <span className="text-muted-foreground/20">·</span>
+                <span className="text-[10px] text-muted-foreground/40 italic truncate">
+                  💬 {slot.internal_note}
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="w-[48px] shrink-0 flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+              onClick={() => onEdit(slot)}
+              title="Rediger"
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+            {slot.source === "manual" && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-destructive/60 hover:text-destructive"
+                onClick={() => onDelete(slot)}
+                title="Slett"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Full layout for Lydprøver and Event
   return (
     <div
       className={cn(
@@ -135,16 +209,18 @@ export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete 
             </p>
           )}
 
-          {/* Meta badges */}
-          <RunSheetMetaBadges
-            stageLabel={!isParallel ? slot.stage_label : undefined}
-            visibility={slot.visibility}
-            internalStatus={slot.internal_status}
-            hasContract={!!slot.contract_media_id}
-            slotTypeLabel={slotTypeLabel}
-            isLydprøve={isLydprøve}
-            isParallel={isParallel}
-          />
+          {/* Meta badges – hidden for Opprigg & Lydprøver */}
+          {sectionKey === "Event" && (
+            <RunSheetMetaBadges
+              stageLabel={!isParallel ? slot.stage_label : undefined}
+              visibility={slot.visibility}
+              internalStatus={slot.internal_status}
+              hasContract={!!slot.contract_media_id}
+              slotTypeLabel={slotTypeLabel}
+              isLydprøve={isLydprøve}
+              isParallel={isParallel}
+            />
+          )}
         </div>
 
         {/* ── Actions ── */}

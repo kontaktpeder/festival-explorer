@@ -3,6 +3,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ExtendedEventProgramSlot, ProgramSlotType, PerformerKind } from "@/types/program-slots";
 import { INTERNAL_STATUS_OPTIONS, SLOT_KIND_OPTIONS } from "@/lib/program-slots";
+import {
+  type RunSheetSectionKey,
+  RUNSHEET_SECTION_KEYS,
+  getSectionForSlot,
+  groupSlotsBySection,
+} from "@/lib/runsheet-sections";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,22 +50,6 @@ import { useEventRunSheetDefault, useEventSceneOptions } from "@/hooks/useEventR
 interface FestivalRunSheetProps {
   festivalId: string;
 }
-
-/** Map slot_kind to a section category for grouping */
-function getSectionForSlot(slot: ExtendedEventProgramSlot): string {
-  const kind = slot.slot_kind;
-  const title = (slot.title_override ?? "").toUpperCase();
-  // Lydprøve: soundcheck rows or internal rows with LYDPRØVE in title
-  if (
-    kind === "soundcheck" ||
-    (slot.visibility === "internal" && title.includes("LYDPRØVE"))
-  ) return "Lydprøver";
-  if (slot.visibility === "internal" && (kind === "rigging" || kind === "break" || !slot.entity_id)) return "Opprigg & intern";
-  // Everything else (concert, boiler, stage_talk, giggen_info, doors, closing, etc.) → Event
-  return "Event";
-}
-
-const SECTION_ORDER = ["Opprigg & intern", "Lydprøver", "Event"];
 
 export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   const queryClient = useQueryClient();
@@ -168,14 +158,14 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       toast({ title: "Feil", description: e.message, variant: "destructive" }),
   });
 
-  /** Map section title → preset type for "add to section" */
-  const handleAddToSection = (sectionTitle: string) => {
-    const map: Record<string, "opprigg" | "lydprøve" | "event"> = {
+  /** Map section key → preset type for "add to section" */
+  const handleAddToSection = (sectionKey: RunSheetSectionKey) => {
+    const map: Record<RunSheetSectionKey, "opprigg" | "lydprøve" | "event"> = {
       "Opprigg & intern": "opprigg",
       "Lydprøver": "lydprøve",
       "Event": "event",
     };
-    createManualSlot.mutate(map[sectionTitle] ?? "event");
+    createManualSlot.mutate(map[sectionKey] ?? "event");
   };
 
   /** Custom section display names (stored in state) */
@@ -184,7 +174,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     setSectionNames((prev) => ({ ...prev, [sectionKey]: newName }));
   };
 
-  /** Delete all slots in a section */
+  /** Delete all slots in a section – only deletes the slots passed in */
   const deleteSection = useMutation({
     mutationFn: async (slotIds: string[]) => {
       const { error } = await supabase
@@ -201,14 +191,14 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       toast({ title: "Feil", description: e.message, variant: "destructive" }),
   });
 
-  const handleDeleteSection = (sectionTitle: string) => {
-    // Find all slots belonging to this section
-    const sectionSlots = (data?.slots ?? []).filter(
-      (s) => getSectionForSlot(s) === sectionTitle
-    );
-    if (sectionSlots.length === 0) return;
-    if (!window.confirm(`Slette seksjonen «${sectionNames[sectionTitle] || sectionTitle}» og alle ${sectionSlots.length} punkter?`)) return;
-    deleteSection.mutate(sectionSlots.map((s) => s.id));
+  const handleDeleteSection = (
+    sectionKey: RunSheetSectionKey,
+    slotsToDelete: ExtendedEventProgramSlot[]
+  ) => {
+    if (slotsToDelete.length === 0) return;
+    const displayName = sectionNames[sectionKey] || sectionKey;
+    if (!window.confirm(`Slette seksjonen «${displayName}» og alle ${slotsToDelete.length} punkter? Dette kan ikke angres.`)) return;
+    deleteSection.mutate(slotsToDelete.map((s) => s.id));
   };
 
   const deleteSlot = useMutation({
@@ -234,19 +224,21 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     return map;
   }, [data?.types]);
 
+  /* Group into the three fixed sections */
+  const sectionsWithSlots = useMemo(() => {
+    const allSlots = data?.slots ?? [];
+    const grouped = groupSlotsBySection(allSlots);
+    return RUNSHEET_SECTION_KEYS.map((key) => ({
+      sectionKey: key,
+      slots: grouped[key],
+    }));
+  }, [data?.slots]);
+
   if (isLoading || !data) {
     return <LoadingState message="Laster kjøreplan..." />;
   }
 
   const { slots, types } = data;
-
-  /* Group by day, then by section within each day */
-  const slotsByDay = slots.reduce((acc, slot) => {
-    const day = format(new Date(slot.starts_at), "EEEE d. MMMM yyyy", { locale: nb });
-    if (!acc[day]) acc[day] = [];
-    acc[day].push(slot);
-    return acc;
-  }, {} as Record<string, ExtendedEventProgramSlot[]>);
 
   const openEdit = (slot: ExtendedEventProgramSlot) => {
     setEditingSlot(slot);
@@ -334,67 +326,31 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
           </p>
         </div>
       ) : (
-        Object.entries(slotsByDay).map(([day, daySlots]) => {
-          // Group within each day by section
-          const sectionMap = new Map<string, ExtendedEventProgramSlot[]>();
-          for (const slot of daySlots) {
-            const section = getSectionForSlot(slot);
-            const list = sectionMap.get(section) || [];
-            list.push(slot);
-            sectionMap.set(section, list);
-          }
-
-          // Always show all predefined sections (even empty ones)
-          const orderedSections = SECTION_ORDER.map((s) => ({
-            title: s,
-            slots: sectionMap.get(s) || [],
-          }));
-
-          // Add any sections not in predefined order
-          sectionMap.forEach((sSlots, title) => {
-            if (!SECTION_ORDER.includes(title)) {
-              orderedSections.push({ title, slots: sSlots });
-            }
-          });
-
-          let runningIndex = 0;
-
-          return (
-            <div key={day} className="space-y-4">
-              {/* Day header */}
-              <div className="flex items-center gap-3">
-                <div className="h-px flex-1 bg-border/30" />
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.25em] text-muted-foreground/60 whitespace-nowrap">
-                  {day}
-                </h3>
-                <div className="h-px flex-1 bg-border/30" />
-              </div>
-
-              {/* Sections */}
-              <div className="space-y-5">
-                {orderedSections.map((section) => {
-                  const startIdx = runningIndex;
-                  runningIndex += section.slots.length;
-                  return (
-                    <RunSheetSection
-                      key={section.title}
-                      title={section.title}
-                      displayName={sectionNames[section.title]}
-                      slots={section.slots}
-                      slotTypeMap={slotTypeMap}
-                      startIndex={startIdx}
-                      onEdit={openEdit}
-                      onDelete={handleDelete}
-                      onAddToSection={handleAddToSection}
-                      onRenameSection={handleRenameSection}
-                      onDeleteSection={handleDeleteSection}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })
+        <div className="runsheet-print space-y-5">
+          {(() => {
+            let globalIndex = 0;
+            return sectionsWithSlots.map(({ sectionKey, slots: sectionSlots }) => {
+              const startIdx = globalIndex;
+              globalIndex += sectionSlots.length;
+              return (
+                <RunSheetSection
+                  key={sectionKey}
+                  sectionKey={sectionKey}
+                  title={sectionKey}
+                  displayName={sectionNames[sectionKey]}
+                  slots={sectionSlots}
+                  slotTypeMap={slotTypeMap}
+                  startIndex={startIdx}
+                  onEdit={openEdit}
+                  onDelete={handleDelete}
+                  onAddToSection={handleAddToSection}
+                  onRenameSection={handleRenameSection}
+                  onDeleteSection={handleDeleteSection}
+                />
+              );
+            });
+          })()}
+        </div>
       )}
 
       {/* Edit dialog */}
