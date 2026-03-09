@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { BackstageShell } from "@/components/layout/BackstageShell";
 import { LoadingState } from "@/components/ui/LoadingState";
 import AdminSections from "@/pages/admin/AdminSections";
+import { FestivalDocuments } from "@/components/dashboard/FestivalDocuments";
+import { Separator } from "@/components/ui/separator";
 
 export default function FestivalSettingsRoom() {
   const { id } = useParams<{ id: string }>();
@@ -40,7 +42,11 @@ export default function FestivalSettingsRoom() {
           : undefined
       }
     >
-      <AdminSections />
+      <div className="space-y-8">
+        <FestivalDocuments festivalId={id!} />
+        <Separator className="opacity-20" />
+        <AdminSections />
+      </div>
     </BackstageShell>
   );
 }
