@@ -61,27 +61,41 @@ function EventColumn({
           {eventSlots.map((slot, i) => {
             const hasTitle = !!slot.title_override?.trim();
             const performerName = slot.name ?? "TBA";
-            const displayLabel = hasTitle && slot.name
-              ? `${slot.title_override} med ${performerName}`
-              : performerName;
+            const isPersona = slot.performer_kind === "persona";
+            const linkBase = isPersona ? "/p/" : "/project/";
 
             return (
               <div key={i} className="flex items-baseline gap-3 py-1.5 border-b border-foreground/5 last:border-0">
                 <span className="text-xs text-muted-foreground font-mono tabular-nums w-12 flex-shrink-0">
                   {formatTime(slot.starts_at)}
                 </span>
-                {slot.slug ? (
-                  <Link
-                    to={`/project/${slot.slug}`}
-                    className="text-sm font-semibold text-foreground/80 hover:text-accent transition-colors truncate"
-                  >
-                    {displayLabel}
-                  </Link>
-                ) : (
-                  <span className="text-sm font-semibold text-foreground/80 truncate">
-                    {displayLabel}
-                  </span>
-                )}
+                <span className="text-sm font-semibold text-foreground/80 truncate min-w-0">
+                  {hasTitle && slot.name ? (
+                    <>
+                      {slot.title_override}
+                      <span className="font-normal text-muted-foreground"> med </span>
+                      {slot.slug ? (
+                        <Link
+                          to={`${linkBase}${slot.slug}`}
+                          className="text-accent hover:underline underline-offset-2"
+                        >
+                          {performerName}
+                        </Link>
+                      ) : (
+                        performerName
+                      )}
+                    </>
+                  ) : slot.slug ? (
+                    <Link
+                      to={`${linkBase}${slot.slug}`}
+                      className="text-foreground/80 hover:text-accent transition-colors"
+                    >
+                      {performerName}
+                    </Link>
+                  ) : (
+                    performerName
+                  )}
+                </span>
               </div>
             );
           })}

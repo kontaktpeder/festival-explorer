@@ -11,6 +11,7 @@ export type ProgramSlotItem = {
   entity_id: string | null;
   slot_kind?: string;
   title_override?: string | null;
+  performer_kind?: string;
 };
 
 interface LineupWithTimeSectionProps {
