@@ -153,11 +153,15 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
           slot_kind: payload.slot_kind,
           starts_at: new Date(payload.starts_at).toISOString(),
           ends_at: payload.ends_at ? new Date(payload.ends_at).toISOString() : null,
-          entity_id: payload.entity_id || null,
+          entity_id: payload.performer_kind === "entity" ? payload.performer_entity_id || null : null,
           internal_status: payload.internal_status,
           internal_note: payload.internal_note || null,
           is_canceled: payload.is_canceled,
           is_visible_public: payload.is_visible_public,
+          performer_kind: payload.performer_kind,
+          performer_entity_id: payload.performer_kind === "entity" ? payload.performer_entity_id || null : null,
+          performer_persona_id: payload.performer_kind === "persona" ? payload.performer_persona_id || null : null,
+          performer_name_override: payload.performer_kind === "text" ? payload.performer_name_override || null : null,
         } as any);
       if (error) throw error;
     },
