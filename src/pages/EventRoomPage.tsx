@@ -562,7 +562,7 @@ export default function EventRoomPage() {
 
             {/* Program slots */}
             {!isNew && id && (
-              <EventProgramSlotsEditor eventId={id} canEdit={canEdit} eventStartAt={event?.start_at} />
+              <EventProgramSlotsEditor eventId={id} canEdit={canEdit} eventStartAt={event?.start_at} festivalId={festivalContext?.festival_id ?? undefined} />
             )}
 
             {/* Medvirkende */}

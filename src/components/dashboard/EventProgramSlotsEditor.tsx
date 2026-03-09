@@ -41,6 +41,7 @@ interface EventProgramSlotsEditorProps {
   eventId: string;
   canEdit: boolean;
   eventStartAt?: string;
+  festivalId?: string;
 }
 
 interface SlotForm {
@@ -71,7 +72,7 @@ const STATUS_COLORS: Record<string, string> = {
   canceled: "bg-red-500/15 text-red-400 border-red-500/20",
 };
 
-export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: EventProgramSlotsEditorProps) {
+export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festivalId }: EventProgramSlotsEditorProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -138,6 +139,7 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: Even
         .from("event_program_slots" as any)
         .insert({
           event_id: eventId,
+          festival_id: festivalId ?? null,
           slot_kind: payload.slot_kind,
           starts_at: new Date(payload.starts_at).toISOString(),
           ends_at: payload.ends_at ? new Date(payload.ends_at).toISOString() : null,
