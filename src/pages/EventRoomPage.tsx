@@ -482,7 +482,7 @@ export default function EventRoomPage() {
                           <CommandItem
                             value="__none__"
                             onSelect={() => {
-                              setFormData((prev) => ({ ...prev, venue_id: "" }));
+                              setFormData((prev) => ({ ...prev, venue_id: "", scene_id: "" }));
                               setVenuePickerOpen(false);
                             }}
                           >
