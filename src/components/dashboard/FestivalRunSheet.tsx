@@ -300,10 +300,11 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
             sectionMap.set(section, list);
           }
 
-          // Order sections
-          const orderedSections = SECTION_ORDER
-            .filter((s) => sectionMap.has(s))
-            .map((s) => ({ title: s, slots: sectionMap.get(s)! }));
+          // Always show all predefined sections (even empty ones)
+          const orderedSections = SECTION_ORDER.map((s) => ({
+            title: s,
+            slots: sectionMap.get(s) || [],
+          }));
 
           // Add any sections not in predefined order
           sectionMap.forEach((sSlots, title) => {
