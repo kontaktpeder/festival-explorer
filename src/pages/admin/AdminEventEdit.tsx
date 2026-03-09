@@ -444,8 +444,29 @@ export default function AdminEventEdit() {
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="city">By</Label>
+          {formData.venue_id && venueScenes.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="scene_id">Scene</Label>
+              <Select
+                value={formData.scene_id || "__none__"}
+                onValueChange={(v) => setFormData((prev) => ({ ...prev, scene_id: v === "__none__" ? "" : v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Velg scene (valgfritt)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Ingen scene</SelectItem>
+                  {venueScenes.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Arves til kjøreplan som standard scene/etasje.
+              </p>
+            </div>
+          )}
+
             <Input
               id="city"
               value={formData.city}
