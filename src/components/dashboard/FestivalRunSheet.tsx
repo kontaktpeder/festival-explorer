@@ -3,63 +3,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ExtendedEventProgramSlot, ProgramSlotType, PerformerKind } from "@/types/program-slots";
 import { INTERNAL_STATUS_OPTIONS, SLOT_KIND_OPTIONS } from "@/lib/program-slots";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { LoadingState } from "@/components/ui/LoadingState";
-import { cn, isoToLocalDatetimeString } from "@/lib/utils";
-import { Plus, ClipboardList, ChevronDown } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
-import { nb } from "date-fns/locale";
-import { usePersonaSearch } from "@/hooks/usePersonaSearch";
-import { FestivalMediaPickerDialog } from "./FestivalMediaPickerDialog";
-import { RunSheetSection } from "./runsheet/RunSheetSection";
-import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
-import { useEventRunSheetDefault, useEventSceneOptions } from "@/hooks/useEventRunSheetDefault";
-
-interface FestivalRunSheetProps {
-  festivalId: string;
-}
-
-/** Map slot_kind to a section category for grouping */
-function getSectionForSlot(slot: ExtendedEventProgramSlot): string {
-  const kind = slot.slot_kind;
-  const title = (slot.title_override ?? "").toUpperCase();
-  // Lydprøve: soundcheck rows or internal rows with LYDPRØVE in title
-  if (
-    kind === "soundcheck" ||
-    (slot.visibility === "internal" && title.includes("LYDPRØVE"))
-  ) return "Lydprøver";
-  if (slot.visibility === "internal" && (kind === "rigging" || kind === "break" || !slot.entity_id)) return "Opprigg & intern";
-  // Everything else (concert, boiler, stage_talk, giggen_info, doors, closing, etc.) → Event
-  return "Event";
-}
-
-const SECTION_ORDER = ["Opprigg & intern", "Lydprøver", "Event"];
+  type RunSheetSectionKey,
+  RUNSHEET_SECTION_KEYS,
+  getSectionForSlot,
+  groupSlotsBySection,
+} from "@/lib/runsheet-sections";
 
 export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   const queryClient = useQueryClient();
