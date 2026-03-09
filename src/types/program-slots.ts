@@ -11,6 +11,9 @@ export type ProgramSlotTypeCategory =
   | "technical"
   | "other";
 
+/** Type for "På scenen"-modus */
+export type PerformerKind = "entity" | "persona" | "text";
+
 export interface ProgramSlotType {
   id: string;
   festival_id: string;
@@ -49,10 +52,19 @@ export interface ExtendedEventProgramSlot {
   duration_minutes: number | null;
   sequence_number: number | null;
 
+  /** Performer fields for "På scenen" */
+  performer_kind: PerformerKind;
+  performer_entity_id: string | null;
+  performer_persona_id: string | null;
+  performer_name_override: string | null;
+
   created_at: string;
   updated_at: string;
 
   // Resolved relations
   entity?: { id: string; name: string; slug: string } | null;
   event?: { id: string; title: string; slug: string } | null;
+
+  performer_entity?: { id: string; name: string; slug: string; is_published: boolean } | null;
+  performer_persona?: { id: string; name: string; slug: string; is_public: boolean } | null;
 }
