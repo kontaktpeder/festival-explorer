@@ -668,8 +668,13 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
                           p.id === performerPersonaId && "bg-accent/10 font-medium"
                         )}
                         onClick={() => {
+                          const prevName = getCurrentPerformerName();
                           setPerformerPersonaId(p.id);
                           setPersonaQuery("");
+                          // Auto-fill title if empty or was previous performer name
+                          if (!titleOverride || titleOverride === prevName) {
+                            setTitleOverride(p.name);
+                          }
                         }}
                       >
                         {p.name}
