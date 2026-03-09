@@ -60,7 +60,7 @@ export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete 
           {/* Performer(s) – show each item's scene + performer */}
           <div className={cn(
             "flex gap-2",
-            isParallel ? "flex-row items-center" : "flex-col"
+            isParallel ? "flex-row items-center justify-between w-full" : "flex-col"
           )}>
             {group.items.map((item, idx) => {
               const performer = getPerformerDisplay(item);
