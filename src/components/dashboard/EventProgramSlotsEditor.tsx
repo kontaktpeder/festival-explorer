@@ -72,7 +72,7 @@ const STATUS_COLORS: Record<string, string> = {
   canceled: "bg-red-500/15 text-red-400 border-red-500/20",
 };
 
-export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt }: EventProgramSlotsEditorProps) {
+export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festivalId }: EventProgramSlotsEditorProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
