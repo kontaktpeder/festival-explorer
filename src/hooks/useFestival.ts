@@ -213,6 +213,7 @@ export function useFestivalDetails(festivalId: string | null | undefined) {
           slug,
           entity_id: legacyEntity?.id ?? performerEntity?.id ?? null,
           slot_kind: row.slot_kind,
+          title_override: row.title_override ?? null,
         };
       });
 
