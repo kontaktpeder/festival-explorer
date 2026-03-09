@@ -193,7 +193,7 @@ export function useFestivalDetails(festivalId: string | null | undefined) {
         const kind = row.performer_kind || "entity";
 
         if (kind === "text") {
-          name = row.performer_name_override || null;
+          name = row.performer_name_override || row.title_override || null;
         } else if (kind === "persona" && performerPersona) {
           name = performerPersona.name;
           slug = performerPersona.is_public ? performerPersona.slug : null;
