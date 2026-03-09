@@ -377,7 +377,9 @@ export type SlotKind =
   | 'giggen_info'
   | 'doors'
   | 'closing'
-  | 'stage_talk';
+  | 'stage_talk'
+  | 'soundcheck'
+  | 'rigging';
 
 export type InternalSlotStatus = 'contract_pending' | 'confirmed' | 'canceled';
 

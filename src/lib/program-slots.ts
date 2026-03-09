@@ -6,6 +6,8 @@ import {
   DoorOpen,
   DoorClosed,
   Mic,
+  Headphones,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 import type { SlotKind } from "@/types/database";
@@ -17,6 +19,8 @@ export const SLOT_KIND_OPTIONS: {
 }[] = [
   { value: "concert", label: "Konsert", icon: Music },
   { value: "boiler", label: "Boiler Room", icon: Radio },
+  { value: "soundcheck", label: "Lydprøve", icon: Headphones },
+  { value: "rigging", label: "Opprigg", icon: Wrench },
   { value: "break", label: "Pause", icon: Coffee },
   { value: "giggen_info", label: "Hva er GIGGEN", icon: Info },
   { value: "doors", label: "Dører", icon: DoorOpen },
