@@ -36,6 +36,8 @@ import { Plus, Pencil, Copy, Trash2, Clock, FileText, Eye, EyeOff } from "lucide
 import { useToast } from "@/hooks/use-toast";
 import { isoToLocalDatetimeString } from "@/lib/utils";
 import type { SlotKind, InternalSlotStatus } from "@/types/database";
+import type { PerformerKind } from "@/types/program-slots";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface EventProgramSlotsEditorProps {
   eventId: string;
