@@ -100,6 +100,38 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     },
   });
 
+  // Prosjekter (entities) tilknyttet festivalens events
+  const { data: festivalEntities = [] } = useQuery({
+    queryKey: ["festival-entities", festivalId],
+    queryFn: async () => {
+      const { data: feRows, error: feError } = await supabase
+        .from("festival_events")
+        .select("event_id")
+        .eq("festival_id", festivalId);
+      if (feError) throw feError;
+      const eventIds = (feRows ?? []).map((r) => r.event_id).filter(Boolean);
+      if (eventIds.length === 0) return [];
+
+      const { data: eeRows, error: eeError } = await supabase
+        .from("event_entities")
+        .select("entity:entities(id, name, slug)")
+        .in("event_id", eventIds);
+      if (eeError) throw eeError;
+
+      const seen = new Set<string>();
+      const entities: { id: string; name: string; slug: string }[] = [];
+      (eeRows ?? []).forEach((row: any) => {
+        const e = row.entity;
+        if (e && !seen.has(e.id)) {
+          seen.add(e.id);
+          entities.push(e);
+        }
+      });
+      return entities.sort((a, b) => a.name.localeCompare(b.name));
+    },
+    enabled: !!festivalId,
+  });
+
   /* ── Mutations ── */
   const updateSlot = useMutation({
     mutationFn: async (partial: Partial<ExtendedEventProgramSlot> & { id: string }) => {
@@ -333,6 +365,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
           }}
           onSave={handleSave}
           types={types}
+          festivalEntities={festivalEntities}
         />
       )}
 
@@ -363,6 +396,7 @@ interface RunSheetEditDialogProps {
   onOpenChange: (open: boolean) => void;
   onSave: (updates: Record<string, unknown>) => void;
   types: ProgramSlotType[];
+  festivalEntities: { id: string; name: string; slug: string }[];
 }
 
 interface FestivalEvent {
@@ -374,7 +408,7 @@ interface FestivalEvent {
   venue: { id: string; name: string } | null;
 }
 
-function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, types }: RunSheetEditDialogProps) {
+function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, types, festivalEntities }: RunSheetEditDialogProps) {
   const [eventId, setEventId] = useState(slot.event_id ?? "");
   const [startsAt, setStartsAt] = useState(isoToLocalDatetimeString(slot.starts_at));
   const [endsAt, setEndsAt] = useState(slot.ends_at ? isoToLocalDatetimeString(slot.ends_at) : "");
@@ -565,6 +599,27 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
                 <Label htmlFor="pk-text" className="text-xs cursor-pointer">Fri tekst</Label>
               </div>
             </RadioGroup>
+
+            {performerKind === "entity" && (
+              <div className="space-y-1.5">
+                <Select
+                  value={performerEntityId || "__none__"}
+                  onValueChange={(v) => setPerformerEntityId(v === "__none__" ? "" : v)}
+                >
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="Velg prosjekt..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">Ingen prosjekt</SelectItem>
+                    {festivalEntities.map((e) => (
+                      <SelectItem key={e.id} value={e.id}>
+                        {e.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {performerKind === "persona" && (
               <div className="space-y-1.5">
