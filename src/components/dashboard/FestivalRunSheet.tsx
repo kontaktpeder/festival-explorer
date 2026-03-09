@@ -221,15 +221,30 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
             </p>
           </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => createManualSlot.mutate()}
-          className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Ny intern rad
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Ny rad
+              <ChevronDown className="h-3 w-3 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => createManualSlot.mutate("opprigg")}>
+              Opprigg
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate("lydprøve")}>
+              Lydprøve
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate("event")}>
+              Event
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {slots.length === 0 ? (
