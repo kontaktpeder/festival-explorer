@@ -83,7 +83,7 @@ export function useFestivalDetails(festivalId: string | null | undefined) {
           : Promise.resolve({ data: [], error: null }),
         supabase.from("festival_participants").select("*").eq("festival_id", festivalId).in("zone", ["backstage", "host"]).order("zone", { ascending: true }).order("sort_order", { ascending: true }),
         eventIds.length > 0
-          ? supabase.from("event_program_slots").select(`event_id, starts_at, ends_at, slot_kind, performer_kind, performer_name_override, performer_entity:entities!event_program_slots_performer_entity_id_fkey(id, name, slug, is_published), performer_persona:personas!event_program_slots_performer_persona_id_fkey(id, name, slug, is_public), entity:entities!event_program_slots_entity_id_fkey(id, name, slug)`).in("event_id", eventIds).eq("is_visible_public", true).eq("is_canceled", false).order("starts_at", { ascending: true })
+          ? supabase.from("event_program_slots").select(`event_id, starts_at, ends_at, slot_kind, title_override, performer_kind, performer_name_override, performer_entity:entities!event_program_slots_performer_entity_id_fkey(id, name, slug, is_published), performer_persona:personas!event_program_slots_performer_persona_id_fkey(id, name, slug, is_public), entity:entities!event_program_slots_entity_id_fkey(id, name, slug)`).in("event_id", eventIds).eq("is_visible_public", true).eq("is_canceled", false).order("starts_at", { ascending: true })
           : Promise.resolve({ data: [], error: null }),
       ]);
 
