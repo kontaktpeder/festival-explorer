@@ -621,3 +621,21 @@
     transform: none;
   }
 }
+
+/* ── Run Sheet Print Styles ── */
+@media print {
+  .runsheet-print {
+    padding: 0;
+  }
+  .runsheet-print .runsheet-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .runsheet-print .runsheet-section + .runsheet-section {
+    margin-top: 1.5rem;
+  }
+  .runsheet-print [data-print-section] {
+    box-shadow: none;
+    border-color: #ccc;
+  }
+}
