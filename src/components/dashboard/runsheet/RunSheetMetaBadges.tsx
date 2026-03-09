@@ -43,11 +43,6 @@ export function RunSheetMetaBadges({
             {stageLabel}
           </span>
         )}
-        {isParallel && (
-          <span className="text-[10px] px-2 py-0.5 rounded-full border border-accent/20 bg-accent/8 text-accent font-medium">
-            Parallell
-          </span>
-        )}
       </div>
     );
   }
