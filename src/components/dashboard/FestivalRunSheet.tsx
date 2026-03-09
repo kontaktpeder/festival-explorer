@@ -504,6 +504,59 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
     if (kind !== "text") setNameOverride("");
   };
 
+  const handleCreateParallel = async () => {
+    const groupId = slot.parallel_group_id || crypto.randomUUID();
+
+    // Ensure the current slot has the parallel_group_id
+    if (!slot.parallel_group_id) {
+      const { error: upErr } = await supabase
+        .from("event_program_slots" as any)
+        .update({ parallel_group_id: groupId })
+        .eq("id", slot.id);
+      if (upErr) {
+        toast({ title: "Feil", description: upErr.message, variant: "destructive" });
+        return;
+      }
+    }
+
+    // Insert a new parallel slot inheriting shared fields
+    const { error: insErr } = await supabase
+      .from("event_program_slots" as any)
+      .insert({
+        festival_id: slot.festival_id,
+        event_id: slot.event_id,
+        starts_at: slot.starts_at,
+        ends_at: slot.ends_at,
+        duration_minutes: slot.duration_minutes,
+        sequence_number: slot.sequence_number,
+        slot_kind: slot.slot_kind,
+        slot_type: slot.slot_type,
+        internal_status: slot.internal_status,
+        internal_note: slot.internal_note,
+        visibility: slot.visibility,
+        is_canceled: slot.is_canceled,
+        is_visible_public: slot.is_visible_public,
+        title_override: slot.title_override,
+        stage_label: null,
+        performer_kind: "entity",
+        performer_entity_id: null,
+        performer_persona_id: null,
+        performer_name_override: null,
+        entity_id: null,
+        source: "manual",
+        parallel_group_id: groupId,
+      } as any);
+
+    if (insErr) {
+      toast({ title: "Feil", description: insErr.message, variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Parallell rad opprettet" });
+    onOpenChange(false);
+    onParallelCreated?.();
+  };
+
   const handleSubmit = () => {
     onSave({
       event_id: eventId || null,
