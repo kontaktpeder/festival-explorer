@@ -289,6 +289,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       {/* Edit dialog */}
       {editingSlot && (
         <RunSheetEditDialog
+          festivalId={festivalId}
           slot={editingSlot}
           open={dialogOpen}
           onOpenChange={(open) => {
