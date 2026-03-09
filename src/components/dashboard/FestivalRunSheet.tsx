@@ -744,7 +744,19 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
 
           {/* På scenen – performer type */}
           <div className="space-y-2 rounded-lg border border-border/20 p-3">
-            <Label className="text-xs font-semibold">På scenen</Label>
+            <div className="flex items-center justify-between gap-3">
+              <Label className="text-xs font-semibold">På scenen</Label>
+              <Select value={slotKind} onValueChange={setSlotKind}>
+                <SelectTrigger className="h-7 w-[140px] text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SLOT_KIND_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <RadioGroup value={performerKind} onValueChange={handlePerformerKindChange} className="flex gap-4">
               <div className="flex items-center gap-1.5">
                 <RadioGroupItem value="entity" id="pk-entity" />
@@ -853,35 +865,22 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
             <Textarea value={internalNote} onChange={(e) => setInternalNote(e.target.value)} placeholder="Interne instrukser..." rows={3} className="text-sm" />
           </div>
 
-          {/* Type & Status – hidden for lydprøve */}
+          {/* Kategori, Synlighet, Status */}
           {!isLydprøve && (
             <>
-              <div className="grid grid-cols-2 gap-3">
+              {types.length > 0 && (
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Slot-type</Label>
-                  <Select value={slotKind} onValueChange={setSlotKind}>
-                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <Label className="text-xs">Kategori</Label>
+                  <Select value={slotType} onValueChange={setSlotType}>
+                    <SelectTrigger className="h-9"><SelectValue placeholder="—" /></SelectTrigger>
                     <SelectContent>
-                      {SLOT_KIND_OPTIONS.map((o) => (
-                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      {types.map((t) => (
+                        <SelectItem key={t.code} value={t.code}>{t.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                {types.length > 0 && (
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Kategori</Label>
-                    <Select value={slotType} onValueChange={setSlotType}>
-                      <SelectTrigger className="h-9"><SelectValue placeholder="—" /></SelectTrigger>
-                      <SelectContent>
-                        {types.map((t) => (
-                          <SelectItem key={t.code} value={t.code}>{t.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </div>
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
