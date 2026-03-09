@@ -187,6 +187,7 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
       if (payload.internal_note !== undefined) updates.internal_note = payload.internal_note || null;
       if (payload.is_canceled !== undefined) updates.is_canceled = payload.is_canceled;
       if (payload.is_visible_public !== undefined) updates.is_visible_public = payload.is_visible_public;
+      if (payload.title_override !== undefined) updates.title_override = payload.title_override || null;
 
       if (payload.performer_kind !== undefined) {
         updates.performer_kind = payload.performer_kind;
