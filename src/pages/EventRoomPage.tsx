@@ -65,6 +65,7 @@ export default function EventRoomPage() {
     end_at: "",
     venue_id: "",
     city: "",
+    scene_id: "",
     hero_image_url: "",
     status: "draft" as "draft" | "submitted" | "published",
     age_limit: "",
@@ -208,6 +209,21 @@ export default function EventRoomPage() {
     },
   });
 
+  // Fetch scenes for selected venue
+  const { data: venueScenes = [] } = useQuery({
+    queryKey: ["venue-scenes", formData.venue_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("venue_scenes" as any)
+        .select("id, name, sort_order")
+        .eq("venue_id", formData.venue_id)
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as unknown as { id: string; name: string; sort_order: number }[];
+    },
+    enabled: !!formData.venue_id,
+  });
+
   useEffect(() => {
     if (event) {
       setFormData({
@@ -218,6 +234,7 @@ export default function EventRoomPage() {
         end_at: isoToLocalDatetimeString(event.end_at),
         venue_id: event.venue_id || "",
         city: event.city || "",
+        scene_id: (event as any).scene_id || "",
         hero_image_url: event.hero_image_url || "",
         status: event.status || "draft",
         age_limit: (event as any).age_limit ?? "",
@@ -235,6 +252,7 @@ export default function EventRoomPage() {
         start_at: formData.start_at ? new Date(formData.start_at).toISOString() : new Date().toISOString(),
         end_at: formData.end_at ? new Date(formData.end_at).toISOString() : null,
         venue_id: formData.venue_id || null,
+        scene_id: formData.scene_id || null,
         hero_image_url: formData.hero_image_url || null,
         hero_image_settings: heroImageSettings,
         city: formData.city || null,
@@ -464,7 +482,7 @@ export default function EventRoomPage() {
                           <CommandItem
                             value="__none__"
                             onSelect={() => {
-                              setFormData((prev) => ({ ...prev, venue_id: "" }));
+                              setFormData((prev) => ({ ...prev, venue_id: "", scene_id: "" }));
                               setVenuePickerOpen(false);
                             }}
                           >
@@ -476,7 +494,7 @@ export default function EventRoomPage() {
                               key={venue.id}
                               value={venue.name}
                               onSelect={() => {
-                                setFormData((prev) => ({ ...prev, venue_id: venue.id }));
+                                setFormData((prev) => ({ ...prev, venue_id: venue.id, scene_id: prev.venue_id !== venue.id ? "" : prev.scene_id }));
                                 setVenuePickerOpen(false);
                               }}
                             >
@@ -491,6 +509,25 @@ export default function EventRoomPage() {
                   </PopoverContent>
                 </Popover>
               </div>
+              {formData.venue_id && venueScenes.length > 0 && (
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/50">Scene</Label>
+                  <Select
+                    value={formData.scene_id || "__none__"}
+                    onValueChange={(v) => setFormData((prev) => ({ ...prev, scene_id: v === "__none__" ? "" : v }))}
+                  >
+                    <SelectTrigger className="h-8 text-xs bg-muted/20 border-border/20">
+                      <SelectValue placeholder="Velg..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">Ingen</SelectItem>
+                      {venueScenes.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="space-y-1">
                 <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/50">By</Label>
                 <Input
