@@ -129,8 +129,8 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     mutationFn: async (sectionType: "opprigg" | "lydprøve" | "event") => {
       const now = new Date();
       const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean }> = {
-        opprigg: { slot_kind: "break", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false },
-        lydprøve: { slot_kind: "break", title_override: "LYDPRØVE", visibility: "internal", is_visible_public: false },
+        opprigg: { slot_kind: "rigging", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false },
+        lydprøve: { slot_kind: "soundcheck", title_override: "LYDPRØVE", visibility: "internal", is_visible_public: false },
         event: { slot_kind: "concert", title_override: "", visibility: "public", is_visible_public: true },
       };
       const preset = presets[sectionType];
@@ -163,6 +163,18 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     onError: (e: Error) =>
       toast({ title: "Feil", description: e.message, variant: "destructive" }),
   });
+
+  /** Map section title → preset type for "add to section" */
+  const handleAddToSection = (sectionTitle: string) => {
+    const map: Record<string, "opprigg" | "lydprøve" | "event"> = {
+      "Opprigg & intern": "opprigg",
+      "Lydprøver": "lydprøve",
+      "Event": "event",
+      "Dører & logistikk": "event",
+      "Annet": "event",
+    };
+    createManualSlot.mutate(map[sectionTitle] ?? "event");
+  };
 
   const deleteSlot = useMutation({
     mutationFn: async (id: string) => {
@@ -321,6 +333,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
                       startIndex={startIdx}
                       onEdit={openEdit}
                       onDelete={handleDelete}
+                      onAddToSection={handleAddToSection}
                     />
                   );
                 })}
