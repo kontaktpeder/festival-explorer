@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { ChevronDown, ChevronRight, Plus, Pencil } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
 import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
 import { RunSheetRowCard, type ParallelGroup } from "./RunSheetRowCard";
 import { cn } from "@/lib/utils";
