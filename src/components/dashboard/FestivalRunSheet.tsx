@@ -38,6 +38,7 @@ import { nb } from "date-fns/locale";
 import { usePersonaSearch } from "@/hooks/usePersonaSearch";
 import { FestivalMediaPickerDialog } from "./FestivalMediaPickerDialog";
 import { RunSheetSection } from "./runsheet/RunSheetSection";
+import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
 
 interface FestivalRunSheetProps {
   festivalId: string;
@@ -100,85 +101,12 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     },
   });
 
-  // Prosjekter (entities) fra alle kilder: event_participants, event_entities (legacy), festival_participants
-  const { data: festivalEntities = [] } = useQuery({
-    queryKey: ["festival-entities", festivalId],
-    queryFn: async () => {
-      // 1) Finn alle events i festivalen
-      const { data: feRows, error: feError } = await supabase
-        .from("festival_events")
-        .select("event_id")
-        .eq("festival_id", festivalId);
-      if (feError) throw feError;
-      const eventIds = (feRows ?? []).map((r) => r.event_id).filter(Boolean) as string[];
-      const hasEvents = eventIds.length > 0;
-
-      // 2) Hent fra alle fire kilder parallelt
-      const [epRes, eeRes, fpRes, slotsRes] = await Promise.all([
-        hasEvents
-          ? supabase
-              .from("event_participants")
-              .select("participant_kind, participant_id")
-              .in("event_id", eventIds)
-          : Promise.resolve({ data: [], error: null } as any),
-        hasEvents
-          ? supabase
-              .from("event_entities")
-              .select("entity_id")
-              .in("event_id", eventIds)
-          : Promise.resolve({ data: [], error: null } as any),
-        supabase
-          .from("festival_participants")
-          .select("participant_kind, participant_id")
-          .eq("festival_id", festivalId),
-        // 4) Entities som allerede er brukt i program-slots for denne festivalen
-        supabase
-          .from("event_program_slots")
-          .select("entity_id, performer_entity_id")
-          .eq("festival_id", festivalId),
-      ]);
-      if (epRes.error) throw epRes.error;
-      if (eeRes.error) throw eeRes.error;
-      if (fpRes.error) throw fpRes.error;
-      if (slotsRes.error) throw slotsRes.error;
-
-      const entityIds = new Set<string>();
-
-      // event_participants: alle som ikke er persona
-      (epRes.data ?? []).forEach((p: any) => {
-        if (p.participant_kind !== "persona" && p.participant_id) {
-          entityIds.add(p.participant_id);
-        }
-      });
-      // event_entities (legacy)
-      (eeRes.data ?? []).forEach((row: any) => {
-        if (row.entity_id) entityIds.add(row.entity_id);
-      });
-      // festival_participants (host/backstage – ikke persona)
-      (fpRes.data ?? []).forEach((fp: any) => {
-        if (fp.participant_kind !== "persona" && fp.participant_id) {
-          entityIds.add(fp.participant_id);
-        }
-      });
-      // program-slots: entities som allerede er koblet
-      (slotsRes.data ?? []).forEach((s: any) => {
-        if (s.entity_id) entityIds.add(s.entity_id);
-        if (s.performer_entity_id) entityIds.add(s.performer_entity_id);
-      });
-
-      if (entityIds.size === 0) return [];
-
-      // 3) Hent entities
-      const { data: entitiesRows, error: entitiesError } = await supabase
-        .from("entities")
-        .select("id, name, slug")
-        .in("id", Array.from(entityIds));
-      if (entitiesError) throw entitiesError;
-
-      return (entitiesRows ?? []).sort((a, b) => a.name.localeCompare(b.name));
-    },
-    enabled: !!festivalId,
-  });
+  // Prosjekter + personas fra alle kilder via felles hook
+  const { data: allSubjects = [] } = useFestivalSubjects(festivalId);
+  const festivalEntities = useMemo(
+    () => allSubjects.filter((s) => s.kind === "entity"),
+    [allSubjects]
+  );
 
   /* ── Mutations ── */
   const updateSlot = useMutation({
