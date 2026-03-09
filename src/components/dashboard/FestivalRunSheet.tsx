@@ -334,12 +334,14 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
                     <RunSheetSection
                       key={section.title}
                       title={section.title}
+                      displayName={sectionNames[section.title]}
                       slots={section.slots}
                       slotTypeMap={slotTypeMap}
                       startIndex={startIdx}
                       onEdit={openEdit}
                       onDelete={handleDelete}
-                      onAddParallel={handleAddParallel}
+                      onAddToSection={handleAddToSection}
+                      onRenameSection={handleRenameSection}
                     />
                   );
                 })}
