@@ -14,25 +14,25 @@
     /* Black + Orange Accent Palette */
     /* Pure black base */
     --background: 0 0% 4%;
-    --foreground: 0 0% 92%;
+    --foreground: 0 0% 95%;
     
     /* Surface layers - dark grays */
     --card: 0 0% 8%;
-    --card-foreground: 0 0% 92%;
+    --card-foreground: 0 0% 95%;
     --popover: 0 0% 6%;
-    --popover-foreground: 0 0% 92%;
+    --popover-foreground: 0 0% 95%;
     
     /* Primary - white */
-    --primary: 0 0% 92%;
+    --primary: 0 0% 95%;
     --primary-foreground: 0 0% 4%;
     
     /* Secondary - dark gray */
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 70%;
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 78%;
     
     /* Muted surfaces */
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 50%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 63%;
     
     /* Accent - WARM ORANGE */
     --accent: 24 100% 55%;
@@ -46,11 +46,11 @@
     
     /* Destructive */
     --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 92%;
+    --destructive-foreground: 0 0% 95%;
     
     /* Borders & inputs - orange tinted */
-    --border: 24 60% 20%;
-    --input: 0 0% 10%;
+    --border: 24 40% 28%;
+    --input: 0 0% 14%;
     --ring: 24 100% 55%;
     
     /* Pink accent for subtle touches */
@@ -79,12 +79,12 @@
     
     /* Sidebar (keeping for shadcn compatibility) */
     --sidebar-background: 0 0% 6%;
-    --sidebar-foreground: 0 0% 92%;
+    --sidebar-foreground: 0 0% 95%;
     --sidebar-primary: 24 100% 55%;
     --sidebar-primary-foreground: 0 0% 4%;
     --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 0 0% 92%;
-    --sidebar-border: 24 60% 20%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 24 40% 28%;
     --sidebar-ring: 24 100% 55%;
   }
 }
