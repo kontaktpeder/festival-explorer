@@ -38,6 +38,7 @@ import { nb } from "date-fns/locale";
 import { usePersonaSearch } from "@/hooks/usePersonaSearch";
 import { FestivalMediaPickerDialog } from "./FestivalMediaPickerDialog";
 import { RunSheetSection } from "./runsheet/RunSheetSection";
+import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
 
 interface FestivalRunSheetProps {
   festivalId: string;
