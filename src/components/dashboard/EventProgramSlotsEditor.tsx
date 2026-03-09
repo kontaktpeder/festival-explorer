@@ -41,6 +41,7 @@ interface EventProgramSlotsEditorProps {
   eventId: string;
   canEdit: boolean;
   eventStartAt?: string;
+  festivalId?: string;
 }
 
 interface SlotForm {
