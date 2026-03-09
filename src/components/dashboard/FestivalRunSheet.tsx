@@ -679,9 +679,37 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
             </div>
           )}
 
+          {/* Scene: dropdown when scenes available, otherwise free text */}
           <div className="space-y-1.5">
             <Label className="text-xs">Scene / sted</Label>
-            <Input placeholder="F.eks. 1ETG, FOH" value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm" />
+            {sceneOptions.length > 0 ? (
+              <Select
+                value={sceneOptions.find((s) => s.name === stageLabel)?.id ?? "__custom__"}
+                onValueChange={(v) => {
+                  if (v === "__custom__") {
+                    setStageLabel("");
+                    return;
+                  }
+                  const scene = sceneOptions.find((s) => s.id === v);
+                  if (scene) setStageLabel(scene.name);
+                }}
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Velg scene..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {sceneOptions.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                  <SelectItem value="__custom__">Annet (fritekst)</SelectItem>
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input placeholder="F.eks. 1ETG, FOH" value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm" />
+            )}
+            {sceneOptions.length > 0 && stageLabel && !sceneOptions.find((s) => s.name === stageLabel) && (
+              <Input placeholder="Fritekst scene..." value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm mt-1" />
+            )}
           </div>
 
           {/* På scenen – performer type */}
