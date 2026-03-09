@@ -286,6 +286,10 @@ export default function VenueSettingsRoom() {
               {saveMutation.isPending ? "Lagrer..." : "Lagre"}
             </Button>
           </form>
+
+          <div className="mt-8 pt-6 border-t border-border/50">
+            <VenueScenesEditor venueId={id} />
+          </div>
         )}
       </main>
     </div>
