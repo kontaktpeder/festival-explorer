@@ -158,14 +158,14 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       toast({ title: "Feil", description: e.message, variant: "destructive" }),
   });
 
-  /** Map section title → preset type for "add to section" */
-  const handleAddToSection = (sectionTitle: string) => {
-    const map: Record<string, "opprigg" | "lydprøve" | "event"> = {
+  /** Map section key → preset type for "add to section" */
+  const handleAddToSection = (sectionKey: RunSheetSectionKey) => {
+    const map: Record<RunSheetSectionKey, "opprigg" | "lydprøve" | "event"> = {
       "Opprigg & intern": "opprigg",
       "Lydprøver": "lydprøve",
       "Event": "event",
     };
-    createManualSlot.mutate(map[sectionTitle] ?? "event");
+    createManualSlot.mutate(map[sectionKey] ?? "event");
   };
 
   /** Custom section display names (stored in state) */
@@ -174,7 +174,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     setSectionNames((prev) => ({ ...prev, [sectionKey]: newName }));
   };
 
-  /** Delete all slots in a section */
+  /** Delete all slots in a section – only deletes the slots passed in */
   const deleteSection = useMutation({
     mutationFn: async (slotIds: string[]) => {
       const { error } = await supabase
@@ -191,14 +191,14 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       toast({ title: "Feil", description: e.message, variant: "destructive" }),
   });
 
-  const handleDeleteSection = (sectionTitle: string) => {
-    // Find all slots belonging to this section
-    const sectionSlots = (data?.slots ?? []).filter(
-      (s) => getSectionForSlot(s) === sectionTitle
-    );
-    if (sectionSlots.length === 0) return;
-    if (!window.confirm(`Slette seksjonen «${sectionNames[sectionTitle] || sectionTitle}» og alle ${sectionSlots.length} punkter?`)) return;
-    deleteSection.mutate(sectionSlots.map((s) => s.id));
+  const handleDeleteSection = (
+    sectionKey: RunSheetSectionKey,
+    slotsToDelete: ExtendedEventProgramSlot[]
+  ) => {
+    if (slotsToDelete.length === 0) return;
+    const displayName = sectionNames[sectionKey] || sectionKey;
+    if (!window.confirm(`Slette seksjonen «${displayName}» og alle ${slotsToDelete.length} punkter? Dette kan ikke angres.`)) return;
+    deleteSection.mutate(slotsToDelete.map((s) => s.id));
   };
 
   const deleteSlot = useMutation({
