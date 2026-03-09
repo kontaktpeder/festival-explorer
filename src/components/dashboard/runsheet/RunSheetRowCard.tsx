@@ -58,15 +58,6 @@ export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete 
 
         {/* ── Main content area ── */}
         <div className="flex-1 min-w-0 px-5 py-4 flex flex-col justify-center gap-2">
-          {/* Row 1: Title */}
-          <div className="flex items-baseline gap-3 flex-wrap">
-            <div className="flex items-center gap-2 min-w-0">
-              <KindIcon className="h-4 w-4 text-muted-foreground/40 shrink-0" />
-              <h3 className="text-base md:text-lg font-bold text-foreground tracking-tight uppercase truncate">
-                {displayTitle}
-              </h3>
-            </div>
-          </div>
 
           {/* Performer(s) – show each item's scene + performer */}
           <div className={cn("flex gap-1.5", isParallel ? "flex-row justify-between" : "flex-col")}>
