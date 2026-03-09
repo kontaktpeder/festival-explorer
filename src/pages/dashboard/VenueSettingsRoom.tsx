@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowLeft, Save } from "lucide-react";
+import { VenueScenesEditor } from "@/components/venues/VenueScenesEditor";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useToast } from "@/hooks/use-toast";
@@ -174,117 +175,123 @@ export default function VenueSettingsRoom() {
             Du har ikke tilgang til å redigere denne scenen.
           </p>
         ) : (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              saveMutation.mutate();
-            }}
-            className="space-y-6"
-          >
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Navn</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleNameChange(e.target.value)}
-                  placeholder="Scenens navn"
-                  required
-                />
+          <>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                saveMutation.mutate();
+              }}
+              className="space-y-6"
+            >
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Navn</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleNameChange(e.target.value)}
+                    placeholder="Scenens navn"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>URL-slug</Label>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    /venue/{formData.slug || "..."}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Beskrivelse</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
+                    placeholder="Beskrivelse av scenen..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address">Adresse</Label>
+                  <Input
+                    id="address"
+                    value={formData.address}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        address: e.target.value,
+                      }))
+                    }
+                    placeholder="Gateadresse"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="city">By</Label>
+                  <Input
+                    id="city"
+                    value={formData.city}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, city: e.target.value }))
+                    }
+                    placeholder="Oslo"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Hero-bilde</Label>
+                  <InlineMediaPickerWithCrop
+                    value={formData.hero_image_url}
+                    imageSettings={heroImageSettings}
+                    onChange={(url) =>
+                      setFormData((prev) => ({ ...prev, hero_image_url: url }))
+                    }
+                    onSettingsChange={setHeroImageSettings}
+                    cropMode="hero"
+                    placeholder="Velg hero-bilde"
+                    useNaturalAspect
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Publisering</Label>
+                  <Select
+                    value={formData.is_published ? "true" : "false"}
+                    onValueChange={(v) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        is_published: v === "true",
+                      }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="false">Utkast</SelectItem>
+                      <SelectItem value="true">Publisert</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>URL-slug</Label>
-                <p className="text-xs text-muted-foreground font-mono">
-                  /venue/{formData.slug || "..."}
-                </p>
-              </div>
+              <Button type="submit" disabled={saveMutation.isPending}>
+                <Save className="h-4 w-4 mr-2" />
+                {saveMutation.isPending ? "Lagrer..." : "Lagre"}
+              </Button>
+            </form>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Beskrivelse</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  placeholder="Beskrivelse av scenen..."
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="address">Adresse</Label>
-                <Input
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      address: e.target.value,
-                    }))
-                  }
-                  placeholder="Gateadresse"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="city">By</Label>
-                <Input
-                  id="city"
-                  value={formData.city}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, city: e.target.value }))
-                  }
-                  placeholder="Oslo"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Hero-bilde</Label>
-                <InlineMediaPickerWithCrop
-                  value={formData.hero_image_url}
-                  imageSettings={heroImageSettings}
-                  onChange={(url) =>
-                    setFormData((prev) => ({ ...prev, hero_image_url: url }))
-                  }
-                  onSettingsChange={setHeroImageSettings}
-                  cropMode="hero"
-                  placeholder="Velg hero-bilde"
-                  useNaturalAspect
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Publisering</Label>
-                <Select
-                  value={formData.is_published ? "true" : "false"}
-                  onValueChange={(v) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      is_published: v === "true",
-                    }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="false">Utkast</SelectItem>
-                    <SelectItem value="true">Publisert</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="mt-8 pt-6 border-t border-border/50">
+              <VenueScenesEditor venueId={id} />
             </div>
-
-            <Button type="submit" disabled={saveMutation.isPending}>
-              <Save className="h-4 w-4 mr-2" />
-              {saveMutation.isPending ? "Lagrer..." : "Lagre"}
-            </Button>
-          </form>
+          </>
         )}
       </main>
     </div>

@@ -991,6 +991,7 @@ export type Database = {
           hero_image_url: string | null
           host_entity_id: string | null
           id: string
+          scene_id: string | null
           slug: string
           start_at: string
           status: Database["public"]["Enums"]["publish_status"]
@@ -1010,6 +1011,7 @@ export type Database = {
           hero_image_url?: string | null
           host_entity_id?: string | null
           id?: string
+          scene_id?: string | null
           slug: string
           start_at: string
           status?: Database["public"]["Enums"]["publish_status"]
@@ -1029,6 +1031,7 @@ export type Database = {
           hero_image_url?: string | null
           host_entity_id?: string | null
           id?: string
+          scene_id?: string | null
           slug?: string
           start_at?: string
           status?: Database["public"]["Enums"]["publish_status"]
@@ -1049,6 +1052,13 @@ export type Database = {
             columns: ["host_entity_id"]
             isOneToOne: false
             referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_scene_id_fkey"
+            columns: ["scene_id"]
+            isOneToOne: false
+            referencedRelation: "venue_scenes"
             referencedColumns: ["id"]
           },
           {
@@ -2367,6 +2377,38 @@ export type Database = {
           },
           {
             foreignKeyName: "venue_members_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venue_scenes: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          venue_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          venue_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_scenes_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
             referencedRelation: "venues"
