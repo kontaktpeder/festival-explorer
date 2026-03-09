@@ -58,6 +58,7 @@ export function RunSheetSection({
   onDelete,
   onAddToSection,
   onRenameSection,
+  onDeleteSection,
 }: RunSheetSectionProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [editing, setEditing] = useState(false);
