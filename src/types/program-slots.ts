@@ -52,6 +52,9 @@ export interface ExtendedEventProgramSlot {
   duration_minutes: number | null;
   sequence_number: number | null;
 
+  /** Parallel group – slots sharing this ID run simultaneously */
+  parallel_group_id: string | null;
+
   /** Performer fields for "På scenen" */
   performer_kind: PerformerKind;
   performer_entity_id: string | null;

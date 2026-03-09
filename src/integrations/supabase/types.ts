@@ -804,6 +804,7 @@ export type Database = {
           internal_status: string
           is_canceled: boolean
           is_visible_public: boolean
+          parallel_group_id: string | null
           performer_entity_id: string | null
           performer_kind: string
           performer_name_override: string | null
@@ -833,6 +834,7 @@ export type Database = {
           internal_status?: string
           is_canceled?: boolean
           is_visible_public?: boolean
+          parallel_group_id?: string | null
           performer_entity_id?: string | null
           performer_kind?: string
           performer_name_override?: string | null
@@ -862,6 +864,7 @@ export type Database = {
           internal_status?: string
           is_canceled?: boolean
           is_visible_public?: boolean
+          parallel_group_id?: string | null
           performer_entity_id?: string | null
           performer_kind?: string
           performer_name_override?: string | null
