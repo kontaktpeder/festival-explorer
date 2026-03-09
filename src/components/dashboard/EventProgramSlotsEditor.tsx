@@ -576,7 +576,18 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
                 <Label className="text-xs">Prosjekt på scenen</Label>
                 <EntityPicker
                   value={form.performer_entity_id}
-                  onChange={(id) => setForm((f) => ({ ...f, performer_entity_id: id, entity_id: id }))}
+                  onChange={(id) => {
+                    const selected = allowedEntities.find((e) => e.id === id);
+                    setForm((f) => {
+                      const prevEntity = allowedEntities.find((e) => e.id === f.performer_entity_id);
+                      const prevName = prevEntity?.name || "";
+                      let nextTitle = f.title_override;
+                      if (!nextTitle || nextTitle === prevName) {
+                        nextTitle = selected?.name ?? "";
+                      }
+                      return { ...f, performer_entity_id: id, entity_id: id, title_override: nextTitle };
+                    });
+                  }}
                   placeholder="Velg prosjekt..."
                   allowedEntities={allowedEntities}
                 />
