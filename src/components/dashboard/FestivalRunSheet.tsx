@@ -387,6 +387,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
                       onDelete={handleDelete}
                       onAddToSection={handleAddToSection}
                       onRenameSection={handleRenameSection}
+                      onDeleteSection={handleDeleteSection}
                     />
                   );
                 })}
