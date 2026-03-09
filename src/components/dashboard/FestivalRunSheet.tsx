@@ -113,8 +113,8 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       const eventIds = (feRows ?? []).map((r) => r.event_id).filter(Boolean) as string[];
       const hasEvents = eventIds.length > 0;
 
-      // 2) Hent fra alle tre kilder parallelt
-      const [epRes, eeRes, fpRes] = await Promise.all([
+      // 2) Hent fra alle fire kilder parallelt
+      const [epRes, eeRes, fpRes, slotsRes] = await Promise.all([
         hasEvents
           ? supabase
               .from("event_participants")
@@ -131,10 +131,16 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
           .from("festival_participants")
           .select("participant_kind, participant_id")
           .eq("festival_id", festivalId),
+        // 4) Entities som allerede er brukt i program-slots for denne festivalen
+        supabase
+          .from("event_program_slots")
+          .select("entity_id, performer_entity_id")
+          .eq("festival_id", festivalId),
       ]);
       if (epRes.error) throw epRes.error;
       if (eeRes.error) throw eeRes.error;
       if (fpRes.error) throw fpRes.error;
+      if (slotsRes.error) throw slotsRes.error;
 
       const entityIds = new Set<string>();
 
@@ -153,6 +159,11 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
         if (fp.participant_kind !== "persona" && fp.participant_id) {
           entityIds.add(fp.participant_id);
         }
+      });
+      // program-slots: entities som allerede er koblet
+      (slotsRes.data ?? []).forEach((s: any) => {
+        if (s.entity_id) entityIds.add(s.entity_id);
+        if (s.performer_entity_id) entityIds.add(s.performer_entity_id);
       });
 
       if (entityIds.size === 0) return [];
