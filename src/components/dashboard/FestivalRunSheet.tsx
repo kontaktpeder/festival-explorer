@@ -396,6 +396,7 @@ interface RunSheetEditDialogProps {
   onOpenChange: (open: boolean) => void;
   onSave: (updates: Record<string, unknown>) => void;
   types: ProgramSlotType[];
+  festivalEntities: { id: string; name: string; slug: string }[];
 }
 
 interface FestivalEvent {
