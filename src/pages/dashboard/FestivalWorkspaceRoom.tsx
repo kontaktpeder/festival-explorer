@@ -40,6 +40,7 @@ export default function FestivalWorkspaceRoom() {
 
   const shortcuts = [
     { title: "Program", icon: Calendar, to: `/dashboard/festival/${id}/program` },
+    { title: "Kjøreplan", icon: ClipboardList, to: `/dashboard/festival/${id}/run-sheet` },
     { title: "Events", icon: Music, to: `/dashboard/festival/${id}/events` },
     { title: "Filbank", icon: FolderOpen, to: `/dashboard/festival/${id}/media` },
     { title: "Innstillinger", icon: Settings, to: `/dashboard/festival/${id}/settings` },
