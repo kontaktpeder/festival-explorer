@@ -55,6 +55,10 @@ interface SlotForm {
   internal_note: string;
   is_canceled: boolean;
   is_visible_public: boolean;
+  performer_kind: PerformerKind;
+  performer_entity_id: string;
+  performer_persona_id: string;
+  performer_name_override: string;
 }
 
 const EMPTY_FORM: SlotForm = {
@@ -66,6 +70,10 @@ const EMPTY_FORM: SlotForm = {
   internal_note: "",
   is_canceled: false,
   is_visible_public: false,
+  performer_kind: "entity",
+  performer_entity_id: "",
+  performer_persona_id: "",
+  performer_name_override: "",
 };
 
 const STATUS_COLORS: Record<string, string> = {
