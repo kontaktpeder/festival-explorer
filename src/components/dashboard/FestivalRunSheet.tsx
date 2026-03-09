@@ -409,6 +409,8 @@ interface FestivalEvent {
 }
 
 function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, types, festivalEntities }: RunSheetEditDialogProps) {
+  const isLydprøve = slot.slot_kind === "soundcheck" ||
+    (slot.visibility === "internal" && (slot.title_override ?? "").toUpperCase().includes("LYDPRØVE"));
   const [eventId, setEventId] = useState(slot.event_id ?? "");
   const [startsAt, setStartsAt] = useState(isoToLocalDatetimeString(slot.starts_at));
   const [endsAt, setEndsAt] = useState(slot.ends_at ? isoToLocalDatetimeString(slot.ends_at) : "");
@@ -585,11 +587,13 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
             </div>
           </div>
 
-          {/* Content */}
-          <div className="space-y-1.5">
-            <Label className="text-xs">Innhold / tittel</Label>
-            <Input placeholder="F.eks. LYDPRØVE 1ETG" value={titleOverride} onChange={(e) => setTitleOverride(e.target.value)} className="h-9 text-sm uppercase" />
-          </div>
+          {/* Content - hidden for lydprøve */}
+          {!isLydprøve && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Innhold / tittel</Label>
+              <Input placeholder="F.eks. LYDPRØVE 1ETG" value={titleOverride} onChange={(e) => setTitleOverride(e.target.value)} className="h-9 text-sm uppercase" />
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <Label className="text-xs">Scene / sted</Label>
@@ -707,69 +711,73 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
             <Textarea value={internalNote} onChange={(e) => setInternalNote(e.target.value)} placeholder="Interne instrukser..." rows={3} className="text-sm" />
           </div>
 
-          {/* Type & Status */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Slot-type</Label>
-              <Select value={slotKind} onValueChange={setSlotKind}>
-                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {SLOT_KIND_OPTIONS.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {types.length > 0 && (
-              <div className="space-y-1.5">
-                <Label className="text-xs">Kategori</Label>
-                <Select value={slotType} onValueChange={setSlotType}>
-                  <SelectTrigger className="h-9"><SelectValue placeholder="—" /></SelectTrigger>
-                  <SelectContent>
-                    {types.map((t) => (
-                      <SelectItem key={t.code} value={t.code}>{t.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          {/* Type & Status – hidden for lydprøve */}
+          {!isLydprøve && (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Slot-type</Label>
+                  <Select value={slotKind} onValueChange={setSlotKind}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {SLOT_KIND_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {types.length > 0 && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Kategori</Label>
+                    <Select value={slotType} onValueChange={setSlotType}>
+                      <SelectTrigger className="h-9"><SelectValue placeholder="—" /></SelectTrigger>
+                      <SelectContent>
+                        {types.map((t) => (
+                          <SelectItem key={t.code} value={t.code}>{t.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Synlighet</Label>
-              <Select value={visibility} onValueChange={(v) => setVisibility(v as any)}>
-                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="public">Publikum</SelectItem>
-                  <SelectItem value="internal">Intern</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Status</Label>
-              <Select value={internalStatus} onValueChange={setInternalStatus}>
-                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {INTERNAL_STATUS_OPTIONS.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Synlighet</Label>
+                  <Select value={visibility} onValueChange={(v) => setVisibility(v as any)}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="public">Publikum</SelectItem>
+                      <SelectItem value="internal">Intern</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Status</Label>
+                  <Select value={internalStatus} onValueChange={setInternalStatus}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {INTERNAL_STATUS_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-          {/* Toggles */}
-          <div className="flex items-center justify-between pt-2 border-t border-border/20">
-            <div className="flex items-center gap-2">
-              <Switch id="rs-visible" checked={isVisiblePublic} onCheckedChange={setIsVisiblePublic} />
-              <Label htmlFor="rs-visible" className="text-sm cursor-pointer">Synlig for publikum</Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <input type="checkbox" id="rs-canceled" checked={isCanceled} onChange={(e) => setIsCanceled(e.target.checked)} className="h-4 w-4 rounded" />
-              <Label htmlFor="rs-canceled" className="text-sm cursor-pointer">Avlyst</Label>
-            </div>
-          </div>
+              {/* Toggles */}
+              <div className="flex items-center justify-between pt-2 border-t border-border/20">
+                <div className="flex items-center gap-2">
+                  <Switch id="rs-visible" checked={isVisiblePublic} onCheckedChange={setIsVisiblePublic} />
+                  <Label htmlFor="rs-visible" className="text-sm cursor-pointer">Synlig for publikum</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" id="rs-canceled" checked={isCanceled} onChange={(e) => setIsCanceled(e.target.checked)} className="h-4 w-4 rounded" />
+                  <Label htmlFor="rs-canceled" className="text-sm cursor-pointer">Avlyst</Label>
+                </div>
+              </div>
+            </>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Avbryt</Button>

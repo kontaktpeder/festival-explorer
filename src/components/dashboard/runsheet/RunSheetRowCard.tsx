@@ -20,7 +20,9 @@ export function RunSheetRowCard({ slot, index, slotTypeLabel, onEdit, onDelete }
   const performer = getPerformerDisplay(slot);
   const kindConfig = getSlotKindConfig(slot.slot_kind as any);
   const KindIcon = kindConfig.icon;
-  const displayTitle = slot.title_override || kindConfig.label;
+  const isLydprøve = slot.slot_kind === "soundcheck" ||
+    (slot.visibility === "internal" && (slot.title_override ?? "").toUpperCase().includes("LYDPRØVE"));
+  const displayTitle = isLydprøve ? "LYDPRØVE" : (slot.title_override || kindConfig.label);
   const seqNum = slot.sequence_number ?? (index + 1);
 
   return (
@@ -91,6 +93,7 @@ export function RunSheetRowCard({ slot, index, slotTypeLabel, onEdit, onDelete }
             internalStatus={slot.internal_status}
             hasContract={!!slot.contract_media_id}
             slotTypeLabel={slotTypeLabel}
+            isLydprøve={isLydprøve}
           />
         </div>
 
