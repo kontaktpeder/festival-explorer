@@ -230,13 +230,14 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
 
   const { slots, types } = data;
 
-  /* Group by day, then by section within each day */
-  const slotsByDay = slots.reduce((acc, slot) => {
-    const day = format(new Date(slot.starts_at), "EEEE d. MMMM yyyy", { locale: nb });
-    if (!acc[day]) acc[day] = [];
-    acc[day].push(slot);
-    return acc;
-  }, {} as Record<string, ExtendedEventProgramSlot[]>);
+  /* Group into the three fixed sections */
+  const sectionsWithSlots = useMemo(() => {
+    const grouped = groupSlotsBySection(slots);
+    return RUNSHEET_SECTION_KEYS.map((key) => ({
+      sectionKey: key,
+      slots: grouped[key],
+    }));
+  }, [slots]);
 
   const openEdit = (slot: ExtendedEventProgramSlot) => {
     setEditingSlot(slot);
@@ -324,67 +325,31 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
           </p>
         </div>
       ) : (
-        Object.entries(slotsByDay).map(([day, daySlots]) => {
-          // Group within each day by section
-          const sectionMap = new Map<string, ExtendedEventProgramSlot[]>();
-          for (const slot of daySlots) {
-            const section = getSectionForSlot(slot);
-            const list = sectionMap.get(section) || [];
-            list.push(slot);
-            sectionMap.set(section, list);
-          }
-
-          // Always show all predefined sections (even empty ones)
-          const orderedSections = SECTION_ORDER.map((s) => ({
-            title: s,
-            slots: sectionMap.get(s) || [],
-          }));
-
-          // Add any sections not in predefined order
-          sectionMap.forEach((sSlots, title) => {
-            if (!SECTION_ORDER.includes(title)) {
-              orderedSections.push({ title, slots: sSlots });
-            }
-          });
-
-          let runningIndex = 0;
-
-          return (
-            <div key={day} className="space-y-4">
-              {/* Day header */}
-              <div className="flex items-center gap-3">
-                <div className="h-px flex-1 bg-border/30" />
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.25em] text-muted-foreground/60 whitespace-nowrap">
-                  {day}
-                </h3>
-                <div className="h-px flex-1 bg-border/30" />
-              </div>
-
-              {/* Sections */}
-              <div className="space-y-5">
-                {orderedSections.map((section) => {
-                  const startIdx = runningIndex;
-                  runningIndex += section.slots.length;
-                  return (
-                    <RunSheetSection
-                      key={section.title}
-                      title={section.title}
-                      displayName={sectionNames[section.title]}
-                      slots={section.slots}
-                      slotTypeMap={slotTypeMap}
-                      startIndex={startIdx}
-                      onEdit={openEdit}
-                      onDelete={handleDelete}
-                      onAddToSection={handleAddToSection}
-                      onRenameSection={handleRenameSection}
-                      onDeleteSection={handleDeleteSection}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })
+        <div className="runsheet-print space-y-5">
+          {(() => {
+            let globalIndex = 0;
+            return sectionsWithSlots.map(({ sectionKey, slots: sectionSlots }) => {
+              const startIdx = globalIndex;
+              globalIndex += sectionSlots.length;
+              return (
+                <RunSheetSection
+                  key={sectionKey}
+                  sectionKey={sectionKey}
+                  title={sectionKey}
+                  displayName={sectionNames[sectionKey]}
+                  slots={sectionSlots}
+                  slotTypeMap={slotTypeMap}
+                  startIndex={startIdx}
+                  onEdit={openEdit}
+                  onDelete={handleDelete}
+                  onAddToSection={handleAddToSection}
+                  onRenameSection={handleRenameSection}
+                  onDeleteSection={handleDeleteSection}
+                />
+              );
+            });
+          })()}
+        </div>
       )}
 
       {/* Edit dialog */}
