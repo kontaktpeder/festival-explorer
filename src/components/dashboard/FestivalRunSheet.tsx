@@ -137,7 +137,6 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
         giggen_info: { slot_kind: "giggen_info", title_override: "", visibility: "public", is_visible_public: true },
         break: { slot_kind: "break", title_override: "", visibility: "internal", is_visible_public: false },
       };
-      };
       const preset = presets[sectionType];
       const { error } = await supabase
         .from("event_program_slots" as any)
