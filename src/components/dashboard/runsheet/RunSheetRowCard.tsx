@@ -158,17 +158,6 @@ export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete 
           >
             <Pencil className="h-3.5 w-3.5" />
           </Button>
-          {onAddParallel && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground/50 hover:text-accent"
-              onClick={() => onAddParallel(slot)}
-              title="Legg til parallelt punkt"
-            >
-              <Plus className="h-3.5 w-3.5" />
-            </Button>
-          )}
           {slot.source === "manual" && (
             <Button
               variant="ghost"
