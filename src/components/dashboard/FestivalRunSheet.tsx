@@ -58,8 +58,8 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       if (slotsRes.error) throw slotsRes.error;
       if (typesRes.error) throw typesRes.error;
       return {
-        slots: (slotsRes.data ?? []) as ExtendedEventProgramSlot[],
-        types: (typesRes.data ?? []) as ProgramSlotType[],
+        slots: (slotsRes.data ?? []) as unknown as ExtendedEventProgramSlot[],
+        types: (typesRes.data ?? []) as unknown as ProgramSlotType[],
       };
     },
   });
