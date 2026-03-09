@@ -169,8 +169,6 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       "Opprigg & intern": "opprigg",
       "Lydprøver": "lydprøve",
       "Event": "event",
-      "Dører & logistikk": "event",
-      "Annet": "event",
     };
     createManualSlot.mutate(map[sectionTitle] ?? "event");
   };
