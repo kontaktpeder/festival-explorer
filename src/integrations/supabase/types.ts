@@ -795,7 +795,7 @@ export type Database = {
           created_at: string
           ends_at: string | null
           entity_id: string | null
-          event_id: string
+          event_id: string | null
           festival_id: string | null
           hosp_rider_media_id: string | null
           id: string
@@ -816,7 +816,7 @@ export type Database = {
           created_at?: string
           ends_at?: string | null
           entity_id?: string | null
-          event_id: string
+          event_id?: string | null
           festival_id?: string | null
           hosp_rider_media_id?: string | null
           id?: string
@@ -837,7 +837,7 @@ export type Database = {
           created_at?: string
           ends_at?: string | null
           entity_id?: string | null
-          event_id?: string
+          event_id?: string | null
           festival_id?: string | null
           hosp_rider_media_id?: string | null
           id?: string
