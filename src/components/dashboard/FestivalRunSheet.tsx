@@ -164,16 +164,55 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       toast({ title: "Feil", description: e.message, variant: "destructive" }),
   });
 
-  /** Map section title → preset type for "add to section" */
-  const handleAddToSection = (sectionTitle: string) => {
-    const map: Record<string, "opprigg" | "lydprøve" | "event"> = {
-      "Opprigg & intern": "opprigg",
-      "Lydprøver": "lydprøve",
-      "Event": "event",
-      "Dører & logistikk": "event",
-      "Annet": "event",
-    };
-    createManualSlot.mutate(map[sectionTitle] ?? "event");
+  /** Add a parallel slot to an existing row */
+  const handleAddParallel = async (slot: ExtendedEventProgramSlot) => {
+    const groupId = slot.parallel_group_id || crypto.randomUUID();
+
+    // Ensure the source slot has a parallel_group_id
+    if (!slot.parallel_group_id) {
+      const { error: upErr } = await supabase
+        .from("event_program_slots" as any)
+        .update({ parallel_group_id: groupId })
+        .eq("id", slot.id);
+      if (upErr) {
+        toast({ title: "Feil", description: upErr.message, variant: "destructive" });
+        return;
+      }
+    }
+
+    const { error: insErr } = await supabase
+      .from("event_program_slots" as any)
+      .insert({
+        festival_id: slot.festival_id,
+        event_id: slot.event_id,
+        starts_at: slot.starts_at,
+        ends_at: slot.ends_at,
+        duration_minutes: slot.duration_minutes,
+        sequence_number: slot.sequence_number,
+        slot_kind: slot.slot_kind,
+        slot_type: slot.slot_type,
+        internal_status: slot.internal_status,
+        visibility: slot.visibility,
+        is_canceled: false,
+        is_visible_public: slot.is_visible_public,
+        title_override: slot.title_override,
+        stage_label: null,
+        performer_kind: "entity",
+        performer_entity_id: null,
+        performer_persona_id: null,
+        performer_name_override: null,
+        entity_id: null,
+        source: "manual",
+        parallel_group_id: groupId,
+      } as any);
+
+    if (insErr) {
+      toast({ title: "Feil", description: insErr.message, variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Parallelt punkt lagt til" });
+    queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
   };
 
   const deleteSlot = useMutation({
