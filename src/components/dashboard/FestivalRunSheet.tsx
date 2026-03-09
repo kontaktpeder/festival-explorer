@@ -322,13 +322,24 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
 /* ── Edit Dialog ── */
 interface RunSheetEditDialogProps {
   slot: ExtendedEventProgramSlot;
+  festivalId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (updates: Record<string, unknown>) => void;
   types: ProgramSlotType[];
 }
 
-function RunSheetEditDialog({ slot, open, onOpenChange, onSave, types }: RunSheetEditDialogProps) {
+interface FestivalEvent {
+  id: string;
+  title: string;
+  start_at: string;
+  end_at: string | null;
+  city: string | null;
+  venue: { id: string; name: string } | null;
+}
+
+function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, types }: RunSheetEditDialogProps) {
+  const [eventId, setEventId] = useState(slot.event_id ?? "");
   const [startsAt, setStartsAt] = useState(isoToLocalDatetimeString(slot.starts_at));
   const [endsAt, setEndsAt] = useState(slot.ends_at ? isoToLocalDatetimeString(slot.ends_at) : "");
   const [durationMinutes, setDurationMinutes] = useState(String(slot.duration_minutes ?? ""));
@@ -344,8 +355,54 @@ function RunSheetEditDialog({ slot, open, onOpenChange, onSave, types }: RunShee
   const [isCanceled, setIsCanceled] = useState(slot.is_canceled);
   const [nameOverride, setNameOverride] = useState(slot.performer_name_override ?? "");
 
+  // Fetch festival events for the selector
+  const { data: festivalEvents } = useQuery({
+    queryKey: ["festival-events-for-runsheet", festivalId],
+    queryFn: async () => {
+      const { data: feRows, error: feError } = await supabase
+        .from("festival_events")
+        .select("event_id")
+        .eq("festival_id", festivalId);
+      if (feError) throw feError;
+      if (!feRows?.length) return [] as FestivalEvent[];
+
+      const eventIds = feRows.map((r) => r.event_id);
+      const { data: events, error: evError } = await supabase
+        .from("events")
+        .select("id, title, start_at, end_at, city, venue:venues(id, name)")
+        .in("id", eventIds)
+        .order("start_at", { ascending: true });
+      if (evError) throw evError;
+      return (events ?? []) as unknown as FestivalEvent[];
+    },
+    enabled: open,
+  });
+
+  const handleEventSelect = (selectedEventId: string) => {
+    setEventId(selectedEventId);
+    if (selectedEventId === "__none__") {
+      setEventId("");
+      return;
+    }
+    const ev = festivalEvents?.find((e) => e.id === selectedEventId);
+    if (!ev) return;
+    // Auto-fill time fields
+    setStartsAt(isoToLocalDatetimeString(ev.start_at));
+    if (ev.end_at) setEndsAt(isoToLocalDatetimeString(ev.end_at));
+    // Auto-fill venue/stage
+    if (ev.venue?.name) setStageLabel(ev.venue.name);
+    // Auto-fill title if empty
+    if (!titleOverride) setTitleOverride(ev.title);
+    // Calculate duration
+    if (ev.end_at) {
+      const mins = Math.round((new Date(ev.end_at).getTime() - new Date(ev.start_at).getTime()) / 60000);
+      if (mins > 0) setDurationMinutes(String(mins));
+    }
+  };
+
   const handleSubmit = () => {
     onSave({
+      event_id: eventId || null,
       starts_at: startsAt ? new Date(startsAt).toISOString() : undefined,
       ends_at: endsAt ? new Date(endsAt).toISOString() : null,
       duration_minutes: durationMinutes ? Number(durationMinutes) : null,
@@ -370,6 +427,27 @@ function RunSheetEditDialog({ slot, open, onOpenChange, onSave, types }: RunShee
           <DialogTitle>Rediger rad</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2 max-h-[65vh] overflow-y-auto">
+          {/* Event selector */}
+          {festivalEvents && festivalEvents.length > 0 && (
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Koble til event</Label>
+              <Select value={eventId || "__none__"} onValueChange={handleEventSelect}>
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Velg event..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Ingen (manuell rad)</SelectItem>
+                  {festivalEvents.map((ev) => (
+                    <SelectItem key={ev.id} value={ev.id}>
+                      {ev.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[10px] text-muted-foreground">Velg event for å fylle ut tid, sted og varighet automatisk</p>
+            </div>
+          )}
+
           {/* Time */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
