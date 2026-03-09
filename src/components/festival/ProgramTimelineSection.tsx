@@ -73,12 +73,12 @@ function EventColumn({
                 {slot.slug ? (
                   <Link
                     to={`/project/${slot.slug}`}
-                    className="text-sm font-semibold text-foreground/80 hover:text-accent transition-colors"
+                    className="text-sm font-semibold text-foreground/80 hover:text-accent transition-colors truncate"
                   >
                     {displayLabel}
                   </Link>
                 ) : (
-                  <span className="text-sm font-semibold text-foreground/80">
+                  <span className="text-sm font-semibold text-foreground/80 truncate">
                     {displayLabel}
                   </span>
                 )}
