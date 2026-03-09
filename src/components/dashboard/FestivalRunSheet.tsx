@@ -410,6 +410,7 @@ interface FestivalEvent {
 }
 
 function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
+  const { toast } = useToast();
   const isLydprøve = slot.slot_kind === "soundcheck" ||
     (slot.visibility === "internal" && (slot.title_override ?? "").toUpperCase().includes("LYDPRØVE"));
   const [eventId, setEventId] = useState(slot.event_id ?? "");
