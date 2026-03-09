@@ -489,7 +489,12 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
     if (!ev) return;
     setStartsAt(isoToLocalDatetimeString(ev.start_at));
     if (ev.end_at) setEndsAt(isoToLocalDatetimeString(ev.end_at));
-    if (ev.venue?.name) setStageLabel(ev.venue.name);
+    // Prefer scene name, fallback to venue name
+    if (ev.scene_name) {
+      setStageLabel(ev.scene_name);
+    } else if (ev.venue?.name) {
+      setStageLabel(ev.venue.name);
+    }
     if (!titleOverride) setTitleOverride(ev.title);
     if (ev.end_at) {
       const mins = Math.round((new Date(ev.end_at).getTime() - new Date(ev.start_at).getTime()) / 60000);
