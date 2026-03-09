@@ -509,6 +509,25 @@ export default function EventRoomPage() {
                   </PopoverContent>
                 </Popover>
               </div>
+              {formData.venue_id && venueScenes.length > 0 && (
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/50">Scene</Label>
+                  <Select
+                    value={formData.scene_id || "__none__"}
+                    onValueChange={(v) => setFormData((prev) => ({ ...prev, scene_id: v === "__none__" ? "" : v }))}
+                  >
+                    <SelectTrigger className="h-8 text-xs bg-muted/20 border-border/20">
+                      <SelectValue placeholder="Velg..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">Ingen</SelectItem>
+                      {venueScenes.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="space-y-1">
                 <Label className="text-[10px] uppercase tracking-widest text-muted-foreground/50">By</Label>
                 <Input
