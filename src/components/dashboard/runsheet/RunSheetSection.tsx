@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
-import { RunSheetRowCard } from "./RunSheetRowCard";
+import { RunSheetRowCard, type ParallelGroup } from "./RunSheetRowCard";
 import { cn } from "@/lib/utils";
 
 interface RunSheetSectionProps {
@@ -13,6 +13,37 @@ interface RunSheetSectionProps {
   onDelete: (slot: ExtendedEventProgramSlot) => void;
 }
 
+/** Group slots by parallel_group_id; singletons become groups of 1 */
+function groupParallelSlots(slots: ExtendedEventProgramSlot[]): ParallelGroup[] {
+  const parallelMap = new Map<string, ExtendedEventProgramSlot[]>();
+  const groups: ParallelGroup[] = [];
+
+  for (const s of slots) {
+    if (s.parallel_group_id) {
+      const arr = parallelMap.get(s.parallel_group_id) || [];
+      arr.push(s);
+      parallelMap.set(s.parallel_group_id, arr);
+    } else {
+      groups.push({ primary: s, items: [s] });
+    }
+  }
+
+  for (const [, arr] of parallelMap) {
+    // First item is primary (drives shared fields display)
+    groups.push({ primary: arr[0], items: arr });
+  }
+
+  // Maintain chronological order by primary's starts_at
+  groups.sort((a, b) => {
+    const ta = new Date(a.primary.starts_at).getTime();
+    const tb = new Date(b.primary.starts_at).getTime();
+    if (ta !== tb) return ta - tb;
+    return (a.primary.sequence_number ?? 0) - (b.primary.sequence_number ?? 0);
+  });
+
+  return groups;
+}
+
 export function RunSheetSection({
   title,
   slots,
@@ -22,6 +53,7 @@ export function RunSheetSection({
   onDelete,
 }: RunSheetSectionProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const groups = useMemo(() => groupParallelSlots(slots), [slots]);
 
   if (slots.length === 0) return null;
 
@@ -52,14 +84,14 @@ export function RunSheetSection({
       {/* Rows */}
       {!collapsed && (
         <div className="space-y-2 pt-2">
-          {slots.map((slot, i) => (
+          {groups.map((group, i) => (
             <RunSheetRowCard
-              key={slot.id}
-              slot={slot}
+              key={group.primary.id}
+              group={group}
               index={startIndex + i}
-              slotTypeLabel={slot.slot_type ? slotTypeMap.get(slot.slot_type)?.label : undefined}
-              onEdit={() => onEdit(slot)}
-              onDelete={() => onDelete(slot)}
+              slotTypeLabel={group.primary.slot_type ? slotTypeMap.get(group.primary.slot_type)?.label : undefined}
+              onEdit={onEdit}
+              onDelete={onDelete}
             />
           ))}
         </div>
