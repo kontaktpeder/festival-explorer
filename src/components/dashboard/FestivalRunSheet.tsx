@@ -391,6 +391,19 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
   const [isCanceled, setIsCanceled] = useState(slot.is_canceled);
   const [nameOverride, setNameOverride] = useState(slot.performer_name_override ?? "");
 
+  // Performer fields
+  const [performerKind, setPerformerKind] = useState<PerformerKind>(slot.performer_kind || "entity");
+  const [performerEntityId, setPerformerEntityId] = useState(slot.performer_entity_id || slot.entity_id || "");
+  const [performerPersonaId, setPerformerPersonaId] = useState(slot.performer_persona_id || "");
+  const [personaQuery, setPersonaQuery] = useState("");
+
+  // Persona search
+  const { data: personaResults = [] } = usePersonaSearch({
+    query: personaQuery,
+    mode: "all",
+    enabled: performerKind === "persona" && open,
+  });
+
   // Fetch festival events for the selector
   const { data: festivalEvents } = useQuery({
     queryKey: ["festival-events-for-runsheet", festivalId],
@@ -422,18 +435,22 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
     }
     const ev = festivalEvents?.find((e) => e.id === selectedEventId);
     if (!ev) return;
-    // Auto-fill time fields
     setStartsAt(isoToLocalDatetimeString(ev.start_at));
     if (ev.end_at) setEndsAt(isoToLocalDatetimeString(ev.end_at));
-    // Auto-fill venue/stage
     if (ev.venue?.name) setStageLabel(ev.venue.name);
-    // Auto-fill title if empty
     if (!titleOverride) setTitleOverride(ev.title);
-    // Calculate duration
     if (ev.end_at) {
       const mins = Math.round((new Date(ev.end_at).getTime() - new Date(ev.start_at).getTime()) / 60000);
       if (mins > 0) setDurationMinutes(String(mins));
     }
+  };
+
+  const handlePerformerKindChange = (v: string) => {
+    const kind = v as PerformerKind;
+    setPerformerKind(kind);
+    if (kind !== "persona") setPerformerPersonaId("");
+    if (kind !== "entity") setPerformerEntityId("");
+    if (kind !== "text") setNameOverride("");
   };
 
   const handleSubmit = () => {
@@ -452,9 +469,22 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
       internal_status: internalStatus,
       is_visible_public: isVisiblePublic,
       is_canceled: isCanceled,
-      performer_name_override: nameOverride || null,
+      performer_kind: performerKind,
+      performer_entity_id: performerKind === "entity" ? performerEntityId || null : null,
+      performer_persona_id: performerKind === "persona" ? performerPersonaId || null : null,
+      performer_name_override: performerKind === "text" ? nameOverride || null : null,
     });
   };
+
+  // Selected persona display name
+  const selectedPersonaName = useMemo(() => {
+    if (!performerPersonaId) return null;
+    // Check from slot data first
+    if (slot.performer_persona?.id === performerPersonaId) return slot.performer_persona.name;
+    // Check from search results
+    const found = personaResults.find((p) => p.id === performerPersonaId);
+    return found?.name || null;
+  }, [performerPersonaId, slot.performer_persona, personaResults]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
