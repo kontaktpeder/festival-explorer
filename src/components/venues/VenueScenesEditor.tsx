@@ -25,7 +25,7 @@ export function VenueScenesEditor({ venueId }: VenueScenesEditorProps) {
         .eq("venue_id", venueId)
         .order("sort_order", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as { id: string; name: string; sort_order: number }[];
+      return (data ?? []) as unknown as { id: string; name: string; sort_order: number }[];
     },
     enabled: !!venueId,
   });
