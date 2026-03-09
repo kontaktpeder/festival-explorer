@@ -387,6 +387,8 @@ interface FestivalEvent {
   end_at: string | null;
   city: string | null;
   venue: { id: string; name: string } | null;
+  scene_id: string | null;
+  scene_name: string | null;
 }
 
 function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
