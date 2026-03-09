@@ -480,28 +480,51 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
     enabled: open,
   });
 
+  // Run sheet defaults for the selected event
+  const { default: runSheetDefault } = useEventRunSheetDefault(eventId || null);
+
+  // Scene options: from defaults or event's venue
+  const selectedEvent = festivalEvents?.find((e) => e.id === eventId);
+  const venueIdForScenes = runSheetDefault?.venue_id ?? selectedEvent?.venue?.id ?? null;
+  const sceneIdsFromDefault = runSheetDefault?.scene_ids?.length ? runSheetDefault.scene_ids : null;
+  const { data: sceneOptions = [] } = useEventSceneOptions(venueIdForScenes, sceneIdsFromDefault);
+
   const handleEventSelect = (selectedEventId: string) => {
-    setEventId(selectedEventId);
     if (selectedEventId === "__none__") {
       setEventId("");
       return;
     }
+    setEventId(selectedEventId);
     const ev = festivalEvents?.find((e) => e.id === selectedEventId);
     if (!ev) return;
+
+    // Time & duration: use defaults if available, otherwise from event
+    // Note: runSheetDefault won't be loaded yet for the NEW eventId,
+    // so we always use event data on initial select. Defaults apply on re-open.
     setStartsAt(isoToLocalDatetimeString(ev.start_at));
     if (ev.end_at) setEndsAt(isoToLocalDatetimeString(ev.end_at));
-    // Prefer scene name, fallback to venue name
+    if (ev.end_at) {
+      const mins = Math.round((new Date(ev.end_at).getTime() - new Date(ev.start_at).getTime()) / 60000);
+      if (mins > 0) setDurationMinutes(String(mins));
+    }
+
+    // Scene: prefer scene name, fallback to venue name
     if (ev.scene_name) {
       setStageLabel(ev.scene_name);
     } else if (ev.venue?.name) {
       setStageLabel(ev.venue.name);
     }
+
     if (!titleOverride) setTitleOverride(ev.title);
-    if (ev.end_at) {
-      const mins = Math.round((new Date(ev.end_at).getTime() - new Date(ev.start_at).getTime()) / 60000);
-      if (mins > 0) setDurationMinutes(String(mins));
-    }
   };
+
+  // When defaults load (async after eventId changes), apply time from defaults
+  useEffect(() => {
+    if (!runSheetDefault) return;
+    setStartsAt(isoToLocalDatetimeString(runSheetDefault.starts_at));
+    if (runSheetDefault.ends_at) setEndsAt(isoToLocalDatetimeString(runSheetDefault.ends_at));
+    if (runSheetDefault.duration_minutes != null) setDurationMinutes(String(runSheetDefault.duration_minutes));
+  }, [runSheetDefault?.id]);
 
   const handlePerformerKindChange = (v: string) => {
     const kind = v as PerformerKind;
