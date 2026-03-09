@@ -24,10 +24,8 @@ interface RunSheetRowCardProps {
 export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete }: RunSheetRowCardProps) {
   const slot = group.primary;
   const kindConfig = getSlotKindConfig(slot.slot_kind as any);
-  const KindIcon = kindConfig.icon;
   const isLydprøve = slot.slot_kind === "soundcheck" ||
     (slot.visibility === "internal" && (slot.title_override ?? "").toUpperCase().includes("LYDPRØVE"));
-  const displayTitle = isLydprøve ? "LYDPRØVE" : (slot.title_override || kindConfig.label);
   const seqNum = slot.sequence_number ?? (index + 1);
   const isParallel = group.items.length > 1;
 
@@ -39,9 +37,9 @@ export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete 
         slot.visibility === "internal" && "border-l-2 border-l-amber-500/30"
       )}
     >
-      <div className="flex gap-0 min-h-[88px]">
+      <div className="flex gap-0 min-h-[120px] md:min-h-[140px]">
         {/* ── Time block ── */}
-        <div className="w-[100px] md:w-[120px] shrink-0 px-4 py-4 border-r border-border/10 flex items-start">
+        <div className="w-[110px] md:w-[140px] shrink-0 px-5 py-6 border-r border-border/10 flex items-start">
           <RunSheetTimeBlock
             startsAt={slot.starts_at}
             endsAt={slot.ends_at}
@@ -50,69 +48,77 @@ export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete 
         </div>
 
         {/* ── Sequence number ── */}
-        <div className="w-[56px] md:w-[64px] shrink-0 flex items-center justify-center border-r border-border/10">
-          <span className="text-2xl md:text-3xl font-bold text-muted-foreground/20 tabular-nums select-none">
+        <div className="w-[64px] md:w-[80px] shrink-0 flex items-center justify-center border-r border-border/10">
+          <span className="text-3xl md:text-4xl font-bold text-muted-foreground/15 tabular-nums select-none">
             {String(seqNum).padStart(2, "0")}
           </span>
         </div>
 
         {/* ── Main content area ── */}
-        <div className="flex-1 min-w-0 px-5 py-4 flex flex-col justify-center gap-2">
+        <div className="flex-1 min-w-0 px-6 md:px-8 py-6 flex flex-col justify-center gap-3">
 
           {/* Performer(s) – show each item's scene + performer */}
-          <div className={cn("flex gap-1.5", isParallel ? "flex-row justify-between" : "flex-col")}>
-            {group.items.map((item) => {
+          <div className={cn(
+            "flex gap-2",
+            isParallel ? "flex-row items-center" : "flex-col"
+          )}>
+            {group.items.map((item, idx) => {
               const performer = getPerformerDisplay(item);
               const showPerformer = performer.name !== "Ukjent prosjekt" && performer.name !== "TBA";
               return (
-                <div key={item.id} className="flex items-center gap-2 text-sm">
-                  {item.stage_label && (
-                    <span className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wide shrink-0">
-                      {item.stage_label}
-                    </span>
+                <div key={item.id} className="flex items-center gap-2">
+                  {/* Divider between parallel items */}
+                  {isParallel && idx > 0 && (
+                    <div className="h-8 w-px bg-border/20 mx-2 shrink-0" />
                   )}
-                  {item.stage_label && showPerformer && (
-                    <span className="text-muted-foreground/30">·</span>
-                  )}
-                  {showPerformer && (
-                    performer.href ? (
-                      <Link
-                        to={performer.href}
-                        className="text-sm font-medium text-accent hover:underline underline-offset-2 truncate"
-                      >
-                        {performer.name}
-                      </Link>
-                    ) : (
-                      <span className="text-sm font-medium text-foreground/70 truncate">
-                        {performer.name}
+                  <div className="flex items-center gap-2 text-xs">
+                    {item.stage_label && (
+                      <span className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wider shrink-0">
+                        {item.stage_label}
                       </span>
-                    )
-                  )}
-                  {/* Edit button for parallel sub-items (not the primary) */}
-                  {isParallel && item.id !== slot.id && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-muted-foreground/40 hover:text-foreground ml-auto shrink-0"
-                      onClick={() => onEdit(item)}
-                      title="Rediger parallell"
-                    >
-                      <Pencil className="h-3 w-3" />
-                    </Button>
-                  )}
+                    )}
+                    {item.stage_label && showPerformer && (
+                      <span className="text-muted-foreground/20">·</span>
+                    )}
+                    {showPerformer && (
+                      performer.href ? (
+                        <Link
+                          to={performer.href}
+                          className="text-xs font-medium text-accent hover:underline underline-offset-2 truncate"
+                        >
+                          {performer.name}
+                        </Link>
+                      ) : (
+                        <span className="text-xs font-medium text-foreground/60 truncate">
+                          {performer.name}
+                        </span>
+                      )
+                    )}
+                    {isParallel && item.id !== slot.id && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-5 w-5 text-muted-foreground/30 hover:text-foreground ml-1 shrink-0"
+                        onClick={() => onEdit(item)}
+                        title="Rediger parallell"
+                      >
+                        <Pencil className="h-2.5 w-2.5" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               );
             })}
           </div>
 
-          {/* Row 2: Comment */}
+          {/* Comment */}
           {slot.internal_note && (
-            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+            <p className="text-xs text-muted-foreground/60 leading-relaxed line-clamp-2">
               {slot.internal_note}
             </p>
           )}
 
-          {/* Row 3: Meta badges */}
+          {/* Meta badges */}
           <RunSheetMetaBadges
             stageLabel={!isParallel ? slot.stage_label : undefined}
             visibility={slot.visibility}
