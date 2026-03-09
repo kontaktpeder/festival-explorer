@@ -55,7 +55,17 @@ export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete 
         </div>
 
         {/* ── Main content area ── */}
-        <div className="flex-1 min-w-0 px-6 md:px-8 py-6 flex flex-col justify-center gap-3">
+        <div className="flex-1 min-w-0 px-6 md:px-8 py-6 flex flex-col justify-center gap-2.5">
+
+          {/* Slot kind label – show for non-concert types */}
+          {kindConfig && slot.slot_kind !== "concert" && (
+            <div className="flex items-center gap-1.5">
+              <kindConfig.icon className="h-3 w-3 text-muted-foreground/50" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                {kindConfig.label}
+              </span>
+            </div>
+          )}
 
           {/* Performer(s) – show each item's scene + performer */}
           <div className={cn(
@@ -65,6 +75,8 @@ export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete 
             {group.items.map((item, idx) => {
               const performer = getPerformerDisplay(item);
               const showPerformer = performer.name !== "Ukjent prosjekt" && performer.name !== "TBA";
+              const itemKind = getSlotKindConfig(item.slot_kind as any);
+              const showItemKind = isParallel && item.slot_kind !== "concert" && item.slot_kind !== slot.slot_kind;
               return (
                 <div key={item.id} className="flex items-center gap-2">
                   {/* Divider between parallel items */}
@@ -72,6 +84,11 @@ export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete 
                     <div className="h-8 w-px bg-border/20 mx-2 shrink-0" />
                   )}
                   <div className="flex items-center gap-2 text-xs">
+                    {showItemKind && (
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-amber-500/70 shrink-0">
+                        {itemKind.label}
+                      </span>
+                    )}
                     {item.stage_label && (
                       <span className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wider shrink-0">
                         {item.stage_label}
@@ -111,10 +128,10 @@ export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete 
             })}
           </div>
 
-          {/* Comment */}
+          {/* Internal note */}
           {slot.internal_note && (
-            <p className="text-xs text-muted-foreground/60 leading-relaxed line-clamp-2">
-              {slot.internal_note}
+            <p className="text-[11px] text-muted-foreground/50 leading-relaxed line-clamp-2 italic">
+              💬 {slot.internal_note}
             </p>
           )}
 
