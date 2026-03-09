@@ -10,6 +10,7 @@ export type ProgramSlotItem = {
   slug: string | null;
   entity_id: string | null;
   slot_kind?: string;
+  title_override?: string | null;
 };
 
 interface LineupWithTimeSectionProps {

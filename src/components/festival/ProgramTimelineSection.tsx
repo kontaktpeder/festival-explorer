@@ -58,25 +58,33 @@ function EventColumn({
           {event.title}
         </Link>
         <div className="space-y-0.5 mt-2">
-          {eventSlots.map((slot, i) => (
-            <div key={i} className="flex items-baseline gap-3 py-1.5 border-b border-foreground/5 last:border-0">
-              <span className="text-xs text-muted-foreground font-mono tabular-nums w-12 flex-shrink-0">
-                {formatTime(slot.starts_at)}
-              </span>
-              {slot.slug ? (
-                <Link
-                  to={`/project/${slot.slug}`}
-                  className="text-sm font-semibold text-foreground/80 hover:text-accent transition-colors"
-                >
-                  {slot.name ?? "TBA"}
-                </Link>
-              ) : (
-                <span className="text-sm font-semibold text-foreground/80">
-                  {slot.name ?? "TBA"}
+          {eventSlots.map((slot, i) => {
+            const hasTitle = !!slot.title_override?.trim();
+            const performerName = slot.name ?? "TBA";
+            const displayLabel = hasTitle && slot.name
+              ? `${slot.title_override} med ${performerName}`
+              : performerName;
+
+            return (
+              <div key={i} className="flex items-baseline gap-3 py-1.5 border-b border-foreground/5 last:border-0">
+                <span className="text-xs text-muted-foreground font-mono tabular-nums w-12 flex-shrink-0">
+                  {formatTime(slot.starts_at)}
                 </span>
-              )}
-            </div>
-          ))}
+                {slot.slug ? (
+                  <Link
+                    to={`/project/${slot.slug}`}
+                    className="text-sm font-semibold text-foreground/80 hover:text-accent transition-colors"
+                  >
+                    {displayLabel}
+                  </Link>
+                ) : (
+                  <span className="text-sm font-semibold text-foreground/80">
+                    {displayLabel}
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
