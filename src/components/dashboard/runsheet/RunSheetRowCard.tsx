@@ -93,6 +93,7 @@ export function RunSheetRowCard({ slot, index, slotTypeLabel, onEdit, onDelete }
             internalStatus={slot.internal_status}
             hasContract={!!slot.contract_media_id}
             slotTypeLabel={slotTypeLabel}
+            isLydprøve={isLydprøve}
           />
         </div>
 

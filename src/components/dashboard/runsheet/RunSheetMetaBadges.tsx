@@ -28,8 +28,20 @@ export function RunSheetMetaBadges({
   internalStatus,
   hasContract,
   slotTypeLabel,
+  isLydprøve,
 }: RunSheetMetaBadgesProps) {
   const isPublic = visibility === "public";
+
+  // Lydprøve: only show stage label
+  if (isLydprøve) {
+    return stageLabel ? (
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-[10px] px-2 py-0.5 rounded-full border border-border/40 bg-muted/40 text-muted-foreground font-medium">
+          {stageLabel}
+        </span>
+      </div>
+    ) : null;
+  }
 
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
