@@ -409,7 +409,7 @@ interface FestivalEvent {
   venue: { id: string; name: string } | null;
 }
 
-function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, types, festivalEntities }: RunSheetEditDialogProps) {
+function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
   const isLydprøve = slot.slot_kind === "soundcheck" ||
     (slot.visibility === "internal" && (slot.title_override ?? "").toUpperCase().includes("LYDPRØVE"));
   const [eventId, setEventId] = useState(slot.event_id ?? "");
