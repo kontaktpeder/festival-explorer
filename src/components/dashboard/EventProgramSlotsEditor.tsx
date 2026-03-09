@@ -160,6 +160,7 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
           internal_note: payload.internal_note || null,
           is_canceled: payload.is_canceled,
           is_visible_public: payload.is_visible_public,
+          title_override: payload.title_override || null,
           performer_kind: payload.performer_kind,
           performer_entity_id: payload.performer_kind === "entity" ? payload.performer_entity_id || null : null,
           performer_persona_id: payload.performer_kind === "persona" ? payload.performer_persona_id || null : null,
