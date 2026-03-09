@@ -3,7 +3,7 @@ import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-
 import { getPerformerDisplay } from "@/lib/program-performers";
 import { getSlotKindConfig } from "@/lib/program-slots";
 import { cn } from "@/lib/utils";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RunSheetTimeBlock } from "./RunSheetTimeBlock";
 import { RunSheetMetaBadges } from "./RunSheetMetaBadges";
@@ -19,9 +19,10 @@ interface RunSheetRowCardProps {
   slotTypeLabel?: string;
   onEdit: (slot: ExtendedEventProgramSlot) => void;
   onDelete: (slot: ExtendedEventProgramSlot) => void;
+  onAddParallel?: (slot: ExtendedEventProgramSlot) => void;
 }
 
-export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete }: RunSheetRowCardProps) {
+export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete, onAddParallel }: RunSheetRowCardProps) {
   const slot = group.primary;
   const kindConfig = getSlotKindConfig(slot.slot_kind as any);
   const isLydprøve = slot.slot_kind === "soundcheck" ||
@@ -158,6 +159,17 @@ export function RunSheetRowCard({ group, index, slotTypeLabel, onEdit, onDelete 
           >
             <Pencil className="h-3.5 w-3.5" />
           </Button>
+          {onAddParallel && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground/50 hover:text-accent"
+              onClick={() => onAddParallel(slot)}
+              title="Legg til parallelt punkt"
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          )}
           {slot.source === "manual" && (
             <Button
               variant="ghost"
