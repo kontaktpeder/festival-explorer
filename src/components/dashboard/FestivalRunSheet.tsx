@@ -365,6 +365,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
           }}
           onSave={handleSave}
           types={types}
+          festivalEntities={festivalEntities}
         />
       )}
 
