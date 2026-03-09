@@ -42,8 +42,16 @@ export interface ExtendedEventProgramSlot {
   contract_media_id: string | null;
   tech_rider_media_id: string | null;
   hosp_rider_media_id: string | null;
+
+  /** Run sheet fields */
+  title_override: string | null;
+  stage_label: string | null;
+  duration_minutes: number | null;
+  sequence_number: number | null;
+
   created_at: string;
   updated_at: string;
+
   // Resolved relations
   entity?: { id: string; name: string; slug: string } | null;
   event?: { id: string; title: string; slug: string } | null;

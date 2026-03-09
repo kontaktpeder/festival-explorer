@@ -793,6 +793,7 @@ export type Database = {
         Row: {
           contract_media_id: string | null
           created_at: string
+          duration_minutes: number | null
           ends_at: string | null
           entity_id: string | null
           event_id: string | null
@@ -803,17 +804,21 @@ export type Database = {
           internal_status: string
           is_canceled: boolean
           is_visible_public: boolean
+          sequence_number: number | null
           slot_kind: string
           slot_type: string | null
           source: string
+          stage_label: string | null
           starts_at: string
           tech_rider_media_id: string | null
+          title_override: string | null
           updated_at: string
           visibility: string
         }
         Insert: {
           contract_media_id?: string | null
           created_at?: string
+          duration_minutes?: number | null
           ends_at?: string | null
           entity_id?: string | null
           event_id?: string | null
@@ -824,17 +829,21 @@ export type Database = {
           internal_status?: string
           is_canceled?: boolean
           is_visible_public?: boolean
+          sequence_number?: number | null
           slot_kind?: string
           slot_type?: string | null
           source?: string
+          stage_label?: string | null
           starts_at: string
           tech_rider_media_id?: string | null
+          title_override?: string | null
           updated_at?: string
           visibility?: string
         }
         Update: {
           contract_media_id?: string | null
           created_at?: string
+          duration_minutes?: number | null
           ends_at?: string | null
           entity_id?: string | null
           event_id?: string | null
@@ -845,11 +854,14 @@ export type Database = {
           internal_status?: string
           is_canceled?: boolean
           is_visible_public?: boolean
+          sequence_number?: number | null
           slot_kind?: string
           slot_type?: string | null
           source?: string
+          stage_label?: string | null
           starts_at?: string
           tech_rider_media_id?: string | null
+          title_override?: string | null
           updated_at?: string
           visibility?: string
         }
