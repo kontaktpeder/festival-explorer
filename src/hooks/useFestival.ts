@@ -181,16 +181,40 @@ export function useFestivalDetails(festivalId: string | null | undefined) {
         });
       }
 
-      // Map program slots
-      const festivalProgramSlots = (programSlotsResult.data || []).map((row: any) => ({
-        event_id: row.event_id,
-        starts_at: row.starts_at,
-        ends_at: row.ends_at ?? null,
-        name: row.entity?.name ?? null,
-        slug: row.entity?.slug ?? null,
-        entity_id: row.entity?.id ?? null,
-        slot_kind: row.slot_kind,
-      }));
+      // Map program slots – use performer fields when available
+      const festivalProgramSlots = (programSlotsResult.data || []).map((row: any) => {
+        const performerEntity = row.performer_entity;
+        const performerPersona = row.performer_persona;
+        const legacyEntity = row.entity;
+
+        // Resolve name based on performer_kind
+        let name: string | null = null;
+        let slug: string | null = null;
+        const kind = row.performer_kind || "entity";
+
+        if (kind === "text") {
+          name = row.performer_name_override || null;
+        } else if (kind === "persona" && performerPersona) {
+          name = performerPersona.name;
+          slug = performerPersona.is_public ? performerPersona.slug : null;
+        } else if (performerEntity) {
+          name = performerEntity.name;
+          slug = performerEntity.is_published ? performerEntity.slug : null;
+        } else if (legacyEntity) {
+          name = legacyEntity.name;
+          slug = legacyEntity.slug;
+        }
+
+        return {
+          event_id: row.event_id,
+          starts_at: row.starts_at,
+          ends_at: row.ends_at ?? null,
+          name,
+          slug,
+          entity_id: legacyEntity?.id ?? performerEntity?.id ?? null,
+          slot_kind: row.slot_kind,
+        };
+      });
 
       return {
         festivalEvents: sortedEvents,
