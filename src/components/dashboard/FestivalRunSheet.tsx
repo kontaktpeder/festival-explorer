@@ -9,6 +9,47 @@ import {
   getSectionForSlot,
   groupSlotsBySection,
 } from "@/lib/runsheet-sections";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { cn, isoToLocalDatetimeString } from "@/lib/utils";
+import { Plus, ClipboardList, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
+import { usePersonaSearch } from "@/hooks/usePersonaSearch";
+import { FestivalMediaPickerDialog } from "./FestivalMediaPickerDialog";
+import { RunSheetSection } from "./runsheet/RunSheetSection";
+import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
+import { useEventRunSheetDefault, useEventSceneOptions } from "@/hooks/useEventRunSheetDefault";
+
+interface FestivalRunSheetProps {
+  festivalId: string;
+}
 
 export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   const queryClient = useQueryClient();
