@@ -1,12 +1,14 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { ChevronDown, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
 import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
+import type { RunSheetSectionKey } from "@/lib/runsheet-sections";
 import { RunSheetRowCard, type ParallelGroup } from "./RunSheetRowCard";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 interface RunSheetSectionProps {
+  sectionKey: RunSheetSectionKey;
   title: string;
   displayName?: string;
   slots: ExtendedEventProgramSlot[];
@@ -14,9 +16,13 @@ interface RunSheetSectionProps {
   startIndex: number;
   onEdit: (slot: ExtendedEventProgramSlot) => void;
   onDelete: (slot: ExtendedEventProgramSlot) => void;
-  onAddToSection?: (sectionKey: string) => void;
+  onAddToSection?: (sectionKey: RunSheetSectionKey) => void;
   onRenameSection?: (sectionKey: string, newName: string) => void;
-  onDeleteSection?: (sectionKey: string) => void;
+  /** Slett KUN de slot-ene som sendes med (denne seksjonens slots) */
+  onDeleteSection?: (
+    sectionKey: RunSheetSectionKey,
+    slotsInSection: ExtendedEventProgramSlot[]
+  ) => void;
 }
 
 /** Group slots by parallel_group_id; singletons become groups of 1 */
@@ -49,6 +55,7 @@ function groupParallelSlots(slots: ExtendedEventProgramSlot[]): ParallelGroup[] 
 }
 
 export function RunSheetSection({
+  sectionKey,
   title,
   displayName,
   slots,
@@ -82,11 +89,10 @@ export function RunSheetSection({
   };
 
   const isEmpty = slots.length === 0;
-
   const shownName = displayName || title;
 
   return (
-    <div className="space-y-0">
+    <div className="runsheet-section space-y-0" data-section={sectionKey} data-print-section>
       {/* Section header */}
       <div className="flex items-center gap-1">
         <button
@@ -144,21 +150,21 @@ export function RunSheetSection({
             variant="ghost"
             size="icon"
             className="h-9 w-9 shrink-0 text-muted-foreground/40 hover:text-foreground hover:bg-muted/70"
-            onClick={() => onAddToSection(title)}
+            onClick={() => onAddToSection(sectionKey)}
             title={`Ny rad i ${shownName}`}
           >
             <Plus className="h-4 w-4" />
           </Button>
         )}
 
-        {/* Delete section */}
+        {/* Delete section – sends the actual slots for safe deletion */}
         {onDeleteSection && (
           <Button
             variant="ghost"
             size="icon"
             className="h-9 w-9 shrink-0 text-destructive/30 hover:text-destructive hover:bg-muted/70"
-            onClick={() => onDeleteSection(title)}
-            title={`Slett ${shownName}`}
+            onClick={() => onDeleteSection(sectionKey, slots)}
+            title={`Slett ${shownName} (${slots.length} punkt)`}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
@@ -167,12 +173,20 @@ export function RunSheetSection({
 
       {/* Rows */}
       {!collapsed && !isEmpty && (
-        <div className="space-y-2 pt-2">
+        <div
+          className={cn(
+            "pt-2",
+            sectionKey === "Opprigg & intern" && "space-y-1",
+            sectionKey === "Lydprøver" && "space-y-2",
+            sectionKey === "Event" && "space-y-2"
+          )}
+        >
           {groups.map((group, i) => (
             <RunSheetRowCard
               key={group.primary.id}
               group={group}
               index={startIndex + i}
+              sectionKey={sectionKey}
               slotTypeLabel={group.primary.slot_type ? slotTypeMap.get(group.primary.slot_type)?.label : undefined}
               onEdit={onEdit}
               onDelete={onDelete}
