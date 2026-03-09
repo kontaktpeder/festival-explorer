@@ -16,6 +16,7 @@ interface RunSheetSectionProps {
   onDelete: (slot: ExtendedEventProgramSlot) => void;
   onAddToSection?: (sectionKey: string) => void;
   onRenameSection?: (sectionKey: string, newName: string) => void;
+  onDeleteSection?: (sectionKey: string) => void;
 }
 
 /** Group slots by parallel_group_id; singletons become groups of 1 */
