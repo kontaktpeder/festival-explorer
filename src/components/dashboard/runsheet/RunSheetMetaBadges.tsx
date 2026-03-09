@@ -2,12 +2,13 @@ import { cn } from "@/lib/utils";
 import { Eye, EyeOff, FileText } from "lucide-react";
 
 interface RunSheetMetaBadgesProps {
-  stageLabel: string | null;
+  stageLabel?: string | null;
   visibility: string;
   internalStatus: string;
   hasContract: boolean;
   slotTypeLabel?: string;
   isLydprøve?: boolean;
+  isParallel?: boolean;
 }
 
 const STATUS_LABELS: Record<string, string> = {
