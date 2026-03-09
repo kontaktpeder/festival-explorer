@@ -180,11 +180,20 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
       if (payload.slot_kind !== undefined) updates.slot_kind = payload.slot_kind;
       if (payload.starts_at !== undefined) updates.starts_at = new Date(payload.starts_at).toISOString();
       if (payload.ends_at !== undefined) updates.ends_at = payload.ends_at ? new Date(payload.ends_at).toISOString() : null;
-      if (payload.entity_id !== undefined) updates.entity_id = payload.entity_id || null;
       if (payload.internal_status !== undefined) updates.internal_status = payload.internal_status;
       if (payload.internal_note !== undefined) updates.internal_note = payload.internal_note || null;
       if (payload.is_canceled !== undefined) updates.is_canceled = payload.is_canceled;
       if (payload.is_visible_public !== undefined) updates.is_visible_public = payload.is_visible_public;
+
+      if (payload.performer_kind !== undefined) {
+        updates.performer_kind = payload.performer_kind;
+        updates.performer_entity_id = payload.performer_kind === "entity" ? (payload.performer_entity_id || null) : null;
+        updates.performer_persona_id = payload.performer_kind === "persona" ? (payload.performer_persona_id || null) : null;
+        updates.performer_name_override = payload.performer_kind === "text" ? (payload.performer_name_override || null) : null;
+        updates.entity_id = payload.performer_kind === "entity" ? (payload.performer_entity_id || null) : null;
+      } else if (payload.entity_id !== undefined) {
+        updates.entity_id = payload.entity_id || null;
+      }
 
       const { error } = await supabase
         .from("event_program_slots" as any)
