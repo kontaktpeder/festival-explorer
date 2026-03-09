@@ -216,6 +216,7 @@ export default function AdminEventEdit() {
         start_at: formData.start_at ? new Date(formData.start_at).toISOString() : new Date().toISOString(),
         end_at: formData.end_at ? new Date(formData.end_at).toISOString() : null,
         venue_id: formData.venue_id || null,
+        scene_id: formData.scene_id || null,
         hero_image_url: formData.hero_image_url || null,
         hero_image_settings: heroImageSettings,
         city: formData.city || null,
