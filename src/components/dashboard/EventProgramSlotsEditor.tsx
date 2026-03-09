@@ -531,13 +531,44 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
               </div>
             </div>
 
-            {(form.slot_kind === "concert" || form.slot_kind === "boiler") && (
+            {/* På scenen – performer kind */}
+            <div className="space-y-2">
+              <Label className="text-xs">På scenen – type</Label>
+              <RadioGroup
+                value={form.performer_kind}
+                onValueChange={(v) =>
+                  setForm((f) => ({
+                    ...f,
+                    performer_kind: v as PerformerKind,
+                    performer_entity_id: v === "entity" ? f.performer_entity_id : "",
+                    performer_persona_id: v === "persona" ? f.performer_persona_id : "",
+                    performer_name_override: v === "text" ? f.performer_name_override : "",
+                  }))
+                }
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-1.5">
+                  <RadioGroupItem value="entity" id="pk-entity" />
+                  <Label htmlFor="pk-entity" className="text-xs cursor-pointer">Prosjekt</Label>
+                </div>
+                <div className="flex items-center space-x-1.5">
+                  <RadioGroupItem value="persona" id="pk-persona" />
+                  <Label htmlFor="pk-persona" className="text-xs cursor-pointer">Persona</Label>
+                </div>
+                <div className="flex items-center space-x-1.5">
+                  <RadioGroupItem value="text" id="pk-text" />
+                  <Label htmlFor="pk-text" className="text-xs cursor-pointer">Fri tekst</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {form.performer_kind === "entity" && (
               <div className="space-y-1.5">
-                <Label className="text-xs">Artist / Prosjekt</Label>
+                <Label className="text-xs">Prosjekt på scenen</Label>
                 <EntityPicker
-                  value={form.entity_id}
-                  onChange={(id) => setForm((f) => ({ ...f, entity_id: id }))}
-                  placeholder="Velg artist..."
+                  value={form.performer_entity_id}
+                  onChange={(id) => setForm((f) => ({ ...f, performer_entity_id: id, entity_id: id }))}
+                  placeholder="Velg prosjekt..."
                   allowedEntities={allowedEntities}
                 />
                 {allowedEntities.length === 0 && (
@@ -545,6 +576,30 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
                     Ingen godkjente artister. Inviter prosjekter eller legg dem til som medvirkende først.
                   </p>
                 )}
+              </div>
+            )}
+
+            {form.performer_kind === "persona" && (
+              <div className="space-y-1.5">
+                <Label className="text-xs">Persona på scenen</Label>
+                <Input
+                  placeholder="Skriv inn persona-ID (midlertidig)"
+                  value={form.performer_persona_id}
+                  onChange={(e) => setForm((f) => ({ ...f, performer_persona_id: e.target.value }))}
+                  className="h-9 text-sm"
+                />
+              </div>
+            )}
+
+            {form.performer_kind === "text" && (
+              <div className="space-y-1.5">
+                <Label className="text-xs">Navn på scenen</Label>
+                <Input
+                  placeholder="F.eks. DJ Gjesteartist"
+                  value={form.performer_name_override}
+                  onChange={(e) => setForm((f) => ({ ...f, performer_name_override: e.target.value }))}
+                  className="h-9 text-sm"
+                />
               </div>
             )}
 
