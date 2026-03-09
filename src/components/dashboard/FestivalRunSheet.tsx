@@ -49,18 +49,17 @@ interface FestivalRunSheetProps {
 function getSectionForSlot(slot: ExtendedEventProgramSlot): string {
   const kind = slot.slot_kind;
   const title = (slot.title_override ?? "").toUpperCase();
-  if (kind === "doors" || kind === "closing") return "Dører & logistikk";
-  // Lydprøve: internal break/soundcheck rows with LYDPRØVE in title, or slot_kind soundcheck
+  // Lydprøve: soundcheck rows or internal rows with LYDPRØVE in title
   if (
     kind === "soundcheck" ||
     (slot.visibility === "internal" && title.includes("LYDPRØVE"))
   ) return "Lydprøver";
-  if (slot.visibility === "internal" && (kind === "break" || !slot.entity_id)) return "Opprigg & intern";
-  if (kind === "concert" || kind === "boiler" || kind === "stage_talk" || kind === "giggen_info") return "Event";
-  return "Annet";
+  if (slot.visibility === "internal" && (kind === "rigging" || kind === "break" || !slot.entity_id)) return "Opprigg & intern";
+  // Everything else (concert, boiler, stage_talk, giggen_info, doors, closing, etc.) → Event
+  return "Event";
 }
 
-const SECTION_ORDER = ["Opprigg & intern", "Lydprøver", "Dører & logistikk", "Event", "Annet"];
+const SECTION_ORDER = ["Opprigg & intern", "Lydprøver", "Event"];
 
 export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   const queryClient = useQueryClient();
