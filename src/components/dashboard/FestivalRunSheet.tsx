@@ -43,15 +43,20 @@ interface FestivalRunSheetProps {
 
 /** Map slot_kind to a section category for grouping */
 function getSectionForSlot(slot: ExtendedEventProgramSlot): string {
-  // Use slot_kind + visibility heuristics for sectioning
   const kind = slot.slot_kind;
+  const title = (slot.title_override ?? "").toUpperCase();
   if (kind === "doors" || kind === "closing") return "Dører & logistikk";
+  // Lydprøve: internal break/soundcheck rows with LYDPRØVE in title, or slot_kind soundcheck
+  if (
+    kind === "soundcheck" ||
+    (slot.visibility === "internal" && title.includes("LYDPRØVE"))
+  ) return "Lydprøver";
   if (slot.visibility === "internal" && (kind === "break" || !slot.entity_id)) return "Opprigg & intern";
   if (kind === "concert" || kind === "boiler" || kind === "stage_talk" || kind === "giggen_info") return "Event";
   return "Annet";
 }
 
-const SECTION_ORDER = ["Opprigg & intern", "Dører & logistikk", "Event", "Annet"];
+const SECTION_ORDER = ["Opprigg & intern", "Lydprøver", "Dører & logistikk", "Event", "Annet"];
 
 export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   const queryClient = useQueryClient();
