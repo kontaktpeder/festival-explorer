@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
+import type { ExtendedEventProgramSlot, ProgramSlotType, PerformerKind } from "@/types/program-slots";
 import { INTERNAL_STATUS_OPTIONS, SLOT_KIND_OPTIONS } from "@/lib/program-slots";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { cn, isoToLocalDatetimeString } from "@/lib/utils";
 import { Plus, ClipboardList, ChevronDown } from "lucide-react";
@@ -34,6 +35,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
+import { usePersonaSearch } from "@/hooks/usePersonaSearch";
 import { FestivalMediaPickerDialog } from "./FestivalMediaPickerDialog";
 import { RunSheetSection } from "./runsheet/RunSheetSection";
 
@@ -389,6 +391,19 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
   const [isCanceled, setIsCanceled] = useState(slot.is_canceled);
   const [nameOverride, setNameOverride] = useState(slot.performer_name_override ?? "");
 
+  // Performer fields
+  const [performerKind, setPerformerKind] = useState<PerformerKind>(slot.performer_kind || "entity");
+  const [performerEntityId, setPerformerEntityId] = useState(slot.performer_entity_id || slot.entity_id || "");
+  const [performerPersonaId, setPerformerPersonaId] = useState(slot.performer_persona_id || "");
+  const [personaQuery, setPersonaQuery] = useState("");
+
+  // Persona search
+  const { data: personaResults = [] } = usePersonaSearch({
+    query: personaQuery,
+    mode: "all",
+    enabled: performerKind === "persona" && open,
+  });
+
   // Fetch festival events for the selector
   const { data: festivalEvents } = useQuery({
     queryKey: ["festival-events-for-runsheet", festivalId],
@@ -420,18 +435,22 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
     }
     const ev = festivalEvents?.find((e) => e.id === selectedEventId);
     if (!ev) return;
-    // Auto-fill time fields
     setStartsAt(isoToLocalDatetimeString(ev.start_at));
     if (ev.end_at) setEndsAt(isoToLocalDatetimeString(ev.end_at));
-    // Auto-fill venue/stage
     if (ev.venue?.name) setStageLabel(ev.venue.name);
-    // Auto-fill title if empty
     if (!titleOverride) setTitleOverride(ev.title);
-    // Calculate duration
     if (ev.end_at) {
       const mins = Math.round((new Date(ev.end_at).getTime() - new Date(ev.start_at).getTime()) / 60000);
       if (mins > 0) setDurationMinutes(String(mins));
     }
+  };
+
+  const handlePerformerKindChange = (v: string) => {
+    const kind = v as PerformerKind;
+    setPerformerKind(kind);
+    if (kind !== "persona") setPerformerPersonaId("");
+    if (kind !== "entity") setPerformerEntityId("");
+    if (kind !== "text") setNameOverride("");
   };
 
   const handleSubmit = () => {
@@ -450,9 +469,22 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
       internal_status: internalStatus,
       is_visible_public: isVisiblePublic,
       is_canceled: isCanceled,
-      performer_name_override: nameOverride || null,
+      performer_kind: performerKind,
+      performer_entity_id: performerKind === "entity" ? performerEntityId || null : null,
+      performer_persona_id: performerKind === "persona" ? performerPersonaId || null : null,
+      performer_name_override: performerKind === "text" ? nameOverride || null : null,
     });
   };
+
+  // Selected persona display name
+  const selectedPersonaName = useMemo(() => {
+    if (!performerPersonaId) return null;
+    // Check from slot data first
+    if (slot.performer_persona?.id === performerPersonaId) return slot.performer_persona.name;
+    // Check from search results
+    const found = personaResults.find((p) => p.id === performerPersonaId);
+    return found?.name || null;
+  }, [performerPersonaId, slot.performer_persona, personaResults]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -511,15 +543,80 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
             <Input placeholder="F.eks. LYDPRØVE 1ETG" value={titleOverride} onChange={(e) => setTitleOverride(e.target.value)} className="h-9 text-sm uppercase" />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Scene / sted</Label>
-              <Input placeholder="F.eks. 1ETG, FOH" value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm" />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Performer (fritekst)</Label>
-              <Input placeholder="Overstyr navn" value={nameOverride} onChange={(e) => setNameOverride(e.target.value)} className="h-9 text-sm" />
-            </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Scene / sted</Label>
+            <Input placeholder="F.eks. 1ETG, FOH" value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm" />
+          </div>
+
+          {/* På scenen – performer type */}
+          <div className="space-y-2 rounded-lg border border-border/20 p-3">
+            <Label className="text-xs font-semibold">På scenen</Label>
+            <RadioGroup value={performerKind} onValueChange={handlePerformerKindChange} className="flex gap-4">
+              <div className="flex items-center gap-1.5">
+                <RadioGroupItem value="entity" id="pk-entity" />
+                <Label htmlFor="pk-entity" className="text-xs cursor-pointer">Prosjekt</Label>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <RadioGroupItem value="persona" id="pk-persona" />
+                <Label htmlFor="pk-persona" className="text-xs cursor-pointer">Persona</Label>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <RadioGroupItem value="text" id="pk-text" />
+                <Label htmlFor="pk-text" className="text-xs cursor-pointer">Fri tekst</Label>
+              </div>
+            </RadioGroup>
+
+            {performerKind === "persona" && (
+              <div className="space-y-1.5">
+                <Input
+                  placeholder="Søk persona..."
+                  value={personaQuery}
+                  onChange={(e) => setPersonaQuery(e.target.value)}
+                  className="h-9 text-sm"
+                />
+                {selectedPersonaName && (
+                  <p className="text-xs text-accent font-medium">
+                    Valgt: {selectedPersonaName}
+                  </p>
+                )}
+                {personaResults.length > 0 && (
+                  <div className="max-h-32 overflow-y-auto border border-border/20 rounded-md">
+                    {personaResults.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        className={cn(
+                          "w-full text-left px-3 py-1.5 text-sm hover:bg-muted/50 transition-colors",
+                          p.id === performerPersonaId && "bg-accent/10 font-medium"
+                        )}
+                        onClick={() => {
+                          setPerformerPersonaId(p.id);
+                          setPersonaQuery("");
+                        }}
+                      >
+                        {p.name}
+                        {p.category_tags?.length ? (
+                          <span className="text-[10px] text-muted-foreground ml-2">
+                            {p.category_tags.slice(0, 2).join(", ")}
+                          </span>
+                        ) : null}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {performerKind === "text" && (
+              <div className="space-y-1.5">
+                <Input
+                  placeholder="Navn på scenen"
+                  value={nameOverride}
+                  onChange={(e) => setNameOverride(e.target.value)}
+                  className="h-9 text-sm"
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-1.5">
