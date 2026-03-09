@@ -978,6 +978,60 @@ export type Database = {
           },
         ]
       }
+      event_run_sheet_defaults: {
+        Row: {
+          created_at: string
+          default_slot_type: string | null
+          duration_minutes: number | null
+          ends_at: string | null
+          event_id: string
+          id: string
+          scene_ids: string[]
+          starts_at: string
+          updated_at: string
+          venue_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          default_slot_type?: string | null
+          duration_minutes?: number | null
+          ends_at?: string | null
+          event_id: string
+          id?: string
+          scene_ids?: string[]
+          starts_at: string
+          updated_at?: string
+          venue_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          default_slot_type?: string | null
+          duration_minutes?: number | null
+          ends_at?: string | null
+          event_id?: string
+          id?: string
+          scene_ids?: string[]
+          starts_at?: string
+          updated_at?: string
+          venue_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_run_sheet_defaults_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_run_sheet_defaults_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           age_limit: string | null
