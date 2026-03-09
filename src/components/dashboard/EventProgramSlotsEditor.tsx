@@ -55,6 +55,7 @@ interface SlotForm {
   internal_note: string;
   is_canceled: boolean;
   is_visible_public: boolean;
+  title_override: string;
   performer_kind: PerformerKind;
   performer_entity_id: string;
   performer_persona_id: string;
@@ -70,6 +71,7 @@ const EMPTY_FORM: SlotForm = {
   internal_note: "",
   is_canceled: false,
   is_visible_public: false,
+  title_override: "",
   performer_kind: "entity",
   performer_entity_id: "",
   performer_persona_id: "",
@@ -158,6 +160,7 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
           internal_note: payload.internal_note || null,
           is_canceled: payload.is_canceled,
           is_visible_public: payload.is_visible_public,
+          title_override: payload.title_override || null,
           performer_kind: payload.performer_kind,
           performer_entity_id: payload.performer_kind === "entity" ? payload.performer_entity_id || null : null,
           performer_persona_id: payload.performer_kind === "persona" ? payload.performer_persona_id || null : null,
@@ -184,6 +187,7 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
       if (payload.internal_note !== undefined) updates.internal_note = payload.internal_note || null;
       if (payload.is_canceled !== undefined) updates.is_canceled = payload.is_canceled;
       if (payload.is_visible_public !== undefined) updates.is_visible_public = payload.is_visible_public;
+      if (payload.title_override !== undefined) updates.title_override = payload.title_override || null;
 
       if (payload.performer_kind !== undefined) {
         updates.performer_kind = payload.performer_kind;
@@ -251,6 +255,7 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
       internal_note: slot.internal_note || "",
       is_canceled: slot.is_canceled,
       is_visible_public: slot.is_visible_public ?? false,
+      title_override: slot.title_override || "",
       performer_kind: (slot.performer_kind as PerformerKind) || "entity",
       performer_entity_id: slot.performer_entity_id || slot.entity_id || "",
       performer_persona_id: slot.performer_persona_id || "",
@@ -270,6 +275,7 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
       internal_note: slot.internal_note || "",
       is_canceled: false,
       is_visible_public: false,
+      title_override: slot.title_override || "",
       performer_kind: (slot.performer_kind as PerformerKind) || "entity",
       performer_entity_id: slot.performer_entity_id || slot.entity_id || "",
       performer_persona_id: slot.performer_persona_id || "",
@@ -571,7 +577,18 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
                 <Label className="text-xs">Prosjekt på scenen</Label>
                 <EntityPicker
                   value={form.performer_entity_id}
-                  onChange={(id) => setForm((f) => ({ ...f, performer_entity_id: id, entity_id: id }))}
+                  onChange={(id) => {
+                    const selected = allowedEntities.find((e) => e.id === id);
+                    setForm((f) => {
+                      const prevEntity = allowedEntities.find((e) => e.id === f.performer_entity_id);
+                      const prevName = prevEntity?.name || "";
+                      let nextTitle = f.title_override;
+                      if (!nextTitle || nextTitle === prevName) {
+                        nextTitle = selected?.name ?? "";
+                      }
+                      return { ...f, performer_entity_id: id, entity_id: id, title_override: nextTitle };
+                    });
+                  }}
                   placeholder="Velg prosjekt..."
                   allowedEntities={allowedEntities}
                 />

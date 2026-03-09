@@ -431,6 +431,20 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
   const [performerPersonaId, setPerformerPersonaId] = useState(slot.performer_persona_id || "");
   const [personaQuery, setPersonaQuery] = useState("");
 
+  // Helper: get current performer name for auto-title comparison
+  const getCurrentPerformerName = (): string => {
+    if (performerKind === "entity") {
+      const e = festivalEntities.find((x) => x.id === performerEntityId);
+      return e?.name || slot.performer_entity?.name || "";
+    }
+    if (performerKind === "persona") {
+      if (slot.performer_persona?.id === performerPersonaId) return slot.performer_persona.name;
+      const found = personaResults.find((p) => p.id === performerPersonaId);
+      return found?.name || "";
+    }
+    return "";
+  };
+
   // Persona search
   const { data: personaResults = [] } = usePersonaSearch({
     query: personaQuery,
@@ -604,7 +618,16 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
               <div className="space-y-1.5">
                 <Select
                   value={performerEntityId || "__none__"}
-                  onValueChange={(v) => setPerformerEntityId(v === "__none__" ? "" : v)}
+                  onValueChange={(v) => {
+                    const newId = v === "__none__" ? "" : v;
+                    const selected = festivalEntities.find((e) => e.id === newId);
+                    const prevName = getCurrentPerformerName();
+                    setPerformerEntityId(newId);
+                    // Auto-fill title if empty or was previous performer name
+                    if (!titleOverride || titleOverride === prevName) {
+                      setTitleOverride(selected?.name ?? "");
+                    }
+                  }}
                 >
                   <SelectTrigger className="h-9">
                     <SelectValue placeholder="Velg prosjekt..." />
@@ -645,8 +668,13 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
                           p.id === performerPersonaId && "bg-accent/10 font-medium"
                         )}
                         onClick={() => {
+                          const prevName = getCurrentPerformerName();
                           setPerformerPersonaId(p.id);
                           setPersonaQuery("");
+                          // Auto-fill title if empty or was previous performer name
+                          if (!titleOverride || titleOverride === prevName) {
+                            setTitleOverride(p.name);
+                          }
                         }}
                       >
                         {p.name}
