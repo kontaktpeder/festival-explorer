@@ -333,6 +333,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
                       startIndex={startIdx}
                       onEdit={openEdit}
                       onDelete={handleDelete}
+                      onAddToSection={handleAddToSection}
                     />
                   );
                 })}
