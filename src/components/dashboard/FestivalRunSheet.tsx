@@ -779,9 +779,18 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, type
             </>
           )}
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Avbryt</Button>
-          <Button onClick={handleSubmit}>Lagre</Button>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <button
+            type="button"
+            className="text-xs text-muted-foreground hover:text-foreground underline-offset-2 hover:underline mr-auto"
+            onClick={handleCreateParallel}
+          >
+            + Legg til parallell rad
+          </button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Avbryt</Button>
+            <Button onClick={handleSubmit}>Lagre</Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
