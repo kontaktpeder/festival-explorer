@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ExtendedEventProgramSlot, ProgramSlotType, PerformerKind } from "@/types/program-slots";
@@ -39,6 +39,7 @@ import { usePersonaSearch } from "@/hooks/usePersonaSearch";
 import { FestivalMediaPickerDialog } from "./FestivalMediaPickerDialog";
 import { RunSheetSection } from "./runsheet/RunSheetSection";
 import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
+import { useEventRunSheetDefault, useEventSceneOptions } from "@/hooks/useEventRunSheetDefault";
 
 interface FestivalRunSheetProps {
   festivalId: string;
