@@ -100,6 +100,38 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     },
   });
 
+  // Prosjekter (entities) tilknyttet festivalens events
+  const { data: festivalEntities = [] } = useQuery({
+    queryKey: ["festival-entities", festivalId],
+    queryFn: async () => {
+      const { data: feRows, error: feError } = await supabase
+        .from("festival_events")
+        .select("event_id")
+        .eq("festival_id", festivalId);
+      if (feError) throw feError;
+      const eventIds = (feRows ?? []).map((r) => r.event_id).filter(Boolean);
+      if (eventIds.length === 0) return [];
+
+      const { data: eeRows, error: eeError } = await supabase
+        .from("event_entities")
+        .select("entity:entities(id, name, slug)")
+        .in("event_id", eventIds);
+      if (eeError) throw eeError;
+
+      const seen = new Set<string>();
+      const entities: { id: string; name: string; slug: string }[] = [];
+      (eeRows ?? []).forEach((row: any) => {
+        const e = row.entity;
+        if (e && !seen.has(e.id)) {
+          seen.add(e.id);
+          entities.push(e);
+        }
+      });
+      return entities.sort((a, b) => a.name.localeCompare(b.name));
+    },
+    enabled: !!festivalId,
+  });
+
   /* ── Mutations ── */
   const updateSlot = useMutation({
     mutationFn: async (partial: Partial<ExtendedEventProgramSlot> & { id: string }) => {
