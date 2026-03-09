@@ -277,7 +277,22 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
               Lydprøve
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => createManualSlot.mutate("event")}>
-              Event
+              Konsert
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate("doors")}>
+              Dører
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate("closing")}>
+              Stenging
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate("stage_talk")}>
+              Snakk fra scenen
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate("giggen_info")}>
+              Hva er GIGGEN
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate("break")}>
+              Pause
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
