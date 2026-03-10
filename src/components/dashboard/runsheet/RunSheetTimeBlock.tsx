@@ -34,7 +34,7 @@ export function RunSheetTimeBlock({ startsAt, endsAt, durationMinutes, isCritica
   return (
     <div className="flex flex-col items-center h-full tabular-nums font-mono py-1 gap-0">
       {/* Start time */}
-      <span className={`text-sm font-bold ${isCritical ? 'text-accent' : 'text-foreground'}`}>
+      <span className={`text-base md:text-lg font-bold tracking-tight ${isCritical ? 'text-accent' : 'text-foreground'}`}>
         {fmtTime(startsAt)}
       </span>
 
