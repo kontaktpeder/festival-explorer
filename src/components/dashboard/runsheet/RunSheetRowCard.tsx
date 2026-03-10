@@ -35,7 +35,7 @@ interface RunSheetRowCardProps {
   onTimeChange?: (slotId: string, startsAt: string, endsAt: string | null) => void;
 }
 
-export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotTypeLabel, isNow, onEdit, onDelete }: RunSheetRowCardProps) {
+export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotTypeLabel, isNow, onEdit, onDelete, onTimeChange }: RunSheetRowCardProps) {
   const slot = group.primary;
   const kindConfig = getSlotKindConfig(slot.slot_kind as any);
   const showFields = getFieldsForSlotKind(slot.slot_kind as SlotKind);
