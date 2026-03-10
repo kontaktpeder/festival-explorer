@@ -1,7 +1,7 @@
 import type { ExtendedEventProgramSlot } from "@/types/program-slots";
 
-/** Kun disse tre seksjonene finnes – unike og trygge for sletting/utskrift */
-export const RUNSHEET_SECTION_KEYS = ["Opprigg & intern", "Lydprøver", "Event"] as const;
+/** Kun to seksjoner – Opprigg & intern er blandet inn i Lydprøver og Event */
+export const RUNSHEET_SECTION_KEYS = ["Lydprøver", "Event"] as const;
 export type RunSheetSectionKey = (typeof RUNSHEET_SECTION_KEYS)[number];
 
 export function getSectionForSlot(slot: ExtendedEventProgramSlot): RunSheetSectionKey {
@@ -9,21 +9,17 @@ export function getSectionForSlot(slot: ExtendedEventProgramSlot): RunSheetSecti
   const title = (slot.title_override ?? "").toUpperCase();
   if (
     kind === "soundcheck" ||
+    kind === "rigging" ||
     (slot.visibility === "internal" && title.includes("LYDPRØVE"))
   ) return "Lydprøver";
-  if (
-    slot.visibility === "internal" &&
-    (kind === "rigging" || kind === "break" || !slot.entity_id)
-  ) return "Opprigg & intern";
   return "Event";
 }
 
-/** Slots gruppert i de tre faste seksjonene */
+/** Slots gruppert i Lydprøver og Event */
 export function groupSlotsBySection(
   slots: ExtendedEventProgramSlot[]
 ): Record<RunSheetSectionKey, ExtendedEventProgramSlot[]> {
   const out: Record<RunSheetSectionKey, ExtendedEventProgramSlot[]> = {
-    "Opprigg & intern": [],
     Lydprøver: [],
     Event: [],
   };

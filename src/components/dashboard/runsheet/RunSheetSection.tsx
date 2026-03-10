@@ -176,7 +176,6 @@ export function RunSheetSection({
         <div
           className={cn(
             "pt-2",
-            sectionKey === "Opprigg & intern" && "space-y-1",
             sectionKey === "Lydprøver" && "space-y-2",
             sectionKey === "Event" && "space-y-2"
           )}

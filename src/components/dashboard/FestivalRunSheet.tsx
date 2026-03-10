@@ -162,7 +162,6 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   /** Map section key → preset type for "add to section" */
   const handleAddToSection = (sectionKey: RunSheetSectionKey) => {
     const map: Record<RunSheetSectionKey, "opprigg" | "lydprøve" | "event"> = {
-      "Opprigg & intern": "opprigg",
       "Lydprøver": "lydprøve",
       "Event": "event",
     };
