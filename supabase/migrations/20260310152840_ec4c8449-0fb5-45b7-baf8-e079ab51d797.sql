@@ -1,0 +1,1 @@
+UPDATE ticket_types SET name = 'Festivalpass' WHERE code = 'ORDINAR';
