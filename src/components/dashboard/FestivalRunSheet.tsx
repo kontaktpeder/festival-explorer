@@ -165,7 +165,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       "Lydprøver": "lydprøve",
       "Event": "event",
     };
-    createManualSlot.mutate(map[sectionKey] ?? "event");
+    createManualSlot.mutate({ sectionType: map[sectionKey] ?? "event", seq: nextSequenceNumber });
   };
 
   /** Custom section display names (stored in state) */
