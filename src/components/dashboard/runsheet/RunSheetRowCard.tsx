@@ -139,7 +139,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
         {/* ── Sequence number ── */}
         <div className="w-[48px] md:w-[56px] shrink-0 flex items-center justify-center border-r border-border/10">
           <span className={cn(
-            "text-xl md:text-2xl font-bold tabular-nums select-none",
+            "text-xl md:text-2xl font-bold tabular-nums",
             isCritical ? "text-accent/40" : "text-muted-foreground/12"
           )}>
             {sectionPrefix || ""}{String(seqNum).padStart(2, "0")}
