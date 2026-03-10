@@ -74,7 +74,7 @@ export function useFestivalDetails(festivalId: string | null | undefined) {
 
       const eventIds = (festivalEvents || []).map((fe) => fe.event?.id).filter(Boolean) as string[];
 
-      const [participantsResult, legacyLineupResult, festivalParticipantsResult, programSlotsResult] = await Promise.all([
+      const [participantsResult, legacyLineupResult, festivalParticipantsResult, programSlotsResult, festivalSlotsResult] = await Promise.all([
         eventIds.length > 0
           ? supabase.from("event_participants").select("event_id, participant_kind, participant_id, role_label, sort_order").in("event_id", eventIds).eq("zone", "on_stage").order("sort_order", { ascending: true })
           : Promise.resolve({ data: [], error: null }),
