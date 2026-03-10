@@ -1,9 +1,17 @@
 import { useEffect, useState, useCallback, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, ArrowUp, ArrowDown, Trash2, GripVertical } from "lucide-react";
+import { Loader2, ArrowUp, ArrowDown, Trash2, Music } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { PersonaSearchPicker } from "@/components/persona/PersonaSearchPicker";
 import { usePersonaSearch, type PersonaOption } from "@/hooks/usePersonaSearch";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
@@ -14,7 +22,7 @@ interface EventParticipantRow {
   id: string;
   event_id: string;
   zone: Zone;
-  participant_kind: "persona";
+  participant_kind: "persona" | "entity";
   participant_id: string;
   role_label: string | null;
   sort_order: number;
@@ -95,6 +103,9 @@ export function EventParticipantsZoneEditor({
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchTriggered, setSearchTriggered] = useState(false);
+  const [selectedEntityId, setSelectedEntityId] = useState("");
+
+  const isOnStage = zone === "on_stage";
 
   const loadRows = useCallback(async () => {
     setLoading(true);
@@ -111,13 +122,13 @@ export function EventParticipantsZoneEditor({
       return;
     }
 
-    const list = ((data || []) as any[]).filter(
-      (r) => r.participant_kind === "persona"
-    ) as EventParticipantRow[];
+    const list = (data || []) as EventParticipantRow[];
     setRows(list);
 
-    const personaIds = list.map((r) => r.participant_id);
+    const personaIds = list.filter((r) => r.participant_kind === "persona").map((r) => r.participant_id);
+    const entityIds = list.filter((r) => r.participant_kind === "entity").map((r) => r.participant_id);
     const map: Record<string, ResolvedRef> = {};
+
     if (personaIds.length > 0) {
       const { data: pData } = await supabase
         .from("personas")
@@ -125,6 +136,14 @@ export function EventParticipantsZoneEditor({
         .in("id", personaIds);
       (pData || []).forEach((p: any) => (map[p.id] = p));
     }
+    if (entityIds.length > 0) {
+      const { data: eData } = await supabase
+        .from("entities")
+        .select("id,name,slug,type")
+        .in("id", entityIds);
+      (eData || []).forEach((e: any) => (map[e.id] = { id: e.id, name: e.name, slug: e.slug ?? null, type: e.type }));
+    }
+
     setResolved(map);
     setLoading(false);
   }, [eventId, zone]);
@@ -132,6 +151,60 @@ export function EventParticipantsZoneEditor({
   useEffect(() => {
     void loadRows();
   }, [loadRows]);
+
+  // Fetch entities (solo/band) for on_stage zone
+  const { data: allEntities = [] } = useQuery({
+    queryKey: ["event-entities-on-stage", eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("entities")
+        .select("id, name, type")
+        .in("type", ["solo", "band"])
+        .eq("is_system", false)
+        .order("name");
+      if (error) throw error;
+      return (data || []) as { id: string; name: string; type: string }[];
+    },
+    enabled: isOnStage,
+  });
+
+  const existingEntityIds = new Set(
+    rows.filter((r) => r.participant_kind === "entity").map((r) => r.participant_id)
+  );
+  const availableEntities = allEntities.filter((e) => !existingEntityIds.has(e.id));
+
+  const handleAddEntity = async () => {
+    if (!selectedEntityId) return;
+    if (existingEntityIds.has(selectedEntityId)) {
+      toast.error("Allerede lagt til");
+      return;
+    }
+    const maxOrder = Math.max(0, ...rows.map((r) => r.sort_order || 0));
+    const { error } = await supabase.from("event_participants").insert({
+      event_id: eventId,
+      zone: "on_stage",
+      participant_kind: "entity",
+      participant_id: selectedEntityId,
+      role_label: null,
+      sort_order: maxOrder + 1,
+      is_public: true,
+    });
+    if (error) {
+      toast.error("Kunne ikke legge til");
+      return;
+    }
+    // Also link in event_entities for billing/feature
+    await supabase.from("event_entities").insert({
+      event_id: eventId,
+      entity_id: selectedEntityId,
+      billing_order: maxOrder + 1,
+      is_featured: false,
+      feature_order: 0,
+    });
+    toast.success("Artist lagt til");
+    setSelectedEntityId("");
+    void loadRows();
+  };
 
   const { data: personaResults = [], isLoading: searchLoading } = usePersonaSearch({
     query: searchQuery,
@@ -190,7 +263,7 @@ export function EventParticipantsZoneEditor({
       id: r.id,
       event_id: r.event_id,
       participant_id: r.participant_id,
-      participant_kind: "persona" as const,
+      participant_kind: r.participant_kind,
       zone: r.zone as string,
       sort_order: i + 1,
     }));
@@ -212,23 +285,56 @@ export function EventParticipantsZoneEditor({
   };
 
   return (
-    <div className="space-y-3">
-      {/* Search */}
-      <PersonaSearchPicker
-        personas={personaResults}
-        isLoading={searchLoading}
-        searchQuery={searchQuery}
-        onSearchQueryChange={(v) => {
-          setSearchQuery(v);
-          if (!v.trim()) setSearchTriggered(false);
-        }}
-        onSelect={handleAdd}
-        showSearchButton
-        onSearchSubmit={handleSearch}
-        placeholder="Legg til person..."
-        emptyMessage="Ingen personer funnet"
-        disabledIds={new Set(rows.map((r) => r.participant_id))}
-      />
+    <div className="space-y-4">
+      {/* Add entity (artist/project) – only for on_stage */}
+      {isOnStage && (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground">Legg til artist / prosjekt</p>
+          <div className="flex items-center gap-2">
+            <Select value={selectedEntityId} onValueChange={setSelectedEntityId}>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder="Velg artist..." />
+              </SelectTrigger>
+              <SelectContent>
+                {availableEntities.map((e) => (
+                  <SelectItem key={e.id} value={e.id}>
+                    <span className="flex items-center gap-2">
+                      <Music className="h-3 w-3 text-muted-foreground" />
+                      {e.name}
+                    </span>
+                  </SelectItem>
+                ))}
+                {availableEntities.length === 0 && (
+                  <div className="px-3 py-2 text-sm text-muted-foreground">Alle artister er lagt til</div>
+                )}
+              </SelectContent>
+            </Select>
+            <Button size="sm" onClick={handleAddEntity} disabled={!selectedEntityId}>
+              Legg til
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Add persona */}
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-muted-foreground">Legg til person</p>
+        <PersonaSearchPicker
+          personas={personaResults}
+          isLoading={searchLoading}
+          searchQuery={searchQuery}
+          onSearchQueryChange={(v) => {
+            setSearchQuery(v);
+            if (!v.trim()) setSearchTriggered(false);
+          }}
+          onSelect={handleAdd}
+          showSearchButton
+          onSearchSubmit={handleSearch}
+          placeholder="Legg til person..."
+          emptyMessage="Ingen personer funnet"
+          disabledIds={new Set(rows.map((r) => r.participant_id))}
+        />
+      </div>
 
       {/* List */}
       {loading ? (
@@ -244,9 +350,12 @@ export function EventParticipantsZoneEditor({
       ) : (
         <div className="divide-y divide-border/10">
           {rows.map((row, index) => {
-            const persona = resolved[row.participant_id];
-            const initials = (persona?.name || "?").charAt(0).toUpperCase();
-            const fallbackRole = getPersonaTypeLabel(persona?.type) ?? persona?.category_tags?.[0];
+            const ref = resolved[row.participant_id];
+            const isEntity = row.participant_kind === "entity";
+            const initials = (ref?.name || "?").charAt(0).toUpperCase();
+            const fallbackRole = !isEntity
+              ? (getPersonaTypeLabel(ref?.type) ?? ref?.category_tags?.[0])
+              : ref?.type;
 
             return (
               <div
@@ -255,8 +364,8 @@ export function EventParticipantsZoneEditor({
               >
                 {/* Avatar */}
                 <div className="h-8 w-8 rounded-full bg-muted/50 border border-border/20 flex items-center justify-center shrink-0 overflow-hidden">
-                  {persona?.avatar_url ? (
-                    <img src={persona.avatar_url} alt="" className="h-full w-full object-cover" />
+                  {!isEntity && ref?.avatar_url ? (
+                    <img src={ref.avatar_url} alt="" className="h-full w-full object-cover" />
                   ) : (
                     <span className="text-xs font-medium text-muted-foreground">{initials}</span>
                   )}
@@ -265,14 +374,20 @@ export function EventParticipantsZoneEditor({
                 {/* Name + role */}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">
-                    {persona?.name || "Ukjent"}
+                    {ref?.name || "Ukjent"}
                   </p>
-                  <DebouncedRoleInput
-                    initialValue={row.role_label || ""}
-                    placeholder={fallbackRole ? `${fallbackRole}` : "Rolle"}
-                    fallbackRole={fallbackRole}
-                    onSave={(v) => saveRoleLabel(row.id, v)}
-                  />
+                  {!isEntity ? (
+                    <DebouncedRoleInput
+                      initialValue={row.role_label || ""}
+                      placeholder={fallbackRole ? `${fallbackRole}` : "Rolle"}
+                      fallbackRole={fallbackRole ?? undefined}
+                      onSave={(v) => saveRoleLabel(row.id, v)}
+                    />
+                  ) : (
+                    <p className="text-xs text-muted-foreground capitalize px-1.5">
+                      {fallbackRole || "Artist"}
+                    </p>
+                  )}
                 </div>
 
                 {/* Reorder + delete */}
