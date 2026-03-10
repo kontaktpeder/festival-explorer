@@ -879,6 +879,21 @@ function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequen
           <DialogTitle>Rediger rad</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2 max-h-[65vh] overflow-y-auto">
+          {/* Section */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold">Seksjon</Label>
+            <Select value={editSection} onValueChange={(v) => handleSectionChange(v as RunSheetSectionKey)}>
+              <SelectTrigger className="h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Lydprøver">Lydprøver (L)</SelectItem>
+                <SelectItem value="Event">Event (E)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-[10px] text-muted-foreground">Flytt enkelt mellom L- og E-seksjon uten å endre andre rader.</p>
+          </div>
+
           {/* Type – always shown, controls which fields appear */}
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold">Type</Label>
