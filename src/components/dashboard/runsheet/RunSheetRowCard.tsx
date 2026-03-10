@@ -32,6 +32,7 @@ interface RunSheetRowCardProps {
   isNow?: boolean;
   onEdit: (slot: ExtendedEventProgramSlot) => void;
   onDelete: (slot: ExtendedEventProgramSlot) => void;
+  onTimeChange?: (slotId: string, startsAt: string, endsAt: string | null) => void;
 }
 
 export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotTypeLabel, isNow, onEdit, onDelete }: RunSheetRowCardProps) {
