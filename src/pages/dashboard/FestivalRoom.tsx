@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Users,
   LayoutGrid,
+  ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -154,6 +155,13 @@ export default function FestivalRoom() {
       description: "Arrangementer i festivalen",
       icon: Music,
       to: `/dashboard/festival/${id}/events`,
+      hidden: !canAccessEvents,
+    },
+    {
+      title: "Kjøreplan",
+      description: "Produksjonskjøreplan og tidslinje",
+      icon: ClipboardList,
+      to: `/dashboard/festival/${id}/run-sheet`,
       hidden: !canAccessEvents,
     },
     {
