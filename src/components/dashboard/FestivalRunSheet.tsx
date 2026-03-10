@@ -332,6 +332,12 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
               <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "break", seq: nextSequenceNumber })}>
                 Pause
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "crew", seq: nextSequenceNumber })}>
+                Crew
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "custom", seq: nextSequenceNumber })}>
+                Egendefinert
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
