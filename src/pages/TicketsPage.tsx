@@ -179,6 +179,8 @@ export default function TicketsPage() {
                 )}
                 {soldOut ? (
                   <p className="text-xs font-semibold text-destructive">Utsolgt</p>
+                ) : limitedCapacity ? (
+                  <p className="text-xs font-semibold text-accent">Begrenset kapasitet</p>
                 ) : showRemaining ? (
                   <p className="text-xs font-semibold text-accent">{remaining} igjen</p>
                 ) : null}
