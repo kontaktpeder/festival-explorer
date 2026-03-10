@@ -207,6 +207,10 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     shiftSectionTime.mutate({ slots: slotsToShift, deltaMs });
   };
 
+  const handleSingleTimeChange = (slotId: string, startsAt: string, endsAt: string | null) => {
+    updateSlot.mutate({ id: slotId, starts_at: startsAt, ...(endsAt !== undefined ? { ends_at: endsAt } : {}) } as any);
+  };
+
   /** Map section key → preset type for "add to section" */
   const handleAddToSection = (sectionKey: RunSheetSectionKey) => {
     const map: Record<RunSheetSectionKey, "opprigg" | "lydprøve" | "event"> = {
