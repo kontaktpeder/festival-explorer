@@ -32,28 +32,22 @@ export function RunSheetTimeBlock({ startsAt, endsAt, durationMinutes, isCritica
   const hasEnd = endsAt || dur;
 
   return (
-    <div className="flex flex-col items-center h-full tabular-nums font-mono py-1 gap-0">
+    <div className="flex flex-col items-center h-full tabular-nums font-mono py-1 gap-0.5">
       {/* Start time */}
-      <span className={`text-base md:text-lg font-bold tracking-tight ${isCritical ? 'text-accent' : 'text-foreground'}`}>
+      <span className={`text-lg md:text-xl font-extrabold tracking-tight leading-none ${isCritical ? 'text-accent' : 'text-foreground'}`}>
         {fmtTime(startsAt)}
       </span>
 
-      {/* Vertical timeline connector */}
-      {hasEnd && (
-        <div className="flex flex-col items-center flex-1 min-h-[28px] my-0.5">
-          <div className={`w-px flex-1 min-h-[6px] ${isCritical ? 'bg-accent/40' : 'bg-border/40'}`} />
-          {dur && (
-            <span className="text-[9px] text-muted-foreground/60 px-1 py-0 leading-tight">
-              {fmtDurationLabel(dur)}
-            </span>
-          )}
-          <div className={`w-px flex-1 min-h-[6px] ${isCritical ? 'bg-accent/40' : 'bg-border/40'}`} />
-        </div>
+      {/* Duration label */}
+      {dur && (
+        <span className="text-[10px] text-muted-foreground/50 leading-tight">
+          {fmtDurationLabel(dur)}
+        </span>
       )}
 
       {/* End time */}
       {hasEnd && (
-        <span className="text-xs text-muted-foreground/70">
+        <span className="text-xs text-muted-foreground/60 leading-none">
           {endsAt ? fmtTime(endsAt) : dur ? fmtTime(new Date(new Date(startsAt).getTime() + dur * 60000).toISOString()) : ""}
         </span>
       )}
