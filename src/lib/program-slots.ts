@@ -58,8 +58,8 @@ export type SlotFieldKey =
 export const SLOT_KIND_FIELDS: Record<SlotKind, SlotFieldKey[]> = {
   concert: ["event", "time", "duration", "sequence", "title", "scene", "performer", "note", "category", "visibilityStatus", "toggles"],
   boiler: ["event", "time", "duration", "sequence", "title", "scene", "performer", "note", "category", "visibilityStatus", "toggles"],
-  soundcheck: ["time", "duration", "sequence", "title", "scene", "performer", "note"],
-  rigging: ["time", "sequence", "title", "scene", "performer", "note"],
+  soundcheck: ["event", "time", "duration", "sequence", "title", "scene", "performer", "note", "category"],
+  rigging: ["event", "time", "duration", "sequence", "title", "scene", "performer", "note", "category"],
   break: ["time", "duration", "sequence", "title", "scene", "performer", "note"],
   doors: ["time", "sequence", "title", "scene", "performer", "note", "visibilityStatus", "toggles"],
   closing: ["time", "sequence", "title", "scene", "performer", "note", "visibilityStatus", "toggles"],
