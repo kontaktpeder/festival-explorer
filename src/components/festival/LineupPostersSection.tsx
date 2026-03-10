@@ -299,26 +299,6 @@ export function LineupPostersSection({
                     </p>
                   )
                 )}
-                {zone.key === "2-etasje" && !useSlots && (
-                  <>
-                    <div className="flex flex-col items-center text-center">
-                      <span
-                        className="text-2xl md:text-3xl lg:text-4xl font-black uppercase text-white/20 tracking-wide leading-none"
-                        style={{ fontFamily: "'Space Grotesk', sans-serif", textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}
-                      >
-                        Slippes snart
-                      </span>
-                    </div>
-                    <div className="flex flex-col items-center text-center">
-                      <span
-                        className="text-2xl md:text-3xl lg:text-4xl font-black uppercase text-white/20 tracking-wide leading-none"
-                        style={{ fontFamily: "'Space Grotesk', sans-serif", textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}
-                      >
-                        Slippes snart
-                      </span>
-                    </div>
-                  </>
-                )}
               </div>
             </div>
           </div>
