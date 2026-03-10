@@ -115,7 +115,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   });
 
   const createManualSlot = useMutation({
-    mutationFn: async (sectionType: "opprigg" | "lydprøve" | "event" | "doors" | "closing" | "stage_talk" | "giggen_info" | "break") => {
+    mutationFn: async ({ sectionType, seq }: { sectionType: "opprigg" | "lydprøve" | "event" | "doors" | "closing" | "stage_talk" | "giggen_info" | "break"; seq: number }) => {
       const now = new Date();
       const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean }> = {
         opprigg: { slot_kind: "rigging", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false },
@@ -137,7 +137,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
           starts_at: now.toISOString(),
           ends_at: null,
           duration_minutes: null,
-          sequence_number: null,
+          sequence_number: seq,
           slot_kind: preset.slot_kind,
           slot_type: null,
           source: "manual",
@@ -165,7 +165,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       "Lydprøver": "lydprøve",
       "Event": "event",
     };
-    createManualSlot.mutate(map[sectionKey] ?? "event");
+    createManualSlot.mutate({ sectionType: map[sectionKey] ?? "event", seq: nextSequenceNumber });
   };
 
   /** Custom section display names (stored in state) */
@@ -234,6 +234,13 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     }));
   }, [data?.slots]);
 
+  const nextSequenceNumber = useMemo(() => {
+    const allSlots = data?.slots ?? [];
+    if (!allSlots.length) return 1;
+    const max = Math.max(...allSlots.map((s) => s.sequence_number ?? 0), 0);
+    return max + 1;
+  }, [data?.slots]);
+
   if (isLoading || !data) {
     return <LoadingState message="Laster kjøreplan..." />;
   }
@@ -289,28 +296,28 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => createManualSlot.mutate("opprigg")}>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "opprigg", seq: nextSequenceNumber })}>
               Opprigg
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate("lydprøve")}>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "lydprøve", seq: nextSequenceNumber })}>
               Lydprøve
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate("event")}>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "event", seq: nextSequenceNumber })}>
               Konsert
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate("doors")}>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "doors", seq: nextSequenceNumber })}>
               Dører
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate("closing")}>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "closing", seq: nextSequenceNumber })}>
               Stenging
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate("stage_talk")}>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "stage_talk", seq: nextSequenceNumber })}>
               Snakk fra scenen
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate("giggen_info")}>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "giggen_info", seq: nextSequenceNumber })}>
               Hva er GIGGEN
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate("break")}>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "break", seq: nextSequenceNumber })}>
               Pause
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -358,6 +365,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
         <RunSheetEditDialog
           festivalId={festivalId}
           slot={editingSlot}
+          suggestedSequenceNumber={nextSequenceNumber}
           open={dialogOpen}
           onOpenChange={(open) => {
             setDialogOpen(open);
@@ -396,6 +404,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
 interface RunSheetEditDialogProps {
   slot: ExtendedEventProgramSlot;
   festivalId: string;
+  suggestedSequenceNumber: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (updates: Record<string, unknown>) => void;
@@ -415,7 +424,7 @@ interface FestivalEvent {
   scene_name: string | null;
 }
 
-function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
+function RunSheetEditDialog({ slot, festivalId, suggestedSequenceNumber, open, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
   const { toast } = useToast();
   const isLydprøve = slot.slot_kind === "soundcheck" ||
     (slot.visibility === "internal" && (slot.title_override ?? "").toUpperCase().includes("LYDPRØVE"));
@@ -440,6 +449,26 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
   const [performerEntityId, setPerformerEntityId] = useState(slot.performer_entity_id || slot.entity_id || "");
   const [performerPersonaId, setPerformerPersonaId] = useState(slot.performer_persona_id || "");
   const [personaQuery, setPersonaQuery] = useState("");
+
+  // Auto-calculate duration from start/end times
+  useEffect(() => {
+    if (!startsAt || !endsAt) return;
+    const start = new Date(startsAt).getTime();
+    const end = new Date(endsAt).getTime();
+    if (end <= start) return;
+    const minutes = Math.round((end - start) / 60000);
+    setDurationMinutes(String(minutes));
+  }, [startsAt, endsAt]);
+
+  // Default sequence number when slot doesn't have one
+  useEffect(() => {
+    if (!open || !slot) return;
+    if (slot.sequence_number == null) {
+      setSequenceNumber(String(suggestedSequenceNumber));
+    } else {
+      setSequenceNumber(String(slot.sequence_number));
+    }
+  }, [open, slot?.id, slot?.sequence_number, suggestedSequenceNumber]);
 
   // Helper: get current performer name for auto-title comparison
   const getCurrentPerformerName = (): string => {
@@ -564,7 +593,7 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
       starts_at: startsAt ? new Date(startsAt).toISOString() : slot.starts_at,
       ends_at: endsAt ? new Date(endsAt).toISOString() : null,
       duration_minutes: durationMinutes ? Number(durationMinutes) : null,
-      sequence_number: sequenceNumber ? Number(sequenceNumber) : null,
+      sequence_number: sequenceNumber ? Number(sequenceNumber) : suggestedSequenceNumber,
       title_override: titleOverride || null,
       stage_label: stageLabel || null,
       internal_note: internalNote || null,
@@ -611,7 +640,7 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
         starts_at: startsAt ? new Date(startsAt).toISOString() : slot.starts_at,
         ends_at: endsAt ? new Date(endsAt).toISOString() : null,
         duration_minutes: durationMinutes ? Number(durationMinutes) : null,
-        sequence_number: sequenceNumber ? Number(sequenceNumber) : null,
+        sequence_number: sequenceNumber ? Number(sequenceNumber) : suggestedSequenceNumber,
         slot_kind: slotKind,
         slot_type: slotType || null,
         internal_status: internalStatus,
@@ -646,7 +675,7 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
       starts_at: startsAt ? new Date(startsAt).toISOString() : undefined,
       ends_at: endsAt ? new Date(endsAt).toISOString() : null,
       duration_minutes: durationMinutes ? Number(durationMinutes) : null,
-      sequence_number: sequenceNumber ? Number(sequenceNumber) : null,
+      sequence_number: sequenceNumber ? Number(sequenceNumber) : suggestedSequenceNumber,
       title_override: titleOverride || null,
       stage_label: stageLabel || null,
       internal_note: internalNote || null,
@@ -717,6 +746,7 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
             <div className="space-y-1.5">
               <Label className="text-xs">Varighet (min)</Label>
               <Input type="number" placeholder="—" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} className="h-9" />
+              <p className="text-[10px] text-muted-foreground">Beregnes fra start/slutt</p>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Løpenummer</Label>
@@ -724,13 +754,11 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
             </div>
           </div>
 
-          {/* Content - hidden for lydprøve */}
-          {!isLydprøve && (
-            <div className="space-y-1.5">
-              <Label className="text-xs">Innhold / tittel</Label>
-              <Input placeholder="F.eks. LYDPRØVE 1ETG" value={titleOverride} onChange={(e) => setTitleOverride(e.target.value)} className="h-9 text-sm uppercase" />
-            </div>
-          )}
+          {/* Content / title */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">Innhold / tittel</Label>
+            <Input placeholder="F.eks. LYDPRØVE 1ETG" value={titleOverride} onChange={(e) => setTitleOverride(e.target.value)} className="h-9 text-sm uppercase" />
+          </div>
 
           {/* Scene: dropdown when scenes available, otherwise free text */}
           <div className="space-y-1.5">
@@ -889,59 +917,55 @@ function RunSheetEditDialog({ slot, festivalId, open, onOpenChange, onSave, onPa
           </div>
 
           {/* Kategori, Synlighet, Status */}
-          {!isLydprøve && (
-            <>
-              {types.length > 0 && (
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Kategori</Label>
-                  <Select value={slotType} onValueChange={setSlotType}>
-                    <SelectTrigger className="h-9"><SelectValue placeholder="—" /></SelectTrigger>
-                    <SelectContent>
-                      {types.map((t) => (
-                        <SelectItem key={t.code} value={t.code}>{t.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Synlighet</Label>
-                  <Select value={visibility} onValueChange={(v) => setVisibility(v as any)}>
-                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="public">Publikum</SelectItem>
-                      <SelectItem value="internal">Intern</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Status</Label>
-                  <Select value={internalStatus} onValueChange={setInternalStatus}>
-                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {INTERNAL_STATUS_OPTIONS.map((o) => (
-                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Toggles */}
-              <div className="flex items-center justify-between pt-2 border-t border-border/20">
-                <div className="flex items-center gap-2">
-                  <Switch id="rs-visible" checked={isVisiblePublic} onCheckedChange={setIsVisiblePublic} />
-                  <Label htmlFor="rs-visible" className="text-sm cursor-pointer">Synlig for publikum</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input type="checkbox" id="rs-canceled" checked={isCanceled} onChange={(e) => setIsCanceled(e.target.checked)} className="h-4 w-4 rounded" />
-                  <Label htmlFor="rs-canceled" className="text-sm cursor-pointer">Avlyst</Label>
-                </div>
-              </div>
-            </>
+          {types.length > 0 && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Kategori</Label>
+              <Select value={slotType} onValueChange={setSlotType}>
+                <SelectTrigger className="h-9"><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectContent>
+                  {types.map((t) => (
+                    <SelectItem key={t.code} value={t.code}>{t.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Synlighet</Label>
+              <Select value={visibility} onValueChange={(v) => setVisibility(v as any)}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="public">Publikum</SelectItem>
+                  <SelectItem value="internal">Intern</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Status</Label>
+              <Select value={internalStatus} onValueChange={setInternalStatus}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {INTERNAL_STATUS_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Toggles */}
+          <div className="flex items-center justify-between pt-2 border-t border-border/20">
+            <div className="flex items-center gap-2">
+              <Switch id="rs-visible" checked={isVisiblePublic} onCheckedChange={setIsVisiblePublic} />
+              <Label htmlFor="rs-visible" className="text-sm cursor-pointer">Synlig for publikum</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="rs-canceled" checked={isCanceled} onChange={(e) => setIsCanceled(e.target.checked)} className="h-4 w-4 rounded" />
+              <Label htmlFor="rs-canceled" className="text-sm cursor-pointer">Avlyst</Label>
+            </div>
+          </div>
         </div>
         <DialogFooter className="flex-col sm:flex-row gap-2">
           <button
