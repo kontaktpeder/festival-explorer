@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { format } from "date-fns";
 import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
 import type { RunSheetSectionKey } from "@/lib/runsheet-sections";
 import { getPerformerDisplay } from "@/lib/program-performers";
@@ -165,17 +166,23 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
           {/* Performer(s) – parallel tree view or single */}
           {showFields.has("performer") && (
             isParallel ? (
-              <div className="flex flex-col gap-0.5 pl-1">
+              <div className="flex flex-col gap-1 pl-1">
                 {group.items.map((item, idx) => {
                   const performer = getPerformerDisplay(item);
                   const showPerformer = performer.name !== "Ukjent prosjekt" && performer.name !== "TBA";
                   const itemSceneColor = getSceneColor(item.stage_label);
                   const isLast = idx === group.items.length - 1;
+                  const itemTime = format(new Date(item.starts_at), "HH:mm");
+                  const itemEndTime = item.ends_at ? format(new Date(item.ends_at), "HH:mm") : null;
                   return (
                     <div key={item.id} className="flex items-center gap-2 text-xs">
                       {/* Tree connector */}
                       <span className="text-muted-foreground/30 font-mono text-xs shrink-0 w-3">
                         {isLast ? "└" : "├"}
+                      </span>
+                      {/* Inline time for this specific item */}
+                      <span className="text-[11px] font-bold tabular-nums font-mono text-muted-foreground/70 shrink-0">
+                        {itemTime}{itemEndTime ? `–${itemEndTime}` : ""}
                       </span>
                       {/* Scene badge with color */}
                       {showFields.has("scene") && item.stage_label && (
