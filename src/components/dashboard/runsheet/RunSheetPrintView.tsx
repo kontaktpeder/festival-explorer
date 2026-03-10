@@ -22,6 +22,7 @@ const KIND_ICONS: Record<string, LucideIcon> = {
 interface PrintBlock {
   time: string;
   timeEnd: string | null;
+  parallelGroupId: string | null;
   items: PrintItem[];
 }
 
