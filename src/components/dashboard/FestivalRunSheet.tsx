@@ -315,9 +315,21 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     setEditingSlot(null);
   };
 
+  /* ── Print-filtered slots ── */
+  const printSlots = useMemo(() => {
+    const allSlots = data?.slots ?? [];
+    if (printFilter === "all") return allSlots;
+    if (printFilter === "lydprover") return allSlots.filter((s) => getSectionForSlot(s) === "Lydprøver");
+    if (printFilter === "event") return allSlots.filter((s) => getSectionForSlot(s) === "Event");
+    // Scene filter
+    return allSlots.filter((s) => s.stage_label === printFilter);
+  }, [data?.slots, printFilter]);
+
   const handleDownloadPdf = async () => {
-    const el = document.querySelector(".runsheet-print") as HTMLElement | null;
+    const el = document.querySelector(".runsheet-print-doc") as HTMLElement | null;
     if (!el) return;
+    // Temporarily show the print view for capture
+    el.style.display = "block";
     toast({ title: "Genererer PDF..." });
     try {
       const html2canvas = (await import("html2canvas")).default;
@@ -330,7 +342,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       const imgData = canvas.toDataURL("image/png");
       const pdfW = 210; // A4 mm
       const pdfH = (canvas.height * pdfW) / canvas.width;
-      const pdf = new jsPDF({ orientation: pdfH > 297 ? "portrait" : "portrait", unit: "mm", format: "a4" });
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
       const pageH = 297;
       let yOffset = 0;
       while (yOffset < pdfH) {
@@ -342,7 +354,14 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       pdf.save(name);
     } catch (e: any) {
       toast({ title: "Feil", description: e.message, variant: "destructive" });
+    } finally {
+      el.style.display = "";
     }
+  };
+
+  const triggerPrint = (filter: "all" | "lydprover" | "event" | string) => {
+    setPrintFilter(filter);
+    setTimeout(() => window.print(), 100);
   };
 
   /* ── Render ── */
