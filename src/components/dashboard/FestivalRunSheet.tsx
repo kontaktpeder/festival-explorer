@@ -234,17 +234,18 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     }));
   }, [data?.slots]);
 
+  const nextSequenceNumber = useMemo(() => {
+    const allSlots = data?.slots ?? [];
+    if (!allSlots.length) return 1;
+    const max = Math.max(...allSlots.map((s) => s.sequence_number ?? 0), 0);
+    return max + 1;
+  }, [data?.slots]);
+
   if (isLoading || !data) {
     return <LoadingState message="Laster kjøreplan..." />;
   }
 
   const { slots, types } = data;
-
-  const nextSequenceNumber = useMemo(() => {
-    if (!slots.length) return 1;
-    const max = Math.max(...slots.map((s) => s.sequence_number ?? 0), 0);
-    return max + 1;
-  }, [slots]);
 
   const openEdit = (slot: ExtendedEventProgramSlot) => {
     setEditingSlot(slot);
