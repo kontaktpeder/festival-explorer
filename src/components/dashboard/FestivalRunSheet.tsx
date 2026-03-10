@@ -753,13 +753,11 @@ function RunSheetEditDialog({ slot, festivalId, suggestedSequenceNumber, open, o
             </div>
           </div>
 
-          {/* Content - hidden for lydprøve */}
-          {!isLydprøve && (
-            <div className="space-y-1.5">
-              <Label className="text-xs">Innhold / tittel</Label>
-              <Input placeholder="F.eks. LYDPRØVE 1ETG" value={titleOverride} onChange={(e) => setTitleOverride(e.target.value)} className="h-9 text-sm uppercase" />
-            </div>
-          )}
+          {/* Content / title */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">Innhold / tittel</Label>
+            <Input placeholder="F.eks. LYDPRØVE 1ETG" value={titleOverride} onChange={(e) => setTitleOverride(e.target.value)} className="h-9 text-sm uppercase" />
+          </div>
 
           {/* Scene: dropdown when scenes available, otherwise free text */}
           <div className="space-y-1.5">
