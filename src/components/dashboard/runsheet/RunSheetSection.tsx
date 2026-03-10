@@ -133,11 +133,10 @@ export function RunSheetSection({
 
         {/* Rename button */}
         {onRenameSection && !editing && (
-          /* print:hidden applied below */
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 shrink-0 text-muted-foreground/30 hover:text-foreground hover:bg-muted/70"
+            className="h-9 w-9 shrink-0 text-muted-foreground/30 hover:text-foreground hover:bg-muted/70 print:hidden"
             onClick={() => { setEditValue(shownName); setEditing(true); }}
             title="Endre navn"
           >
