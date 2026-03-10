@@ -99,7 +99,6 @@ export default function TicketsPage() {
 
   const festivalPassCodes = ["EARLYBIRD", "ORDINAR", "FESTIVALPASS_BOILER"];
   const festivalPasses = (ticketTypes || []).filter((t) => festivalPassCodes.includes(t.code));
-  const boilerOnly = (ticketTypes || []).filter((t) => t.code === "BOILER");
 
   const renderPurchaseForm = () => (
     <div className="ticket-card rounded-lg mt-2 animate-fade-in">
