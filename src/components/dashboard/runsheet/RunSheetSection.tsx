@@ -63,12 +63,7 @@ function fmtTime(iso: string) {
   return format(new Date(iso), "HH:mm");
 }
 
-/** Parse "HH:mm" to minutes since midnight */
-function parseTimeToMinutes(time: string): number | null {
-  const m = time.match(/^(\d{1,2}):(\d{2})$/);
-  if (!m) return null;
-  return parseInt(m[1]) * 60 + parseInt(m[2]);
-}
+
 
 export function RunSheetSection({
   sectionKey,
