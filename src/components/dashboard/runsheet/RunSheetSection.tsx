@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { ChevronDown, ChevronRight, Plus, Pencil, Trash2, Clock } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
 import type { RunSheetSectionKey } from "@/lib/runsheet-sections";
@@ -7,11 +7,8 @@ import { RunSheetRowCard, type ParallelGroup } from "./RunSheetRowCard";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+
+
 
 interface RunSheetSectionProps {
   sectionKey: RunSheetSectionKey;
@@ -29,11 +26,6 @@ interface RunSheetSectionProps {
   onDeleteSection?: (
     sectionKey: RunSheetSectionKey,
     slotsInSection: ExtendedEventProgramSlot[]
-  ) => void;
-  onShiftSectionTime?: (
-    sectionKey: RunSheetSectionKey,
-    slots: ExtendedEventProgramSlot[],
-    deltaMs: number
   ) => void;
   onTimeChange?: (slotId: string, startsAt: string, endsAt: string | null) => void;
 }
@@ -71,12 +63,7 @@ function fmtTime(iso: string) {
   return format(new Date(iso), "HH:mm");
 }
 
-/** Parse "HH:mm" to minutes since midnight */
-function parseTimeToMinutes(time: string): number | null {
-  const m = time.match(/^(\d{1,2}):(\d{2})$/);
-  if (!m) return null;
-  return parseInt(m[1]) * 60 + parseInt(m[2]);
-}
+
 
 export function RunSheetSection({
   sectionKey,
@@ -92,14 +79,11 @@ export function RunSheetSection({
   onAddToSection,
   onRenameSection,
   onDeleteSection,
-  onShiftSectionTime,
   onTimeChange,
 }: RunSheetSectionProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(displayName || title);
-  const [timePopoverOpen, setTimePopoverOpen] = useState(false);
-  const [newStartTime, setNewStartTime] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const groups = useMemo(() => groupParallelSlots(slots), [slots]);
 
@@ -131,19 +115,6 @@ export function RunSheetSection({
     return { from: fmtTime(first), to: fmtTime(last), firstIso: first };
   }, [slots]);
 
-  const handleShiftTime = () => {
-    if (!timeRange || !onShiftSectionTime) return;
-    const currentMinutes = parseTimeToMinutes(timeRange.from);
-    const newMinutes = parseTimeToMinutes(newStartTime);
-    if (currentMinutes === null || newMinutes === null) return;
-    const deltaMs = (newMinutes - currentMinutes) * 60 * 1000;
-    if (deltaMs === 0) {
-      setTimePopoverOpen(false);
-      return;
-    }
-    onShiftSectionTime(sectionKey, slots, deltaMs);
-    setTimePopoverOpen(false);
-  };
 
   return (
     <div className="runsheet-section space-y-0" data-section={sectionKey} data-print-section>
@@ -193,72 +164,6 @@ export function RunSheetSection({
           </div>
         </button>
 
-        {/* Shift time button */}
-        {onShiftSectionTime && timeRange && (
-          <Popover open={timePopoverOpen} onOpenChange={(open) => {
-            setTimePopoverOpen(open);
-            if (open && timeRange) setNewStartTime(timeRange.from);
-          }}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 shrink-0 text-muted-foreground/30 hover:text-foreground hover:bg-muted/70 print:hidden"
-                title="Endre starttid for seksjonen"
-              >
-                <Clock className="h-3.5 w-3.5" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-4" align="end">
-              <div className="space-y-3">
-                <div>
-                  <p className="text-xs font-semibold text-foreground mb-1">Flytt seksjon</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    Alle {slots.length} punkter flyttes relativt til ny starttid.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1">
-                    <label className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-semibold">
-                      Nåværende start
-                    </label>
-                    <p className="text-sm font-mono tabular-nums text-muted-foreground">{timeRange.from}</p>
-                  </div>
-                  <div className="text-muted-foreground/30">→</div>
-                  <div className="flex-1">
-                    <label className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-semibold">
-                      Ny start
-                    </label>
-                    <Input
-                      type="time"
-                      value={newStartTime}
-                      onChange={(e) => setNewStartTime(e.target.value)}
-                      className="h-8 text-sm font-mono tabular-nums"
-                    />
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 text-xs h-7"
-                    onClick={() => setTimePopoverOpen(false)}
-                  >
-                    Avbryt
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="flex-1 text-xs h-7"
-                    onClick={handleShiftTime}
-                    disabled={!newStartTime || newStartTime === timeRange.from}
-                  >
-                    Flytt
-                  </Button>
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-        )}
 
         {/* Rename button */}
         {onRenameSection && !editing && (
