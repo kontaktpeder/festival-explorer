@@ -17,6 +17,7 @@ export default function FestivalProgramPage() {
   const { data: details } = useFestivalDetails(shell?.id);
 
   const festivalProgramSlots = details?.festivalProgramSlots || [];
+  const festivalOnlySlots = details?.festivalOnlySlots || [];
 
   const validEvents = (details?.festivalEvents || []).filter(
     (fe: any) => fe.event && fe.event.status === "published"
@@ -26,7 +27,6 @@ export default function FestivalProgramPage() {
     () =>
       validEvents
         .filter((fe: any) => fe?.event)
-        .slice(0, 3)
         .map((fe: any) => ({
           id: fe.event.id,
           title: fe.event.title,
@@ -36,6 +36,8 @@ export default function FestivalProgramPage() {
         })),
     [validEvents]
   );
+
+  const hasContent = festivalProgramSlots.length > 0 || festivalOnlySlots.length > 0 || eventsForProgram.length > 0;
 
   if (isLoading) {
     return (
@@ -64,10 +66,11 @@ export default function FestivalProgramPage() {
         <BackToFestival festivalSlug={festivalSlug} festivalName={shell.name} />
       </div>
       <div>
-        {festivalProgramSlots.length > 0 ? (
+        {hasContent ? (
           <ProgramTimelineSection
             events={eventsForProgram}
             slots={festivalProgramSlots}
+            festivalSlots={festivalOnlySlots}
           />
         ) : (
           <div className="py-24 text-center text-muted-foreground">
