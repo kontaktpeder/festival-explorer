@@ -133,6 +133,7 @@ export function RunSheetSection({
 
         {/* Rename button */}
         {onRenameSection && !editing && (
+          /* print:hidden applied below */
           <Button
             variant="ghost"
             size="icon"

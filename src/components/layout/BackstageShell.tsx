@@ -27,7 +27,7 @@ export function BackstageShell({
     <div className="min-h-[100svh] bg-background">
       {/* Header */}
       <header
-        className="sticky top-0 z-50 bg-background/60 backdrop-blur-xl border-b border-border/20"
+        className="backstage-header sticky top-0 z-50 bg-background/60 backdrop-blur-xl border-b border-border/20"
         style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
       >
         <div className="w-full px-4 sm:px-8 lg:px-12 py-3 flex items-center justify-between gap-3">

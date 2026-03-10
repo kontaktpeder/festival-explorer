@@ -269,7 +269,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   return (
     <div className="space-y-8">
       {/* Document header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between print:hidden">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-lg bg-muted/60 flex items-center justify-center">
             <ClipboardList className="h-5 w-5 text-muted-foreground" />
@@ -283,45 +283,56 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
             </p>
           </div>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Ny rad
-              <ChevronDown className="h-3 w-3 opacity-50" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "opprigg", seq: nextSequenceNumber })}>
-              Opprigg
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "lydprøve", seq: nextSequenceNumber })}>
-              Lydprøve
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "event", seq: nextSequenceNumber })}>
-              Konsert
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "doors", seq: nextSequenceNumber })}>
-              Dører
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "closing", seq: nextSequenceNumber })}>
-              Stenging
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "stage_talk", seq: nextSequenceNumber })}>
-              Snakk fra scenen
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "giggen_info", seq: nextSequenceNumber })}>
-              Hva er GIGGEN
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "break", seq: nextSequenceNumber })}>
-              Pause
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
+            onClick={() => window.print()}
+          >
+            <Printer className="h-3.5 w-3.5" />
+            Skriv ut
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Ny rad
+                <ChevronDown className="h-3 w-3 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "opprigg", seq: nextSequenceNumber })}>
+                Opprigg
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "lydprøve", seq: nextSequenceNumber })}>
+                Lydprøve
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "event", seq: nextSequenceNumber })}>
+                Konsert
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "doors", seq: nextSequenceNumber })}>
+                Dører
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "closing", seq: nextSequenceNumber })}>
+                Stenging
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "stage_talk", seq: nextSequenceNumber })}>
+                Snakk fra scenen
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "giggen_info", seq: nextSequenceNumber })}>
+                Hva er GIGGEN
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "break", seq: nextSequenceNumber })}>
+                Pause
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {slots.length === 0 ? (
