@@ -92,8 +92,6 @@ export function RunSheetSection({
   const [collapsed, setCollapsed] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(displayName || title);
-  const [timePopoverOpen, setTimePopoverOpen] = useState(false);
-  const [newStartTime, setNewStartTime] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const groups = useMemo(() => groupParallelSlots(slots), [slots]);
 
