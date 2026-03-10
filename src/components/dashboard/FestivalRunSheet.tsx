@@ -46,6 +46,7 @@ import { nb } from "date-fns/locale";
 import { usePersonaSearch } from "@/hooks/usePersonaSearch";
 import { FestivalMediaPickerDialog } from "./FestivalMediaPickerDialog";
 import { RunSheetSection } from "./runsheet/RunSheetSection";
+import { RunSheetPrintView } from "./runsheet/RunSheetPrintView";
 import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
 import { useEventRunSheetDefault, useEventSceneOptions } from "@/hooks/useEventRunSheetDefault";
 
@@ -100,13 +101,14 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     queryFn: async () => {
       const { data } = await supabase
         .from("festivals")
-        .select("venue_id, name, start_at")
+        .select("venue_id, name, start_at, venue:venues!festivals_venue_id_fkey(name)")
         .eq("id", festivalId)
         .single();
       return data;
     },
   });
   const festivalVenueId = festivalInfo?.venue_id ?? null;
+  const [printFilter, setPrintFilter] = useState<"all" | "lydprover" | "event" | string>("all");
 
   // Prosjekter + personas fra alle kilder via felles hook
   const { data: allSubjects = [] } = useFestivalSubjects(festivalId);
@@ -288,6 +290,15 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     return max + 1;
   }, [data?.slots]);
 
+  /* ── Print-filtered slots ── */
+  const printSlots = useMemo(() => {
+    const allSlots = data?.slots ?? [];
+    if (printFilter === "all") return allSlots;
+    if (printFilter === "lydprover") return allSlots.filter((s) => getSectionForSlot(s) === "Lydprøver");
+    if (printFilter === "event") return allSlots.filter((s) => getSectionForSlot(s) === "Event");
+    return allSlots.filter((s) => s.stage_label === printFilter);
+  }, [data?.slots, printFilter]);
+
   if (isLoading || !data) {
     return <LoadingState message="Laster kjøreplan..." />;
   }
@@ -313,8 +324,10 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   };
 
   const handleDownloadPdf = async () => {
-    const el = document.querySelector(".runsheet-print") as HTMLElement | null;
+    const el = document.querySelector(".runsheet-print-doc") as HTMLElement | null;
     if (!el) return;
+    // Temporarily show the print view for capture
+    el.style.display = "block";
     toast({ title: "Genererer PDF..." });
     try {
       const html2canvas = (await import("html2canvas")).default;
@@ -327,7 +340,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       const imgData = canvas.toDataURL("image/png");
       const pdfW = 210; // A4 mm
       const pdfH = (canvas.height * pdfW) / canvas.width;
-      const pdf = new jsPDF({ orientation: pdfH > 297 ? "portrait" : "portrait", unit: "mm", format: "a4" });
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
       const pageH = 297;
       let yOffset = 0;
       while (yOffset < pdfH) {
@@ -339,23 +352,21 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       pdf.save(name);
     } catch (e: any) {
       toast({ title: "Feil", description: e.message, variant: "destructive" });
+    } finally {
+      el.style.display = "";
     }
   };
+
+  const triggerPrint = (filter: "all" | "lydprover" | "event" | string) => {
+    setPrintFilter(filter);
+    setTimeout(() => window.print(), 100);
+  };
+
+  const venueName = (festivalInfo as any)?.venue?.name ?? null;
 
   /* ── Render ── */
   return (
     <div className="space-y-8">
-      {/* Print-only header (visible on paper) */}
-      <div className="hidden print:block runsheet-print-header mb-6">
-        <h1 className="text-xl font-bold tracking-tight text-black uppercase">
-          Kjøreplan {festivalInfo?.name ? `– ${festivalInfo.name}` : ""}
-        </h1>
-        <p className="text-xs text-gray-500 mt-0.5">
-          {festivalInfo?.start_at ? format(new Date(festivalInfo.start_at), "d. MMMM yyyy", { locale: nb }) : ""}
-          {" · "}{slots.length} punkt{slots.length !== 1 ? "er" : ""} · Produksjonsdokument
-        </p>
-      </div>
-
       {/* Document header (screen only) */}
       <div className="flex items-center justify-between print:hidden">
         <div className="flex items-center gap-3">
@@ -372,24 +383,67 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
-            onClick={handleDownloadPdf}
-          >
-            <Download className="h-3.5 w-3.5" />
-            Last ned
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
-            onClick={() => window.print()}
-          >
-            <Printer className="h-3.5 w-3.5" />
-            Skriv ut
-          </Button>
+          {/* Download PDF dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Last ned
+                <ChevronDown className="h-3 w-3 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => { setPrintFilter("all"); setTimeout(handleDownloadPdf, 100); }}>
+                Hele kjøreplanen
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setPrintFilter("lydprover"); setTimeout(handleDownloadPdf, 100); }}>
+                Kun lydprøver
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setPrintFilter("event"); setTimeout(handleDownloadPdf, 100); }}>
+                Kun event
+              </DropdownMenuItem>
+              {sceneLabels.map((label) => (
+                <DropdownMenuItem key={label} onClick={() => { setPrintFilter(label); setTimeout(handleDownloadPdf, 100); }}>
+                  Kun {label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Print dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
+              >
+                <Printer className="h-3.5 w-3.5" />
+                Skriv ut
+                <ChevronDown className="h-3 w-3 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => triggerPrint("all")}>
+                Hele kjøreplanen
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => triggerPrint("lydprover")}>
+                Kun lydprøver
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => triggerPrint("event")}>
+                Kun event
+              </DropdownMenuItem>
+              {sceneLabels.map((label) => (
+                <DropdownMenuItem key={label} onClick={() => triggerPrint(label)}>
+                  Kun {label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -551,6 +605,15 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
           }}
         />
       )}
+
+      {/* ── Clean print view (hidden on screen, shown on print) ── */}
+      <RunSheetPrintView
+        festivalName={festivalInfo?.name}
+        festivalDate={festivalInfo?.start_at ? format(new Date(festivalInfo.start_at), "d. MMMM yyyy", { locale: nb }) : undefined}
+        venueName={venueName}
+        slots={printSlots}
+        sectionNames={sectionNames}
+      />
     </div>
   );
 }
