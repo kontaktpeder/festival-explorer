@@ -108,25 +108,24 @@ export function EventProgramSlotsEditor({ eventId, canEdit, eventStartAt, festiv
     enabled: !!eventId,
   });
 
-  // Allowed entities: from event_participants + accepted invitations
+  // Allowed entities: event participants (and legacy event_entities). No invitation required.
   const { data: allowedEntities = [] } = useQuery({
     queryKey: ["event-allowed-entities", eventId],
     queryFn: async () => {
-      const [participantsRes, invitationsRes] = await Promise.all([
+      const [participantsRes, legacyRes] = await Promise.all([
         supabase
           .from("event_participants")
           .select("participant_id")
           .eq("event_id", eventId)
           .in("participant_kind", ["entity", "project"]),
         supabase
-          .from("event_invitations" as any)
+          .from("event_entities")
           .select("entity_id")
-          .eq("event_id", eventId)
-          .eq("status", "accepted"),
+          .eq("event_id", eventId),
       ]);
       const ids = new Set<string>();
       (participantsRes.data || []).forEach((p: any) => ids.add(p.participant_id));
-      (invitationsRes.data || []).forEach((i: any) => ids.add(i.entity_id));
+      (legacyRes.data || []).forEach((r: any) => r.entity_id && ids.add(r.entity_id));
       if (ids.size === 0) return [];
 
       const { data, error } = await supabase
