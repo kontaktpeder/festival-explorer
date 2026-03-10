@@ -134,7 +134,7 @@ export function RunSheetRowCard({ group, index, sectionKey, slotTypeLabel, onEdi
           {/* Internal note – only when note field is configured */}
           {showFields.has("note") && slot.internal_note && (
             <p className="text-[11px] text-muted-foreground/50 leading-relaxed line-clamp-2 italic">
-              💬 {slot.internal_note}
+              {slot.internal_note}
             </p>
           )}
 
