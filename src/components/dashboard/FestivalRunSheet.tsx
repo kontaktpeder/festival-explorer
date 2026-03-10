@@ -615,7 +615,25 @@ function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequen
     } else {
       setSequenceNumber(String(slot.sequence_number));
     }
-  }, [open, slot?.id, slot?.sequence_number, suggestedSequenceNumber]);
+    setEditSection(getRunSheetSectionFromSlot(slot.slot_kind, slot.visibility, slot.title_override));
+  }, [open, slot?.id, slot?.sequence_number, slot?.slot_kind, slot?.visibility, slot?.title_override, suggestedSequenceNumber]);
+
+  useEffect(() => {
+    setEditSection(getRunSheetSectionFromSlot(slotKind, visibility, titleOverride));
+  }, [slotKind, visibility, titleOverride]);
+
+  const handleSectionChange = (value: RunSheetSectionKey) => {
+    setEditSection(value);
+    if (value === "Lydprøver") {
+      if (!["soundcheck", "rigging", "crew"].includes(slotKind)) setSlotKind("soundcheck");
+      setVisibility("internal");
+      setIsVisiblePublic(false);
+      return;
+    }
+    if (["soundcheck", "rigging", "crew"].includes(slotKind)) setSlotKind("concert");
+    if (visibility === "internal") setVisibility("public");
+    setIsVisiblePublic(true);
+  };
 
   // Helper: get current performer name for auto-title comparison
   const getCurrentPerformerName = (): string => {
