@@ -730,6 +730,22 @@ function RunSheetEditDialog({ slot, festivalId, suggestedSequenceNumber, open, o
             </Select>
           </div>
 
+          {/* Lydprøve / Opprigg quick-switch */}
+          {(slotKind === "soundcheck" || slotKind === "rigging") && (
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Lydprøve / Opprigg</Label>
+              <Select value={slotKind} onValueChange={(v) => setSlotKind(v)}>
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="soundcheck">Lydprøve</SelectItem>
+                  <SelectItem value="rigging">Opprigg</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Event selector */}
           {showFields.has("event") && festivalEvents && festivalEvents.length > 0 && (
             <div className="space-y-1.5">
