@@ -192,6 +192,8 @@ function useTicketStats() {
       // Check-ins - count tickets with status USED or with checked_in_at timestamp
       const checkedIn = soldTickets.filter((t) => t.status === "USED" || !!t.checked_in_at).length;
 
+      const purchasedTickets = soldTickets;
+
       return {
         totalSold,
         totalRevenue,
@@ -203,6 +205,7 @@ function useTicketStats() {
         totalCapacityLeft,
         checkedIn,
         tickets: typedTickets || [],
+        purchasedTickets,
       };
     },
     refetchInterval: 30000, // Refresh every 30 seconds
