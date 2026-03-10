@@ -631,23 +631,41 @@
     display: none !important;
   }
 
-  body {
+  /* Force white background on everything */
+  html,
+  body,
+  #root,
+  #root > *,
+  main,
+  [data-theme],
+  .min-h-screen,
+  .bg-background,
+  .bg-card,
+  .bg-muted,
+  .dark {
     background: white !important;
+    background-color: white !important;
     color: black !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  body {
     margin: 0;
     padding: 0;
   }
 
   /* Hide the screen-only card-based runsheet */
-  .runsheet-print {
+  .runsheet-print,
+  .space-y-5:not(.runsheet-print-doc) {
     display: none !important;
   }
 
   /* Show the clean print document */
   .runsheet-print-doc {
     display: block !important;
+    background: white !important;
+    color: black !important;
   }
 
   /* Hide all screen-only UI */
@@ -661,15 +679,9 @@
     size: A4 portrait;
   }
 
-  /* Prevent section breaks */
-  .runsheet-print-doc table {
-    page-break-inside: auto;
-  }
-  .runsheet-print-doc tr {
+  /* Prevent breaks inside blocks */
+  .runsheet-print-doc div[style*="border-radius"] {
     page-break-inside: avoid;
     break-inside: avoid;
-  }
-  .runsheet-print-doc thead {
-    display: table-header-group;
   }
 }
