@@ -32,7 +32,8 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { cn, isoToLocalDatetimeString } from "@/lib/utils";
-import { Plus, ClipboardList, ChevronDown, Printer } from "lucide-react";
+import { Plus, ClipboardList, ChevronDown, Printer, Filter } from "lucide-react";
+import { getSceneColor } from "@/lib/runsheet-scene-colors";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,6 +58,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   const { toast } = useToast();
   const [editingSlot, setEditingSlot] = useState<ExtendedEventProgramSlot | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [sceneFilter, setSceneFilter] = useState<string | null>(null);
   const [attachTarget, setAttachTarget] = useState<{
     slotId: string;
     field: "contract_media_id" | "tech_rider_media_id" | "hosp_rider_media_id";
@@ -226,14 +228,37 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     return map;
   }, [data?.types]);
 
-  /* Group into the three fixed sections */
-  const sectionsWithSlots = useMemo(() => {
+  /* Collect unique scene labels for filter */
+  const sceneLabels = useMemo(() => {
     const allSlots = data?.slots ?? [];
+    const labels = new Set<string>();
+    allSlots.forEach((s) => { if (s.stage_label) labels.add(s.stage_label); });
+    return Array.from(labels).sort();
+  }, [data?.slots]);
+
+  /* Group into the fixed sections, applying scene filter */
+  const sectionsWithSlots = useMemo(() => {
+    let allSlots = data?.slots ?? [];
+    if (sceneFilter) {
+      allSlots = allSlots.filter((s) => s.stage_label === sceneFilter);
+    }
     const grouped = groupSlotsBySection(allSlots);
     return RUNSHEET_SECTION_KEYS.map((key) => ({
       sectionKey: key,
       slots: grouped[key],
     }));
+  }, [data?.slots, sceneFilter]);
+
+  /* NOW marker – find the slot that's currently active */
+  const nowSlotId = useMemo(() => {
+    const allSlots = data?.slots ?? [];
+    const now = Date.now();
+    for (const s of allSlots) {
+      const start = new Date(s.starts_at).getTime();
+      const end = s.ends_at ? new Date(s.ends_at).getTime() : (s.duration_minutes ? start + s.duration_minutes * 60000 : start + 15 * 60000);
+      if (now >= start && now < end) return s.id;
+    }
+    return null;
   }, [data?.slots]);
 
   const nextSequenceNumber = useMemo(() => {
@@ -343,6 +368,42 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
         </div>
       </div>
 
+      {/* Scene filter bar */}
+      {slots.length > 0 && sceneLabels.length > 1 && (
+        <div className="flex items-center gap-2 print:hidden flex-wrap">
+          <Filter className="h-3.5 w-3.5 text-muted-foreground/50" />
+          <button
+            onClick={() => setSceneFilter(null)}
+            className={cn(
+              "text-[11px] px-3 py-1 rounded-full border transition-colors font-medium",
+              !sceneFilter
+                ? "bg-foreground text-background border-foreground"
+                : "bg-transparent text-muted-foreground border-border/40 hover:border-foreground/30"
+            )}
+          >
+            Alle
+          </button>
+          {sceneLabels.map((label) => {
+            const color = getSceneColor(label);
+            const isActive = sceneFilter === label;
+            return (
+              <button
+                key={label}
+                onClick={() => setSceneFilter(isActive ? null : label)}
+                className={cn(
+                  "text-[11px] px-3 py-1 rounded-full border transition-colors font-medium uppercase tracking-wider",
+                  isActive
+                    ? color ? `${color.bg} ${color.text} ${color.border}` : "bg-foreground text-background border-foreground"
+                    : "bg-transparent text-muted-foreground border-border/40 hover:border-foreground/30"
+                )}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {slots.length === 0 ? (
         <div className="py-16 text-center border border-dashed border-border/30 rounded-xl">
           <ClipboardList className="h-8 w-8 mx-auto text-muted-foreground/20 mb-4" />
@@ -354,6 +415,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       ) : (
         <div className="runsheet-print space-y-5">
           {(() => {
+            const sectionPrefixes: Record<string, string> = { "Lydprøver": "L", "Event": "E" };
             let globalIndex = 0;
             return sectionsWithSlots.map(({ sectionKey, slots: sectionSlots }) => {
               const startIdx = globalIndex;
@@ -364,9 +426,11 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
                   sectionKey={sectionKey}
                   title={sectionKey}
                   displayName={sectionNames[sectionKey]}
+                  sectionPrefix={sectionPrefixes[sectionKey]}
                   slots={sectionSlots}
                   slotTypeMap={slotTypeMap}
                   startIndex={startIdx}
+                  nowSlotId={nowSlotId}
                   onEdit={openEdit}
                   onDelete={handleDelete}
                   onAddToSection={handleAddToSection}

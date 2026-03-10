@@ -9,6 +9,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RunSheetTimeBlock } from "./RunSheetTimeBlock";
 import { RunSheetMetaBadges } from "./RunSheetMetaBadges";
+import { getSceneColor, isCriticalSlotKind } from "@/lib/runsheet-scene-colors";
 
 export interface ParallelGroup {
   primary: ExtendedEventProgramSlot;
@@ -19,85 +20,106 @@ interface RunSheetRowCardProps {
   group: ParallelGroup;
   index: number;
   sectionKey?: RunSheetSectionKey;
+  sectionPrefix?: string;
   slotTypeLabel?: string;
+  isNow?: boolean;
   onEdit: (slot: ExtendedEventProgramSlot) => void;
   onDelete: (slot: ExtendedEventProgramSlot) => void;
 }
 
-export function RunSheetRowCard({ group, index, sectionKey, slotTypeLabel, onEdit, onDelete }: RunSheetRowCardProps) {
+export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotTypeLabel, isNow, onEdit, onDelete }: RunSheetRowCardProps) {
   const slot = group.primary;
   const kindConfig = getSlotKindConfig(slot.slot_kind as any);
   const showFields = getFieldsForSlotKind(slot.slot_kind as SlotKind);
   const seqNum = slot.sequence_number ?? (index + 1);
   const isParallel = group.items.length > 1;
+  const isCritical = isCriticalSlotKind(slot.slot_kind);
+  const sceneColor = !isParallel && showFields.has("scene") ? getSceneColor(slot.stage_label) : null;
 
   return (
     <div
       className={cn(
-        "group relative border border-border/20 rounded-xl bg-card/80 hover:border-border/40 transition-all duration-200",
+        "group relative rounded-xl transition-all duration-200",
+        // Critical slots (doors, closing) get highlighted
+        isCritical
+          ? "border-2 border-accent/40 bg-accent/5"
+          : "border border-border/20 bg-card/80 hover:border-border/40",
         slot.is_canceled && "opacity-40",
-        slot.visibility === "internal" && "border-l-2 border-l-amber-500/30"
+        slot.visibility === "internal" && !isCritical && "border-l-2 border-l-amber-500/30",
+        // NOW marker
+        isNow && "ring-2 ring-accent/60 ring-offset-1 ring-offset-background"
       )}
     >
-      <div className="flex gap-0 min-h-[120px] md:min-h-[140px]">
-        {/* ── Time block ── */}
-        <div className="w-[110px] md:w-[140px] shrink-0 px-5 py-6 border-r border-border/10 flex items-start">
+      {/* NOW indicator */}
+      {isNow && (
+        <div className="absolute -top-2.5 left-4 px-2 py-0.5 bg-accent text-accent-foreground text-[9px] font-bold uppercase tracking-widest rounded-full">
+          NÅ
+        </div>
+      )}
+
+      <div className="flex gap-0 min-h-[100px] md:min-h-[120px]">
+        {/* ── Time block (vertical timeline) ── */}
+        <div className={cn(
+          "w-[80px] md:w-[100px] shrink-0 px-3 py-4 border-r flex items-center justify-center",
+          isCritical ? "border-accent/20" : "border-border/10"
+        )}>
           <RunSheetTimeBlock
             startsAt={slot.starts_at}
             endsAt={slot.ends_at}
             durationMinutes={slot.duration_minutes}
+            isCritical={isCritical}
           />
         </div>
 
         {/* ── Sequence number ── */}
-        <div className="w-[64px] md:w-[80px] shrink-0 flex items-center justify-center border-r border-border/10">
-          <span className="text-3xl md:text-4xl font-bold text-muted-foreground/15 tabular-nums select-none">
-            {String(seqNum).padStart(2, "0")}
+        <div className="w-[48px] md:w-[56px] shrink-0 flex items-center justify-center border-r border-border/10">
+          <span className={cn(
+            "text-xl md:text-2xl font-bold tabular-nums select-none",
+            isCritical ? "text-accent/40" : "text-muted-foreground/12"
+          )}>
+            {sectionPrefix || ""}{String(seqNum).padStart(2, "0")}
           </span>
         </div>
 
         {/* ── Main content area ── */}
-        <div className="flex-1 min-w-0 px-6 md:px-8 py-6 flex flex-col justify-center gap-2.5">
+        <div className="flex-1 min-w-0 px-5 md:px-6 py-4 flex flex-col justify-center gap-1.5">
 
-          {/* Slot kind label – show for non-concert types */}
-          {kindConfig && slot.slot_kind !== "concert" && (
+          {/* Slot kind label + critical icon */}
+          {kindConfig && (
             <div className="flex items-center gap-1.5">
-              <kindConfig.icon className="h-3 w-3 text-muted-foreground/50" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+              <kindConfig.icon className={cn("h-3 w-3", isCritical ? "text-accent" : "text-muted-foreground/50")} />
+              <span className={cn(
+                "text-[10px] font-bold uppercase tracking-wider",
+                isCritical ? "text-accent" : "text-muted-foreground/60"
+              )}>
                 {kindConfig.label}
               </span>
             </div>
           )}
 
-          {/* Performer(s) – only when performer field is configured */}
+          {/* Performer(s) – parallel tree view or single */}
           {showFields.has("performer") && (
-            <div className={cn(
-              "flex gap-2",
-              isParallel ? "flex-row items-center justify-between w-full" : "flex-col"
-            )}>
-              {group.items.map((item, idx) => {
-                const performer = getPerformerDisplay(item);
-                const showPerformer = performer.name !== "Ukjent prosjekt" && performer.name !== "TBA";
-                const itemKind = getSlotKindConfig(item.slot_kind as any);
-                const showItemKind = isParallel && item.slot_kind !== "concert" && item.slot_kind !== slot.slot_kind;
-                return (
-                  <div key={item.id} className="flex items-center gap-2">
-                    {isParallel && idx > 0 && (
-                      <div className="h-8 w-px bg-border/20 mx-2 shrink-0" />
-                    )}
-                    <div className="flex items-center gap-2 text-xs">
-                      {showItemKind && (
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-amber-500/70 shrink-0">
-                          {itemKind.label}
-                        </span>
-                      )}
+            isParallel ? (
+              <div className="flex flex-col gap-0.5 pl-1">
+                {group.items.map((item, idx) => {
+                  const performer = getPerformerDisplay(item);
+                  const showPerformer = performer.name !== "Ukjent prosjekt" && performer.name !== "TBA";
+                  const itemSceneColor = getSceneColor(item.stage_label);
+                  const isLast = idx === group.items.length - 1;
+                  return (
+                    <div key={item.id} className="flex items-center gap-2 text-xs">
+                      {/* Tree connector */}
+                      <span className="text-muted-foreground/30 font-mono text-xs shrink-0 w-3">
+                        {isLast ? "└" : "├"}
+                      </span>
+                      {/* Scene badge with color */}
                       {showFields.has("scene") && item.stage_label && (
-                        <span className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wider shrink-0">
+                        <span className={cn(
+                          "text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0",
+                          itemSceneColor ? `${itemSceneColor.bg} ${itemSceneColor.text}` : "text-muted-foreground/50"
+                        )}>
                           {item.stage_label}
                         </span>
-                      )}
-                      {showFields.has("scene") && item.stage_label && showPerformer && (
-                        <span className="text-muted-foreground/20">·</span>
                       )}
                       {showPerformer && (
                         performer.href ? (
@@ -108,16 +130,16 @@ export function RunSheetRowCard({ group, index, sectionKey, slotTypeLabel, onEdi
                             {performer.name}
                           </Link>
                         ) : (
-                          <span className="text-xs font-medium text-foreground/60 truncate">
+                          <span className="text-xs font-medium text-foreground/70 truncate">
                             {performer.name}
                           </span>
                         )
                       )}
-                      {isParallel && item.id !== slot.id && (
+                      {item.id !== slot.id && (
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-5 w-5 text-muted-foreground/30 hover:text-foreground ml-1 shrink-0"
+                          className="h-5 w-5 text-muted-foreground/30 hover:text-foreground ml-auto shrink-0 print:hidden"
                           onClick={() => onEdit(item)}
                           title="Rediger parallell"
                         >
@@ -125,20 +147,41 @@ export function RunSheetRowCard({ group, index, sectionKey, slotTypeLabel, onEdi
                         </Button>
                       )}
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                {(() => {
+                  const performer = getPerformerDisplay(slot);
+                  const showPerformer = performer.name !== "Ukjent prosjekt" && performer.name !== "TBA";
+                  return showPerformer ? (
+                    performer.href ? (
+                      <Link
+                        to={performer.href}
+                        className="text-sm font-semibold text-accent hover:underline underline-offset-2 truncate"
+                      >
+                        {performer.name}
+                      </Link>
+                    ) : (
+                      <span className="text-sm font-semibold text-foreground/80 truncate">
+                        {performer.name}
+                      </span>
+                    )
+                  ) : null;
+                })()}
+              </div>
+            )
           )}
 
-          {/* Internal note – only when note field is configured */}
+          {/* Internal note */}
           {showFields.has("note") && slot.internal_note && (
             <p className="text-[11px] text-muted-foreground/50 leading-relaxed line-clamp-2 italic">
               {slot.internal_note}
             </p>
           )}
 
-          {/* Meta badges – driven by field config */}
+          {/* Meta badges */}
           <RunSheetMetaBadges
             stageLabel={showFields.has("scene") && !isParallel ? slot.stage_label : undefined}
             visibility={showFields.has("visibilityStatus") ? slot.visibility : undefined}

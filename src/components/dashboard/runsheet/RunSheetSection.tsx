@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { ChevronDown, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
+import { format } from "date-fns";
 import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
 import type { RunSheetSectionKey } from "@/lib/runsheet-sections";
 import { RunSheetRowCard, type ParallelGroup } from "./RunSheetRowCard";
@@ -11,14 +12,15 @@ interface RunSheetSectionProps {
   sectionKey: RunSheetSectionKey;
   title: string;
   displayName?: string;
+  sectionPrefix?: string;
   slots: ExtendedEventProgramSlot[];
   slotTypeMap: Map<string, ProgramSlotType>;
   startIndex: number;
+  nowSlotId?: string | null;
   onEdit: (slot: ExtendedEventProgramSlot) => void;
   onDelete: (slot: ExtendedEventProgramSlot) => void;
   onAddToSection?: (sectionKey: RunSheetSectionKey) => void;
   onRenameSection?: (sectionKey: string, newName: string) => void;
-  /** Slett KUN de slot-ene som sendes med (denne seksjonens slots) */
   onDeleteSection?: (
     sectionKey: RunSheetSectionKey,
     slotsInSection: ExtendedEventProgramSlot[]
@@ -54,13 +56,19 @@ function groupParallelSlots(slots: ExtendedEventProgramSlot[]): ParallelGroup[] 
   return groups;
 }
 
+function fmtTime(iso: string) {
+  return format(new Date(iso), "HH:mm");
+}
+
 export function RunSheetSection({
   sectionKey,
   title,
   displayName,
+  sectionPrefix,
   slots,
   slotTypeMap,
   startIndex,
+  nowSlotId,
   onEdit,
   onDelete,
   onAddToSection,
@@ -90,6 +98,16 @@ export function RunSheetSection({
 
   const isEmpty = slots.length === 0;
   const shownName = displayName || title;
+
+  // Compute section time range
+  const timeRange = useMemo(() => {
+    if (slots.length === 0) return null;
+    const sorted = [...slots].sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
+    const first = sorted[0].starts_at;
+    const lastSlot = sorted[sorted.length - 1];
+    const last = lastSlot.ends_at || lastSlot.starts_at;
+    return { from: fmtTime(first), to: fmtTime(last) };
+  }, [slots]);
 
   return (
     <div className="runsheet-section space-y-0" data-section={sectionKey} data-print-section>
@@ -126,9 +144,17 @@ export function RunSheetSection({
               {shownName}
             </span>
           )}
-          <span className="text-[10px] text-muted-foreground/40 ml-1 tabular-nums">
-            {slots.length} {slots.length === 1 ? "punkt" : "punkter"}
-          </span>
+          {/* Time range + count */}
+          <div className="flex items-center gap-2 ml-1">
+            {timeRange && (
+              <span className="text-[10px] text-muted-foreground/50 tabular-nums font-mono">
+                {timeRange.from} – {timeRange.to}
+              </span>
+            )}
+            <span className="text-[10px] text-muted-foreground/40 tabular-nums">
+              {slots.length} {slots.length === 1 ? "punkt" : "punkter"}
+            </span>
+          </div>
         </button>
 
         {/* Rename button */}
@@ -157,7 +183,7 @@ export function RunSheetSection({
           </Button>
         )}
 
-        {/* Delete section – sends the actual slots for safe deletion */}
+        {/* Delete section */}
         {onDeleteSection && (
           <Button
             variant="ghost"
@@ -173,20 +199,16 @@ export function RunSheetSection({
 
       {/* Rows */}
       {!collapsed && !isEmpty && (
-        <div
-          className={cn(
-            "pt-2",
-            sectionKey === "Lydprøver" && "space-y-2",
-            sectionKey === "Event" && "space-y-2"
-          )}
-        >
+        <div className="pt-2 space-y-2">
           {groups.map((group, i) => (
             <RunSheetRowCard
               key={group.primary.id}
               group={group}
               index={startIndex + i}
               sectionKey={sectionKey}
+              sectionPrefix={sectionPrefix}
               slotTypeLabel={group.primary.slot_type ? slotTypeMap.get(group.primary.slot_type)?.label : undefined}
+              isNow={nowSlotId === group.primary.id}
               onEdit={onEdit}
               onDelete={onDelete}
             />

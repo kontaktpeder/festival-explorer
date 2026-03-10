@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff, FileText } from "lucide-react";
+import { getSceneColor } from "@/lib/runsheet-scene-colors";
 
 interface RunSheetMetaBadgesProps {
   stageLabel?: string | null;
@@ -33,6 +34,7 @@ export function RunSheetMetaBadges({
   const isPublic = visibility === "public";
   const showVisibility = !!visibility;
   const showStatus = !!internalStatus;
+  const sceneColor = getSceneColor(stageLabel);
 
   // Nothing to render
   if (!stageLabel && !slotTypeLabel && !showStatus && !showVisibility && !hasContract && !isParallel) {
@@ -42,7 +44,12 @@ export function RunSheetMetaBadges({
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
       {stageLabel && (
-        <span className="text-[10px] px-2 py-0.5 rounded-full border border-border/40 bg-muted/40 text-muted-foreground font-medium">
+        <span className={cn(
+          "text-[10px] px-2 py-0.5 rounded-full border font-semibold uppercase tracking-wider",
+          sceneColor
+            ? `${sceneColor.bg} ${sceneColor.text} ${sceneColor.border}`
+            : "border-border/40 bg-muted/40 text-muted-foreground"
+        )}>
           {stageLabel}
         </span>
       )}
