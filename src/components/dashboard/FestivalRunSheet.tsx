@@ -32,7 +32,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { cn, isoToLocalDatetimeString } from "@/lib/utils";
-import { Plus, ClipboardList, ChevronDown } from "lucide-react";
+import { Plus, ClipboardList, ChevronDown, Printer } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
