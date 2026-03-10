@@ -484,8 +484,9 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
                   onAddToSection={handleAddToSection}
                   onRenameSection={handleRenameSection}
                   onDeleteSection={handleDeleteSection}
-                  onShiftSectionTime={handleShiftSectionTime}
-                />
+                   onShiftSectionTime={handleShiftSectionTime}
+                   onTimeChange={handleSingleTimeChange}
+                 />
               );
             });
           })()}
