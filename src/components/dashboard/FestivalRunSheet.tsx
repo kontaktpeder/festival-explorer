@@ -49,7 +49,7 @@ import { RunSheetSection } from "./runsheet/RunSheetSection";
 import { RunSheetPrintView } from "./runsheet/RunSheetPrintView";
 import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
 import { useEventRunSheetDefault, useEventSceneOptions } from "@/hooks/useEventRunSheetDefault";
-import { getSectionForSlot } from "@/lib/runsheet-sections";
+import { RunSheetPrintView } from "./runsheet/RunSheetPrintView";
 
 interface FestivalRunSheetProps {
   festivalId: string;
