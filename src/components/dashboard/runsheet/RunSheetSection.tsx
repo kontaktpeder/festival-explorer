@@ -30,11 +30,6 @@ interface RunSheetSectionProps {
     sectionKey: RunSheetSectionKey,
     slotsInSection: ExtendedEventProgramSlot[]
   ) => void;
-  onShiftSectionTime?: (
-    sectionKey: RunSheetSectionKey,
-    slots: ExtendedEventProgramSlot[],
-    deltaMs: number
-  ) => void;
   onTimeChange?: (slotId: string, startsAt: string, endsAt: string | null) => void;
 }
 
