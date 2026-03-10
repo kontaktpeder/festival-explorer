@@ -746,6 +746,7 @@ function RunSheetEditDialog({ slot, festivalId, suggestedSequenceNumber, open, o
             <div className="space-y-1.5">
               <Label className="text-xs">Varighet (min)</Label>
               <Input type="number" placeholder="—" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} className="h-9" />
+              <p className="text-[10px] text-muted-foreground">Beregnes fra start/slutt</p>
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Løpenummer</Label>
