@@ -232,6 +232,9 @@ function CueBlock({ block }: { block: PrintBlock }) {
       {/* Items */}
       {block.items.map((item, i) => {
         const Icon = KIND_ICONS[item.kind] || Music;
+        const isMulti = block.items.length > 1;
+        const itemTime = fmtTime(item.startsAt);
+        const itemEnd = item.endsAt ? fmtTime(item.endsAt) : null;
         return (
           <div
             key={i}
@@ -244,8 +247,16 @@ function CueBlock({ block }: { block: PrintBlock }) {
               style={{ marginTop: 4, flexShrink: 0 }}
             />
             <div style={{ flex: 1 }}>
-              <div style={item.isCanceled ? S.itemNameCanceled : S.itemName}>
-                {item.name}
+              <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                <div style={item.isCanceled ? S.itemNameCanceled : S.itemName}>
+                  {item.name}
+                </div>
+                {/* Show individual time per item when parallel or for clarity */}
+                {isMulti && (
+                  <span style={{ fontSize: "11pt", fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color: "#888", whiteSpace: "nowrap" }}>
+                    {itemTime}{itemEnd && itemEnd !== itemTime ? `–${itemEnd}` : ""}
+                  </span>
+                )}
               </div>
               {item.scene && (
                 <div style={S.itemScene}>{item.scene}</div>
