@@ -158,6 +158,13 @@ export default function FestivalRoom() {
       hidden: !canAccessEvents,
     },
     {
+      title: "Kjøreplan",
+      description: "Produksjonskjøreplan og tidslinje",
+      icon: ClipboardList,
+      to: `/dashboard/festival/${id}/run-sheet`,
+      hidden: !canAccessEvents,
+    },
+    {
       title: "Scan billetter",
       description: "Innsjekk og billettkontroll",
       icon: QrCode,
