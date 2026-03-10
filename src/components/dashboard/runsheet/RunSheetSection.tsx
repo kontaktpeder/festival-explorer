@@ -57,10 +57,10 @@ function groupParallelSlots(slots: ExtendedEventProgramSlot[]): ParallelGroup[] 
   }
 
   groups.sort((a, b) => {
-    const ta = new Date(a.primary.starts_at).getTime();
-    const tb = new Date(b.primary.starts_at).getTime();
-    if (ta !== tb) return ta - tb;
-    return (a.primary.sequence_number ?? 0) - (b.primary.sequence_number ?? 0);
+    const sa = a.primary.sequence_number ?? Infinity;
+    const sb = b.primary.sequence_number ?? Infinity;
+    if (sa !== sb) return sa - sb;
+    return new Date(a.primary.starts_at).getTime() - new Date(b.primary.starts_at).getTime();
   });
 
   return groups;
