@@ -358,6 +358,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
         <RunSheetEditDialog
           festivalId={festivalId}
           slot={editingSlot}
+          suggestedSequenceNumber={nextSequenceNumber}
           open={dialogOpen}
           onOpenChange={(open) => {
             setDialogOpen(open);
