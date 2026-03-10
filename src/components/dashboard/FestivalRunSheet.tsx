@@ -94,6 +94,19 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     },
   });
 
+  // Fetch festival venue_id for scene dropdown fallback
+  const { data: festivalVenueId } = useQuery({
+    queryKey: ["festival-venue-id", festivalId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("festivals")
+        .select("venue_id")
+        .eq("id", festivalId)
+        .single();
+      return data?.venue_id ?? null;
+    },
+  });
+
   // Prosjekter + personas fra alle kilder via felles hook
   const { data: allSubjects = [] } = useFestivalSubjects(festivalId);
   const festivalEntities = useMemo(
@@ -479,6 +492,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       {editingSlot && (
         <RunSheetEditDialog
           festivalId={festivalId}
+          festivalVenueId={festivalVenueId ?? null}
           slot={editingSlot}
           suggestedSequenceNumber={nextSequenceNumber}
           open={dialogOpen}
@@ -519,6 +533,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
 interface RunSheetEditDialogProps {
   slot: ExtendedEventProgramSlot;
   festivalId: string;
+  festivalVenueId: string | null;
   suggestedSequenceNumber: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -539,7 +554,7 @@ interface FestivalEvent {
   scene_name: string | null;
 }
 
-function RunSheetEditDialog({ slot, festivalId, suggestedSequenceNumber, open, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
+function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequenceNumber, open, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
   const { toast } = useToast();
   const isLydprøve = slot.slot_kind === "soundcheck" ||
     (slot.visibility === "internal" && (slot.title_override ?? "").toUpperCase().includes("LYDPRØVE"));
@@ -650,9 +665,9 @@ function RunSheetEditDialog({ slot, festivalId, suggestedSequenceNumber, open, o
   // Run sheet defaults for the selected event
   const { default: runSheetDefault } = useEventRunSheetDefault(eventId || null);
 
-  // Scene options: from defaults or event's venue
+  // Scene options: from defaults, event's venue, or festival's venue as fallback
   const selectedEvent = festivalEvents?.find((e) => e.id === eventId);
-  const venueIdForScenes = runSheetDefault?.venue_id ?? selectedEvent?.venue?.id ?? null;
+  const venueIdForScenes = runSheetDefault?.venue_id ?? selectedEvent?.venue?.id ?? festivalVenueId ?? null;
   const sceneIdsFromDefault = runSheetDefault?.scene_ids?.length ? runSheetDefault.scene_ids : null;
   const { data: sceneOptions = [] } = useEventSceneOptions(venueIdForScenes, sceneIdsFromDefault);
 
