@@ -94,18 +94,19 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     },
   });
 
-  // Fetch festival venue_id for scene dropdown fallback
-  const { data: festivalVenueId } = useQuery({
-    queryKey: ["festival-venue-id", festivalId],
+  // Fetch festival info for venue + print header
+  const { data: festivalInfo } = useQuery({
+    queryKey: ["festival-info-runsheet", festivalId],
     queryFn: async () => {
       const { data } = await supabase
         .from("festivals")
-        .select("venue_id")
+        .select("venue_id, name, start_at")
         .eq("id", festivalId)
         .single();
-      return data?.venue_id ?? null;
+      return data;
     },
   });
+  const festivalVenueId = festivalInfo?.venue_id ?? null;
 
   // Prosjekter + personas fra alle kilder via felles hook
   const { data: allSubjects = [] } = useFestivalSubjects(festivalId);
