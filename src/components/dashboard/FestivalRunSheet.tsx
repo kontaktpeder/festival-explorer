@@ -228,14 +228,37 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     return map;
   }, [data?.types]);
 
-  /* Group into the three fixed sections */
-  const sectionsWithSlots = useMemo(() => {
+  /* Collect unique scene labels for filter */
+  const sceneLabels = useMemo(() => {
     const allSlots = data?.slots ?? [];
+    const labels = new Set<string>();
+    allSlots.forEach((s) => { if (s.stage_label) labels.add(s.stage_label); });
+    return Array.from(labels).sort();
+  }, [data?.slots]);
+
+  /* Group into the fixed sections, applying scene filter */
+  const sectionsWithSlots = useMemo(() => {
+    let allSlots = data?.slots ?? [];
+    if (sceneFilter) {
+      allSlots = allSlots.filter((s) => s.stage_label === sceneFilter);
+    }
     const grouped = groupSlotsBySection(allSlots);
     return RUNSHEET_SECTION_KEYS.map((key) => ({
       sectionKey: key,
       slots: grouped[key],
     }));
+  }, [data?.slots, sceneFilter]);
+
+  /* NOW marker – find the slot that's currently active */
+  const nowSlotId = useMemo(() => {
+    const allSlots = data?.slots ?? [];
+    const now = Date.now();
+    for (const s of allSlots) {
+      const start = new Date(s.starts_at).getTime();
+      const end = s.ends_at ? new Date(s.ends_at).getTime() : (s.duration_minutes ? start + s.duration_minutes * 60000 : start + 15 * 60000);
+      if (now >= start && now < end) return s.id;
+    }
+    return null;
   }, [data?.slots]);
 
   const nextSequenceNumber = useMemo(() => {
