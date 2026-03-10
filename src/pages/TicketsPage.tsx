@@ -255,16 +255,6 @@ export default function TicketsPage() {
           </div>
         )}
 
-        {/* Boiler Room only */}
-        {boilerOnly.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              BOILER ROOM
-            </h2>
-            <p className="text-xs text-muted-foreground/50">Begrenset kapasitet.</p>
-            {boilerOnly.map(renderTicketCard)}
-          </div>
-        )}
 
         {/* Trust */}
         <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/40 pt-2">
