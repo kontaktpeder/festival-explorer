@@ -35,6 +35,7 @@ interface RunSheetSectionProps {
     slots: ExtendedEventProgramSlot[],
     deltaMs: number
   ) => void;
+  onTimeChange?: (slotId: string, startsAt: string, endsAt: string | null) => void;
 }
 
 /** Group slots by parallel_group_id; singletons become groups of 1 */
