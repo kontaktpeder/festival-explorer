@@ -8,6 +8,8 @@ import {
   Mic,
   Headphones,
   Wrench,
+  Users,
+  SquarePen,
   type LucideIcon,
 } from "lucide-react";
 import type { SlotKind } from "@/types/database";
@@ -21,11 +23,13 @@ export const SLOT_KIND_OPTIONS: {
   { value: "boiler", label: "Boiler Room", icon: Radio },
   { value: "soundcheck", label: "Lydprøve", icon: Headphones },
   { value: "rigging", label: "Opprigg", icon: Wrench },
+  { value: "crew", label: "Crew", icon: Users },
   { value: "break", label: "Pause", icon: Coffee },
   { value: "giggen_info", label: "Hva er GIGGEN", icon: Info },
   { value: "doors", label: "Dører", icon: DoorOpen },
   { value: "closing", label: "Stenging", icon: DoorClosed },
   { value: "stage_talk", label: "Snakk fra scenen", icon: Mic },
+  { value: "custom", label: "Egendefinert", icon: SquarePen },
 ];
 
 export const INTERNAL_STATUS_OPTIONS: {
@@ -60,11 +64,13 @@ export const SLOT_KIND_FIELDS: Record<SlotKind, SlotFieldKey[]> = {
   boiler: ["event", "time", "duration", "sequence", "title", "scene", "performer", "note", "category", "visibilityStatus", "toggles"],
   soundcheck: ["event", "time", "duration", "sequence", "title", "scene", "performer", "note", "category"],
   rigging: ["event", "time", "duration", "sequence", "title", "scene", "performer", "note", "category"],
+  crew: ["time", "duration", "sequence", "title", "scene", "performer", "note"],
   break: ["time", "duration", "sequence", "title", "scene", "performer", "note"],
   doors: ["time", "sequence", "title", "scene", "performer", "note", "toggles"],
   closing: ["time", "sequence", "title", "scene", "performer", "note", "toggles"],
   stage_talk: ["event", "time", "duration", "sequence", "title", "scene", "performer", "note", "category", "toggles"],
   giggen_info: ["time", "duration", "sequence", "title", "scene", "performer", "note", "toggles"],
+  custom: ["event", "time", "duration", "sequence", "title", "scene", "performer", "note", "category", "visibilityStatus", "toggles"],
 };
 
 export function getFieldsForSlotKind(kind: SlotKind): Set<SlotFieldKey> {

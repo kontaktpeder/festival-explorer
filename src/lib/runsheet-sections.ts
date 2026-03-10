@@ -10,6 +10,7 @@ export function getSectionForSlot(slot: ExtendedEventProgramSlot): RunSheetSecti
   if (
     kind === "soundcheck" ||
     kind === "rigging" ||
+    kind === "crew" ||
     (slot.visibility === "internal" && title.includes("LYDPRØVE"))
   ) return "Lydprøver";
   return "Event";

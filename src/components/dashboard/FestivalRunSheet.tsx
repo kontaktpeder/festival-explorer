@@ -116,7 +116,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   });
 
   const createManualSlot = useMutation({
-    mutationFn: async ({ sectionType, seq }: { sectionType: "opprigg" | "lydprøve" | "event" | "doors" | "closing" | "stage_talk" | "giggen_info" | "break"; seq: number }) => {
+    mutationFn: async ({ sectionType, seq }: { sectionType: "opprigg" | "lydprøve" | "event" | "doors" | "closing" | "stage_talk" | "giggen_info" | "break" | "crew" | "custom"; seq: number }) => {
       const now = new Date();
       const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean }> = {
         opprigg: { slot_kind: "rigging", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false },
@@ -127,6 +127,8 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
         stage_talk: { slot_kind: "stage_talk", title_override: "", visibility: "public", is_visible_public: true },
         giggen_info: { slot_kind: "giggen_info", title_override: "", visibility: "public", is_visible_public: true },
         break: { slot_kind: "break", title_override: "", visibility: "internal", is_visible_public: false },
+        crew: { slot_kind: "crew", title_override: "", visibility: "internal", is_visible_public: false },
+        custom: { slot_kind: "custom", title_override: "", visibility: "public", is_visible_public: true },
       };
       const preset = presets[sectionType];
       const { error } = await supabase
@@ -329,6 +331,12 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "break", seq: nextSequenceNumber })}>
                 Pause
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "crew", seq: nextSequenceNumber })}>
+                Crew
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "custom", seq: nextSequenceNumber })}>
+                Egendefinert
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

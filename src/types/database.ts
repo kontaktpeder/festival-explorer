@@ -379,7 +379,9 @@ export type SlotKind =
   | 'closing'
   | 'stage_talk'
   | 'soundcheck'
-  | 'rigging';
+  | 'rigging'
+  | 'crew'
+  | 'custom';
 
 export type InternalSlotStatus = 'contract_pending' | 'confirmed' | 'canceled';
 
