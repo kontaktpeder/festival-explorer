@@ -640,7 +640,7 @@ function RunSheetEditDialog({ slot, festivalId, suggestedSequenceNumber, open, o
         starts_at: startsAt ? new Date(startsAt).toISOString() : slot.starts_at,
         ends_at: endsAt ? new Date(endsAt).toISOString() : null,
         duration_minutes: durationMinutes ? Number(durationMinutes) : null,
-        sequence_number: sequenceNumber ? Number(sequenceNumber) : null,
+        sequence_number: sequenceNumber ? Number(sequenceNumber) : suggestedSequenceNumber,
         slot_kind: slotKind,
         slot_type: slotType || null,
         internal_status: internalStatus,
