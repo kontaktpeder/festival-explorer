@@ -605,6 +605,15 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
           }}
         />
       )}
+
+      {/* ── Clean print view (hidden on screen, shown on print) ── */}
+      <RunSheetPrintView
+        festivalName={festivalInfo?.name}
+        festivalDate={festivalInfo?.start_at ? format(new Date(festivalInfo.start_at), "d. MMMM yyyy", { locale: nb }) : undefined}
+        venueName={venueName}
+        slots={printSlots}
+        sectionNames={sectionNames}
+      />
     </div>
   );
 }
