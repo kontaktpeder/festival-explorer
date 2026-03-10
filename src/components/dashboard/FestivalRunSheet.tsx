@@ -362,20 +362,11 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     setTimeout(() => window.print(), 100);
   };
 
+  const venueName = (festivalInfo as any)?.venue?.name ?? null;
+
   /* ── Render ── */
   return (
     <div className="space-y-8">
-      {/* Print-only header (visible on paper) */}
-      <div className="hidden print:block runsheet-print-header mb-6">
-        <h1 className="text-xl font-bold tracking-tight text-black uppercase">
-          Kjøreplan {festivalInfo?.name ? `– ${festivalInfo.name}` : ""}
-        </h1>
-        <p className="text-xs text-gray-500 mt-0.5">
-          {festivalInfo?.start_at ? format(new Date(festivalInfo.start_at), "d. MMMM yyyy", { locale: nb }) : ""}
-          {" · "}{slots.length} punkt{slots.length !== 1 ? "er" : ""} · Produksjonsdokument
-        </p>
-      </div>
-
       {/* Document header (screen only) */}
       <div className="flex items-center justify-between print:hidden">
         <div className="flex items-center gap-3">
@@ -392,24 +383,67 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
-            onClick={handleDownloadPdf}
-          >
-            <Download className="h-3.5 w-3.5" />
-            Last ned
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
-            onClick={() => window.print()}
-          >
-            <Printer className="h-3.5 w-3.5" />
-            Skriv ut
-          </Button>
+          {/* Download PDF dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Last ned
+                <ChevronDown className="h-3 w-3 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => { setPrintFilter("all"); setTimeout(handleDownloadPdf, 100); }}>
+                Hele kjøreplanen
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setPrintFilter("lydprover"); setTimeout(handleDownloadPdf, 100); }}>
+                Kun lydprøver
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setPrintFilter("event"); setTimeout(handleDownloadPdf, 100); }}>
+                Kun event
+              </DropdownMenuItem>
+              {sceneLabels.map((label) => (
+                <DropdownMenuItem key={label} onClick={() => { setPrintFilter(label); setTimeout(handleDownloadPdf, 100); }}>
+                  Kun {label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Print dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
+              >
+                <Printer className="h-3.5 w-3.5" />
+                Skriv ut
+                <ChevronDown className="h-3 w-3 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => triggerPrint("all")}>
+                Hele kjøreplanen
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => triggerPrint("lydprover")}>
+                Kun lydprøver
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => triggerPrint("event")}>
+                Kun event
+              </DropdownMenuItem>
+              {sceneLabels.map((label) => (
+                <DropdownMenuItem key={label} onClick={() => triggerPrint(label)}>
+                  Kun {label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
