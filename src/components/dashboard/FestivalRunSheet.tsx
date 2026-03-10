@@ -137,7 +137,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
           starts_at: now.toISOString(),
           ends_at: null,
           duration_minutes: null,
-          sequence_number: null,
+          sequence_number: nextSequenceNumber,
           slot_kind: preset.slot_kind,
           slot_type: null,
           source: "manual",
