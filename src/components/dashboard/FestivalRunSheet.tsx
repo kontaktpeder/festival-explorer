@@ -240,6 +240,12 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
 
   const { slots, types } = data;
 
+  const nextSequenceNumber = useMemo(() => {
+    if (!slots.length) return 1;
+    const max = Math.max(...slots.map((s) => s.sequence_number ?? 0), 0);
+    return max + 1;
+  }, [slots]);
+
   const openEdit = (slot: ExtendedEventProgramSlot) => {
     setEditingSlot(slot);
     setDialogOpen(true);
