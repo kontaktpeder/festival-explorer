@@ -1092,6 +1092,79 @@ export default function AdminTicketsDashboard() {
               </Table>
             </CardContent>
           </Card>
+
+          {/* Fullt register over kjøpte billetter */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Alle kjøpte billetter</CardTitle>
+              <CardDescription>
+                Full oversikt per billett: navn, type og pris. Viser alle som ikke er kansellert/refundert/chargeback.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {stats?.purchasedTickets && stats.purchasedTickets.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Kode</TableHead>
+                        <TableHead>Navn</TableHead>
+                        <TableHead>E‑post</TableHead>
+                        <TableHead>Billettype</TableHead>
+                        {showRevenue && <TableHead>Pris</TableHead>}
+                        <TableHead>Status</TableHead>
+                        <TableHead>Tidspunkt</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {stats.purchasedTickets.map((ticket) => {
+                        const priceNok = (ticket.ticket_types?.price_nok || 0) / 100;
+                        return (
+                          <TableRow key={ticket.id}>
+                            <TableCell className="font-mono text-xs">
+                              {ticket.ticket_code}
+                            </TableCell>
+                            <TableCell>
+                              <p className="font-medium">
+                                {ticket.buyer_name || "Ukjent kjøper"}
+                              </p>
+                            </TableCell>
+                            <TableCell>
+                              {ticket.buyer_email || "—"}
+                            </TableCell>
+                            <TableCell>
+                              {ticket.ticket_types?.name || "Ukjent type"}
+                            </TableCell>
+                            {showRevenue && (
+                              <TableCell>
+                                {priceNok > 0 ? formatCurrency(priceNok) : "0 kr"}
+                              </TableCell>
+                            )}
+                            <TableCell>
+                              <Badge variant="secondary">
+                                {ticket.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {ticket.created_at
+                                ? format(new Date(ticket.created_at), "dd.MM.yyyy HH:mm", {
+                                    locale: nb,
+                                  })
+                                : "—"}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Ingen kjøpte billetter funnet ennå.
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* ISSUES TAB */}
