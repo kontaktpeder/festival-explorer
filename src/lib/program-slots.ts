@@ -61,10 +61,10 @@ export const SLOT_KIND_FIELDS: Record<SlotKind, SlotFieldKey[]> = {
   soundcheck: ["event", "time", "duration", "sequence", "title", "scene", "performer", "note", "category"],
   rigging: ["event", "time", "duration", "sequence", "title", "scene", "performer", "note", "category"],
   break: ["time", "duration", "sequence", "title", "scene", "performer", "note"],
-  doors: ["time", "sequence", "title", "scene", "performer", "note", "visibilityStatus", "toggles"],
-  closing: ["time", "sequence", "title", "scene", "performer", "note", "visibilityStatus", "toggles"],
-  stage_talk: ["event", "time", "duration", "sequence", "title", "scene", "performer", "note", "category", "visibilityStatus", "toggles"],
-  giggen_info: ["time", "duration", "sequence", "title", "scene", "performer", "note", "visibilityStatus", "toggles"],
+  doors: ["time", "sequence", "title", "scene", "performer", "note", "toggles"],
+  closing: ["time", "sequence", "title", "scene", "performer", "note", "toggles"],
+  stage_talk: ["event", "time", "duration", "sequence", "title", "scene", "performer", "note", "category", "toggles"],
+  giggen_info: ["time", "duration", "sequence", "title", "scene", "performer", "note", "toggles"],
 };
 
 export function getFieldsForSlotKind(kind: SlotKind): Set<SlotFieldKey> {
