@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { ChevronDown, ChevronRight, Plus, Pencil, Trash2, Clock } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
 import type { RunSheetSectionKey } from "@/lib/runsheet-sections";
