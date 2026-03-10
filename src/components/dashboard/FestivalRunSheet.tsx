@@ -492,6 +492,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       {editingSlot && (
         <RunSheetEditDialog
           festivalId={festivalId}
+          festivalVenueId={festivalVenueId ?? null}
           slot={editingSlot}
           suggestedSequenceNumber={nextSequenceNumber}
           open={dialogOpen}
