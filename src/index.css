@@ -624,7 +624,7 @@
 
 /* ── Run Sheet Print Styles ── */
 @media print {
-  /* Hide shell header + bottom nav */
+  /* Hide everything except the print document */
   .backstage-header,
   nav,
   [data-bottom-nav] {
@@ -634,78 +634,42 @@
   body {
     background: white !important;
     color: black !important;
-    font-size: 11pt !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-  }
-
-  /* Print header styling */
-  .runsheet-print-header {
-    border-bottom: 2px solid #222;
-    padding-bottom: 8px;
-  }
-
-  .runsheet-print {
+    margin: 0;
     padding: 0;
   }
 
-  .runsheet-print .runsheet-section {
-    break-inside: avoid;
+  /* Hide the screen-only card-based runsheet */
+  .runsheet-print {
+    display: none !important;
+  }
+
+  /* Show the clean print document */
+  .runsheet-print-doc {
+    display: block !important;
+  }
+
+  /* Hide all screen-only UI */
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Page margins */
+  @page {
+    margin: 15mm 12mm;
+    size: A4 portrait;
+  }
+
+  /* Prevent section breaks */
+  .runsheet-print-doc table {
+    page-break-inside: auto;
+  }
+  .runsheet-print-doc tr {
     page-break-inside: avoid;
-  }
-
-  .runsheet-print .runsheet-section + .runsheet-section {
-    margin-top: 1.5rem;
-  }
-
-  .runsheet-print [data-print-section] {
-    box-shadow: none;
-    border-color: #bbb;
-  }
-
-  /* Don't split a row across pages */
-  .runsheet-print [data-print-section] > div:last-child > div {
     break-inside: avoid;
-    page-break-inside: avoid;
   }
-
-  /* Force visible borders on cards */
-  .runsheet-print .rounded-xl {
-    border: 1px solid #ccc !important;
-    box-shadow: none !important;
-    background: white !important;
-  }
-
-  /* Make time text bolder */
-  .runsheet-print .font-mono {
-    color: black !important;
-  }
-
-  /* Make sequence numbers visible */
-  .runsheet-print .tabular-nums.select-none {
-    color: #999 !important;
-  }
-
-  /* Make slot kind labels darker */
-  .runsheet-print .uppercase.tracking-wider {
-    color: #444 !important;
-  }
-
-  /* Internal notes */
-  .runsheet-print .italic {
-    color: #666 !important;
-  }
-
-  /* Badges should be readable */
-  .runsheet-print .rounded-full {
-    border: 1px solid #aaa !important;
-    background: #f5f5f5 !important;
-    color: #333 !important;
-  }
-
-  /* Section header – strong line */
-  .runsheet-print button[type="button"] .tracking-\[0\.2em\] {
-    color: #222 !important;
-    font-size: 12pt !important;
+  .runsheet-print-doc thead {
+    display: table-header-group;
   }
 }
