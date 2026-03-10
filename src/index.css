@@ -624,6 +624,16 @@
 
 /* ── Run Sheet Print Styles ── */
 @media print {
+  /* Hide shell header (back, logo, external link) */
+  .backstage-header {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
   .runsheet-print {
     padding: 0;
   }
@@ -637,5 +647,11 @@
   .runsheet-print [data-print-section] {
     box-shadow: none;
     border-color: #ccc;
+  }
+
+  /* Don't split a row across pages */
+  .runsheet-print [data-print-section] > div:last-child > div {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }

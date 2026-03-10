@@ -153,7 +153,7 @@ export function RunSheetRowCard({ group, index, sectionKey, slotTypeLabel, onEdi
         </div>
 
         {/* ── Actions ── */}
-        <div className="w-[48px] shrink-0 flex flex-col items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="w-[48px] shrink-0 flex flex-col items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
           <Button
             variant="ghost"
             size="icon"
