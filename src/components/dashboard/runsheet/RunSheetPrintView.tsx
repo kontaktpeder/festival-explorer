@@ -8,12 +8,9 @@ import {
 } from "lucide-react";
 import type { ExtendedEventProgramSlot } from "@/types/program-slots";
 import { getPerformerDisplay } from "@/lib/program-performers";
-import {
-  type RunSheetSectionKey,
-  RUNSHEET_SECTION_KEYS,
-  groupSlotsBySection,
-} from "@/lib/runsheet-sections";
+import { groupSlotsBySection } from "@/lib/runsheet-sections";
 
+/* ── Icon map ── */
 const KIND_ICONS: Record<string, LucideIcon> = {
   concert: Music, boiler: Radio, soundcheck: Headphones,
   rigging: Wrench, crew: Users, break: Coffee,
@@ -21,10 +18,19 @@ const KIND_ICONS: Record<string, LucideIcon> = {
   stage_talk: Mic, custom: SquarePen,
 };
 
-interface TimeGroup {
+/* ── Types ── */
+interface PrintBlock {
   time: string;
   timeEnd: string | null;
-  items: { scene: string | null; name: string; kind: string; note: string | null; isCanceled: boolean }[];
+  items: PrintItem[];
+}
+
+interface PrintItem {
+  name: string;
+  scene: string | null;
+  kind: string;
+  note: string | null;
+  isCanceled: boolean;
 }
 
 interface RunSheetPrintViewProps {
@@ -35,11 +41,12 @@ interface RunSheetPrintViewProps {
   sectionNames: Record<string, string>;
 }
 
+/* ── Helpers ── */
 function fmtTime(iso: string) {
   return format(new Date(iso), "HH:mm");
 }
 
-function toItem(s: ExtendedEventProgramSlot) {
+function toItem(s: ExtendedEventProgramSlot): PrintItem {
   const perf = getPerformerDisplay(s);
   const name = perf.name !== "Ukjent prosjekt" && perf.name !== "TBA"
     ? perf.name
@@ -47,8 +54,7 @@ function toItem(s: ExtendedEventProgramSlot) {
   return { scene: s.stage_label, name, kind: s.slot_kind, note: s.internal_note, isCanceled: s.is_canceled };
 }
 
-/** Group slots by start time so parallels are merged */
-function groupByTime(slots: ExtendedEventProgramSlot[]): TimeGroup[] {
+function groupByTime(slots: ExtendedEventProgramSlot[]): PrintBlock[] {
   const sorted = [...slots].sort((a, b) => {
     const sa = a.sequence_number ?? Infinity;
     const sb = b.sequence_number ?? Infinity;
@@ -56,12 +62,11 @@ function groupByTime(slots: ExtendedEventProgramSlot[]): TimeGroup[] {
     return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
   });
 
-  const groups: TimeGroup[] = [];
-  let current: TimeGroup | null = null;
+  const blocks: PrintBlock[] = [];
+  let current: PrintBlock | null = null;
 
   for (const s of sorted) {
     const t = fmtTime(s.starts_at);
-    // Merge into current group if same time OR same parallel_group_id
     if (current && (current.time === t || (s.parallel_group_id && current.items.length > 0))) {
       current.items.push(toItem(s));
       if (s.ends_at && (!current.timeEnd || new Date(s.ends_at) > new Date(current.timeEnd))) {
@@ -69,153 +74,184 @@ function groupByTime(slots: ExtendedEventProgramSlot[]): TimeGroup[] {
       }
     } else {
       current = { time: t, timeEnd: s.ends_at, items: [toItem(s)] };
-      groups.push(current);
+      blocks.push(current);
     }
   }
-
-  return groups;
+  return blocks;
 }
 
-export function RunSheetPrintView({
-  festivalName, festivalDate, venueName, slots, sectionNames,
-}: RunSheetPrintViewProps) {
-  const grouped = useMemo(() => groupSlotsBySection(slots), [slots]);
-  const lydGroups = useMemo(() => groupByTime(grouped["Lydprøver"]), [grouped]);
-  const eventGroups = useMemo(() => groupByTime(grouped["Event"]), [grouped]);
+/* ── Inline styles (print-only, no Tailwind) ── */
+const S = {
+  page: {
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+    color: "#111",
+    background: "#fff",
+  } as React.CSSProperties,
 
-  const s = {
-    page: { fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif", color: "#111", background: "#fff" } as React.CSSProperties,
-    header: { borderBottom: "3px solid #111", paddingBottom: 10, marginBottom: 28 } as React.CSSProperties,
-    title: { fontSize: "22pt", fontWeight: 800, letterSpacing: "0.04em", textTransform: "uppercase" as const, lineHeight: 1.1 } as React.CSSProperties,
-    sub: { fontSize: "10pt", color: "#555", marginTop: 4 } as React.CSSProperties,
-    meta: { fontSize: "8pt", color: "#999", marginTop: 2, textTransform: "uppercase" as const, letterSpacing: "0.1em" } as React.CSSProperties,
-    sectionTitle: { fontSize: "11pt", fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase" as const, color: "#222", borderBottom: "2px solid #333", paddingBottom: 3, marginBottom: 14 } as React.CSSProperties,
-    footer: { borderTop: "1px solid #ccc", paddingTop: 8, marginTop: 24, fontSize: "7pt", color: "#aaa", display: "flex", justifyContent: "space-between" } as React.CSSProperties,
-  };
+  header: {
+    marginBottom: 48,
+    paddingBottom: 20,
+    borderBottom: "3px solid #111",
+  } as React.CSSProperties,
+
+  title: {
+    fontSize: "32pt",
+    fontWeight: 800,
+    letterSpacing: "0.03em",
+    textTransform: "uppercase" as const,
+    lineHeight: 1.1,
+  } as React.CSSProperties,
+
+  subtitle: {
+    fontSize: "13pt",
+    color: "#555",
+    marginTop: 8,
+  } as React.CSSProperties,
+
+  meta: {
+    fontSize: "9pt",
+    color: "#999",
+    marginTop: 6,
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.12em",
+  } as React.CSSProperties,
+
+  sectionWrap: {
+    marginBottom: 56,
+  } as React.CSSProperties,
+
+  sectionTitle: {
+    fontSize: "20pt",
+    fontWeight: 800,
+    letterSpacing: "0.12em",
+    textTransform: "uppercase" as const,
+    color: "#222",
+    borderBottom: "2px solid #333",
+    paddingBottom: 6,
+    marginBottom: 32,
+  } as React.CSSProperties,
+
+  block: {
+    border: "1.5px solid #ddd",
+    borderRadius: 10,
+    padding: "22px 26px",
+    marginBottom: 20,
+    breakInside: "avoid" as const,
+    pageBreakInside: "avoid" as const,
+    background: "#fff",
+  } as React.CSSProperties,
+
+  blockTime: {
+    fontSize: "24pt",
+    fontWeight: 700,
+    fontFamily: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace",
+    color: "#111",
+    lineHeight: 1,
+  } as React.CSSProperties,
+
+  blockTimeEnd: {
+    fontSize: "12pt",
+    fontWeight: 400,
+    color: "#999",
+    marginLeft: 8,
+  } as React.CSSProperties,
+
+  itemRow: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 12,
+    marginTop: 14,
+  } as React.CSSProperties,
+
+  itemName: {
+    fontSize: "22pt",
+    fontWeight: 700,
+    color: "#111",
+    lineHeight: 1.15,
+  } as React.CSSProperties,
+
+  itemNameCanceled: {
+    fontSize: "22pt",
+    fontWeight: 700,
+    color: "#bbb",
+    lineHeight: 1.15,
+    textDecoration: "line-through",
+  } as React.CSSProperties,
+
+  itemScene: {
+    fontSize: "11pt",
+    fontWeight: 700,
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.06em",
+    color: "#666",
+    marginTop: 4,
+  } as React.CSSProperties,
+
+  itemNote: {
+    fontSize: "11pt",
+    color: "#888",
+    fontStyle: "italic" as const,
+    marginTop: 6,
+    lineHeight: 1.3,
+  } as React.CSSProperties,
+
+  itemSep: {
+    borderTop: "1px solid #eee",
+    marginTop: 16,
+    paddingTop: 16,
+  } as React.CSSProperties,
+
+  footer: {
+    borderTop: "1px solid #ccc",
+    paddingTop: 10,
+    marginTop: 40,
+    fontSize: "8pt",
+    color: "#aaa",
+    display: "flex",
+    justifyContent: "space-between",
+  } as React.CSSProperties,
+};
+
+/* ── Components ── */
+
+function CueBlock({ block }: { block: PrintBlock }) {
+  const endStr = block.timeEnd ? fmtTime(block.timeEnd) : null;
 
   return (
-    <div className="runsheet-print-doc hidden print:block" style={s.page}>
-      {/* Header */}
-      <div style={s.header}>
-        <div style={s.title}>{festivalName || "Kjøreplan"}</div>
-        {(venueName || festivalDate) && (
-          <div style={s.sub}>{[venueName, festivalDate].filter(Boolean).join(" · ")}</div>
+    <div style={S.block}>
+      {/* Time */}
+      <div>
+        <span style={S.blockTime}>{block.time}</span>
+        {endStr && endStr !== block.time && (
+          <span style={S.blockTimeEnd}>– {endStr}</span>
         )}
-        <div style={s.meta}>
-          Produksjonskjøreplan · {slots.length} punkt{slots.length !== 1 ? "er" : ""}
-        </div>
       </div>
 
-      {/* Lydprøver – compact table */}
-      {lydGroups.length > 0 && (
-        <div style={{ marginBottom: 28, breakInside: "avoid" }}>
-          <div style={s.sectionTitle}>{sectionNames["Lydprøver"] || "Lydprøver"}</div>
-          <LydproverTable groups={lydGroups} />
-        </div>
-      )}
-
-      {/* Event – timeline */}
-      {eventGroups.length > 0 && (
-        <div style={{ marginBottom: 28 }}>
-          <div style={s.sectionTitle}>{sectionNames["Event"] || "Event"}</div>
-          <EventTimeline groups={eventGroups} />
-        </div>
-      )}
-
-      {/* Footer */}
-      <div style={s.footer}>
-        <span>Generert {format(new Date(), "d. MMM yyyy, HH:mm", { locale: nb })}</span>
-        <span>GIGGEN · Produksjonsdokument</span>
-      </div>
-    </div>
-  );
-}
-
-/** Lydprøver as compact rows – scene + artist per line */
-function LydproverTable({ groups }: { groups: TimeGroup[] }) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      {groups.map((g, i) => (
-        <div key={i} style={{
-          display: "flex", alignItems: "baseline", gap: 0,
-          borderBottom: "1px solid #eee", padding: "5px 0",
-        }}>
-          <span style={{ width: 55, fontSize: "11pt", fontWeight: 700, fontFamily: "monospace", color: "#111", flexShrink: 0 }}>
-            {g.time}
-          </span>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 1 }}>
-            {g.items.map((item, j) => (
-              <div key={j} style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                <span style={{ width: 50, fontSize: "8pt", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#777", flexShrink: 0 }}>
-                  {item.scene || "–"}
-                </span>
-                <span style={{ fontSize: "11pt", fontWeight: 600, color: "#222" }}>
-                  {item.name}
-                </span>
-                {item.note && (
-                  <span style={{ fontSize: "8pt", color: "#999", fontStyle: "italic", marginLeft: "auto" }}>
-                    {item.note}
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/** Event section as a visual timeline */
-function EventTimeline({ groups }: { groups: TimeGroup[] }) {
-  return (
-    <div style={{ position: "relative", paddingLeft: 72 }}>
-      {/* Vertical timeline line */}
-      <div style={{
-        position: "absolute", left: 54, top: 0, bottom: 0,
-        width: 2, background: "#ddd",
-      }} />
-
-      {groups.map((g, i) => {
-        const isMulti = g.items.length > 1;
+      {/* Items */}
+      {block.items.map((item, i) => {
+        const Icon = KIND_ICONS[item.kind] || Music;
         return (
-          <div key={i} style={{
-            position: "relative", marginBottom: isMulti ? 18 : 12,
-            breakInside: "avoid", pageBreakInside: "avoid",
-          }}>
-            {/* Time dot */}
-            <div style={{
-              position: "absolute", left: -72 + 50, top: 8,
-              width: 10, height: 10, borderRadius: "50%",
-              background: "#333", border: "2px solid #fff",
-              boxShadow: "0 0 0 1px #ccc",
-            }} />
-
-            {/* Time label */}
-            <div style={{
-              position: "absolute", left: -72, top: 0, width: 48,
-              fontSize: "14pt", fontWeight: 700, fontFamily: "monospace",
-              color: "#111", textAlign: "right",
-            }}>
-              {g.time}
-            </div>
-
-            {/* Content */}
-            {isMulti ? (
-              <div style={{
-                border: "1px solid #ddd", borderRadius: 6,
-                padding: "10px 14px", background: "#fafafa",
-              }}>
-                {g.items.map((item, j) => (
-                  <TimelineItem key={j} item={item}
-                    borderBottom={j < g.items.length - 1}
-                    large={false}
-                  />
-                ))}
+          <div
+            key={i}
+            style={i > 0 ? { ...S.itemRow, ...S.itemSep } : S.itemRow}
+          >
+            <Icon
+              size={22}
+              color="#666"
+              strokeWidth={2}
+              style={{ marginTop: 4, flexShrink: 0 }}
+            />
+            <div style={{ flex: 1 }}>
+              <div style={item.isCanceled ? S.itemNameCanceled : S.itemName}>
+                {item.name}
               </div>
-            ) : (
-              <TimelineItem item={g.items[0]} borderBottom={false} large />
-            )}
+              {item.scene && (
+                <div style={S.itemScene}>{item.scene}</div>
+              )}
+              {item.note && (
+                <div style={S.itemNote}>{item.note}</div>
+              )}
+            </div>
           </div>
         );
       })}
@@ -223,54 +259,56 @@ function EventTimeline({ groups }: { groups: TimeGroup[] }) {
   );
 }
 
-function TimelineItem({ item, borderBottom, large }: {
-  item: TimeGroup["items"][number];
-  borderBottom: boolean;
-  large: boolean;
-}) {
-  const Icon = KIND_ICONS[item.kind] || Music;
-  const isCritical = ["doors", "closing", "break"].includes(item.kind);
+export function RunSheetPrintView({
+  festivalName, festivalDate, venueName, slots, sectionNames,
+}: RunSheetPrintViewProps) {
+  const grouped = useMemo(() => groupSlotsBySection(slots), [slots]);
+  const lydBlocks = useMemo(() => groupByTime(grouped["Lydprøver"]), [grouped]);
+  const eventBlocks = useMemo(() => groupByTime(grouped["Event"]), [grouped]);
 
   return (
-    <div style={{
-      display: "flex", alignItems: "flex-start", gap: 8,
-      paddingBottom: borderBottom ? 8 : 0,
-      marginBottom: borderBottom ? 8 : 0,
-      borderBottom: borderBottom ? "1px solid #eee" : "none",
-    }}>
-      <Icon size={large ? 16 : 14} color={isCritical ? "#555" : "#888"} strokeWidth={2} style={{ marginTop: 3, flexShrink: 0 }} />
-
-      <div style={{ flex: 1 }}>
-        {/* Artist name – the hero */}
-        <div style={{
-          fontSize: large ? "15pt" : "12pt",
-          fontWeight: 700,
-          color: item.isCanceled ? "#bbb" : "#111",
-          textDecoration: item.isCanceled ? "line-through" : "none",
-          lineHeight: 1.2,
-        }}>
-          {item.name}
-        </div>
-
-        {/* Scene + note on same line */}
-        {(item.scene || item.note) && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
-            {item.scene && (
-              <span style={{
-                fontSize: "8pt", fontWeight: 700,
-                textTransform: "uppercase", letterSpacing: "0.06em",
-                color: "#666",
-              }}>
-                {item.scene}
-              </span>
-            )}
-            {item.note && (
-              <span style={{ fontSize: "8.5pt", color: "#999", fontStyle: "italic" }}>
-                {item.note}
-              </span>
-            )}
+    <div className="runsheet-print-doc hidden print:block" style={S.page}>
+      {/* Header */}
+      <div style={S.header}>
+        <div style={S.title}>{festivalName || "Kjøreplan"}</div>
+        {(venueName || festivalDate) && (
+          <div style={S.subtitle}>
+            {[venueName, festivalDate].filter(Boolean).join(" · ")}
           </div>
         )}
+        <div style={S.meta}>
+          Produksjonskjøreplan · {slots.length} punkt{slots.length !== 1 ? "er" : ""}
+        </div>
+      </div>
+
+      {/* Lydprøver */}
+      {lydBlocks.length > 0 && (
+        <div style={S.sectionWrap}>
+          <div style={S.sectionTitle}>
+            {sectionNames["Lydprøver"] || "Lydprøver"}
+          </div>
+          {lydBlocks.map((b, i) => (
+            <CueBlock key={i} block={b} />
+          ))}
+        </div>
+      )}
+
+      {/* Event */}
+      {eventBlocks.length > 0 && (
+        <div style={S.sectionWrap}>
+          <div style={S.sectionTitle}>
+            {sectionNames["Event"] || "Event"}
+          </div>
+          {eventBlocks.map((b, i) => (
+            <CueBlock key={i} block={b} />
+          ))}
+        </div>
+      )}
+
+      {/* Footer */}
+      <div style={S.footer}>
+        <span>Generert {format(new Date(), "d. MMM yyyy, HH:mm", { locale: nb })}</span>
+        <span>GIGGEN · Produksjonsdokument</span>
       </div>
     </div>
   );
