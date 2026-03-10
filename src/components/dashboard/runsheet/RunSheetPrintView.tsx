@@ -88,6 +88,7 @@ const S = {
     fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
     color: "#111",
     background: "#fff",
+    padding: "20px 36px",
   } as React.CSSProperties,
 
   header: {
