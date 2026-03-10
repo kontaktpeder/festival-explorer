@@ -100,13 +100,14 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     queryFn: async () => {
       const { data } = await supabase
         .from("festivals")
-        .select("venue_id, name, start_at")
+        .select("venue_id, name, start_at, venue:venues!festivals_venue_id_fkey(name)")
         .eq("id", festivalId)
         .single();
       return data;
     },
   });
   const festivalVenueId = festivalInfo?.venue_id ?? null;
+  const [printFilter, setPrintFilter] = useState<"all" | "lydprover" | "event" | string>("all");
 
   // Prosjekter + personas fra alle kilder via felles hook
   const { data: allSubjects = [] } = useFestivalSubjects(festivalId);
