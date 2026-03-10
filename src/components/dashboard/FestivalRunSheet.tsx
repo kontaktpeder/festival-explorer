@@ -32,7 +32,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { cn, isoToLocalDatetimeString } from "@/lib/utils";
-import { Plus, ClipboardList, ChevronDown, Printer, Filter } from "lucide-react";
+import { Plus, ClipboardList, ChevronDown, Printer, Filter, Download } from "lucide-react";
 import { getSceneColor } from "@/lib/runsheet-scene-colors";
 import {
   DropdownMenu,
@@ -94,18 +94,19 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     },
   });
 
-  // Fetch festival venue_id for scene dropdown fallback
-  const { data: festivalVenueId } = useQuery({
-    queryKey: ["festival-venue-id", festivalId],
+  // Fetch festival info for venue + print header
+  const { data: festivalInfo } = useQuery({
+    queryKey: ["festival-info-runsheet", festivalId],
     queryFn: async () => {
       const { data } = await supabase
         .from("festivals")
-        .select("venue_id")
+        .select("venue_id, name, start_at")
         .eq("id", festivalId)
         .single();
-      return data?.venue_id ?? null;
+      return data;
     },
   });
+  const festivalVenueId = festivalInfo?.venue_id ?? null;
 
   // Prosjekter + personas fra alle kilder via felles hook
   const { data: allSubjects = [] } = useFestivalSubjects(festivalId);
@@ -311,10 +312,51 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     setEditingSlot(null);
   };
 
+  const handleDownloadPdf = async () => {
+    const el = document.querySelector(".runsheet-print") as HTMLElement | null;
+    if (!el) return;
+    toast({ title: "Genererer PDF..." });
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const pdfW = 210; // A4 mm
+      const pdfH = (canvas.height * pdfW) / canvas.width;
+      const pdf = new jsPDF({ orientation: pdfH > 297 ? "portrait" : "portrait", unit: "mm", format: "a4" });
+      const pageH = 297;
+      let yOffset = 0;
+      while (yOffset < pdfH) {
+        if (yOffset > 0) pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, -yOffset, pdfW, pdfH);
+        yOffset += pageH;
+      }
+      const name = festivalInfo?.name ? `Kjøreplan – ${festivalInfo.name}.pdf` : "Kjøreplan.pdf";
+      pdf.save(name);
+    } catch (e: any) {
+      toast({ title: "Feil", description: e.message, variant: "destructive" });
+    }
+  };
+
   /* ── Render ── */
   return (
     <div className="space-y-8">
-      {/* Document header */}
+      {/* Print-only header (visible on paper) */}
+      <div className="hidden print:block runsheet-print-header mb-6">
+        <h1 className="text-xl font-bold tracking-tight text-black uppercase">
+          Kjøreplan {festivalInfo?.name ? `– ${festivalInfo.name}` : ""}
+        </h1>
+        <p className="text-xs text-gray-500 mt-0.5">
+          {festivalInfo?.start_at ? format(new Date(festivalInfo.start_at), "d. MMMM yyyy", { locale: nb }) : ""}
+          {" · "}{slots.length} punkt{slots.length !== 1 ? "er" : ""} · Produksjonsdokument
+        </p>
+      </div>
+
+      {/* Document header (screen only) */}
       <div className="flex items-center justify-between print:hidden">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-lg bg-muted/60 flex items-center justify-center">
@@ -330,6 +372,15 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
+            onClick={handleDownloadPdf}
+          >
+            <Download className="h-3.5 w-3.5" />
+            Last ned
+          </Button>
           <Button
             variant="outline"
             size="sm"
