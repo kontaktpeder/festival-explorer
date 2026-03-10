@@ -149,7 +149,7 @@ export function RunSheetSection({
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 shrink-0 text-muted-foreground/40 hover:text-foreground hover:bg-muted/70"
+            className="h-9 w-9 shrink-0 text-muted-foreground/40 hover:text-foreground hover:bg-muted/70 print:hidden"
             onClick={() => onAddToSection(sectionKey)}
             title={`Ny rad i ${shownName}`}
           >
