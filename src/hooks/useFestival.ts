@@ -82,9 +82,12 @@ export function useFestivalDetails(festivalId: string | null | undefined) {
           ? supabase.from("event_entities").select(`*, entity:entities(*)`).in("event_id", eventIds).order("billing_order", { ascending: true })
           : Promise.resolve({ data: [], error: null }),
         supabase.from("festival_participants").select("*").eq("festival_id", festivalId).in("zone", ["backstage", "host"]).order("zone", { ascending: true }).order("sort_order", { ascending: true }),
+        // Fetch event-level slots
         eventIds.length > 0
           ? supabase.from("event_program_slots").select(`event_id, starts_at, ends_at, slot_kind, title_override, performer_kind, performer_name_override, performer_entity:entities!event_program_slots_performer_entity_id_fkey(id, name, slug, is_published), performer_persona:personas!event_program_slots_performer_persona_id_fkey(id, name, slug, is_public), entity:entities!event_program_slots_entity_id_fkey(id, name, slug)`).in("event_id", eventIds).eq("is_visible_public", true).eq("is_canceled", false).order("starts_at", { ascending: true })
           : Promise.resolve({ data: [], error: null }),
+        // Fetch festival-level slots (no event_id)
+        supabase.from("event_program_slots").select(`event_id, festival_id, starts_at, ends_at, slot_kind, title_override, performer_kind, performer_name_override, stage_label, performer_entity:entities!event_program_slots_performer_entity_id_fkey(id, name, slug, is_published), performer_persona:personas!event_program_slots_performer_persona_id_fkey(id, name, slug, is_public), entity:entities!event_program_slots_entity_id_fkey(id, name, slug)`).eq("festival_id", festivalId).is("event_id", null).eq("is_visible_public", true).eq("is_canceled", false).order("starts_at", { ascending: true }),
       ]);
 
       const allParticipants = participantsResult.data || [];
