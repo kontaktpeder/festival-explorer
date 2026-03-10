@@ -312,10 +312,51 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     setEditingSlot(null);
   };
 
+  const handleDownloadPdf = async () => {
+    const el = document.querySelector(".runsheet-print") as HTMLElement | null;
+    if (!el) return;
+    toast({ title: "Genererer PDF..." });
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const pdfW = 210; // A4 mm
+      const pdfH = (canvas.height * pdfW) / canvas.width;
+      const pdf = new jsPDF({ orientation: pdfH > 297 ? "portrait" : "portrait", unit: "mm", format: "a4" });
+      const pageH = 297;
+      let yOffset = 0;
+      while (yOffset < pdfH) {
+        if (yOffset > 0) pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, -yOffset, pdfW, pdfH);
+        yOffset += pageH;
+      }
+      const name = festivalInfo?.name ? `Kjøreplan – ${festivalInfo.name}.pdf` : "Kjøreplan.pdf";
+      pdf.save(name);
+    } catch (e: any) {
+      toast({ title: "Feil", description: e.message, variant: "destructive" });
+    }
+  };
+
   /* ── Render ── */
   return (
     <div className="space-y-8">
-      {/* Document header */}
+      {/* Print-only header (visible on paper) */}
+      <div className="hidden print:block runsheet-print-header mb-6">
+        <h1 className="text-xl font-bold tracking-tight text-black uppercase">
+          Kjøreplan {festivalInfo?.name ? `– ${festivalInfo.name}` : ""}
+        </h1>
+        <p className="text-xs text-gray-500 mt-0.5">
+          {festivalInfo?.start_at ? format(new Date(festivalInfo.start_at), "d. MMMM yyyy", { locale: nb }) : ""}
+          {" · "}{slots.length} punkt{slots.length !== 1 ? "er" : ""} · Produksjonsdokument
+        </p>
+      </div>
+
+      {/* Document header (screen only) */}
       <div className="flex items-center justify-between print:hidden">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-lg bg-muted/60 flex items-center justify-center">
@@ -331,6 +372,15 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
+            onClick={handleDownloadPdf}
+          >
+            <Download className="h-3.5 w-3.5" />
+            Last ned
+          </Button>
           <Button
             variant="outline"
             size="sm"
