@@ -115,7 +115,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   });
 
   const createManualSlot = useMutation({
-    mutationFn: async (sectionType: "opprigg" | "lydprøve" | "event" | "doors" | "closing" | "stage_talk" | "giggen_info" | "break") => {
+    mutationFn: async ({ sectionType, seq }: { sectionType: "opprigg" | "lydprøve" | "event" | "doors" | "closing" | "stage_talk" | "giggen_info" | "break"; seq: number }) => {
       const now = new Date();
       const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean }> = {
         opprigg: { slot_kind: "rigging", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false },
