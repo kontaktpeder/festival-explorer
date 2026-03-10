@@ -176,36 +176,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       toast({ title: "Feil", description: e.message, variant: "destructive" }),
   });
 
-  /** Bulk shift all slots in a section by deltaMs */
-  const shiftSectionTime = useMutation({
-    mutationFn: async (args: { slots: ExtendedEventProgramSlot[]; deltaMs: number }) => {
-      const updates = args.slots.map((s) => {
-        const newStart = new Date(new Date(s.starts_at).getTime() + args.deltaMs).toISOString();
-        const newEnd = s.ends_at ? new Date(new Date(s.ends_at).getTime() + args.deltaMs).toISOString() : null;
-        return supabase
-          .from("event_program_slots" as any)
-          .update({ starts_at: newStart, ...(newEnd ? { ends_at: newEnd } : {}) })
-          .eq("id", s.id);
-      });
-      const results = await Promise.all(updates);
-      const err = results.find((r) => r.error);
-      if (err?.error) throw err.error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
-      toast({ title: "Tidspunkter oppdatert" });
-    },
-    onError: (e: Error) =>
-      toast({ title: "Feil", description: e.message, variant: "destructive" }),
-  });
 
-  const handleShiftSectionTime = (
-    _sectionKey: RunSheetSectionKey,
-    slotsToShift: ExtendedEventProgramSlot[],
-    deltaMs: number
-  ) => {
-    shiftSectionTime.mutate({ slots: slotsToShift, deltaMs });
-  };
 
   const handleSingleTimeChange = (slotId: string, startsAt: string, endsAt: string | null) => {
     updateSlot.mutate({ id: slotId, starts_at: startsAt, ...(endsAt !== undefined ? { ends_at: endsAt } : {}) } as any);
