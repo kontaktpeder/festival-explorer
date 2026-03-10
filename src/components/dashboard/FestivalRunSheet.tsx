@@ -46,8 +46,10 @@ import { nb } from "date-fns/locale";
 import { usePersonaSearch } from "@/hooks/usePersonaSearch";
 import { FestivalMediaPickerDialog } from "./FestivalMediaPickerDialog";
 import { RunSheetSection } from "./runsheet/RunSheetSection";
+import { RunSheetPrintView } from "./runsheet/RunSheetPrintView";
 import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
 import { useEventRunSheetDefault, useEventSceneOptions } from "@/hooks/useEventRunSheetDefault";
+import { getSectionForSlot } from "@/lib/runsheet-sections";
 
 interface FestivalRunSheetProps {
   festivalId: string;
