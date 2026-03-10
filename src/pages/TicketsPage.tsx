@@ -99,7 +99,6 @@ export default function TicketsPage() {
 
   const festivalPassCodes = ["EARLYBIRD", "ORDINAR", "FESTIVALPASS_BOILER"];
   const festivalPasses = (ticketTypes || []).filter((t) => festivalPassCodes.includes(t.code));
-  const boilerOnly = (ticketTypes || []).filter((t) => t.code === "BOILER");
 
   const renderPurchaseForm = () => (
     <div className="ticket-card rounded-lg mt-2 animate-fade-in">
@@ -141,7 +140,8 @@ export default function TicketsPage() {
   const renderTicketCard = (type: TicketTypeWithCount) => {
     const soldOut = type.issued >= type.capacity;
     const remaining = type.capacity - type.issued;
-    const showRemaining = type.code !== "BOILER" && !soldOut && remaining <= 20;
+    const limitedCapacity = type.code === "FESTIVALPASS_BOILER";
+    const showRemaining = !soldOut && remaining <= 20 && !limitedCapacity;
     const meta = getTicketMeta(type.code);
     const isSelected = selectedType === type.id;
 
@@ -179,6 +179,8 @@ export default function TicketsPage() {
                 )}
                 {soldOut ? (
                   <p className="text-xs font-semibold text-destructive">Utsolgt</p>
+                ) : limitedCapacity ? (
+                  <p className="text-xs font-semibold text-accent">Begrenset kapasitet</p>
                 ) : showRemaining ? (
                   <p className="text-xs font-semibold text-accent">{remaining} igjen</p>
                 ) : null}
@@ -253,16 +255,6 @@ export default function TicketsPage() {
           </div>
         )}
 
-        {/* Boiler Room only */}
-        {boilerOnly.length > 0 && (
-          <div className="space-y-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              BOILER ROOM
-            </h2>
-            <p className="text-xs text-muted-foreground/50">Begrenset kapasitet.</p>
-            {boilerOnly.map(renderTicketCard)}
-          </div>
-        )}
 
         {/* Trust */}
         <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/40 pt-2">
