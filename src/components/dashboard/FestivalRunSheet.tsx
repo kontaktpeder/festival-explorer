@@ -290,6 +290,15 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     return max + 1;
   }, [data?.slots]);
 
+  /* ── Print-filtered slots ── */
+  const printSlots = useMemo(() => {
+    const allSlots = data?.slots ?? [];
+    if (printFilter === "all") return allSlots;
+    if (printFilter === "lydprover") return allSlots.filter((s) => getSectionForSlot(s) === "Lydprøver");
+    if (printFilter === "event") return allSlots.filter((s) => getSectionForSlot(s) === "Event");
+    return allSlots.filter((s) => s.stage_label === printFilter);
+  }, [data?.slots, printFilter]);
+
   if (isLoading || !data) {
     return <LoadingState message="Laster kjøreplan..." />;
   }
@@ -313,16 +322,6 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     setDialogOpen(false);
     setEditingSlot(null);
   };
-
-  /* ── Print-filtered slots ── */
-  const printSlots = useMemo(() => {
-    const allSlots = data?.slots ?? [];
-    if (printFilter === "all") return allSlots;
-    if (printFilter === "lydprover") return allSlots.filter((s) => getSectionForSlot(s) === "Lydprøver");
-    if (printFilter === "event") return allSlots.filter((s) => getSectionForSlot(s) === "Event");
-    // Scene filter
-    return allSlots.filter((s) => s.stage_label === printFilter);
-  }, [data?.slots, printFilter]);
 
   const handleDownloadPdf = async () => {
     const el = document.querySelector(".runsheet-print-doc") as HTMLElement | null;
