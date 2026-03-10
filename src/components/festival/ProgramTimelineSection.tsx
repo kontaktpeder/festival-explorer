@@ -12,9 +12,21 @@ interface EventForProgram {
   hero_image_url?: string | null;
 }
 
+interface FestivalSlotItem {
+  starts_at: string;
+  ends_at?: string | null;
+  name: string | null;
+  slug: string | null;
+  slot_kind?: string;
+  title_override?: string | null;
+  performer_kind?: string;
+  stage_label?: string | null;
+}
+
 interface ProgramTimelineSectionProps {
   events: EventForProgram[];
   slots: ProgramSlotItem[];
+  festivalSlots?: FestivalSlotItem[];
 }
 
 function formatTime(iso: string) {
@@ -105,7 +117,55 @@ function EventColumn({
   );
 }
 
-export function ProgramTimelineSection({ events, slots }: ProgramTimelineSectionProps) {
+function FestivalSlotRow({ slot }: { slot: FestivalSlotItem }) {
+  const hasTitle = !!slot.title_override?.trim();
+  const performerName = slot.name ?? "TBA";
+  const isPersona = slot.performer_kind === "persona";
+  const linkBase = isPersona ? "/p/" : "/project/";
+  const displayName = hasTitle ? slot.title_override : performerName;
+
+  return (
+    <div className="flex items-baseline gap-3 py-1.5 border-b border-foreground/5 last:border-0">
+      <span className="text-xs text-muted-foreground font-mono tabular-nums w-12 flex-shrink-0">
+        {formatTime(slot.starts_at)}
+      </span>
+      {slot.stage_label && (
+        <span className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wider flex-shrink-0">
+          {slot.stage_label}
+        </span>
+      )}
+      <span className="text-sm font-semibold text-foreground/80 truncate min-w-0">
+        {hasTitle && slot.name ? (
+          <>
+            {slot.title_override}
+            <span className="font-normal text-muted-foreground"> med </span>
+            {slot.slug ? (
+              <Link
+                to={`${linkBase}${slot.slug}`}
+                className="text-accent hover:underline underline-offset-2"
+              >
+                {performerName}
+              </Link>
+            ) : (
+              performerName
+            )}
+          </>
+        ) : slot.slug ? (
+          <Link
+            to={`${linkBase}${slot.slug}`}
+            className="text-foreground/80 hover:text-accent transition-colors"
+          >
+            {displayName}
+          </Link>
+        ) : (
+          displayName
+        )}
+      </span>
+    </div>
+  );
+}
+
+export function ProgramTimelineSection({ events, slots, festivalSlots = [] }: ProgramTimelineSectionProps) {
   const slotsByEventId = useMemo(() => {
     const m: Record<string, ProgramSlotItem[]> = {};
     slots.forEach((s) => {
@@ -115,7 +175,10 @@ export function ProgramTimelineSection({ events, slots }: ProgramTimelineSection
     return m;
   }, [slots]);
 
-  if (events.length === 0) return null;
+  const hasEvents = events.length > 0;
+  const hasFestivalSlots = festivalSlots.length > 0;
+
+  if (!hasEvents && !hasFestivalSlots) return null;
 
   return (
     <section className="relative bg-background py-16 md:py-24 px-6" id="program">
@@ -123,24 +186,38 @@ export function ProgramTimelineSection({ events, slots }: ProgramTimelineSection
         <h2 className="text-display text-2xl md:text-3xl font-bold tracking-tight">
           Program
         </h2>
-        <div
-          className={cn(
-            "grid gap-8 md:gap-10",
-            events.length === 1
-              ? "grid-cols-1 max-w-md"
-              : events.length === 2
-                ? "grid-cols-1 md:grid-cols-2"
-                : "grid-cols-1 md:grid-cols-3"
-          )}
-        >
-          {events.map((event) => (
-            <EventColumn
-              key={event.id}
-              event={event}
-              eventSlots={slotsByEventId[event.id] ?? []}
-            />
-          ))}
-        </div>
+
+        {/* Event columns */}
+        {hasEvents && (
+          <div
+            className={cn(
+              "grid gap-8 md:gap-10",
+              events.length === 1
+                ? "grid-cols-1 max-w-md"
+                : events.length === 2
+                  ? "grid-cols-1 md:grid-cols-2"
+                  : "grid-cols-1 md:grid-cols-3"
+            )}
+          >
+            {events.map((event) => (
+              <EventColumn
+                key={event.id}
+                event={event}
+                eventSlots={slotsByEventId[event.id] ?? []}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Festival-level slots (not tied to a specific event) */}
+        {hasFestivalSlots && (
+          <div className="space-y-1 max-w-2xl">
+            {!hasEvents && null}
+            {festivalSlots.map((slot, i) => (
+              <FestivalSlotRow key={i} slot={slot} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
