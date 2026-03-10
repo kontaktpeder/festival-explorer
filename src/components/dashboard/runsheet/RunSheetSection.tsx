@@ -314,6 +314,7 @@ export function RunSheetSection({
               isNow={nowSlotId === group.primary.id}
               onEdit={onEdit}
               onDelete={onDelete}
+              onTimeChange={onTimeChange}
             />
           ))}
         </div>
