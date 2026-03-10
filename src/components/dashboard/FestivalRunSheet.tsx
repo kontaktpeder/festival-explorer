@@ -2,7 +2,8 @@ import { useMemo, useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ExtendedEventProgramSlot, ProgramSlotType, PerformerKind } from "@/types/program-slots";
-import { INTERNAL_STATUS_OPTIONS, SLOT_KIND_OPTIONS } from "@/lib/program-slots";
+import { INTERNAL_STATUS_OPTIONS, SLOT_KIND_OPTIONS, getFieldsForSlotKind } from "@/lib/program-slots";
+import type { SlotKind } from "@/types/database";
 import {
   type RunSheetSectionKey,
   RUNSHEET_SECTION_KEYS,
@@ -702,6 +703,11 @@ function RunSheetEditDialog({ slot, festivalId, suggestedSequenceNumber, open, o
     return found?.name || null;
   }, [performerPersonaId, slot.performer_persona, personaResults]);
 
+  const showFields = useMemo(
+    () => getFieldsForSlotKind(slotKind as SlotKind),
+    [slotKind]
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
@@ -709,8 +715,23 @@ function RunSheetEditDialog({ slot, festivalId, suggestedSequenceNumber, open, o
           <DialogTitle>Rediger rad</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2 max-h-[65vh] overflow-y-auto">
+          {/* Type – always shown, controls which fields appear */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold">Type</Label>
+            <Select value={slotKind} onValueChange={setSlotKind}>
+              <SelectTrigger className="h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SLOT_KIND_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Event selector */}
-          {festivalEvents && festivalEvents.length > 0 && (
+          {showFields.has("event") && festivalEvents && festivalEvents.length > 0 && (
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold">Koble til event</Label>
               <Select value={eventId || "__none__"} onValueChange={handleEventSelect}>
@@ -731,193 +752,196 @@ function RunSheetEditDialog({ slot, festivalId, suggestedSequenceNumber, open, o
           )}
 
           {/* Time */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Starttid</Label>
-              <Input type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className="h-9 text-base" />
+          {showFields.has("time") && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Starttid</Label>
+                <Input type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className="h-9 text-base" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Sluttid</Label>
+                <Input type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} className="h-9 text-base" />
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Sluttid</Label>
-              <Input type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} className="h-9 text-base" />
-            </div>
-          </div>
+          )}
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Varighet (min)</Label>
-              <Input type="number" placeholder="—" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} className="h-9" />
-              <p className="text-[10px] text-muted-foreground">Beregnes fra start/slutt</p>
+          {(showFields.has("duration") || showFields.has("sequence")) && (
+            <div className="grid grid-cols-2 gap-3">
+              {showFields.has("duration") && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Varighet (min)</Label>
+                  <Input type="number" placeholder="—" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} className="h-9" />
+                  <p className="text-[10px] text-muted-foreground">Beregnes fra start/slutt</p>
+                </div>
+              )}
+              {showFields.has("sequence") && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Løpenummer</Label>
+                  <Input type="number" placeholder="#" value={sequenceNumber} onChange={(e) => setSequenceNumber(e.target.value)} className="h-9" />
+                </div>
+              )}
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Løpenummer</Label>
-              <Input type="number" placeholder="#" value={sequenceNumber} onChange={(e) => setSequenceNumber(e.target.value)} className="h-9" />
-            </div>
-          </div>
+          )}
 
           {/* Content / title */}
-          <div className="space-y-1.5">
-            <Label className="text-xs">Innhold / tittel</Label>
-            <Input placeholder="F.eks. LYDPRØVE 1ETG" value={titleOverride} onChange={(e) => setTitleOverride(e.target.value)} className="h-9 text-sm uppercase" />
-          </div>
-
-          {/* Scene: dropdown when scenes available, otherwise free text */}
-          <div className="space-y-1.5">
-            <Label className="text-xs">Scene / sted</Label>
-            {sceneOptions.length > 0 ? (
-              <Select
-                value={sceneOptions.find((s) => s.name === stageLabel)?.id ?? "__custom__"}
-                onValueChange={(v) => {
-                  if (v === "__custom__") {
-                    setStageLabel("");
-                    return;
-                  }
-                  const scene = sceneOptions.find((s) => s.id === v);
-                  if (scene) setStageLabel(scene.name);
-                }}
-              >
-                <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Velg scene..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {sceneOptions.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                  ))}
-                  <SelectItem value="__custom__">Annet (fritekst)</SelectItem>
-                </SelectContent>
-              </Select>
-            ) : (
-              <Input placeholder="F.eks. 1ETG, FOH" value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm" />
-            )}
-            {sceneOptions.length > 0 && stageLabel && !sceneOptions.find((s) => s.name === stageLabel) && (
-              <Input placeholder="Fritekst scene..." value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm mt-1" />
-            )}
-          </div>
-
-          {/* På scenen – performer type */}
-          <div className="space-y-2 rounded-lg border border-border/20 p-3">
-            <div className="flex items-center justify-between gap-3">
-              <Label className="text-xs font-semibold">På scenen</Label>
-              <Select value={slotKind} onValueChange={setSlotKind}>
-                <SelectTrigger className="h-7 w-[140px] text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SLOT_KIND_OPTIONS.map((o) => (
-                    <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {showFields.has("title") && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Innhold / tittel</Label>
+              <Input placeholder="F.eks. LYDPRØVE 1ETG" value={titleOverride} onChange={(e) => setTitleOverride(e.target.value)} className="h-9 text-sm uppercase" />
             </div>
-            <RadioGroup value={performerKind} onValueChange={handlePerformerKindChange} className="flex gap-4">
-              <div className="flex items-center gap-1.5">
-                <RadioGroupItem value="entity" id="pk-entity" />
-                <Label htmlFor="pk-entity" className="text-xs cursor-pointer">Prosjekt</Label>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <RadioGroupItem value="persona" id="pk-persona" />
-                <Label htmlFor="pk-persona" className="text-xs cursor-pointer">Persona</Label>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <RadioGroupItem value="text" id="pk-text" />
-                <Label htmlFor="pk-text" className="text-xs cursor-pointer">Fri tekst</Label>
-              </div>
-            </RadioGroup>
+          )}
 
-            {performerKind === "entity" && (
-              <div className="space-y-1.5">
+          {/* Scene */}
+          {showFields.has("scene") && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Scene / sted</Label>
+              {sceneOptions.length > 0 ? (
                 <Select
-                  value={performerEntityId || "__none__"}
+                  value={sceneOptions.find((s) => s.name === stageLabel)?.id ?? "__custom__"}
                   onValueChange={(v) => {
-                    const newId = v === "__none__" ? "" : v;
-                    const selected = festivalEntities.find((e) => e.id === newId);
-                    const prevName = getCurrentPerformerName();
-                    setPerformerEntityId(newId);
-                    // Auto-fill title if empty or was previous performer name
-                    if (!titleOverride || titleOverride === prevName) {
-                      setTitleOverride(selected?.name ?? "");
+                    if (v === "__custom__") {
+                      setStageLabel("");
+                      return;
                     }
+                    const scene = sceneOptions.find((s) => s.id === v);
+                    if (scene) setStageLabel(scene.name);
                   }}
                 >
                   <SelectTrigger className="h-9">
-                    <SelectValue placeholder="Velg prosjekt..." />
+                    <SelectValue placeholder="Velg scene..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">Ingen prosjekt</SelectItem>
-                    {festivalEntities.map((e) => (
-                      <SelectItem key={e.id} value={e.id}>
-                        {e.name}
-                      </SelectItem>
+                    {sceneOptions.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                     ))}
+                    <SelectItem value="__custom__">Annet (fritekst)</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-            )}
+              ) : (
+                <Input placeholder="F.eks. 1ETG, FOH" value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm" />
+              )}
+              {sceneOptions.length > 0 && stageLabel && !sceneOptions.find((s) => s.name === stageLabel) && (
+                <Input placeholder="Fritekst scene..." value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm mt-1" />
+              )}
+            </div>
+          )}
 
-            {performerKind === "persona" && (
-              <div className="space-y-1.5">
-                <Input
-                  placeholder="Søk persona..."
-                  value={personaQuery}
-                  onChange={(e) => setPersonaQuery(e.target.value)}
-                  className="h-9 text-sm"
-                />
-                {selectedPersonaName && (
-                  <p className="text-xs text-accent font-medium">
-                    Valgt: {selectedPersonaName}
-                  </p>
-                )}
-                {personaResults.length > 0 && (
-                  <div className="max-h-32 overflow-y-auto border border-border/20 rounded-md">
-                    {personaResults.map((p) => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        className={cn(
-                          "w-full text-left px-3 py-1.5 text-sm hover:bg-muted/50 transition-colors",
-                          p.id === performerPersonaId && "bg-accent/10 font-medium"
-                        )}
-                        onClick={() => {
-                          const prevName = getCurrentPerformerName();
-                          setPerformerPersonaId(p.id);
-                          setPersonaQuery("");
-                          // Auto-fill title if empty or was previous performer name
-                          if (!titleOverride || titleOverride === prevName) {
-                            setTitleOverride(p.name);
-                          }
-                        }}
-                      >
-                        {p.name}
-                        {p.category_tags?.length ? (
-                          <span className="text-[10px] text-muted-foreground ml-2">
-                            {p.category_tags.slice(0, 2).join(", ")}
-                          </span>
-                        ) : null}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+          {/* På scenen – performer */}
+          {showFields.has("performer") && (
+            <div className="space-y-2 rounded-lg border border-border/20 p-3">
+              <Label className="text-xs font-semibold">På scenen</Label>
+              <RadioGroup value={performerKind} onValueChange={handlePerformerKindChange} className="flex gap-4">
+                <div className="flex items-center gap-1.5">
+                  <RadioGroupItem value="entity" id="pk-entity" />
+                  <Label htmlFor="pk-entity" className="text-xs cursor-pointer">Prosjekt</Label>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <RadioGroupItem value="persona" id="pk-persona" />
+                  <Label htmlFor="pk-persona" className="text-xs cursor-pointer">Persona</Label>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <RadioGroupItem value="text" id="pk-text" />
+                  <Label htmlFor="pk-text" className="text-xs cursor-pointer">Fri tekst</Label>
+                </div>
+              </RadioGroup>
 
-            {performerKind === "text" && (
-              <div className="space-y-1.5">
-                <Input
-                  placeholder="Navn på scenen"
-                  value={nameOverride}
-                  onChange={(e) => setNameOverride(e.target.value)}
-                  className="h-9 text-sm"
-                />
-              </div>
-            )}
-          </div>
+              {performerKind === "entity" && (
+                <div className="space-y-1.5">
+                  <Select
+                    value={performerEntityId || "__none__"}
+                    onValueChange={(v) => {
+                      const newId = v === "__none__" ? "" : v;
+                      const selected = festivalEntities.find((e) => e.id === newId);
+                      const prevName = getCurrentPerformerName();
+                      setPerformerEntityId(newId);
+                      if (!titleOverride || titleOverride === prevName) {
+                        setTitleOverride(selected?.name ?? "");
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Velg prosjekt..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">Ingen prosjekt</SelectItem>
+                      {festivalEntities.map((e) => (
+                        <SelectItem key={e.id} value={e.id}>
+                          {e.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
-          <div className="space-y-1.5">
-            <Label className="text-xs">Kommentar</Label>
-            <Textarea value={internalNote} onChange={(e) => setInternalNote(e.target.value)} placeholder="Interne instrukser..." rows={3} className="text-sm" />
-          </div>
+              {performerKind === "persona" && (
+                <div className="space-y-1.5">
+                  <Input
+                    placeholder="Søk persona..."
+                    value={personaQuery}
+                    onChange={(e) => setPersonaQuery(e.target.value)}
+                    className="h-9 text-sm"
+                  />
+                  {selectedPersonaName && (
+                    <p className="text-xs text-accent font-medium">
+                      Valgt: {selectedPersonaName}
+                    </p>
+                  )}
+                  {personaResults.length > 0 && (
+                    <div className="max-h-32 overflow-y-auto border border-border/20 rounded-md">
+                      {personaResults.map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          className={cn(
+                            "w-full text-left px-3 py-1.5 text-sm hover:bg-muted/50 transition-colors",
+                            p.id === performerPersonaId && "bg-accent/10 font-medium"
+                          )}
+                          onClick={() => {
+                            const prevName = getCurrentPerformerName();
+                            setPerformerPersonaId(p.id);
+                            setPersonaQuery("");
+                            if (!titleOverride || titleOverride === prevName) {
+                              setTitleOverride(p.name);
+                            }
+                          }}
+                        >
+                          {p.name}
+                          {p.category_tags?.length ? (
+                            <span className="text-[10px] text-muted-foreground ml-2">
+                              {p.category_tags.slice(0, 2).join(", ")}
+                            </span>
+                          ) : null}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
-          {/* Kategori, Synlighet, Status */}
-          {types.length > 0 && (
+              {performerKind === "text" && (
+                <div className="space-y-1.5">
+                  <Input
+                    placeholder="Navn på scenen"
+                    value={nameOverride}
+                    onChange={(e) => setNameOverride(e.target.value)}
+                    className="h-9 text-sm"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Kommentar */}
+          {showFields.has("note") && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Kommentar</Label>
+              <Textarea value={internalNote} onChange={(e) => setInternalNote(e.target.value)} placeholder="Interne instrukser..." rows={3} className="text-sm" />
+            </div>
+          )}
+
+          {/* Kategori */}
+          {showFields.has("category") && types.length > 0 && (
             <div className="space-y-1.5">
               <Label className="text-xs">Kategori</Label>
               <Select value={slotType} onValueChange={setSlotType}>
@@ -931,41 +955,46 @@ function RunSheetEditDialog({ slot, festivalId, suggestedSequenceNumber, open, o
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Synlighet</Label>
-              <Select value={visibility} onValueChange={(v) => setVisibility(v as any)}>
-                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="public">Publikum</SelectItem>
-                  <SelectItem value="internal">Intern</SelectItem>
-                </SelectContent>
-              </Select>
+          {/* Synlighet & Status */}
+          {showFields.has("visibilityStatus") && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Synlighet</Label>
+                <Select value={visibility} onValueChange={(v) => setVisibility(v as any)}>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="public">Publikum</SelectItem>
+                    <SelectItem value="internal">Intern</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Status</Label>
+                <Select value={internalStatus} onValueChange={setInternalStatus}>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {INTERNAL_STATUS_OPTIONS.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Status</Label>
-              <Select value={internalStatus} onValueChange={setInternalStatus}>
-                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {INTERNAL_STATUS_OPTIONS.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          )}
 
           {/* Toggles */}
-          <div className="flex items-center justify-between pt-2 border-t border-border/20">
-            <div className="flex items-center gap-2">
-              <Switch id="rs-visible" checked={isVisiblePublic} onCheckedChange={setIsVisiblePublic} />
-              <Label htmlFor="rs-visible" className="text-sm cursor-pointer">Synlig for publikum</Label>
+          {showFields.has("toggles") && (
+            <div className="flex items-center justify-between pt-2 border-t border-border/20">
+              <div className="flex items-center gap-2">
+                <Switch id="rs-visible" checked={isVisiblePublic} onCheckedChange={setIsVisiblePublic} />
+                <Label htmlFor="rs-visible" className="text-sm cursor-pointer">Synlig for publikum</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="rs-canceled" checked={isCanceled} onChange={(e) => setIsCanceled(e.target.checked)} className="h-4 w-4 rounded" />
+                <Label htmlFor="rs-canceled" className="text-sm cursor-pointer">Avlyst</Label>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <input type="checkbox" id="rs-canceled" checked={isCanceled} onChange={(e) => setIsCanceled(e.target.checked)} className="h-4 w-4 rounded" />
-              <Label htmlFor="rs-canceled" className="text-sm cursor-pointer">Avlyst</Label>
-            </div>
-          </div>
+          )}
         </div>
         <DialogFooter className="flex-col sm:flex-row gap-2">
           <button
