@@ -665,9 +665,9 @@ function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequen
   // Run sheet defaults for the selected event
   const { default: runSheetDefault } = useEventRunSheetDefault(eventId || null);
 
-  // Scene options: from defaults or event's venue
+  // Scene options: from defaults, event's venue, or festival's venue as fallback
   const selectedEvent = festivalEvents?.find((e) => e.id === eventId);
-  const venueIdForScenes = runSheetDefault?.venue_id ?? selectedEvent?.venue?.id ?? null;
+  const venueIdForScenes = runSheetDefault?.venue_id ?? selectedEvent?.venue?.id ?? festivalVenueId ?? null;
   const sceneIdsFromDefault = runSheetDefault?.scene_ids?.length ? runSheetDefault.scene_ids : null;
   const { data: sceneOptions = [] } = useEventSceneOptions(venueIdForScenes, sceneIdsFromDefault);
 
