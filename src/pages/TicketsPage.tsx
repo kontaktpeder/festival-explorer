@@ -140,7 +140,8 @@ export default function TicketsPage() {
   const renderTicketCard = (type: TicketTypeWithCount) => {
     const soldOut = type.issued >= type.capacity;
     const remaining = type.capacity - type.issued;
-    const showRemaining = type.code !== "BOILER" && !soldOut && remaining <= 20;
+    const limitedCapacity = type.code === "FESTIVALPASS_BOILER";
+    const showRemaining = !soldOut && remaining <= 20 && !limitedCapacity;
     const meta = getTicketMeta(type.code);
     const isSelected = selectedType === type.id;
 
