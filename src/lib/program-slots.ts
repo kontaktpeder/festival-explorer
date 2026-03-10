@@ -40,3 +40,34 @@ export const INTERNAL_STATUS_OPTIONS: {
 export function getSlotKindConfig(kind: SlotKind) {
   return SLOT_KIND_OPTIONS.find((o) => o.value === kind) ?? SLOT_KIND_OPTIONS[0];
 }
+
+/** Which fields to show in the edit dialog per slot kind */
+export type SlotFieldKey =
+  | "event"
+  | "time"
+  | "duration"
+  | "sequence"
+  | "title"
+  | "scene"
+  | "performer"
+  | "note"
+  | "category"
+  | "visibilityStatus"
+  | "toggles";
+
+export const SLOT_KIND_FIELDS: Record<SlotKind, SlotFieldKey[]> = {
+  concert: ["event", "time", "duration", "sequence", "title", "scene", "performer", "note", "category", "visibilityStatus", "toggles"],
+  boiler: ["event", "time", "duration", "sequence", "title", "scene", "performer", "note", "category", "visibilityStatus", "toggles"],
+  soundcheck: ["time", "duration", "sequence", "title", "scene", "performer", "note"],
+  rigging: ["time", "sequence", "title", "scene", "performer", "note"],
+  break: ["time", "duration", "sequence", "title", "scene", "performer", "note"],
+  doors: ["time", "sequence", "title", "scene", "performer", "note", "visibilityStatus", "toggles"],
+  closing: ["time", "sequence", "title", "scene", "performer", "note", "visibilityStatus", "toggles"],
+  stage_talk: ["event", "time", "duration", "sequence", "title", "scene", "performer", "note", "category", "visibilityStatus", "toggles"],
+  giggen_info: ["time", "duration", "sequence", "title", "scene", "performer", "note", "visibilityStatus", "toggles"],
+};
+
+export function getFieldsForSlotKind(kind: SlotKind): Set<SlotFieldKey> {
+  const list = SLOT_KIND_FIELDS[kind] ?? SLOT_KIND_FIELDS.concert;
+  return new Set(list);
+}
