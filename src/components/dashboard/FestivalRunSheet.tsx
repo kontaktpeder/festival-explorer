@@ -559,10 +559,19 @@ interface FestivalEvent {
   scene_name: string | null;
 }
 
+function getRunSheetSectionFromSlot(kind: string, visibility: string, title?: string | null): RunSheetSectionKey {
+  const upper = (title ?? "").toUpperCase();
+  if (
+    kind === "soundcheck" ||
+    kind === "rigging" ||
+    kind === "crew" ||
+    (visibility === "internal" && upper.includes("LYDPRØVE"))
+  ) return "Lydprøver";
+  return "Event";
+}
+
 function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequenceNumber, open, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
   const { toast } = useToast();
-  const isLydprøve = slot.slot_kind === "soundcheck" ||
-    (slot.visibility === "internal" && (slot.title_override ?? "").toUpperCase().includes("LYDPRØVE"));
   const [eventId, setEventId] = useState(slot.event_id ?? "");
   const [startsAt, setStartsAt] = useState(isoToLocalDatetimeString(slot.starts_at));
   const [endsAt, setEndsAt] = useState(slot.ends_at ? isoToLocalDatetimeString(slot.ends_at) : "");
@@ -574,6 +583,9 @@ function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequen
   const [slotKind, setSlotKind] = useState(slot.slot_kind);
   const [slotType, setSlotType] = useState(slot.slot_type ?? "");
   const [visibility, setVisibility] = useState(slot.visibility);
+  const [editSection, setEditSection] = useState<RunSheetSectionKey>(
+    getRunSheetSectionFromSlot(slot.slot_kind, slot.visibility, slot.title_override)
+  );
   const [internalStatus, setInternalStatus] = useState(slot.internal_status);
   const [isVisiblePublic, setIsVisiblePublic] = useState(slot.is_visible_public);
   const [isCanceled, setIsCanceled] = useState(slot.is_canceled);
@@ -603,7 +615,25 @@ function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequen
     } else {
       setSequenceNumber(String(slot.sequence_number));
     }
-  }, [open, slot?.id, slot?.sequence_number, suggestedSequenceNumber]);
+    setEditSection(getRunSheetSectionFromSlot(slot.slot_kind, slot.visibility, slot.title_override));
+  }, [open, slot?.id, slot?.sequence_number, slot?.slot_kind, slot?.visibility, slot?.title_override, suggestedSequenceNumber]);
+
+  useEffect(() => {
+    setEditSection(getRunSheetSectionFromSlot(slotKind, visibility, titleOverride));
+  }, [slotKind, visibility, titleOverride]);
+
+  const handleSectionChange = (value: RunSheetSectionKey) => {
+    setEditSection(value);
+    if (value === "Lydprøver") {
+      if (!["soundcheck", "rigging", "crew"].includes(slotKind)) setSlotKind("soundcheck");
+      setVisibility("internal");
+      setIsVisiblePublic(false);
+      return;
+    }
+    if (["soundcheck", "rigging", "crew"].includes(slotKind)) setSlotKind("concert");
+    if (visibility === "internal") setVisibility("public");
+    setIsVisiblePublic(true);
+  };
 
   // Helper: get current performer name for auto-title comparison
   const getCurrentPerformerName = (): string => {
@@ -849,6 +879,21 @@ function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequen
           <DialogTitle>Rediger rad</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2 max-h-[65vh] overflow-y-auto">
+          {/* Section */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold">Seksjon</Label>
+            <Select value={editSection} onValueChange={(v) => handleSectionChange(v as RunSheetSectionKey)}>
+              <SelectTrigger className="h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Lydprøver">Lydprøver (L)</SelectItem>
+                <SelectItem value="Event">Event (E)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-[10px] text-muted-foreground">Flytt enkelt mellom L- og E-seksjon uten å endre andre rader.</p>
+          </div>
+
           {/* Type – always shown, controls which fields appear */}
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold">Type</Label>
