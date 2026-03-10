@@ -12,6 +12,7 @@ export type ProgramSlotItem = {
   slot_kind?: string;
   title_override?: string | null;
   performer_kind?: string;
+  stage_label?: string | null;
 };
 
 interface LineupWithTimeSectionProps {
