@@ -94,6 +94,19 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     },
   });
 
+  // Fetch festival venue_id for scene dropdown fallback
+  const { data: festivalVenueId } = useQuery({
+    queryKey: ["festival-venue-id", festivalId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("festivals")
+        .select("venue_id")
+        .eq("id", festivalId)
+        .single();
+      return data?.venue_id ?? null;
+    },
+  });
+
   // Prosjekter + personas fra alle kilder via felles hook
   const { data: allSubjects = [] } = useFestivalSubjects(festivalId);
   const festivalEntities = useMemo(
