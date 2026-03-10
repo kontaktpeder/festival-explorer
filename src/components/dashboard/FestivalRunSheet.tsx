@@ -397,6 +397,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
 interface RunSheetEditDialogProps {
   slot: ExtendedEventProgramSlot;
   festivalId: string;
+  suggestedSequenceNumber: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (updates: Record<string, unknown>) => void;
