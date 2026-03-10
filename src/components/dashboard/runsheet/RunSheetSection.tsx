@@ -136,7 +136,7 @@ export function RunSheetSection({
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 shrink-0 text-muted-foreground/30 hover:text-foreground hover:bg-muted/70"
+            className="h-9 w-9 shrink-0 text-muted-foreground/30 hover:text-foreground hover:bg-muted/70 print:hidden"
             onClick={() => { setEditValue(shownName); setEditing(true); }}
             title="Endre navn"
           >
@@ -149,7 +149,7 @@ export function RunSheetSection({
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 shrink-0 text-muted-foreground/40 hover:text-foreground hover:bg-muted/70"
+            className="h-9 w-9 shrink-0 text-muted-foreground/40 hover:text-foreground hover:bg-muted/70 print:hidden"
             onClick={() => onAddToSection(sectionKey)}
             title={`Ny rad i ${shownName}`}
           >
@@ -162,7 +162,7 @@ export function RunSheetSection({
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 shrink-0 text-destructive/30 hover:text-destructive hover:bg-muted/70"
+            className="h-9 w-9 shrink-0 text-destructive/30 hover:text-destructive hover:bg-muted/70 print:hidden"
             onClick={() => onDeleteSection(sectionKey, slots)}
             title={`Slett ${shownName} (${slots.length} punkt)`}
           >
