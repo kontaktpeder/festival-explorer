@@ -185,12 +185,11 @@ export function useFestivalDetails(festivalId: string | null | undefined) {
       }
 
       // Map program slots – use performer fields when available
-      const festivalProgramSlots = (programSlotsResult.data || []).map((row: any) => {
+      function mapSlotRow(row: any) {
         const performerEntity = row.performer_entity;
         const performerPersona = row.performer_persona;
         const legacyEntity = row.entity;
 
-        // Resolve name based on performer_kind
         let name: string | null = null;
         let slug: string | null = null;
         const kind = row.performer_kind || "entity";
@@ -218,14 +217,19 @@ export function useFestivalDetails(festivalId: string | null | undefined) {
           slot_kind: row.slot_kind,
           title_override: row.title_override ?? null,
           performer_kind: kind,
+          stage_label: row.stage_label ?? null,
         };
-      });
+      }
+
+      const festivalProgramSlots = (programSlotsResult.data || []).map(mapSlotRow);
+      const festivalOnlySlots = (festivalSlotsResult.data || []).map(mapSlotRow);
 
       return {
         festivalEvents: sortedEvents,
         allArtistsWithEventSlug,
         festivalTeam: { backstage: festivalBackstage, hostRoles: festivalHostRoles },
         festivalProgramSlots,
+        festivalOnlySlots,
       };
     },
     enabled: !!festivalId,
