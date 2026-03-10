@@ -296,28 +296,28 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => createManualSlot.mutate("opprigg")}>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "opprigg", seq: nextSequenceNumber })}>
               Opprigg
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate("lydprøve")}>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "lydprøve", seq: nextSequenceNumber })}>
               Lydprøve
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate("event")}>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "event", seq: nextSequenceNumber })}>
               Konsert
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate("doors")}>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "doors", seq: nextSequenceNumber })}>
               Dører
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate("closing")}>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "closing", seq: nextSequenceNumber })}>
               Stenging
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate("stage_talk")}>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "stage_talk", seq: nextSequenceNumber })}>
               Snakk fra scenen
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate("giggen_info")}>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "giggen_info", seq: nextSequenceNumber })}>
               Hva er GIGGEN
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => createManualSlot.mutate("break")}>
+            <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "break", seq: nextSequenceNumber })}>
               Pause
             </DropdownMenuItem>
           </DropdownMenuContent>
