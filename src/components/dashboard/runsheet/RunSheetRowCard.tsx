@@ -2,7 +2,8 @@ import { Link } from "react-router-dom";
 import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
 import type { RunSheetSectionKey } from "@/lib/runsheet-sections";
 import { getPerformerDisplay } from "@/lib/program-performers";
-import { getSlotKindConfig } from "@/lib/program-slots";
+import { getSlotKindConfig, getFieldsForSlotKind } from "@/lib/program-slots";
+import type { SlotKind } from "@/types/database";
 import { cn } from "@/lib/utils";
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,12 +27,10 @@ interface RunSheetRowCardProps {
 export function RunSheetRowCard({ group, index, sectionKey, slotTypeLabel, onEdit, onDelete }: RunSheetRowCardProps) {
   const slot = group.primary;
   const kindConfig = getSlotKindConfig(slot.slot_kind as any);
-  const isLydprøve = slot.slot_kind === "soundcheck" ||
-    (slot.visibility === "internal" && (slot.title_override ?? "").toUpperCase().includes("LYDPRØVE"));
+  const showFields = getFieldsForSlotKind(slot.slot_kind as SlotKind);
   const seqNum = slot.sequence_number ?? (index + 1);
   const isParallel = group.items.length > 1;
 
-  // Full layout for Lydprøver and Event
   return (
     <div
       className={cn(
@@ -70,86 +69,84 @@ export function RunSheetRowCard({ group, index, sectionKey, slotTypeLabel, onEdi
             </div>
           )}
 
-          {/* Performer(s) – show each item's scene + performer */}
-          <div className={cn(
-            "flex gap-2",
-            isParallel ? "flex-row items-center justify-between w-full" : "flex-col"
-          )}>
-            {group.items.map((item, idx) => {
-              const performer = getPerformerDisplay(item);
-              const showPerformer = performer.name !== "Ukjent prosjekt" && performer.name !== "TBA";
-              const itemKind = getSlotKindConfig(item.slot_kind as any);
-              const showItemKind = isParallel && item.slot_kind !== "concert" && item.slot_kind !== slot.slot_kind;
-              return (
-                <div key={item.id} className="flex items-center gap-2">
-                  {/* Divider between parallel items */}
-                  {isParallel && idx > 0 && (
-                    <div className="h-8 w-px bg-border/20 mx-2 shrink-0" />
-                  )}
-                  <div className="flex items-center gap-2 text-xs">
-                    {showItemKind && (
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-amber-500/70 shrink-0">
-                        {itemKind.label}
-                      </span>
+          {/* Performer(s) – only when performer field is configured */}
+          {showFields.has("performer") && (
+            <div className={cn(
+              "flex gap-2",
+              isParallel ? "flex-row items-center justify-between w-full" : "flex-col"
+            )}>
+              {group.items.map((item, idx) => {
+                const performer = getPerformerDisplay(item);
+                const showPerformer = performer.name !== "Ukjent prosjekt" && performer.name !== "TBA";
+                const itemKind = getSlotKindConfig(item.slot_kind as any);
+                const showItemKind = isParallel && item.slot_kind !== "concert" && item.slot_kind !== slot.slot_kind;
+                return (
+                  <div key={item.id} className="flex items-center gap-2">
+                    {isParallel && idx > 0 && (
+                      <div className="h-8 w-px bg-border/20 mx-2 shrink-0" />
                     )}
-                    {item.stage_label && (
-                      <span className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wider shrink-0">
-                        {item.stage_label}
-                      </span>
-                    )}
-                    {item.stage_label && showPerformer && (
-                      <span className="text-muted-foreground/20">·</span>
-                    )}
-                    {showPerformer && (
-                      performer.href ? (
-                        <Link
-                          to={performer.href}
-                          className="text-xs font-medium text-accent hover:underline underline-offset-2 truncate"
-                        >
-                          {performer.name}
-                        </Link>
-                      ) : (
-                        <span className="text-xs font-medium text-foreground/60 truncate">
-                          {performer.name}
+                    <div className="flex items-center gap-2 text-xs">
+                      {showItemKind && (
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-amber-500/70 shrink-0">
+                          {itemKind.label}
                         </span>
-                      )
-                    )}
-                    {isParallel && item.id !== slot.id && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5 text-muted-foreground/30 hover:text-foreground ml-1 shrink-0"
-                        onClick={() => onEdit(item)}
-                        title="Rediger parallell"
-                      >
-                        <Pencil className="h-2.5 w-2.5" />
-                      </Button>
-                    )}
+                      )}
+                      {showFields.has("scene") && item.stage_label && (
+                        <span className="text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wider shrink-0">
+                          {item.stage_label}
+                        </span>
+                      )}
+                      {showFields.has("scene") && item.stage_label && showPerformer && (
+                        <span className="text-muted-foreground/20">·</span>
+                      )}
+                      {showPerformer && (
+                        performer.href ? (
+                          <Link
+                            to={performer.href}
+                            className="text-xs font-medium text-accent hover:underline underline-offset-2 truncate"
+                          >
+                            {performer.name}
+                          </Link>
+                        ) : (
+                          <span className="text-xs font-medium text-foreground/60 truncate">
+                            {performer.name}
+                          </span>
+                        )
+                      )}
+                      {isParallel && item.id !== slot.id && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-5 w-5 text-muted-foreground/30 hover:text-foreground ml-1 shrink-0"
+                          onClick={() => onEdit(item)}
+                          title="Rediger parallell"
+                        >
+                          <Pencil className="h-2.5 w-2.5" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
 
-          {/* Internal note */}
-          {slot.internal_note && (
+          {/* Internal note – only when note field is configured */}
+          {showFields.has("note") && slot.internal_note && (
             <p className="text-[11px] text-muted-foreground/50 leading-relaxed line-clamp-2 italic">
               💬 {slot.internal_note}
             </p>
           )}
 
-          {/* Meta badges – hidden for Opprigg & Lydprøver */}
-          {sectionKey === "Event" && (
-            <RunSheetMetaBadges
-              stageLabel={!isParallel ? slot.stage_label : undefined}
-              visibility={slot.visibility}
-              internalStatus={slot.internal_status}
-              hasContract={!!slot.contract_media_id}
-              slotTypeLabel={slotTypeLabel}
-              isLydprøve={isLydprøve}
-              isParallel={isParallel}
-            />
-          )}
+          {/* Meta badges – driven by field config */}
+          <RunSheetMetaBadges
+            stageLabel={showFields.has("scene") && !isParallel ? slot.stage_label : undefined}
+            visibility={showFields.has("visibilityStatus") ? slot.visibility : undefined}
+            internalStatus={showFields.has("visibilityStatus") ? slot.internal_status : undefined}
+            hasContract={showFields.has("visibilityStatus") && !!slot.contract_media_id}
+            slotTypeLabel={showFields.has("category") ? slotTypeLabel : undefined}
+            isParallel={isParallel}
+          />
         </div>
 
         {/* ── Actions ── */}
