@@ -533,6 +533,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
 interface RunSheetEditDialogProps {
   slot: ExtendedEventProgramSlot;
   festivalId: string;
+  festivalVenueId: string | null;
   suggestedSequenceNumber: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
