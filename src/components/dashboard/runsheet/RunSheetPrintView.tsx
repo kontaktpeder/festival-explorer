@@ -70,13 +70,15 @@ function groupByTime(slots: ExtendedEventProgramSlot[]): PrintBlock[] {
 
   for (const s of sorted) {
     const t = fmtTime(s.starts_at);
-    if (current && (current.time === t || (s.parallel_group_id && current.items.length > 0))) {
+    const sameTime = current && current.time === t;
+    const sameParallel = current && s.parallel_group_id && current.parallelGroupId === s.parallel_group_id;
+    if (current && (sameTime || sameParallel)) {
       current.items.push(toItem(s));
       if (s.ends_at && (!current.timeEnd || new Date(s.ends_at) > new Date(current.timeEnd))) {
         current.timeEnd = s.ends_at;
       }
     } else {
-      current = { time: t, timeEnd: s.ends_at, items: [toItem(s)] };
+      current = { time: t, timeEnd: s.ends_at, parallelGroupId: s.parallel_group_id, items: [toItem(s)] };
       blocks.push(current);
     }
   }
