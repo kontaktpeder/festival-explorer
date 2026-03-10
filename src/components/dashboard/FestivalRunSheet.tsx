@@ -675,7 +675,7 @@ function RunSheetEditDialog({ slot, festivalId, suggestedSequenceNumber, open, o
       starts_at: startsAt ? new Date(startsAt).toISOString() : undefined,
       ends_at: endsAt ? new Date(endsAt).toISOString() : null,
       duration_minutes: durationMinutes ? Number(durationMinutes) : null,
-      sequence_number: sequenceNumber ? Number(sequenceNumber) : null,
+      sequence_number: sequenceNumber ? Number(sequenceNumber) : suggestedSequenceNumber,
       title_override: titleOverride || null,
       stage_label: stageLabel || null,
       internal_note: internalNote || null,
