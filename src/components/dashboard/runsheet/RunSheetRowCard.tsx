@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
 import type { RunSheetSectionKey } from "@/lib/runsheet-sections";
@@ -7,9 +8,15 @@ import type { SlotKind } from "@/types/database";
 import { cn } from "@/lib/utils";
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { RunSheetTimeBlock } from "./RunSheetTimeBlock";
 import { RunSheetMetaBadges } from "./RunSheetMetaBadges";
 import { getSceneColor, isCriticalSlotKind } from "@/lib/runsheet-scene-colors";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export interface ParallelGroup {
   primary: ExtendedEventProgramSlot;
@@ -25,9 +32,10 @@ interface RunSheetRowCardProps {
   isNow?: boolean;
   onEdit: (slot: ExtendedEventProgramSlot) => void;
   onDelete: (slot: ExtendedEventProgramSlot) => void;
+  onTimeChange?: (slotId: string, startsAt: string, endsAt: string | null) => void;
 }
 
-export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotTypeLabel, isNow, onEdit, onDelete }: RunSheetRowCardProps) {
+export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotTypeLabel, isNow, onEdit, onDelete, onTimeChange }: RunSheetRowCardProps) {
   const slot = group.primary;
   const kindConfig = getSlotKindConfig(slot.slot_kind as any);
   const showFields = getFieldsForSlotKind(slot.slot_kind as SlotKind);
@@ -36,21 +44,50 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
   const isCritical = isCriticalSlotKind(slot.slot_kind);
   const sceneColor = !isParallel && showFields.has("scene") ? getSceneColor(slot.stage_label) : null;
 
+  // Inline time editing
+  const [timePopOpen, setTimePopOpen] = useState(false);
+  const toTimeStr = (iso: string) => {
+    const d = new Date(iso);
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  };
+  const [editStart, setEditStart] = useState("");
+  const [editEnd, setEditEnd] = useState("");
+
+  const openTimePop = () => {
+    setEditStart(toTimeStr(slot.starts_at));
+    setEditEnd(slot.ends_at ? toTimeStr(slot.ends_at) : "");
+    setTimePopOpen(true);
+  };
+
+  const commitTime = () => {
+    if (!onTimeChange || !editStart) return;
+    const base = new Date(slot.starts_at);
+    const [sh, sm] = editStart.split(":").map(Number);
+    base.setHours(sh, sm, 0, 0);
+    let endIso: string | null = null;
+    if (editEnd) {
+      const endDate = new Date(slot.ends_at || slot.starts_at);
+      const [eh, em] = editEnd.split(":").map(Number);
+      endDate.setHours(eh, em, 0, 0);
+      if (endDate.getTime() <= base.getTime()) endDate.setDate(endDate.getDate() + 1);
+      endIso = endDate.toISOString();
+    }
+    onTimeChange(slot.id, base.toISOString(), endIso);
+    setTimePopOpen(false);
+  };
+
   return (
     <div
       className={cn(
         "group relative rounded-xl transition-all duration-200",
-        // Critical slots (doors, closing) get highlighted
         isCritical
           ? "border-2 border-accent/40 bg-accent/5"
           : "border border-border/20 bg-card/80 hover:border-border/40",
         slot.is_canceled && "opacity-40",
         slot.visibility === "internal" && !isCritical && "border-l-2 border-l-amber-500/30",
-        // NOW marker
         isNow && "ring-2 ring-accent/60 ring-offset-1 ring-offset-background"
       )}
     >
-      {/* NOW indicator */}
       {isNow && (
         <div className="absolute -top-2.5 left-4 px-2 py-0.5 bg-accent text-accent-foreground text-[9px] font-bold uppercase tracking-widest rounded-full">
           NÅ
@@ -58,18 +95,46 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
       )}
 
       <div className="flex gap-0 min-h-[100px] md:min-h-[120px]">
-        {/* ── Time block (vertical timeline) ── */}
-        <div className={cn(
-          "w-[80px] md:w-[100px] shrink-0 px-3 py-4 border-r flex items-center justify-center",
-          isCritical ? "border-accent/20" : "border-border/10"
-        )}>
-          <RunSheetTimeBlock
-            startsAt={slot.starts_at}
-            endsAt={slot.ends_at}
-            durationMinutes={slot.duration_minutes}
-            isCritical={isCritical}
-          />
-        </div>
+        {/* ── Time block (clickable for inline edit) ── */}
+        <Popover open={timePopOpen} onOpenChange={setTimePopOpen}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              onClick={openTimePop}
+              className={cn(
+                "w-[80px] md:w-[100px] shrink-0 px-3 py-4 border-r flex items-center justify-center cursor-pointer hover:bg-muted/40 transition-colors rounded-l-xl print:cursor-default",
+                isCritical ? "border-accent/20" : "border-border/10"
+              )}
+              title="Endre tidspunkt"
+            >
+              <RunSheetTimeBlock
+                startsAt={slot.starts_at}
+                endsAt={slot.ends_at}
+                durationMinutes={slot.duration_minutes}
+                isCritical={isCritical}
+              />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-4" align="start">
+            <div className="space-y-3">
+              <p className="text-xs font-semibold text-foreground">Endre tidspunkt</p>
+              <div className="space-y-2">
+                <div>
+                  <label className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-semibold">Start</label>
+                  <Input type="time" value={editStart} onChange={(e) => setEditStart(e.target.value)} className="h-8 text-sm font-mono tabular-nums" />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-semibold">Slutt</label>
+                  <Input type="time" value={editEnd} onChange={(e) => setEditEnd(e.target.value)} className="h-8 text-sm font-mono tabular-nums" />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="flex-1 text-xs h-7" onClick={() => setTimePopOpen(false)}>Avbryt</Button>
+                <Button size="sm" className="flex-1 text-xs h-7" onClick={commitTime} disabled={!editStart}>Lagre</Button>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
 
         {/* ── Sequence number ── */}
         <div className="w-[48px] md:w-[56px] shrink-0 flex items-center justify-center border-r border-border/10">
