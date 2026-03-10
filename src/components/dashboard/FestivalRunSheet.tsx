@@ -58,6 +58,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   const { toast } = useToast();
   const [editingSlot, setEditingSlot] = useState<ExtendedEventProgramSlot | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [sceneFilter, setSceneFilter] = useState<string | null>(null);
   const [attachTarget, setAttachTarget] = useState<{
     slotId: string;
     field: "contract_media_id" | "tech_rider_media_id" | "hosp_rider_media_id";
