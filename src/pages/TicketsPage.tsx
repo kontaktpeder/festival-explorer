@@ -248,9 +248,6 @@ export default function TicketsPage() {
         {/* Festival passes */}
         {festivalPasses.length > 0 && (
           <div className="space-y-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Konserter
-            </h2>
             {festivalPasses.map(renderTicketCard)}
           </div>
         )}
