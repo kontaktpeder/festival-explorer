@@ -31,6 +31,8 @@ interface PrintItem {
   kind: string;
   note: string | null;
   isCanceled: boolean;
+  startsAt: string;
+  endsAt: string | null;
 }
 
 interface RunSheetPrintViewProps {
@@ -51,7 +53,7 @@ function toItem(s: ExtendedEventProgramSlot): PrintItem {
   const name = perf.name !== "Ukjent prosjekt" && perf.name !== "TBA"
     ? perf.name
     : s.title_override || s.slot_kind;
-  return { scene: s.stage_label, name, kind: s.slot_kind, note: s.internal_note, isCanceled: s.is_canceled };
+  return { scene: s.stage_label, name, kind: s.slot_kind, note: s.internal_note, isCanceled: s.is_canceled, startsAt: s.starts_at, endsAt: s.ends_at };
 }
 
 function groupByTime(slots: ExtendedEventProgramSlot[]): PrintBlock[] {
