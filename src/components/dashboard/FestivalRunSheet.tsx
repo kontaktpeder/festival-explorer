@@ -443,6 +443,26 @@ function RunSheetEditDialog({ slot, festivalId, suggestedSequenceNumber, open, o
   const [performerPersonaId, setPerformerPersonaId] = useState(slot.performer_persona_id || "");
   const [personaQuery, setPersonaQuery] = useState("");
 
+  // Auto-calculate duration from start/end times
+  useEffect(() => {
+    if (!startsAt || !endsAt) return;
+    const start = new Date(startsAt).getTime();
+    const end = new Date(endsAt).getTime();
+    if (end <= start) return;
+    const minutes = Math.round((end - start) / 60000);
+    setDurationMinutes(String(minutes));
+  }, [startsAt, endsAt]);
+
+  // Default sequence number when slot doesn't have one
+  useEffect(() => {
+    if (!open || !slot) return;
+    if (slot.sequence_number == null) {
+      setSequenceNumber(String(suggestedSequenceNumber));
+    } else {
+      setSequenceNumber(String(slot.sequence_number));
+    }
+  }, [open, slot?.id, slot?.sequence_number, suggestedSequenceNumber]);
+
   // Helper: get current performer name for auto-title comparison
   const getCurrentPerformerName = (): string => {
     if (performerKind === "entity") {
