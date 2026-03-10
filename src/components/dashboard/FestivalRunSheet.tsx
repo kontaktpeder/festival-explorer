@@ -559,10 +559,19 @@ interface FestivalEvent {
   scene_name: string | null;
 }
 
+function getRunSheetSectionFromSlot(kind: string, visibility: string, title?: string | null): RunSheetSectionKey {
+  const upper = (title ?? "").toUpperCase();
+  if (
+    kind === "soundcheck" ||
+    kind === "rigging" ||
+    kind === "crew" ||
+    (visibility === "internal" && upper.includes("LYDPRØVE"))
+  ) return "Lydprøver";
+  return "Event";
+}
+
 function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequenceNumber, open, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
   const { toast } = useToast();
-  const isLydprøve = slot.slot_kind === "soundcheck" ||
-    (slot.visibility === "internal" && (slot.title_override ?? "").toUpperCase().includes("LYDPRØVE"));
   const [eventId, setEventId] = useState(slot.event_id ?? "");
   const [startsAt, setStartsAt] = useState(isoToLocalDatetimeString(slot.starts_at));
   const [endsAt, setEndsAt] = useState(slot.ends_at ? isoToLocalDatetimeString(slot.ends_at) : "");
@@ -574,6 +583,9 @@ function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequen
   const [slotKind, setSlotKind] = useState(slot.slot_kind);
   const [slotType, setSlotType] = useState(slot.slot_type ?? "");
   const [visibility, setVisibility] = useState(slot.visibility);
+  const [editSection, setEditSection] = useState<RunSheetSectionKey>(
+    getRunSheetSectionFromSlot(slot.slot_kind, slot.visibility, slot.title_override)
+  );
   const [internalStatus, setInternalStatus] = useState(slot.internal_status);
   const [isVisiblePublic, setIsVisiblePublic] = useState(slot.is_visible_public);
   const [isCanceled, setIsCanceled] = useState(slot.is_canceled);
