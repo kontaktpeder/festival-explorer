@@ -4,45 +4,58 @@ interface RunSheetTimeBlockProps {
   startsAt: string;
   endsAt: string | null;
   durationMinutes: number | null;
+  isCritical?: boolean;
 }
 
 function fmtTime(iso: string) {
   return format(new Date(iso), "HH:mm");
 }
 
-function fmtDuration(minutes: number | null, startsAt: string, endsAt: string | null): string {
-  if (minutes) {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return h > 0 ? `${h}:${String(m).padStart(2, "0")}` : `0:${String(m).padStart(2, "0")}`;
-  }
+function calcDuration(minutes: number | null, startsAt: string, endsAt: string | null): number | null {
+  if (minutes) return minutes;
   if (endsAt) {
     const diff = Math.round((new Date(endsAt).getTime() - new Date(startsAt).getTime()) / 60000);
-    if (diff > 0) {
-      const h = Math.floor(diff / 60);
-      const m = diff % 60;
-      return h > 0 ? `${h}:${String(m).padStart(2, "0")}` : `0:${String(m).padStart(2, "0")}`;
-    }
+    return diff > 0 ? diff : null;
   }
-  return "—";
+  return null;
 }
 
-export function RunSheetTimeBlock({ startsAt, endsAt, durationMinutes }: RunSheetTimeBlockProps) {
+function fmtDurationLabel(mins: number): string {
+  if (mins < 60) return `${mins} min`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m > 0 ? `${h}t ${m}m` : `${h}t`;
+}
+
+export function RunSheetTimeBlock({ startsAt, endsAt, durationMinutes, isCritical }: RunSheetTimeBlockProps) {
+  const dur = calcDuration(durationMinutes, startsAt, endsAt);
+  const hasEnd = endsAt || dur;
+
   return (
-    <div className="flex flex-col justify-between h-full tabular-nums font-mono select-none">
-      <div className="flex items-baseline gap-1.5">
-        <span className="text-[9px] uppercase tracking-wider text-muted-foreground/50 w-8">Start</span>
-        <span className="text-sm font-semibold text-foreground">{fmtTime(startsAt)}</span>
-      </div>
-      <div className="flex items-baseline gap-1.5">
-        <span className="text-[9px] uppercase tracking-wider text-muted-foreground/50 w-8">Tid</span>
-        <span className="text-xs text-muted-foreground">{fmtDuration(durationMinutes, startsAt, endsAt)}</span>
-      </div>
-      {endsAt && (
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-[9px] uppercase tracking-wider text-muted-foreground/50 w-8">Slutt</span>
-          <span className="text-xs text-muted-foreground">{fmtTime(endsAt)}</span>
+    <div className="flex flex-col items-center h-full tabular-nums font-mono select-none py-1 gap-0">
+      {/* Start time */}
+      <span className={`text-sm font-bold ${isCritical ? 'text-accent' : 'text-foreground'}`}>
+        {fmtTime(startsAt)}
+      </span>
+
+      {/* Vertical timeline connector */}
+      {hasEnd && (
+        <div className="flex flex-col items-center flex-1 min-h-[28px] my-0.5">
+          <div className={`w-px flex-1 min-h-[6px] ${isCritical ? 'bg-accent/40' : 'bg-border/40'}`} />
+          {dur && (
+            <span className="text-[9px] text-muted-foreground/60 px-1 py-0 leading-tight">
+              {fmtDurationLabel(dur)}
+            </span>
+          )}
+          <div className={`w-px flex-1 min-h-[6px] ${isCritical ? 'bg-accent/40' : 'bg-border/40'}`} />
         </div>
+      )}
+
+      {/* End time */}
+      {hasEnd && (
+        <span className="text-xs text-muted-foreground/70">
+          {endsAt ? fmtTime(endsAt) : dur ? fmtTime(new Date(new Date(startsAt).getTime() + dur * 60000).toISOString()) : ""}
+        </span>
       )}
     </div>
   );
