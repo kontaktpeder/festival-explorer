@@ -554,7 +554,7 @@ interface FestivalEvent {
   scene_name: string | null;
 }
 
-function RunSheetEditDialog({ slot, festivalId, suggestedSequenceNumber, open, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
+function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequenceNumber, open, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
   const { toast } = useToast();
   const isLydprøve = slot.slot_kind === "soundcheck" ||
     (slot.visibility === "internal" && (slot.title_override ?? "").toUpperCase().includes("LYDPRØVE"));
