@@ -102,7 +102,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
               type="button"
               onClick={openTimePop}
               className={cn(
-                "w-[80px] md:w-[100px] shrink-0 px-3 py-4 border-r flex items-center justify-center cursor-pointer hover:bg-muted/40 transition-colors rounded-l-xl print:cursor-default",
+                "w-[90px] md:w-[110px] shrink-0 px-3 py-4 border-r flex items-center justify-center cursor-pointer hover:bg-muted/40 transition-colors rounded-l-xl print:cursor-default",
                 isCritical ? "border-accent/20" : "border-border/10"
               )}
               title="Endre tidspunkt"
