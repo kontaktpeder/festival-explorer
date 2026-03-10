@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
 import type { RunSheetSectionKey } from "@/lib/runsheet-sections";
@@ -7,9 +8,15 @@ import type { SlotKind } from "@/types/database";
 import { cn } from "@/lib/utils";
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { RunSheetTimeBlock } from "./RunSheetTimeBlock";
 import { RunSheetMetaBadges } from "./RunSheetMetaBadges";
 import { getSceneColor, isCriticalSlotKind } from "@/lib/runsheet-scene-colors";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export interface ParallelGroup {
   primary: ExtendedEventProgramSlot;
