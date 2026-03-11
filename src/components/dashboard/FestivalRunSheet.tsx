@@ -202,7 +202,9 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
         } as any);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
+      await renumberSlots();
       queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
       toast({ title: "Ny rad opprettet" });
     },
