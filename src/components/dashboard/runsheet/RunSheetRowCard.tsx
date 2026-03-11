@@ -149,18 +149,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
         {/* ── Main content area ── */}
         <div className="flex-1 min-w-0 px-5 md:px-6 py-4 flex flex-col justify-center gap-1.5">
 
-          {/* Slot kind label + critical icon */}
-          {kindConfig && (
-            <div className="flex items-center gap-1.5">
-              <kindConfig.icon className={cn("h-3 w-3", isCritical ? "text-accent" : "text-muted-foreground/50")} />
-              <span className={cn(
-                "text-[10px] font-bold uppercase tracking-wider",
-                isCritical ? "text-accent" : "text-muted-foreground/60"
-              )}>
-                {kindConfig.label}
-              </span>
-            </div>
-          )}
+          {/* Slot kind icon (standalone, no label – label moves inline with name) */}
 
           {/* Performer(s) – parallel tree view or single */}
           {showFields.has("performer") && (
@@ -170,6 +159,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
                   const performer = getPerformerDisplay(item);
                   const showPerformer = performer.name !== "Ukjent prosjekt" && performer.name !== "TBA";
                   const itemSceneColor = getSceneColor(item.stage_label);
+                  const itemKindConfig = getSlotKindConfig(item.slot_kind as any);
                   const isLast = idx === group.items.length - 1;
                   return (
                     <div key={item.id} className="flex items-center gap-2 text-xs">
@@ -186,19 +176,28 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
                           {item.stage_label}
                         </span>
                       )}
+                      {/* Kind label inline */}
+                      {itemKindConfig && (
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/50 shrink-0">
+                          {itemKindConfig.label}
+                        </span>
+                      )}
                       {showPerformer && (
-                        performer.href ? (
-                          <Link
-                            to={performer.href}
-                            className="text-xs font-medium text-accent hover:underline underline-offset-2 truncate"
-                          >
-                            {performer.name}
-                          </Link>
-                        ) : (
-                          <span className="text-xs font-medium text-foreground/70 truncate">
-                            {performer.name}
-                          </span>
-                        )
+                        <>
+                          <span className="text-muted-foreground/30">·</span>
+                          {performer.href ? (
+                            <Link
+                              to={performer.href}
+                              className="text-xs font-medium text-accent hover:underline underline-offset-2 truncate"
+                            >
+                              {performer.name}
+                            </Link>
+                          ) : (
+                            <span className="text-xs font-medium text-foreground/70 truncate">
+                              {performer.name}
+                            </span>
+                          )}
+                        </>
                       )}
                       {item.id !== slot.id && (
                         <Button
@@ -217,22 +216,36 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
               </div>
             ) : (
               <div className="flex items-center gap-2">
+                {kindConfig && (
+                  <div className="flex items-center gap-1 shrink-0">
+                    <kindConfig.icon className={cn("h-3 w-3", isCritical ? "text-accent" : "text-muted-foreground/50")} />
+                    <span className={cn(
+                      "text-[10px] font-bold uppercase tracking-wider",
+                      isCritical ? "text-accent" : "text-muted-foreground/60"
+                    )}>
+                      {kindConfig.label}
+                    </span>
+                  </div>
+                )}
                 {(() => {
                   const performer = getPerformerDisplay(slot);
                   const showPerformer = performer.name !== "Ukjent prosjekt" && performer.name !== "TBA";
                   return showPerformer ? (
-                    performer.href ? (
-                      <Link
-                        to={performer.href}
-                        className="text-sm font-semibold text-accent hover:underline underline-offset-2 truncate"
-                      >
-                        {performer.name}
-                      </Link>
-                    ) : (
-                      <span className="text-sm font-semibold text-foreground/80 truncate">
-                        {performer.name}
-                      </span>
-                    )
+                    <>
+                      <span className="text-muted-foreground/30">·</span>
+                      {performer.href ? (
+                        <Link
+                          to={performer.href}
+                          className="text-sm font-semibold text-accent hover:underline underline-offset-2 truncate"
+                        >
+                          {performer.name}
+                        </Link>
+                      ) : (
+                        <span className="text-sm font-semibold text-foreground/80 truncate">
+                          {performer.name}
+                        </span>
+                      )}
+                    </>
                   ) : null;
                 })()}
               </div>
