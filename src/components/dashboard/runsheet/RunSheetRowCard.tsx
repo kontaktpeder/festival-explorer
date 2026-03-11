@@ -206,22 +206,36 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
               </div>
             ) : (
               <div className="flex items-center gap-2">
+                {kindConfig && (
+                  <div className="flex items-center gap-1 shrink-0">
+                    <kindConfig.icon className={cn("h-3 w-3", isCritical ? "text-accent" : "text-muted-foreground/50")} />
+                    <span className={cn(
+                      "text-[10px] font-bold uppercase tracking-wider",
+                      isCritical ? "text-accent" : "text-muted-foreground/60"
+                    )}>
+                      {kindConfig.label}
+                    </span>
+                  </div>
+                )}
                 {(() => {
                   const performer = getPerformerDisplay(slot);
                   const showPerformer = performer.name !== "Ukjent prosjekt" && performer.name !== "TBA";
                   return showPerformer ? (
-                    performer.href ? (
-                      <Link
-                        to={performer.href}
-                        className="text-sm font-semibold text-accent hover:underline underline-offset-2 truncate"
-                      >
-                        {performer.name}
-                      </Link>
-                    ) : (
-                      <span className="text-sm font-semibold text-foreground/80 truncate">
-                        {performer.name}
-                      </span>
-                    )
+                    <>
+                      <span className="text-muted-foreground/30">·</span>
+                      {performer.href ? (
+                        <Link
+                          to={performer.href}
+                          className="text-sm font-semibold text-accent hover:underline underline-offset-2 truncate"
+                        >
+                          {performer.name}
+                        </Link>
+                      ) : (
+                        <span className="text-sm font-semibold text-foreground/80 truncate">
+                          {performer.name}
+                        </span>
+                      )}
+                    </>
                   ) : null;
                 })()}
               </div>
