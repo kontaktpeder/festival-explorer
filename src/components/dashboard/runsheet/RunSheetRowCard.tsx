@@ -39,7 +39,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
   const slot = group.primary;
   const kindConfig = getSlotKindConfig(slot.slot_kind as any);
   const showFields = getFieldsForSlotKind(slot.slot_kind as SlotKind);
-  const seqNum = slot.sequence_number ?? (index + 1);
+  const seqNum = index + 1;
   const isParallel = group.items.length > 1;
   const isCritical = isCriticalSlotKind(slot.slot_kind);
   const sceneColor = !isParallel && showFields.has("scene") ? getSceneColor(slot.stage_label) : null;
