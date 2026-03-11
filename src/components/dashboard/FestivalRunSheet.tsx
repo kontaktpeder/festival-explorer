@@ -266,8 +266,30 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
         .eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
+      // Refetch to get fresh data, then renumber
+      const fresh = queryClient.getQueryData<{ slots: ExtendedEventProgramSlot[] }>(["festival-run-sheet", festivalId]);
+      if (fresh?.slots) {
+        const sorted = [...fresh.slots].sort((a, b) => {
+          const sa = a.sequence_number ?? Infinity;
+          const sb = b.sequence_number ?? Infinity;
+          if (sa !== sb) return sa - sb;
+          return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
+        });
+        const updates: { id: string; seq: number }[] = [];
+        sorted.forEach((s, i) => {
+          if (s.sequence_number !== i + 1) updates.push({ id: s.id, seq: i + 1 });
+        });
+        if (updates.length) {
+          await Promise.all(
+            updates.map(({ id, seq }) =>
+              supabase.from("event_program_slots" as any).update({ sequence_number: seq }).eq("id", id)
+            )
+          );
+          queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
+        }
+      }
       toast({ title: "Rad slettet" });
     },
     onError: (e: Error) =>
