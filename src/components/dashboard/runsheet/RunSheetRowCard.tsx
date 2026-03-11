@@ -159,6 +159,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
                   const performer = getPerformerDisplay(item);
                   const showPerformer = performer.name !== "Ukjent prosjekt" && performer.name !== "TBA";
                   const itemSceneColor = getSceneColor(item.stage_label);
+                  const itemKindConfig = getSlotKindConfig(item.slot_kind as any);
                   const isLast = idx === group.items.length - 1;
                   return (
                     <div key={item.id} className="flex items-center gap-2 text-xs">
@@ -175,19 +176,28 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
                           {item.stage_label}
                         </span>
                       )}
+                      {/* Kind label inline */}
+                      {itemKindConfig && (
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/50 shrink-0">
+                          {itemKindConfig.label}
+                        </span>
+                      )}
                       {showPerformer && (
-                        performer.href ? (
-                          <Link
-                            to={performer.href}
-                            className="text-xs font-medium text-accent hover:underline underline-offset-2 truncate"
-                          >
-                            {performer.name}
-                          </Link>
-                        ) : (
-                          <span className="text-xs font-medium text-foreground/70 truncate">
-                            {performer.name}
-                          </span>
-                        )
+                        <>
+                          <span className="text-muted-foreground/30">·</span>
+                          {performer.href ? (
+                            <Link
+                              to={performer.href}
+                              className="text-xs font-medium text-accent hover:underline underline-offset-2 truncate"
+                            >
+                              {performer.name}
+                            </Link>
+                          ) : (
+                            <span className="text-xs font-medium text-foreground/70 truncate">
+                              {performer.name}
+                            </span>
+                          )}
+                        </>
                       )}
                       {item.id !== slot.id && (
                         <Button
