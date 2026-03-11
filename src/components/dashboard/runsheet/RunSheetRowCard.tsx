@@ -199,17 +199,26 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
                           )}
                         </>
                       )}
-                      {item.id !== slot.id && (
+                      <div className="flex items-center gap-0.5 ml-auto shrink-0 print:hidden">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-5 w-5 text-muted-foreground/30 hover:text-foreground ml-auto shrink-0 print:hidden"
+                          className="h-5 w-5 text-muted-foreground/30 hover:text-foreground"
                           onClick={() => onEdit(item)}
-                          title="Rediger parallell"
+                          title="Rediger"
                         >
                           <Pencil className="h-2.5 w-2.5" />
                         </Button>
-                      )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-5 w-5 text-muted-foreground/30 hover:text-destructive"
+                          onClick={() => onDelete(item)}
+                          title="Slett"
+                        >
+                          <Trash2 className="h-2.5 w-2.5" />
+                        </Button>
+                      </div>
                     </div>
                   );
                 })}
