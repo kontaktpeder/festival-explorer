@@ -149,18 +149,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
         {/* ── Main content area ── */}
         <div className="flex-1 min-w-0 px-5 md:px-6 py-4 flex flex-col justify-center gap-1.5">
 
-          {/* Slot kind label + critical icon */}
-          {kindConfig && (
-            <div className="flex items-center gap-1.5">
-              <kindConfig.icon className={cn("h-3 w-3", isCritical ? "text-accent" : "text-muted-foreground/50")} />
-              <span className={cn(
-                "text-[10px] font-bold uppercase tracking-wider",
-                isCritical ? "text-accent" : "text-muted-foreground/60"
-              )}>
-                {kindConfig.label}
-              </span>
-            </div>
-          )}
+          {/* Slot kind icon (standalone, no label – label moves inline with name) */}
 
           {/* Performer(s) – parallel tree view or single */}
           {showFields.has("performer") && (
