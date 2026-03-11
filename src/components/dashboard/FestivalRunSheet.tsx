@@ -117,6 +117,37 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
     [allSubjects]
   );
 
+  /** Renumber all slots' sequence_number to be consecutive (1, 2, 3, ...) based on current order */
+  const renumberSlots = async () => {
+    const allSlots = data?.slots ?? [];
+    if (!allSlots.length) return;
+    // Sort by current sequence_number, then starts_at
+    const sorted = [...allSlots].sort((a, b) => {
+      const sa = a.sequence_number ?? Infinity;
+      const sb = b.sequence_number ?? Infinity;
+      if (sa !== sb) return sa - sb;
+      return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
+    });
+    // Build updates only for slots whose sequence_number needs to change
+    const updates: { id: string; seq: number }[] = [];
+    sorted.forEach((s, i) => {
+      const desired = i + 1;
+      if (s.sequence_number !== desired) {
+        updates.push({ id: s.id, seq: desired });
+      }
+    });
+    if (!updates.length) return;
+    // Batch update
+    await Promise.all(
+      updates.map(({ id, seq }) =>
+        supabase
+          .from("event_program_slots" as any)
+          .update({ sequence_number: seq })
+          .eq("id", id)
+      )
+    );
+  };
+
   /* ── Mutations ── */
   const updateSlot = useMutation({
     mutationFn: async (partial: Partial<ExtendedEventProgramSlot> & { id: string }) => {
@@ -171,7 +202,9 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
         } as any);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
+      await renumberSlots();
       queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
       toast({ title: "Ny rad opprettet" });
     },
@@ -235,8 +268,30 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
         .eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
+      // Refetch to get fresh data, then renumber
+      const fresh = queryClient.getQueryData<{ slots: ExtendedEventProgramSlot[] }>(["festival-run-sheet", festivalId]);
+      if (fresh?.slots) {
+        const sorted = [...fresh.slots].sort((a, b) => {
+          const sa = a.sequence_number ?? Infinity;
+          const sb = b.sequence_number ?? Infinity;
+          if (sa !== sb) return sa - sb;
+          return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
+        });
+        const updates: { id: string; seq: number }[] = [];
+        sorted.forEach((s, i) => {
+          if (s.sequence_number !== i + 1) updates.push({ id: s.id, seq: i + 1 });
+        });
+        if (updates.length) {
+          await Promise.all(
+            updates.map(({ id, seq }) =>
+              supabase.from("event_program_slots" as any).update({ sequence_number: seq }).eq("id", id)
+            )
+          );
+          queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
+        }
+      }
       toast({ title: "Rad slettet" });
     },
     onError: (e: Error) =>
