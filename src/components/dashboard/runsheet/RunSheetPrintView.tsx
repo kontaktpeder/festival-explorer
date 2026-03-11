@@ -302,7 +302,7 @@ export function RunSheetPrintView({
       {lydBlocks.length > 0 && (
         <div style={S.sectionWrap}>
           <div style={S.sectionTitle}>
-            {sectionNames["Lydprøver"] || "Lydprøver"}
+            {sectionNames["Lydprøver"] || "Lydprøver & Opprigg"}
           </div>
           {lydBlocks.map((b, i) => (
             <CueBlock key={i} block={b} />
