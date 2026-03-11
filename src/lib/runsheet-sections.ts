@@ -16,6 +16,13 @@ export function getSectionForSlot(slot: ExtendedEventProgramSlot): RunSheetSecti
   return "Event";
 }
 
+/** Kind sort priority within Lydprøver section: soundcheck first, then rigging, then crew */
+const KIND_SORT_ORDER: Record<string, number> = {
+  soundcheck: 0,
+  rigging: 1,
+  crew: 2,
+};
+
 /** Slots gruppert i Lydprøver og Event */
 export function groupSlotsBySection(
   slots: ExtendedEventProgramSlot[]
@@ -29,10 +36,15 @@ export function groupSlotsBySection(
     out[key].push(slot);
   }
   RUNSHEET_SECTION_KEYS.forEach((key) => {
-    out[key].sort(
-      (a, b) =>
-        new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()
-    );
+    out[key].sort((a, b) => {
+      // Within Lydprøver: soundcheck first, rigging second, crew last
+      if (key === "Lydprøver") {
+        const ka = KIND_SORT_ORDER[a.slot_kind] ?? 9;
+        const kb = KIND_SORT_ORDER[b.slot_kind] ?? 9;
+        if (ka !== kb) return ka - kb;
+      }
+      return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
+    });
   });
   return out;
 }
