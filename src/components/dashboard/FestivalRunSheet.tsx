@@ -549,7 +549,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
                   key={sectionKey}
                   sectionKey={sectionKey}
                   title={sectionKey}
-                  displayName={sectionNames[sectionKey]}
+                  displayName={sectionNames[sectionKey] || (sectionKey === "Lydprøver" ? "Lydprøver & Opprigg" : undefined)}
                   sectionPrefix={sectionPrefixes[sectionKey]}
                   slots={sectionSlots}
                   slotTypeMap={slotTypeMap}
