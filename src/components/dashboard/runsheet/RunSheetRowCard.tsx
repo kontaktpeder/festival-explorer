@@ -94,7 +94,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
         </div>
       )}
 
-      <div className="flex gap-0 min-h-[100px] md:min-h-[120px]">
+      <div className="flex gap-0 min-h-[80px] md:min-h-[120px]">
         {/* ── Time block (clickable for inline edit) ── */}
         <Popover open={timePopOpen} onOpenChange={setTimePopOpen}>
           <PopoverTrigger asChild>
@@ -102,7 +102,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
               type="button"
               onClick={openTimePop}
               className={cn(
-                "w-[90px] md:w-[110px] shrink-0 px-3 py-4 border-r flex items-center justify-center cursor-pointer hover:bg-muted/40 transition-colors rounded-l-xl print:cursor-default",
+                "w-[64px] md:w-[110px] shrink-0 px-2 md:px-3 py-3 md:py-4 border-r flex items-center justify-center cursor-pointer active:bg-muted/60 hover:bg-muted/40 transition-colors rounded-l-xl print:cursor-default",
                 isCritical ? "border-accent/20" : "border-border/10"
               )}
               title="Endre tidspunkt"
@@ -121,11 +121,11 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
               <div className="space-y-2">
                 <div>
                   <label className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-semibold">Start</label>
-                  <Input type="time" value={editStart} onChange={(e) => setEditStart(e.target.value)} className="h-8 text-sm font-mono tabular-nums" />
+                  <Input type="time" value={editStart} onChange={(e) => setEditStart(e.target.value)} className="h-8 text-base font-mono tabular-nums" />
                 </div>
                 <div>
                   <label className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-semibold">Slutt</label>
-                  <Input type="time" value={editEnd} onChange={(e) => setEditEnd(e.target.value)} className="h-8 text-sm font-mono tabular-nums" />
+                  <Input type="time" value={editEnd} onChange={(e) => setEditEnd(e.target.value)} className="h-8 text-base font-mono tabular-nums" />
                 </div>
               </div>
               <div className="flex gap-2">
@@ -136,8 +136,8 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
           </PopoverContent>
         </Popover>
 
-        {/* ── Sequence number ── */}
-        <div className="w-[48px] md:w-[56px] shrink-0 flex items-center justify-center border-r border-border/10">
+        {/* ── Sequence number (hidden on mobile to save space) ── */}
+        <div className="hidden md:flex w-[56px] shrink-0 items-center justify-center border-r border-border/10">
           <span className={cn(
             "text-xl md:text-2xl font-bold tabular-nums",
             isCritical ? "text-accent/40" : "text-muted-foreground/12"
@@ -147,9 +147,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
         </div>
 
         {/* ── Main content area ── */}
-        <div className="flex-1 min-w-0 px-5 md:px-6 py-4 flex flex-col justify-center gap-1.5">
-
-          {/* Slot kind icon (standalone, no label – label moves inline with name) */}
+        <div className="flex-1 min-w-0 px-3 md:px-6 py-3 md:py-4 flex flex-col justify-center gap-1">
 
           {/* Performer(s) – parallel tree view or single */}
           {showFields.has("performer") && (
@@ -162,7 +160,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
                   const itemKindConfig = getSlotKindConfig(item.slot_kind as any);
                   const isLast = idx === group.items.length - 1;
                   return (
-                    <div key={item.id} className="flex items-center gap-2 text-xs">
+                    <div key={item.id} className="flex items-center gap-1.5 md:gap-2 text-xs">
                       {/* Tree connector */}
                       <span className="text-muted-foreground/30 font-mono text-xs shrink-0 w-3">
                         {isLast ? "└" : "├"}
@@ -170,7 +168,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
                       {/* Scene badge with color */}
                       {showFields.has("scene") && item.stage_label && (
                         <span className={cn(
-                          "text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0",
+                          "text-[8px] md:text-[9px] font-bold uppercase tracking-wider px-1 md:px-1.5 py-0.5 rounded shrink-0",
                           itemSceneColor ? `${itemSceneColor.bg} ${itemSceneColor.text}` : "text-muted-foreground/50"
                         )}>
                           {item.stage_label}
@@ -178,13 +176,13 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
                       )}
                       {/* Kind label inline */}
                       {itemKindConfig && (
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/50 shrink-0">
+                        <span className="hidden md:inline text-[9px] font-bold uppercase tracking-wider text-muted-foreground/50 shrink-0">
                           {itemKindConfig.label}
                         </span>
                       )}
                       {showPerformer && (
                         <>
-                          <span className="text-muted-foreground/30">·</span>
+                          <span className="text-muted-foreground/30 hidden md:inline">·</span>
                           {performer.href ? (
                             <Link
                               to={performer.href}
@@ -203,20 +201,20 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-5 w-5 text-muted-foreground/30 hover:text-foreground"
+                          className="h-6 w-6 md:h-5 md:w-5 text-muted-foreground/40 active:text-foreground hover:text-foreground"
                           onClick={() => onEdit(item)}
                           title="Rediger"
                         >
-                          <Pencil className="h-2.5 w-2.5" />
+                          <Pencil className="h-3 w-3 md:h-2.5 md:w-2.5" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-5 w-5 text-muted-foreground/30 hover:text-destructive"
+                          className="h-6 w-6 md:h-5 md:w-5 text-muted-foreground/40 active:text-destructive hover:text-destructive"
                           onClick={() => onDelete(item)}
                           title="Slett"
                         >
-                          <Trash2 className="h-2.5 w-2.5" />
+                          <Trash2 className="h-3 w-3 md:h-2.5 md:w-2.5" />
                         </Button>
                       </div>
                     </div>
@@ -224,12 +222,12 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
                 })}
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
                 {kindConfig && (
                   <div className="flex items-center gap-1 shrink-0">
                     <kindConfig.icon className={cn("h-3 w-3", isCritical ? "text-accent" : "text-muted-foreground/50")} />
                     <span className={cn(
-                      "text-[10px] font-bold uppercase tracking-wider",
+                      "text-[9px] md:text-[10px] font-bold uppercase tracking-wider",
                       isCritical ? "text-accent" : "text-muted-foreground/60"
                     )}>
                       {kindConfig.label}
@@ -279,12 +277,12 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
           />
         </div>
 
-        {/* ── Actions ── */}
-        <div className="w-[48px] shrink-0 flex flex-col items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
+        {/* ── Actions – always visible on mobile, hover on desktop ── */}
+        <div className="w-[40px] md:w-[48px] shrink-0 flex flex-col items-center justify-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity print:hidden">
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            className="h-8 w-8 text-muted-foreground/50 active:text-foreground hover:text-foreground"
             onClick={() => onEdit(slot)}
             title="Rediger"
           >
@@ -294,7 +292,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-destructive/60 hover:text-destructive"
+              className="h-8 w-8 text-destructive/40 active:text-destructive hover:text-destructive"
               onClick={() => onDelete(slot)}
               title="Slett"
             >
