@@ -58,23 +58,26 @@ function getSectionByType(
 // (SEOIntroSlot removed – merged into poster_body slot)
 
 const DEFAULT_FAQ = [
-  { q: "Når er festivalen?", a: "Se dato under hero og i program." },
+  { q: "Når er festivalen?", a: "Lørdag 14. mars 2026, kl. 17:00–01:00." },
   {
     q: "Hvor er festivalen?",
-    a: "Festivalen er på spillestedet som er oppgitt over.",
+    a: "Josefines Vertshus, Josefines gate 16, 0351 Oslo – rett ved Homansbyen / Bogstadveien.",
   },
-  { q: "Hva slags musikk er det?", a: "Live musikk – ulike artister og sjangre." },
+  {
+    q: "Hva slags musikk er det?",
+    a: "En miks av liveband og DJ-sets – indie, alternativ pop/rock, R&B og elektronisk musikk fra nye artister i Oslo-miljøet.",
+  },
   {
     q: "Kan jeg kjøpe billett i døra?",
-    a: "Ja, hvis det er ledige plasser. Vi anbefaler forhåndskjøp.",
+    a: "Ja, hvis det fortsatt er billetter igjen. Vi anbefaler å kjøpe på forhånd.",
   },
   {
     q: "Aldersgrense?",
-    a: "18 år, med mindre annet er oppgitt under praktisk info.",
+    a: "18 år.",
   },
   {
     q: "Hvordan kommer jeg meg dit?",
-    a: "Se praktisk info og venue-siden for adresse og kollektiv.",
+    a: "Trikk eller buss til Holbergs plass eller Bislett, derfra er det 3–5 minutters gange til Josefines Vertshus – rett ved Bogstadveien / Homansbyen.",
   },
 ];
 
