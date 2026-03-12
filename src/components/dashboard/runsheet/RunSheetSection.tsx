@@ -124,14 +124,14 @@ export function RunSheetSection({
           type="button"
           onClick={() => setCollapsed(!collapsed)}
           className={cn(
-            "flex-1 flex items-center gap-2 px-4 py-2.5 rounded-lg transition-colors",
-            "bg-muted/50 hover:bg-muted/70 border border-border/20"
+            "flex-1 min-w-0 flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2.5 rounded-lg transition-colors",
+            "bg-muted/50 active:bg-muted/80 hover:bg-muted/70 border border-border/20"
           )}
         >
           {collapsed ? (
-            <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+            <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
           ) : (
-            <ChevronDown className="h-4 w-4 text-muted-foreground/50" />
+            <ChevronDown className="h-4 w-4 text-muted-foreground/50 shrink-0" />
           )}
           {editing ? (
             <Input
@@ -147,30 +147,32 @@ export function RunSheetSection({
               className="h-6 text-[11px] font-bold uppercase tracking-[0.2em] bg-transparent border-none p-0 focus-visible:ring-0 text-muted-foreground"
             />
           ) : (
-            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="text-[11px] font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] text-muted-foreground truncate">
               {shownName}
             </span>
           )}
           {/* Time range + count */}
-          <div className="flex items-center gap-2 ml-1">
+          <div className="flex items-center gap-1.5 md:gap-2 ml-auto shrink-0">
             {timeRange && (
-              <span className="text-[10px] text-muted-foreground/50 tabular-nums font-mono">
-                {timeRange.from} – {timeRange.to}
+              <span className="text-[9px] md:text-[10px] text-muted-foreground/50 tabular-nums font-mono">
+                {timeRange.from}–{timeRange.to}
               </span>
             )}
-            <span className="text-[10px] text-muted-foreground/40 tabular-nums">
+            <span className="text-[9px] md:text-[10px] text-muted-foreground/40 tabular-nums hidden md:inline">
               {slots.length} {slots.length === 1 ? "punkt" : "punkter"}
+            </span>
+            <span className="text-[9px] text-muted-foreground/40 tabular-nums md:hidden">
+              {slots.length}
             </span>
           </div>
         </button>
-
 
         {/* Rename button */}
         {onRenameSection && !editing && (
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 shrink-0 text-muted-foreground/30 hover:text-foreground hover:bg-muted/70 print:hidden"
+            className="h-9 w-9 shrink-0 text-muted-foreground/30 active:text-foreground hover:text-foreground hover:bg-muted/70 print:hidden hidden md:flex"
             onClick={() => { setEditValue(shownName); setEditing(true); }}
             title="Endre navn"
           >
@@ -183,7 +185,7 @@ export function RunSheetSection({
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 shrink-0 text-muted-foreground/40 hover:text-foreground hover:bg-muted/70 print:hidden"
+            className="h-9 w-9 shrink-0 text-muted-foreground/40 active:text-foreground hover:text-foreground hover:bg-muted/70 print:hidden"
             onClick={() => onAddToSection(sectionKey)}
             title={`Ny rad i ${shownName}`}
           >
@@ -191,12 +193,12 @@ export function RunSheetSection({
           </Button>
         )}
 
-        {/* Delete section */}
+        {/* Delete section – hidden on mobile */}
         {onDeleteSection && (
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 shrink-0 text-destructive/30 hover:text-destructive hover:bg-muted/70 print:hidden"
+            className="h-9 w-9 shrink-0 text-destructive/30 active:text-destructive hover:text-destructive hover:bg-muted/70 print:hidden hidden md:flex"
             onClick={() => onDeleteSection(sectionKey, slots)}
             title={`Slett ${shownName} (${slots.length} punkt)`}
           >

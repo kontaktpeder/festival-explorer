@@ -423,35 +423,142 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   return (
     <div className="space-y-8">
       {/* Document header (screen only) */}
-      <div className="flex items-center justify-between print:hidden">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-muted/60 flex items-center justify-center">
-            <ClipboardList className="h-5 w-5 text-muted-foreground" />
+      <div className="flex flex-col gap-3 print:hidden">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-muted/60 flex items-center justify-center shrink-0">
+              <ClipboardList className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold tracking-tight text-foreground">
+                Kjøreplan
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {slots.length} punkt{slots.length !== 1 ? "er" : ""} · Produksjonsdokument
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-lg font-bold tracking-tight text-foreground">
-              Kjøreplan
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              {slots.length} punkt{slots.length !== 1 ? "er" : ""} · Produksjonsdokument
-            </p>
+          {/* Desktop: all buttons inline */}
+          <div className="hidden md:flex items-center gap-2">
+            {/* Download PDF dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Last ned
+                  <ChevronDown className="h-3 w-3 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => { setPrintFilter("all"); setTimeout(handleDownloadPdf, 100); }}>
+                  Hele kjøreplanen
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => { setPrintFilter("lydprover"); setTimeout(handleDownloadPdf, 100); }}>
+                  Kun lydprøver
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => { setPrintFilter("event"); setTimeout(handleDownloadPdf, 100); }}>
+                  Kun event
+                </DropdownMenuItem>
+                {sceneLabels.map((label) => (
+                  <DropdownMenuItem key={label} onClick={() => { setPrintFilter(label); setTimeout(handleDownloadPdf, 100); }}>
+                    Kun {label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Print dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  Skriv ut
+                  <ChevronDown className="h-3 w-3 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => triggerPrint("all")}>
+                  Hele kjøreplanen
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => triggerPrint("lydprover")}>
+                  Kun lydprøver
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => triggerPrint("event")}>
+                  Kun event
+                </DropdownMenuItem>
+                {sceneLabels.map((label) => (
+                  <DropdownMenuItem key={label} onClick={() => triggerPrint(label)}>
+                    Kun {label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Ny rad
+                  <ChevronDown className="h-3 w-3 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "opprigg", seq: nextSequenceNumber })}>
+                  Opprigg
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "lydprøve", seq: nextSequenceNumber })}>
+                  Lydprøve
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "event", seq: nextSequenceNumber })}>
+                  Konsert
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "doors", seq: nextSequenceNumber })}>
+                  Dører
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "closing", seq: nextSequenceNumber })}>
+                  Stenging
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "stage_talk", seq: nextSequenceNumber })}>
+                  Snakk fra scenen
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "giggen_info", seq: nextSequenceNumber })}>
+                  Hva er GIGGEN
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "break", seq: nextSequenceNumber })}>
+                  Pause
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "crew", seq: nextSequenceNumber })}>
+                  Crew
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "custom", seq: nextSequenceNumber })}>
+                  Egendefinert
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {/* Download PDF dropdown */}
+
+        {/* Mobile: compact button row */}
+        <div className="flex md:hidden items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
-              >
+              <Button variant="outline" size="sm" className="h-9 text-xs gap-1 flex-1 border-border/30">
                 <Download className="h-3.5 w-3.5" />
-                Last ned
-                <ChevronDown className="h-3 w-3 opacity-50" />
+                PDF
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="start">
               <DropdownMenuItem onClick={() => { setPrintFilter("all"); setTimeout(handleDownloadPdf, 100); }}>
                 Hele kjøreplanen
               </DropdownMenuItem>
@@ -461,87 +568,39 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
               <DropdownMenuItem onClick={() => { setPrintFilter("event"); setTimeout(handleDownloadPdf, 100); }}>
                 Kun event
               </DropdownMenuItem>
-              {sceneLabels.map((label) => (
-                <DropdownMenuItem key={label} onClick={() => { setPrintFilter(label); setTimeout(handleDownloadPdf, 100); }}>
-                  Kun {label}
-                </DropdownMenuItem>
-              ))}
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Print dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
-              >
+              <Button variant="outline" size="sm" className="h-9 text-xs gap-1 flex-1 border-border/30">
                 <Printer className="h-3.5 w-3.5" />
-                Skriv ut
-                <ChevronDown className="h-3 w-3 opacity-50" />
+                Print
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => triggerPrint("all")}>
-                Hele kjøreplanen
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => triggerPrint("lydprover")}>
-                Kun lydprøver
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => triggerPrint("event")}>
-                Kun event
-              </DropdownMenuItem>
-              {sceneLabels.map((label) => (
-                <DropdownMenuItem key={label} onClick={() => triggerPrint(label)}>
-                  Kun {label}
-                </DropdownMenuItem>
-              ))}
+            <DropdownMenuContent align="center">
+              <DropdownMenuItem onClick={() => triggerPrint("all")}>Hele kjøreplanen</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => triggerPrint("lydprover")}>Kun lydprøver</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => triggerPrint("event")}>Kun event</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
-              >
+              <Button variant="outline" size="sm" className="h-9 text-xs gap-1 flex-1 border-border/30">
                 <Plus className="h-3.5 w-3.5" />
                 Ny rad
-                <ChevronDown className="h-3 w-3 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "opprigg", seq: nextSequenceNumber })}>
-                Opprigg
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "lydprøve", seq: nextSequenceNumber })}>
-                Lydprøve
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "event", seq: nextSequenceNumber })}>
-                Konsert
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "doors", seq: nextSequenceNumber })}>
-                Dører
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "closing", seq: nextSequenceNumber })}>
-                Stenging
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "stage_talk", seq: nextSequenceNumber })}>
-                Snakk fra scenen
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "giggen_info", seq: nextSequenceNumber })}>
-                Hva er GIGGEN
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "break", seq: nextSequenceNumber })}>
-                Pause
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "crew", seq: nextSequenceNumber })}>
-                Crew
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "custom", seq: nextSequenceNumber })}>
-                Egendefinert
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "opprigg", seq: nextSequenceNumber })}>Opprigg</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "lydprøve", seq: nextSequenceNumber })}>Lydprøve</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "event", seq: nextSequenceNumber })}>Konsert</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "doors", seq: nextSequenceNumber })}>Dører</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "closing", seq: nextSequenceNumber })}>Stenging</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "stage_talk", seq: nextSequenceNumber })}>Snakk fra scenen</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "giggen_info", seq: nextSequenceNumber })}>Hva er GIGGEN</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "break", seq: nextSequenceNumber })}>Pause</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "crew", seq: nextSequenceNumber })}>Crew</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "custom", seq: nextSequenceNumber })}>Egendefinert</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
