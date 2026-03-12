@@ -282,14 +282,6 @@ export function LineupPostersSection({
                           <Link to={`/project/${artist.slug}`} className="hover:text-accent transition-colors">
                             Les mer
                           </Link>
-                          {artist.event_slug && (
-                            <>
-                              <span className="text-white/20">·</span>
-                              <Link to={`/event/${artist.event_slug}`} className="hover:text-accent transition-colors">
-                                Se hvor de spiller
-                              </Link>
-                            </>
-                          )}
                         </div>
                       </div>
                     ))
