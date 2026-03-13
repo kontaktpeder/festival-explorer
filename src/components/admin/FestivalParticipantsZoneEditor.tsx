@@ -24,6 +24,7 @@ interface FestivalParticipantPermissions {
   can_see_report: boolean;
   can_see_revenue: boolean;
   can_edit_festival_media: boolean;
+  can_view_runsheet: boolean;
 }
 
 interface FestivalParticipantRow {
