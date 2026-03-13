@@ -12,7 +12,7 @@ import { PersonaSearchPicker } from "@/components/persona/PersonaSearchPicker";
 import { usePersonaSearch, type PersonaOption } from "@/hooks/usePersonaSearch";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 
-type FestivalZone = "backstage" | "host" | "crew" | "other";
+type FestivalZone = "backstage" | "host" | "crew" | "on_stage" | "other";
 
 interface FestivalParticipantPermissions {
   can_edit_festival: boolean;
