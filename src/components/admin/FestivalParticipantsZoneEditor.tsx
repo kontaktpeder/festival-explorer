@@ -379,6 +379,7 @@ export function FestivalParticipantsZoneEditor({
                                 can_see_report: !!row.can_see_report,
                                 can_see_revenue: !!row.can_see_revenue,
                                 can_edit_festival_media: !!row.can_edit_festival_media,
+                                can_view_runsheet: !!row.can_view_runsheet,
                                 [key]: !!v,
                               })
                             }
