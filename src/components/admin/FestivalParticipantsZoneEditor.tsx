@@ -202,6 +202,7 @@ export function FestivalParticipantsZoneEditor({
       can_see_report: false,
       can_see_revenue: false,
       can_edit_festival_media: false,
+      can_view_runsheet: zone === "on_stage" ? true : false,
     });
 
     if (error) {
