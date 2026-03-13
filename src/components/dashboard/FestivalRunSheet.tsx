@@ -52,9 +52,10 @@ import { useEventRunSheetDefault, useEventSceneOptions } from "@/hooks/useEventR
 
 interface FestivalRunSheetProps {
   festivalId: string;
+  readOnly?: boolean;
 }
 
-export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
+export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSheetProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [editingSlot, setEditingSlot] = useState<ExtendedEventProgramSlot | null>(null);
