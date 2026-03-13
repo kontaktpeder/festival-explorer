@@ -114,7 +114,26 @@ export default function FestivalTeamRoom() {
         </div>
       </header>
 
-      <main className="w-full px-4 sm:px-8 lg:px-12 py-5 sm:py-6">
+      <main className="w-full px-4 sm:px-8 lg:px-12 py-5 sm:py-6 space-y-6">
+        {canEdit && (
+          <div className="flex items-center justify-between bg-muted/30 border border-border rounded-lg p-4">
+            <div>
+              <p className="text-sm font-medium">Synk artist-tilgang</p>
+              <p className="text-xs text-muted-foreground">Gir prosjektmedlemmer i festivalen read-only kjøreplan-tilgang.</p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => syncArtistAccess.mutate()}
+              disabled={syncArtistAccess.isPending}
+              className="gap-1.5 shrink-0"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${syncArtistAccess.isPending ? "animate-spin" : ""}`} />
+              Synk
+            </Button>
+          </div>
+        )}
+
         <Tabs defaultValue="host" className="space-y-4">
           <TabsList>
             <TabsTrigger value="host">Arrangør</TabsTrigger>
