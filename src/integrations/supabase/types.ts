@@ -1227,6 +1227,7 @@ export type Database = {
           can_see_report: boolean | null
           can_see_revenue: boolean | null
           can_see_ticket_stats: boolean | null
+          can_view_runsheet: boolean
           created_at: string | null
           festival_id: string
           id: string
@@ -1247,6 +1248,7 @@ export type Database = {
           can_see_report?: boolean | null
           can_see_revenue?: boolean | null
           can_see_ticket_stats?: boolean | null
+          can_view_runsheet?: boolean
           created_at?: string | null
           festival_id: string
           id?: string
@@ -1267,6 +1269,7 @@ export type Database = {
           can_see_report?: boolean | null
           can_see_revenue?: boolean | null
           can_see_ticket_stats?: boolean | null
+          can_view_runsheet?: boolean
           created_at?: string | null
           festival_id?: string
           id?: string
