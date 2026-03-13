@@ -434,15 +434,15 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
             </div>
             <div>
               <h2 className="text-lg font-bold tracking-tight text-foreground">
-                Kjøreplan
+                Kjøreplan{readOnly ? " (kun visning)" : ""}
               </h2>
               <p className="text-xs text-muted-foreground">
-                {slots.length} punkt{slots.length !== 1 ? "er" : ""} · Produksjonsdokument
+                {slots.length} punkt{slots.length !== 1 ? "er" : ""} · {readOnly ? "Lesemodus" : "Produksjonsdokument"}
               </p>
             </div>
           </div>
-          {/* Desktop: all buttons inline */}
-          <div className="hidden md:flex items-center gap-2">
+          {/* Desktop: all buttons inline – hidden in readOnly */}
+          {!readOnly && (
             {/* Download PDF dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
