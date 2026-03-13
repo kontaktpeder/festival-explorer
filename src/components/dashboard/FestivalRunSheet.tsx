@@ -52,9 +52,10 @@ import { useEventRunSheetDefault, useEventSceneOptions } from "@/hooks/useEventR
 
 interface FestivalRunSheetProps {
   festivalId: string;
+  readOnly?: boolean;
 }
 
-export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
+export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSheetProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [editingSlot, setEditingSlot] = useState<ExtendedEventProgramSlot | null>(null);
@@ -361,11 +362,13 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
   const { slots, types } = data;
 
   const openEdit = (slot: ExtendedEventProgramSlot) => {
+    if (readOnly) return;
     setEditingSlot(slot);
     setDialogOpen(true);
   };
 
   const handleDelete = (slot: ExtendedEventProgramSlot) => {
+    if (readOnly) return;
     if (window.confirm("Slette denne raden?")) {
       deleteSlot.mutate(slot.id);
     }
@@ -431,16 +434,16 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
             </div>
             <div>
               <h2 className="text-lg font-bold tracking-tight text-foreground">
-                Kjøreplan
+                Kjøreplan{readOnly ? " (kun visning)" : ""}
               </h2>
               <p className="text-xs text-muted-foreground">
-                {slots.length} punkt{slots.length !== 1 ? "er" : ""} · Produksjonsdokument
+                {slots.length} punkt{slots.length !== 1 ? "er" : ""} · {readOnly ? "Lesemodus" : "Produksjonsdokument"}
               </p>
             </div>
           </div>
-          {/* Desktop: all buttons inline */}
-          <div className="hidden md:flex items-center gap-2">
-            {/* Download PDF dropdown */}
+          {/* Desktop: all buttons inline – hidden in readOnly */}
+          {!readOnly && (
+            <div className="hidden md:flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -546,10 +549,12 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Mobile: compact button row */}
+        {!readOnly && (
         <div className="flex md:hidden items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -604,6 +609,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+        )}
       </div>
 
       {/* Scene filter bar */}
@@ -669,12 +675,12 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
                   slotTypeMap={slotTypeMap}
                   startIndex={startIdx}
                   nowSlotId={nowSlotId}
-                  onEdit={openEdit}
-                  onDelete={handleDelete}
-                  onAddToSection={handleAddToSection}
-                  onRenameSection={handleRenameSection}
-                  onDeleteSection={handleDeleteSection}
-                   onTimeChange={handleSingleTimeChange}
+                  onEdit={readOnly ? () => {} : openEdit}
+                  onDelete={readOnly ? () => {} : handleDelete}
+                  onAddToSection={readOnly ? undefined : handleAddToSection}
+                  onRenameSection={readOnly ? undefined : handleRenameSection}
+                  onDeleteSection={readOnly ? undefined : handleDeleteSection}
+                  onTimeChange={readOnly ? undefined : handleSingleTimeChange}
                  />
               );
             });
@@ -683,7 +689,7 @@ export function FestivalRunSheet({ festivalId }: FestivalRunSheetProps) {
       )}
 
       {/* Edit dialog */}
-      {editingSlot && (
+      {!readOnly && editingSlot && (
         <RunSheetEditDialog
           festivalId={festivalId}
           festivalVenueId={festivalVenueId ?? null}

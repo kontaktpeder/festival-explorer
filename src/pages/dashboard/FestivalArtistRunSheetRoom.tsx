@@ -1,0 +1,48 @@
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { BackstageShell } from "@/components/layout/BackstageShell";
+import { LoadingState } from "@/components/ui/LoadingState";
+import { FestivalRunSheet } from "@/components/dashboard/FestivalRunSheet";
+
+export default function FestivalArtistRunSheetRoom() {
+  const { id } = useParams<{ id: string }>();
+
+  const { data: festival, isLoading } = useQuery({
+    queryKey: ["festival-shell", id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("festivals")
+        .select("id, name, slug")
+        .eq("id", id!)
+        .single();
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[100svh] bg-background flex items-center justify-center">
+        <LoadingState message="Laster..." />
+      </div>
+    );
+  }
+
+  if (!id) return null;
+
+  return (
+    <BackstageShell
+      title="Kjøreplan"
+      subtitle={festival?.name ? `${festival.name} · Kun visning` : "Kun visning"}
+      backTo={`/dashboard/festival/${id}`}
+      externalLink={
+        festival?.slug
+          ? { to: `/festival/${festival.slug}`, label: "Se live" }
+          : undefined
+      }
+    >
+      <FestivalRunSheet festivalId={id} readOnly />
+    </BackstageShell>
+  );
+}

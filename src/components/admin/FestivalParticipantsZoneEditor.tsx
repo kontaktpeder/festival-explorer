@@ -12,7 +12,7 @@ import { PersonaSearchPicker } from "@/components/persona/PersonaSearchPicker";
 import { usePersonaSearch, type PersonaOption } from "@/hooks/usePersonaSearch";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 
-type FestivalZone = "backstage" | "host" | "crew" | "other";
+type FestivalZone = "backstage" | "host" | "crew" | "on_stage" | "other";
 
 interface FestivalParticipantPermissions {
   can_edit_festival: boolean;
@@ -24,6 +24,7 @@ interface FestivalParticipantPermissions {
   can_see_report: boolean;
   can_see_revenue: boolean;
   can_edit_festival_media: boolean;
+  can_view_runsheet: boolean;
 }
 
 interface FestivalParticipantRow {
@@ -43,6 +44,7 @@ interface FestivalParticipantRow {
   can_see_report?: boolean;
   can_see_revenue?: boolean;
   can_edit_festival_media?: boolean;
+  can_view_runsheet?: boolean;
 }
 
 interface ResolvedRef {
@@ -133,7 +135,7 @@ export function FestivalParticipantsZoneEditor({
     setLoading(true);
     const { data, error } = await supabase
       .from("festival_participants")
-      .select("id, festival_id, zone, participant_kind, participant_id, role_label, sort_order, can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue, can_edit_festival_media")
+      .select("id, festival_id, zone, participant_kind, participant_id, role_label, sort_order, can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue, can_edit_festival_media, can_view_runsheet")
       .eq("festival_id", festivalId)
       .eq("zone", zone)
       .order("sort_order", { ascending: true });
@@ -200,6 +202,7 @@ export function FestivalParticipantsZoneEditor({
       can_see_report: false,
       can_see_revenue: false,
       can_edit_festival_media: false,
+      can_view_runsheet: zone === "on_stage" ? true : false,
     });
 
     if (error) {
@@ -360,6 +363,7 @@ export function FestivalParticipantsZoneEditor({
                         { key: "can_create_internal_ticket", label: "Internbillett" },
                         { key: "can_see_report", label: "Rapport" },
                         { key: "can_see_revenue", label: "Se inntekt" },
+                        { key: "can_view_runsheet", label: "Se kjøreplan" },
                       ] as const).map(({ key, label }) => (
                         <Label key={key} className="flex items-center gap-2 text-xs font-normal cursor-pointer">
                           <Checkbox
@@ -375,6 +379,7 @@ export function FestivalParticipantsZoneEditor({
                                 can_see_report: !!row.can_see_report,
                                 can_see_revenue: !!row.can_see_revenue,
                                 can_edit_festival_media: !!row.can_edit_festival_media,
+                                can_view_runsheet: !!row.can_view_runsheet,
                                 [key]: !!v,
                               })
                             }

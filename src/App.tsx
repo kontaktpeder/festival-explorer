@@ -40,6 +40,7 @@ import ResetPassword from "./pages/ResetPassword";
 import FestivalRoom from "./pages/dashboard/FestivalRoom";
 import FestivalProgramRoom from "./pages/dashboard/FestivalProgramRoom";
 import FestivalRunSheetRoom from "./pages/dashboard/FestivalRunSheetRoom";
+import FestivalArtistRunSheetRoom from "./pages/dashboard/FestivalArtistRunSheetRoom";
 import FestivalTicketsRoom from "./pages/dashboard/FestivalTicketsRoom";
 import FestivalMediaRoom from "./pages/dashboard/FestivalMediaRoom";
 import FestivalSettingsRoom from "./pages/dashboard/FestivalSettingsRoom";
@@ -132,6 +133,7 @@ const App = () => (
             <Route path="/dashboard/festival/:id" element={<FestivalRoom />} />
             <Route path="/dashboard/festival/:id/program" element={<FestivalProgramRoom />} />
             <Route path="/dashboard/festival/:id/run-sheet" element={<FestivalRunSheetRoom />} />
+            <Route path="/dashboard/festival/:id/runsheet/artist" element={<FestivalArtistRunSheetRoom />} />
             <Route path="/dashboard/festival/:id/tickets" element={<FestivalTicketsRoom />} />
             <Route path="/dashboard/festival/:id/media" element={<FestivalMediaRoom />} />
             <Route path="/dashboard/festival/:id/settings" element={<FestivalSettingsRoom />} />

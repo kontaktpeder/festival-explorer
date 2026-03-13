@@ -66,6 +66,7 @@ export default function FestivalRoom() {
           can_see_report: true,
           can_see_revenue: true,
           can_edit_festival_media: true,
+          can_view_runsheet: true,
         };
       }
 
@@ -80,7 +81,7 @@ export default function FestivalRoom() {
       const { data: fp } = await supabase
         .from("festival_participants")
         .select(
-          "can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue, can_edit_festival_media"
+          "can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue, can_edit_festival_media, can_view_runsheet"
         )
         .eq("festival_id", id!)
         .eq("participant_kind", "persona")
@@ -98,6 +99,7 @@ export default function FestivalRoom() {
         can_see_report: fp.some((f) => f.can_see_report),
         can_see_revenue: fp.some((f) => f.can_see_revenue),
         can_edit_festival_media: fp.some((f) => f.can_edit_festival_media),
+        can_view_runsheet: fp.some((f) => f.can_view_runsheet),
       };
     },
     enabled: !!id,
@@ -163,6 +165,13 @@ export default function FestivalRoom() {
       icon: ClipboardList,
       to: `/dashboard/festival/${id}/run-sheet`,
       hidden: !canAccessEvents,
+    },
+    {
+      title: "Kjøreplan (artist)",
+      description: "Se tider for lydprøve og sceneshow",
+      icon: ClipboardList,
+      to: `/dashboard/festival/${id}/runsheet/artist`,
+      hidden: !p?.can_view_runsheet || canAccessEvents,
     },
     {
       title: "Scan billetter",
