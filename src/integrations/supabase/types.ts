@@ -2825,6 +2825,10 @@ export type Database = {
         Args: { p_entity_id: string; p_persona_id: string }
         Returns: undefined
       }
+      sync_festival_artist_runsheet_access: {
+        Args: { p_festival_id: string }
+        Returns: undefined
+      }
       transfer_entity_ownership: {
         Args: { p_entity_id: string; p_new_owner_entity_team_id: string }
         Returns: undefined
