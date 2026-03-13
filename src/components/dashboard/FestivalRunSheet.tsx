@@ -672,12 +672,12 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
                   slotTypeMap={slotTypeMap}
                   startIndex={startIdx}
                   nowSlotId={nowSlotId}
-                  onEdit={openEdit}
-                  onDelete={handleDelete}
-                  onAddToSection={handleAddToSection}
-                  onRenameSection={handleRenameSection}
-                  onDeleteSection={handleDeleteSection}
-                   onTimeChange={handleSingleTimeChange}
+                  onEdit={readOnly ? () => {} : openEdit}
+                  onDelete={readOnly ? () => {} : handleDelete}
+                  onAddToSection={readOnly ? undefined : handleAddToSection}
+                  onRenameSection={readOnly ? undefined : handleRenameSection}
+                  onDeleteSection={readOnly ? undefined : handleDeleteSection}
+                  onTimeChange={readOnly ? undefined : handleSingleTimeChange}
                  />
               );
             });
