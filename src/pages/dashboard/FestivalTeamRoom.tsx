@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, UserPlus } from "lucide-react";
+import { ArrowLeft, UserPlus, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FestivalParticipantsZoneEditor } from "@/components/admin/FestivalParticipantsZoneEditor";
@@ -59,6 +60,21 @@ export default function FestivalTeamRoom() {
 
   const canEdit = permissions?.can_edit_festival;
 
+  const syncArtistAccess = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc("sync_festival_artist_runsheet_access", {
+        p_festival_id: id!,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Tilgang oppdatert – prosjektmedlemmer har nå kjøreplan-tilgang.");
+    },
+    onError: (error: Error) => {
+      toast.error("Kunne ikke oppdatere tilgang: " + error.message);
+    },
+  });
+
   const inviteTarget: ContextualInviteTarget | null = platformEntity
     ? {
         entityId: platformEntity.id,
@@ -98,7 +114,26 @@ export default function FestivalTeamRoom() {
         </div>
       </header>
 
-      <main className="w-full px-4 sm:px-8 lg:px-12 py-5 sm:py-6">
+      <main className="w-full px-4 sm:px-8 lg:px-12 py-5 sm:py-6 space-y-6">
+        {canEdit && (
+          <div className="flex items-center justify-between bg-muted/30 border border-border rounded-lg p-4">
+            <div>
+              <p className="text-sm font-medium">Synk artist-tilgang</p>
+              <p className="text-xs text-muted-foreground">Gir prosjektmedlemmer i festivalen read-only kjøreplan-tilgang.</p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => syncArtistAccess.mutate()}
+              disabled={syncArtistAccess.isPending}
+              className="gap-1.5 shrink-0"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${syncArtistAccess.isPending ? "animate-spin" : ""}`} />
+              Synk
+            </Button>
+          </div>
+        )}
+
         <Tabs defaultValue="host" className="space-y-4">
           <TabsList>
             <TabsTrigger value="host">Arrangør</TabsTrigger>
