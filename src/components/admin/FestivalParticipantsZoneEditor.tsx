@@ -363,6 +363,7 @@ export function FestivalParticipantsZoneEditor({
                         { key: "can_create_internal_ticket", label: "Internbillett" },
                         { key: "can_see_report", label: "Rapport" },
                         { key: "can_see_revenue", label: "Se inntekt" },
+                        { key: "can_view_runsheet", label: "Se kjøreplan" },
                       ] as const).map(({ key, label }) => (
                         <Label key={key} className="flex items-center gap-2 text-xs font-normal cursor-pointer">
                           <Checkbox
