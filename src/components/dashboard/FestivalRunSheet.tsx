@@ -686,7 +686,7 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
       )}
 
       {/* Edit dialog */}
-      {editingSlot && (
+      {!readOnly && editingSlot && (
         <RunSheetEditDialog
           festivalId={festivalId}
           festivalVenueId={festivalVenueId ?? null}
