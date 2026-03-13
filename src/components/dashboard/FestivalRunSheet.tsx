@@ -609,6 +609,7 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+        )}
       </div>
 
       {/* Scene filter bar */}
