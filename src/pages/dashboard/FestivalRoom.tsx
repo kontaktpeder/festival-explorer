@@ -80,7 +80,7 @@ export default function FestivalRoom() {
       const { data: fp } = await supabase
         .from("festival_participants")
         .select(
-          "can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue, can_edit_festival_media"
+          "can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue, can_edit_festival_media, can_view_runsheet"
         )
         .eq("festival_id", id!)
         .eq("participant_kind", "persona")
