@@ -362,11 +362,13 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
   const { slots, types } = data;
 
   const openEdit = (slot: ExtendedEventProgramSlot) => {
+    if (readOnly) return;
     setEditingSlot(slot);
     setDialogOpen(true);
   };
 
   const handleDelete = (slot: ExtendedEventProgramSlot) => {
+    if (readOnly) return;
     if (window.confirm("Slette denne raden?")) {
       deleteSlot.mutate(slot.id);
     }
