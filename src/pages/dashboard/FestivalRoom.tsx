@@ -66,6 +66,7 @@ export default function FestivalRoom() {
           can_see_report: true,
           can_see_revenue: true,
           can_edit_festival_media: true,
+          can_view_runsheet: true,
         };
       }
 
