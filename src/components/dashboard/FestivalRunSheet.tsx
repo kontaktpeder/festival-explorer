@@ -443,7 +443,7 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
           </div>
           {/* Desktop: all buttons inline – hidden in readOnly */}
           {!readOnly && (
-            {/* Download PDF dropdown */}
+            <div className="hidden md:flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
