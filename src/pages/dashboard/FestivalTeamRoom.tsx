@@ -60,6 +60,21 @@ export default function FestivalTeamRoom() {
 
   const canEdit = permissions?.can_edit_festival;
 
+  const syncArtistAccess = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc("sync_festival_artist_runsheet_access", {
+        p_festival_id: id!,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Tilgang oppdatert – prosjektmedlemmer har nå kjøreplan-tilgang.");
+    },
+    onError: (error: Error) => {
+      toast.error("Kunne ikke oppdatere tilgang: " + error.message);
+    },
+  });
+
   const inviteTarget: ContextualInviteTarget | null = platformEntity
     ? {
         entityId: platformEntity.id,
