@@ -98,6 +98,7 @@ export default function FestivalRoom() {
         can_see_report: fp.some((f) => f.can_see_report),
         can_see_revenue: fp.some((f) => f.can_see_revenue),
         can_edit_festival_media: fp.some((f) => f.can_edit_festival_media),
+        can_view_runsheet: fp.some((f) => f.can_view_runsheet),
       };
     },
     enabled: !!id,
