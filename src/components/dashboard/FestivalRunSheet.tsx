@@ -549,10 +549,12 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Mobile: compact button row */}
+        {!readOnly && (
         <div className="flex md:hidden items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
