@@ -133,6 +133,7 @@ const App = () => (
             <Route path="/dashboard/festival/:id" element={<FestivalRoom />} />
             <Route path="/dashboard/festival/:id/program" element={<FestivalProgramRoom />} />
             <Route path="/dashboard/festival/:id/run-sheet" element={<FestivalRunSheetRoom />} />
+            <Route path="/dashboard/festival/:id/runsheet/artist" element={<FestivalArtistRunSheetRoom />} />
             <Route path="/dashboard/festival/:id/tickets" element={<FestivalTicketsRoom />} />
             <Route path="/dashboard/festival/:id/media" element={<FestivalMediaRoom />} />
             <Route path="/dashboard/festival/:id/settings" element={<FestivalSettingsRoom />} />

@@ -167,6 +167,13 @@ export default function FestivalRoom() {
       hidden: !canAccessEvents,
     },
     {
+      title: "Kjøreplan (artist)",
+      description: "Se tider for lydprøve og sceneshow",
+      icon: ClipboardList,
+      to: `/dashboard/festival/${id}/runsheet/artist`,
+      hidden: !p?.can_view_runsheet || canAccessEvents,
+    },
+    {
       title: "Scan billetter",
       description: "Innsjekk og billettkontroll",
       icon: QrCode,
