@@ -19,7 +19,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Session ID is required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { apiVersion: "2023-10-16" });
     const session = await stripe.checkout.sessions.retrieve(sessionId);
     
     if (session.payment_status !== "paid") {
