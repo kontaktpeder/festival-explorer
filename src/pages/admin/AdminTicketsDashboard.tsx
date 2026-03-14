@@ -108,6 +108,7 @@ interface TicketWithRelations {
   chargeback_at: string | null;
   stripe_session_id: string;
   stripe_payment_intent_id: string | null;
+  note?: string | null;
   ticket_type_id: string;
   ticket_types?: Partial<TicketType> | null;
   ticket_events?: { id?: string; name?: string; attendance_count?: number; boilerroom_attendance_count?: number } | null;
