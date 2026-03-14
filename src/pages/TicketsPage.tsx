@@ -166,7 +166,7 @@ export default function TicketsPage() {
     const saleStatusLabel = getSaleStatusLabel(type);
     const canSelect = !soldOut && saleOpen;
     const remaining = type.capacity - type.issued;
-    const limitedCapacity = type.code === "FESTIVALPASS_BOILER";
+    const limitedCapacity = type.code === "FESTIVALPASS_BOILER" || type.code === "BOILER_ADDON";
     const showRemaining = !soldOut && saleOpen && remaining <= 20 && !limitedCapacity;
     const meta = getTicketMeta(type.code);
     const isSelected = selectedType === type.id;
