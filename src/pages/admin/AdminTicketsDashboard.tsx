@@ -485,6 +485,7 @@ function useStripeSync() {
 export default function AdminTicketsDashboard() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchCategory, setSearchCategory] = useState<string>("ALL");
   const [searchResults, setSearchResults] = useState<TicketWithRelations[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [internalName, setInternalName] = useState("");
