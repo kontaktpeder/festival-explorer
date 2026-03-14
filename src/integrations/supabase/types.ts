@@ -2662,6 +2662,10 @@ export type Database = {
       }
       can_manage_venue: { Args: { p_venue_id: string }; Returns: boolean }
       can_scan_tickets_any: { Args: never; Returns: boolean }
+      can_scan_tickets_for_user: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
       can_see_report_any: { Args: never; Returns: boolean }
       can_see_revenue_any: { Args: never; Returns: boolean }
       can_see_ticket_stats_any: { Args: never; Returns: boolean }
