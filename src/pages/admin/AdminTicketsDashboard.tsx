@@ -83,10 +83,16 @@ const TYPE_ORDER = ['EARLYBIRD', 'ORDINAR', 'FESTIVALPASS_BOILER', 'BOILER', 'LI
 
 interface TicketType {
   id: string;
+  event_id: string;
   name: string;
   code: string;
+  description: string | null;
   price_nok: number;
   capacity: number;
+  visible: boolean | null;
+  sort_order: number | null;
+  sales_start: string | null;
+  sales_end: string | null;
 }
 
 interface TicketWithRelations {
