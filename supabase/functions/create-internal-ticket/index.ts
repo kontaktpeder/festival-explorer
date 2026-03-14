@@ -112,6 +112,7 @@ serve(async (req) => {
         stripe_session_id: internalSessionId,
         stripe_payment_intent_id: null,
         status: "VALID",
+        note: note || null,
       })
       .select("id, ticket_code")
       .single();

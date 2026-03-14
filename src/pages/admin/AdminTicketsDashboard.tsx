@@ -713,7 +713,7 @@ export default function AdminTicketsDashboard() {
           ticket_events (name)
         `)
         .or(
-          `ticket_code.ilike.%${searchQuery}%,buyer_name.ilike.%${searchQuery}%,buyer_email.ilike.%${searchQuery}%,stripe_session_id.ilike.%${searchQuery}%`
+          `ticket_code.ilike.%${searchQuery}%,buyer_name.ilike.%${searchQuery}%,buyer_email.ilike.%${searchQuery}%,stripe_session_id.ilike.%${searchQuery}%,note.ilike.%${searchQuery}%`
         )
         .limit(20);
 
