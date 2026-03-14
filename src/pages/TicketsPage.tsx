@@ -280,7 +280,15 @@ export default function TicketsPage() {
           </div>
         )}
 
-
+        {/* Add-on: BOILER ROOM */}
+        {addOns.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/70">
+              Add-on
+            </h3>
+            {addOns.map(renderTicketCard)}
+          </div>
+        )}
         {/* Trust */}
         <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/40 pt-2">
           <ShieldCheck className="w-3.5 h-3.5" />
