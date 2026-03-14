@@ -82,16 +82,13 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Check staff role
-    const { data: staffRole, error: roleError } = await supabaseAdmin
-      .from("staff_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .single();
+    // Check scan permission (admin, staff_roles crew, or festival_participants can_scan_tickets)
+    const { data: canScan, error: scanPermError } = await supabaseAdmin
+      .rpc("can_scan_tickets_for_user", { p_user_id: user.id });
 
-    if (roleError || !staffRole || !["admin", "crew"].includes(staffRole.role)) {
+    if (scanPermError || !canScan) {
       return new Response(
-        JSON.stringify({ success: false, result: "error", error: "Staff access required" }),
+        JSON.stringify({ success: false, result: "error", error: "Du har ikke tilgang til å skanne billetter" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
