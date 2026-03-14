@@ -1038,6 +1038,95 @@ export default function AdminTicketsDashboard() {
             )}
           </div>
 
+          {/* Billettyper – synlighet og salgsvindu */}
+          {isAdmin && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Billettyper</CardTitle>
+                    <CardDescription>
+                      Velg hva som vises på /tickets (synlig) og når salget er åpent (salgsvindu). Tomme felt = alltid åpent.
+                    </CardDescription>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => setAddTypeOpen(true)}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Legg til
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Type</TableHead>
+                      <TableHead className="w-20 text-center">Synlig</TableHead>
+                      <TableHead>Salg åpner</TableHead>
+                      <TableHead>Salg stenger</TableHead>
+                      <TableHead className="w-20" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {stats?.salesByType.map((type) => (
+                      <TableRow key={type.id}>
+                        <TableCell>
+                          <span className="font-medium">{type.name}</span>
+                          <span className="text-muted-foreground text-xs ml-1">({type.code})</span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Switch
+                            checked={type.visible ?? true}
+                            onCheckedChange={(checked) =>
+                              updateTicketTypeMeta.mutate({
+                                ticketTypeId: type.id,
+                                visible: checked,
+                                sales_start: type.sales_start ?? null,
+                                sales_end: type.sales_end ?? null,
+                              })
+                            }
+                            disabled={updateTicketTypeMeta.isPending}
+                          />
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {type.sales_start
+                            ? format(new Date(type.sales_start), "d. MMM yyyy HH:mm", { locale: nb })
+                            : "–"}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {type.sales_end
+                            ? format(new Date(type.sales_end), "d. MMM yyyy HH:mm", { locale: nb })
+                            : "–"}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setEditingTypeId(type.id);
+                              setEditVisible(type.visible ?? true);
+                              setEditSalesStart(
+                                type.sales_start
+                                  ? format(new Date(type.sales_start), "yyyy-MM-dd'T'HH:mm")
+                                  : ""
+                              );
+                              setEditSalesEnd(
+                                type.sales_end
+                                  ? format(new Date(type.sales_end), "yyyy-MM-dd'T'HH:mm")
+                                  : ""
+                              );
+                            }}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Kapasitet per billettype – redigerbar */}
           <Card>
             <CardHeader>
