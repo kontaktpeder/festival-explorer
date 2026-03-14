@@ -302,8 +302,9 @@ serve(async (req) => {
 
     // Determine if ticket has boilerroom access
     const ticketTypeCode = ticket.ticket_types?.code?.toUpperCase() || "";
-    const hasBoilerroomAccess = ticketTypeCode.includes("BOILERROOM") || 
-                                ticketTypeCode === "BOILERROOM";
+    const ticketTypeName = ticket.ticket_types?.name?.toUpperCase() || "";
+    const hasBoilerroomAccess = ticketTypeCode.includes("BOILERROOM") || ticketTypeCode.includes("BOILER_ROOM") || ticketTypeCode.includes("BOILER-ROOM") ||
+                                ticketTypeName.includes("BOILERROOM") || ticketTypeName.includes("BOILER ROOM") || ticketTypeName.includes("BOILER-ROOM");
 
     // Atomic check-in via RPC (UPDATE tickets + INSERT checkins in one DB transaction)
     const { data: rpcResult, error: rpcError } = await supabaseAdmin.rpc(
