@@ -705,21 +705,33 @@ export default function AdminTicketsDashboard() {
 
   // Search tickets
   const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim() && searchCategory === "ALL") return;
 
     setIsSearching(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("tickets")
         .select(`
           *,
-          ticket_types (name, code),
+          ticket_types!inner (name, code),
           ticket_events (name)
         `)
-        .or(
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+      // Filter by category (ticket type code)
+      if (searchCategory !== "ALL") {
+        query = query.eq("ticket_types.code", searchCategory);
+      }
+
+      // Text search across multiple fields
+      if (searchQuery.trim()) {
+        query = query.or(
           `ticket_code.ilike.%${searchQuery}%,buyer_name.ilike.%${searchQuery}%,buyer_email.ilike.%${searchQuery}%,stripe_session_id.ilike.%${searchQuery}%,note.ilike.%${searchQuery}%`
-        )
-        .limit(20);
+        );
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setSearchResults((data || []) as unknown as TicketWithRelations[]);
