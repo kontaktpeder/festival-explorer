@@ -94,7 +94,7 @@ serve(async (req) => {
     if (query) {
       // Search by ticket code, name, or email
       dbQuery = dbQuery.or(
-        `ticket_code.ilike.%${query}%,buyer_name.ilike.%${query}%,buyer_email.ilike.%${query}%`
+        `ticket_code.ilike.%${query}%,buyer_name.ilike.%${query}%,buyer_email.ilike.%${query}%,note.ilike.%${query}%`
       );
     }
 

@@ -108,6 +108,7 @@ interface TicketWithRelations {
   chargeback_at: string | null;
   stripe_session_id: string;
   stripe_payment_intent_id: string | null;
+  note?: string | null;
   ticket_type_id: string;
   ticket_types?: Partial<TicketType> | null;
   ticket_events?: { id?: string; name?: string; attendance_count?: number; boilerroom_attendance_count?: number } | null;
@@ -713,7 +714,7 @@ export default function AdminTicketsDashboard() {
           ticket_events (name)
         `)
         .or(
-          `ticket_code.ilike.%${searchQuery}%,buyer_name.ilike.%${searchQuery}%,buyer_email.ilike.%${searchQuery}%,stripe_session_id.ilike.%${searchQuery}%`
+          `ticket_code.ilike.%${searchQuery}%,buyer_name.ilike.%${searchQuery}%,buyer_email.ilike.%${searchQuery}%,stripe_session_id.ilike.%${searchQuery}%,note.ilike.%${searchQuery}%`
         )
         .limit(20);
 
@@ -1591,6 +1592,11 @@ export default function AdminTicketsDashboard() {
                         <p className="text-xs text-muted-foreground">
                           {ticket.ticket_types?.name}
                         </p>
+                        {ticket.note && (
+                          <p className="text-xs text-muted-foreground italic">
+                            📝 {ticket.note}
+                          </p>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         {ticket.checked_in_at ? (
