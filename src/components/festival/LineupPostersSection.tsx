@@ -121,11 +121,11 @@ export function LineupPostersSection({
     return groups;
   }, [artists]);
 
-  // Build a lookup: entity id → earliest start time from program slots
+  // Build a lookup: entity id → earliest start time from ALL program slots (event + festival)
   const entityStartTime = useMemo(() => {
     const map = new Map<string, string>();
-    if (!programSlots) return map;
-    programSlots.forEach((s) => {
+    const allSlots = [...(programSlots || []), ...(festivalSlots || [])];
+    allSlots.forEach((s) => {
       if (!s.entity_id) return;
       const existing = map.get(s.entity_id);
       if (!existing || s.starts_at < existing) {
@@ -133,7 +133,7 @@ export function LineupPostersSection({
       }
     });
     return map;
-  }, [programSlots]);
+  }, [programSlots, festivalSlots]);
 
   const useSlots = !!slotsByZone;
 
