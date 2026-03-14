@@ -119,6 +119,20 @@ export function LineupPostersSection({
     return groups;
   }, [artists]);
 
+  // Build a lookup: entity id → earliest start time from program slots
+  const entityStartTime = useMemo(() => {
+    const map = new Map<string, string>();
+    if (!programSlots) return map;
+    programSlots.forEach((s) => {
+      if (!s.entity_id) return;
+      const existing = map.get(s.entity_id);
+      if (!existing || s.starts_at < existing) {
+        map.set(s.entity_id, s.starts_at);
+      }
+    });
+    return map;
+  }, [programSlots]);
+
   const useSlots = !!slotsByZone;
 
   return (
