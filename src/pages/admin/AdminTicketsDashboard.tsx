@@ -377,10 +377,13 @@ function useCheckInStats() {
       // Not checked in
       const notCheckedIn = totalValid - checkedIn;
 
-      // Boilerroom access (tickets with BOILERROOM code)
+      // Boilerroom access (tickets with boilerroom-related codes)
       const boilerroomAccess = typedTickets.filter((t) => {
         const code = t.ticket_types?.code?.toUpperCase() || "";
-        return code.includes("BOILERROOM") || code === "BOILERROOM";
+        const name = t.ticket_types?.name?.toUpperCase() || "";
+        // Match codes/names containing BOILERROOM, BOILER_ROOM, BOILER ROOM, or add-on variants
+        return code.includes("BOILERROOM") || code.includes("BOILER_ROOM") || code.includes("BOILER-ROOM") ||
+               name.includes("BOILERROOM") || name.includes("BOILER ROOM") || name.includes("BOILER-ROOM");
       });
 
       const boilerroomCheckedIn = boilerroomAccess.filter(
