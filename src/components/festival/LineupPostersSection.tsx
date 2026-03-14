@@ -263,8 +263,18 @@ export function LineupPostersSection({
                 ) : (
                   /* ── Fallback: artist names ── */
                   hasContent ? (
-                    zoneArtists.map((artist) => (
+                    zoneArtists.map((artist) => {
+                      const startTime = entityStartTime.get(artist.id);
+                      return (
                       <div key={artist.id} className="flex flex-col items-center text-center">
+                        {startTime && (
+                          <span
+                            className="text-[10px] text-white/35 font-mono tabular-nums tracking-[0.2em] uppercase mb-1"
+                            style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}
+                          >
+                            {formatTime(startTime)}
+                          </span>
+                        )}
                         <Link
                           to={`/project/${artist.slug}`}
                           className={cn(
@@ -299,7 +309,8 @@ export function LineupPostersSection({
                           </Link>
                         </div>
                       </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <p className={cn("text-sm tracking-widest uppercase", zone.accentClass, "opacity-40")}>
                       Kommer snart...
