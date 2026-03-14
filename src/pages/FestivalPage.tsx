@@ -709,6 +709,7 @@ export default function FestivalPage() {
                     <LineupPostersSection
                       artists={allArtistsWithEventSlug}
                       programSlots={festivalProgramSlots}
+                      festivalSlots={festivalOnlySlots}
                       eventIdToSlug={eventIdToSlug}
                       zoneEventSlugs={zoneEventSlugs}
                     />

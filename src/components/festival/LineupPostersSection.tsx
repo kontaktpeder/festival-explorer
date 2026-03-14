@@ -24,6 +24,7 @@ interface Artist {
 interface LineupPostersSectionProps {
   artists: Artist[];
   programSlots?: ProgramSlotItem[];
+  festivalSlots?: ProgramSlotItem[];
   eventIdToSlug?: Record<string, string>;
   zoneEventSlugs?: Record<string, string>; // zone key → event page slug
 }
