@@ -329,6 +329,7 @@ export default function FestivalPage() {
   const allArtistsWithEventSlug = details?.allArtistsWithEventSlug || [];
   const festivalTeam = details?.festivalTeam;
   const festivalProgramSlots = details?.festivalProgramSlots || [];
+  const festivalOnlySlots = details?.festivalOnlySlots || [];
 
   const eventIdToSlug = useMemo(() => {
     const m: Record<string, string> = {};
@@ -708,6 +709,7 @@ export default function FestivalPage() {
                     <LineupPostersSection
                       artists={allArtistsWithEventSlug}
                       programSlots={festivalProgramSlots}
+                      festivalSlots={festivalOnlySlots}
                       eventIdToSlug={eventIdToSlug}
                       zoneEventSlugs={zoneEventSlugs}
                     />

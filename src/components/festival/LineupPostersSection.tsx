@@ -24,6 +24,7 @@ interface Artist {
 interface LineupPostersSectionProps {
   artists: Artist[];
   programSlots?: ProgramSlotItem[];
+  festivalSlots?: ProgramSlotItem[];
   eventIdToSlug?: Record<string, string>;
   zoneEventSlugs?: Record<string, string>; // zone key → event page slug
 }
@@ -76,6 +77,7 @@ function formatTime(iso: string) {
 export function LineupPostersSection({
   artists,
   programSlots,
+  festivalSlots,
   eventIdToSlug,
   zoneEventSlugs,
 }: LineupPostersSectionProps) {
@@ -119,11 +121,11 @@ export function LineupPostersSection({
     return groups;
   }, [artists]);
 
-  // Build a lookup: entity id → earliest start time from program slots
+  // Build a lookup: entity id → earliest start time from ALL program slots (event + festival)
   const entityStartTime = useMemo(() => {
     const map = new Map<string, string>();
-    if (!programSlots) return map;
-    programSlots.forEach((s) => {
+    const allSlots = [...(programSlots || []), ...(festivalSlots || [])];
+    allSlots.forEach((s) => {
       if (!s.entity_id) return;
       const existing = map.get(s.entity_id);
       if (!existing || s.starts_at < existing) {
@@ -131,7 +133,7 @@ export function LineupPostersSection({
       }
     });
     return map;
-  }, [programSlots]);
+  }, [programSlots, festivalSlots]);
 
   const useSlots = !!slotsByZone;
 
