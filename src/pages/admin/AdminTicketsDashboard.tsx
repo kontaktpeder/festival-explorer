@@ -598,6 +598,72 @@ export default function AdminTicketsDashboard() {
     },
   });
 
+  // Ticket type visibility/sales window mutation
+  const updateTicketTypeMeta = useMutation({
+    mutationFn: async ({
+      ticketTypeId,
+      visible,
+      sales_start,
+      sales_end,
+    }: {
+      ticketTypeId: string;
+      visible: boolean;
+      sales_start: string | null;
+      sales_end: string | null;
+    }) => {
+      const { error } = await supabase
+        .from("ticket_types")
+        .update({
+          visible,
+          sales_start: sales_start || null,
+          sales_end: sales_end || null,
+        })
+        .eq("id", ticketTypeId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ticket-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["ticket-types-with-counts"] });
+      toast.success("Billettype oppdatert");
+      setEditingTypeId(null);
+    },
+    onError: (e: Error) => toast.error("Feil: " + e.message),
+  });
+
+  // Create new ticket type mutation
+  const createTicketType = useMutation({
+    mutationFn: async (payload: {
+      event_id: string;
+      code: string;
+      name: string;
+      description: string | null;
+      price_nok: number;
+      capacity: number;
+      visible: boolean;
+      sales_start: string | null;
+      sales_end: string | null;
+      sort_order: number;
+    }) => {
+      const { error } = await supabase.from("ticket_types").insert(payload);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ticket-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["ticket-types-with-counts"] });
+      toast.success("Billettype opprettet");
+      setAddTypeOpen(false);
+      setNewCode("");
+      setNewName("");
+      setNewDescription("");
+      setNewPriceNok(0);
+      setNewCapacity(100);
+      setNewVisible(true);
+      setNewSalesStart("");
+      setNewSalesEnd("");
+    },
+    onError: (e: Error) => toast.error("Feil: " + e.message),
+  });
+
   // Export CSV
   const exportCSV = useMutation({
     mutationFn: async () => {
