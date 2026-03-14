@@ -18,6 +18,7 @@ interface Artist {
   logo_url?: string | null;
   logo_display_mode?: string;
   event_slug?: string;
+  entity_id?: string;
 }
 
 interface LineupPostersSectionProps {
@@ -117,6 +118,20 @@ export function LineupPostersSection({
     });
     return groups;
   }, [artists]);
+
+  // Build a lookup: entity id → earliest start time from program slots
+  const entityStartTime = useMemo(() => {
+    const map = new Map<string, string>();
+    if (!programSlots) return map;
+    programSlots.forEach((s) => {
+      if (!s.entity_id) return;
+      const existing = map.get(s.entity_id);
+      if (!existing || s.starts_at < existing) {
+        map.set(s.entity_id, s.starts_at);
+      }
+    });
+    return map;
+  }, [programSlots]);
 
   const useSlots = !!slotsByZone;
 
@@ -248,8 +263,18 @@ export function LineupPostersSection({
                 ) : (
                   /* ── Fallback: artist names ── */
                   hasContent ? (
-                    zoneArtists.map((artist) => (
+                    zoneArtists.map((artist) => {
+                      const startTime = entityStartTime.get(artist.id);
+                      return (
                       <div key={artist.id} className="flex flex-col items-center text-center">
+                        {startTime && (
+                          <span
+                            className="text-[10px] text-white/35 font-mono tabular-nums tracking-[0.2em] uppercase mb-1"
+                            style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}
+                          >
+                            {formatTime(startTime)}
+                          </span>
+                        )}
                         <Link
                           to={`/project/${artist.slug}`}
                           className={cn(
@@ -284,7 +309,8 @@ export function LineupPostersSection({
                           </Link>
                         </div>
                       </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <p className={cn("text-sm tracking-widest uppercase", zone.accentClass, "opacity-40")}>
                       Kommer snart...
