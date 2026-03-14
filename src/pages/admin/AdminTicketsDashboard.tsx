@@ -1532,8 +1532,27 @@ export default function AdminTicketsDashboard() {
                   {checkInStats?.checkedIn || 0}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  av {checkInStats?.totalValid || 0} gyldige billetter
+                  av {checkInStats?.totalValid || 0} gyldige billetter · {stats?.totalCapacity || 0} plasser totalt
                 </p>
+                {(() => {
+                  const checkedIn = checkInStats?.checkedIn || 0;
+                  const capacity = stats?.totalCapacity || 0;
+                  const pct = capacity > 0 ? Math.min((checkedIn / capacity) * 100, 100) : 0;
+                  const color = pct >= 90 ? 'bg-red-500' : pct >= 70 ? 'bg-yellow-500' : 'bg-green-500';
+                  return (
+                    <div className="mt-2">
+                      <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${color}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        {Math.round(pct)}% kapasitet brukt
+                      </p>
+                    </div>
+                  );
+                })()}
               </CardContent>
             </Card>
 
