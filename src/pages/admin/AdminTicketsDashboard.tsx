@@ -1724,6 +1724,165 @@ export default function AdminTicketsDashboard() {
         </TabsContent>
         )}
       </Tabs>
+
+      {/* Edit sales window dialog */}
+      <Dialog open={!!editingTypeId} onOpenChange={(open) => !open && setEditingTypeId(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Rediger salgsvindu</DialogTitle>
+            <DialogDescription>
+              Synlighet og når salget åpner/stenger. Tom = alltid åpent.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Switch checked={editVisible} onCheckedChange={setEditVisible} id="edit-visible" />
+              <Label htmlFor="edit-visible">Vis på billettsiden</Label>
+            </div>
+            <div className="space-y-1">
+              <Label>Salg åpner (valgfri)</Label>
+              <Input
+                type="datetime-local"
+                value={editSalesStart}
+                onChange={(e) => setEditSalesStart(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Salg stenger (valgfri)</Label>
+              <Input
+                type="datetime-local"
+                value={editSalesEnd}
+                onChange={(e) => setEditSalesEnd(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingTypeId(null)}>
+              Avbryt
+            </Button>
+            <Button
+              onClick={() => {
+                if (!editingTypeId) return;
+                updateTicketTypeMeta.mutate({
+                  ticketTypeId: editingTypeId,
+                  visible: editVisible,
+                  sales_start: editSalesStart.trim() || null,
+                  sales_end: editSalesEnd.trim() || null,
+                });
+              }}
+              disabled={updateTicketTypeMeta.isPending}
+            >
+              Lagre
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add ticket type dialog */}
+      <Dialog open={addTypeOpen} onOpenChange={setAddTypeOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Legg til billettype</DialogTitle>
+            <DialogDescription>
+              Ny produkttype som vises på /tickets. Kode bør være unik (f.eks. EARLYBIRD, VIP).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <Label>Kode</Label>
+              <Input
+                placeholder="EARLYBIRD"
+                value={newCode}
+                onChange={(e) => setNewCode(e.target.value.toUpperCase())}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Navn</Label>
+              <Input
+                placeholder="Early Bird"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Beskrivelse (valgfri)</Label>
+              <Input
+                placeholder="Festivalpass til redusert pris"
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>Pris (øre)</Label>
+                <Input
+                  type="number"
+                  value={newPriceNok}
+                  onChange={(e) => setNewPriceNok(parseInt(e.target.value, 10) || 0)}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label>Kapasitet</Label>
+                <Input
+                  type="number"
+                  value={newCapacity}
+                  onChange={(e) => setNewCapacity(parseInt(e.target.value, 10) || 100)}
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch checked={newVisible} onCheckedChange={setNewVisible} id="new-visible" />
+              <Label htmlFor="new-visible">Synlig på billettsiden</Label>
+            </div>
+            <div className="space-y-1">
+              <Label>Salg åpner (valgfri)</Label>
+              <Input
+                type="datetime-local"
+                value={newSalesStart}
+                onChange={(e) => setNewSalesStart(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Salg stenger (valgfri)</Label>
+              <Input
+                type="datetime-local"
+                value={newSalesEnd}
+                onChange={(e) => setNewSalesEnd(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddTypeOpen(false)}>
+              Avbryt
+            </Button>
+            <Button
+              onClick={() => {
+                const eventId = stats?.salesByType?.[0]?.event_id;
+                if (!eventId) {
+                  toast.error("Kunne ikke finne event – opprett minst én type manuelt først.");
+                  return;
+                }
+                const maxSort = Math.max(0, ...(stats?.salesByType?.map((t) => t.sort_order ?? 0) ?? []));
+                createTicketType.mutate({
+                  event_id: eventId,
+                  code: newCode.trim().toUpperCase(),
+                  name: newName.trim(),
+                  description: newDescription.trim() || null,
+                  price_nok: newPriceNok,
+                  capacity: newCapacity,
+                  visible: newVisible,
+                  sales_start: newSalesStart.trim() || null,
+                  sales_end: newSalesEnd.trim() || null,
+                  sort_order: maxSort + 1,
+                });
+              }}
+              disabled={createTicketType.isPending || !newCode.trim() || !newName.trim()}
+            >
+              Opprett
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
