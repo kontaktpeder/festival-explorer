@@ -1581,7 +1581,29 @@ export default function AdminTicketsDashboard() {
               <div className="flex flex-col sm:flex-row gap-2">
                 <select
                   value={searchCategory}
-                  onChange={(e) => setSearchCategory(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSearchCategory(val);
+                    // Auto-load all tickets for the selected category
+                    if (val !== "ALL") {
+                      setTimeout(() => {
+                        setIsSearching(true);
+                        supabase
+                          .from("tickets")
+                          .select(`*, ticket_types!inner (name, code), ticket_events (name)`)
+                          .eq("ticket_types.code", val)
+                          .order("created_at", { ascending: false })
+                          .limit(200)
+                          .then(({ data, error }) => {
+                            if (!error) setSearchResults((data || []) as unknown as TicketWithRelations[]);
+                            else toast.error("Kunne ikke laste billetter");
+                            setIsSearching(false);
+                          });
+                      }, 0);
+                    } else {
+                      setSearchResults([]);
+                    }
+                  }}
                   className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <option value="ALL">Alle kategorier</option>
