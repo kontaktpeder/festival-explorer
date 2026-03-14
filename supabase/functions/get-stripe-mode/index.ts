@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
+import Stripe from "https://esm.sh/stripe@14.21.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,7 +20,7 @@ serve(async (req) => {
 
     // Initialize Stripe to verify the key works
     const stripe = new Stripe(stripeKey, {
-      apiVersion: "2025-08-27.basil",
+      apiVersion: "2023-10-16",
     });
 
     // Get account info to confirm mode
