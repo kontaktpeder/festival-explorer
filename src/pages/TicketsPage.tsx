@@ -34,8 +34,9 @@ function getTicketMeta(code: string) {
       return { tag: "Konserter", badge: null, recommended: false };
     case "FESTIVALPASS_BOILER":
       return { tag: "Konserter + BOILER ROOM", badge: "FULL TILGANG", recommended: true };
+    case "BOILER_ADDON":
+      return { tag: "Kun BOILER ROOM", badge: "ADD-ON", recommended: false };
     case "BOILER":
-      return { tag: "Kun BOILER ROOM", badge: null, recommended: false };
     default:
       return { tag: null, badge: null, recommended: false };
   }
