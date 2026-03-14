@@ -1591,6 +1591,11 @@ export default function AdminTicketsDashboard() {
                         <p className="text-xs text-muted-foreground">
                           {ticket.ticket_types?.name}
                         </p>
+                        {ticket.note && (
+                          <p className="text-xs text-muted-foreground italic">
+                            📝 {ticket.note}
+                          </p>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         {ticket.checked_in_at ? (
