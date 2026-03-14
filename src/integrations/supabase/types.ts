@@ -2292,6 +2292,7 @@ export type Database = {
           created_at: string | null
           event_id: string
           id: string
+          note: string | null
           refund_id: string | null
           refund_requested_at: string | null
           refund_status: string | null
@@ -2311,6 +2312,7 @@ export type Database = {
           created_at?: string | null
           event_id: string
           id?: string
+          note?: string | null
           refund_id?: string | null
           refund_requested_at?: string | null
           refund_status?: string | null
@@ -2330,6 +2332,7 @@ export type Database = {
           created_at?: string | null
           event_id?: string
           id?: string
+          note?: string | null
           refund_id?: string | null
           refund_requested_at?: string | null
           refund_status?: string | null
