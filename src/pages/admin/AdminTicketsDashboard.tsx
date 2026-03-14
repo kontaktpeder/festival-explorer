@@ -780,9 +780,16 @@ export default function AdminTicketsDashboard() {
       if (result?.result === 'denied') throw new Error(result.error || 'Ingen tilgang');
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, ticketId) => {
       queryClient.invalidateQueries({ queryKey: ["ticket-stats"] });
       queryClient.invalidateQueries({ queryKey: ["checkin-stats"] });
+      setSearchResults((prev) =>
+        prev.map((t) =>
+          t.id === ticketId
+            ? { ...t, status: "VALID", checked_in_at: null }
+            : t
+        )
+      );
       toast.success("Innsjekking nullstilt");
     },
     onError: (error: Error) => {
