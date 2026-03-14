@@ -119,7 +119,9 @@ export default function TicketsPage() {
   if (typesLoading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>;
 
   const festivalPassCodes = ["EARLYBIRD", "ORDINAR", "FESTIVALPASS_BOILER"];
+  const addOnCodes = ["BOILER_ADDON"];
   const festivalPasses = (ticketTypes || []).filter((t) => festivalPassCodes.includes(t.code));
+  const addOns = (ticketTypes || []).filter((t) => addOnCodes.includes(t.code));
 
   const renderPurchaseForm = () => (
     <div className="ticket-card rounded-lg mt-2 animate-fade-in">
