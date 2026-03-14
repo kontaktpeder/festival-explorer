@@ -751,9 +751,17 @@ export default function AdminTicketsDashboard() {
         note: "Admin override",
       });
     },
-    onSuccess: () => {
+    onSuccess: (_data, ticketId) => {
       queryClient.invalidateQueries({ queryKey: ["ticket-stats"] });
       queryClient.invalidateQueries({ queryKey: ["checkin-stats"] });
+      // Update local search results so UI reflects the change immediately
+      setSearchResults((prev) =>
+        prev.map((t) =>
+          t.id === ticketId
+            ? { ...t, status: "USED", checked_in_at: new Date().toISOString() }
+            : t
+        )
+      );
       toast.success("Billett markert som brukt");
     },
     onError: (error: Error) => {
@@ -772,9 +780,16 @@ export default function AdminTicketsDashboard() {
       if (result?.result === 'denied') throw new Error(result.error || 'Ingen tilgang');
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, ticketId) => {
       queryClient.invalidateQueries({ queryKey: ["ticket-stats"] });
       queryClient.invalidateQueries({ queryKey: ["checkin-stats"] });
+      setSearchResults((prev) =>
+        prev.map((t) =>
+          t.id === ticketId
+            ? { ...t, status: "VALID", checked_in_at: null }
+            : t
+        )
+      );
       toast.success("Innsjekking nullstilt");
     },
     onError: (error: Error) => {
