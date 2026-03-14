@@ -18,6 +18,7 @@ interface Artist {
   logo_url?: string | null;
   logo_display_mode?: string;
   event_slug?: string;
+  entity_id?: string;
 }
 
 interface LineupPostersSectionProps {
