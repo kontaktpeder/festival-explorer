@@ -485,6 +485,7 @@ function useStripeSync() {
 export default function AdminTicketsDashboard() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchCategory, setSearchCategory] = useState<string>("ALL");
   const [searchResults, setSearchResults] = useState<TicketWithRelations[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [internalName, setInternalName] = useState("");
@@ -704,21 +705,33 @@ export default function AdminTicketsDashboard() {
 
   // Search tickets
   const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim() && searchCategory === "ALL") return;
 
     setIsSearching(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("tickets")
         .select(`
           *,
-          ticket_types (name, code),
+          ticket_types!inner (name, code),
           ticket_events (name)
         `)
-        .or(
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+      // Filter by category (ticket type code)
+      if (searchCategory !== "ALL") {
+        query = query.eq("ticket_types.code", searchCategory);
+      }
+
+      // Text search across multiple fields
+      if (searchQuery.trim()) {
+        query = query.or(
           `ticket_code.ilike.%${searchQuery}%,buyer_name.ilike.%${searchQuery}%,buyer_email.ilike.%${searchQuery}%,stripe_session_id.ilike.%${searchQuery}%,note.ilike.%${searchQuery}%`
-        )
-        .limit(20);
+        );
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setSearchResults((data || []) as unknown as TicketWithRelations[]);
@@ -1561,70 +1574,90 @@ export default function AdminTicketsDashboard() {
             <CardHeader>
               <CardTitle>Søk billetter</CardTitle>
               <CardDescription>
-                Søk på navn, e-post, billettkode eller order-id
+                Søk på navn, e-post, billettkode, notat – eller filtrer på kategori
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <select
+                  value={searchCategory}
+                  onChange={(e) => setSearchCategory(e.target.value)}
+                  className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="ALL">Alle kategorier</option>
+                  <option value="CREW">Crew</option>
+                  <option value="MUSIKERE">Musikere</option>
+                  <option value="LISTE">Liste</option>
+                  <option value="EARLYBIRD">Early Bird</option>
+                  <option value="ORDINAR">Ordinær</option>
+                  <option value="FESTIVALPASS_BOILER">Festivalpass + Boiler</option>
+                  <option value="BOILER_ADDON">Boiler Room add-on</option>
+                </select>
                 <Input
-                  placeholder="Søk..."
+                  placeholder="Søk navn, e-post, notat..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  className="flex-1"
                 />
                 <Button onClick={handleSearch} disabled={isSearching}>
-                  <Search className="h-4 w-4 mr-2" />
+                  {isSearching ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
                   Søk
                 </Button>
               </div>
 
               {searchResults.length > 0 && (
-                <div className="space-y-2">
-                  {searchResults.map((ticket) => (
-                    <div
-                      key={ticket.id}
-                      className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                    >
-                      <div>
-                        <p className="font-medium">{ticket.buyer_name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {ticket.buyer_email}
-                        </p>
-                        <p className="font-mono text-sm">{ticket.ticket_code}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {ticket.ticket_types?.name}
-                        </p>
-                        {ticket.note && (
-                          <p className="text-xs text-muted-foreground italic">
-                            📝 {ticket.note}
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">{searchResults.length} resultat{searchResults.length !== 1 ? "er" : ""}</p>
+                  <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                    {searchResults.map((ticket) => (
+                      <div
+                        key={ticket.id}
+                        className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium">{ticket.buyer_name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {ticket.buyer_email}
                           </p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {ticket.checked_in_at ? (
-                          <>
-                            <Badge variant="default">Sjekket inn</Badge>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-mono text-sm">{ticket.ticket_code}</p>
+                            <Badge variant="outline" className="text-[10px]">
+                              {ticket.ticket_types?.name || ticket.ticket_types?.code}
+                            </Badge>
+                          </div>
+                          {ticket.note && (
+                            <p className="text-xs text-muted-foreground italic mt-0.5">
+                              📝 {ticket.note}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0 ml-2">
+                          {ticket.checked_in_at ? (
+                            <>
+                              <Badge variant="default">Sjekket inn</Badge>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => resetCheckIn.mutate(ticket.id)}
+                                disabled={resetCheckIn.isPending}
+                              >
+                                Nullstill
+                              </Button>
+                            </>
+                          ) : (
                             <Button
                               size="sm"
-                              variant="outline"
-                              onClick={() => resetCheckIn.mutate(ticket.id)}
-                              disabled={resetCheckIn.isPending}
+                              onClick={() => markAsUsed.mutate(ticket.id)}
+                              disabled={markAsUsed.isPending}
                             >
-                              Nullstill
+                              Marker som brukt
                             </Button>
-                          </>
-                        ) : (
-                          <Button
-                            size="sm"
-                            onClick={() => markAsUsed.mutate(ticket.id)}
-                            disabled={markAsUsed.isPending}
-                          >
-                            Marker som brukt
-                          </Button>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </CardContent>
