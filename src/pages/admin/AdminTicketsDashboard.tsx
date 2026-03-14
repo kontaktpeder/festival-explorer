@@ -490,6 +490,21 @@ export default function AdminTicketsDashboard() {
   const [internalNote, setInternalNote] = useState("");
   const [capacityDraft, setCapacityDraft] = useState<Record<string, number>>({});
 
+  // Ticket type management state
+  const [editingTypeId, setEditingTypeId] = useState<string | null>(null);
+  const [addTypeOpen, setAddTypeOpen] = useState(false);
+  const [editVisible, setEditVisible] = useState(true);
+  const [editSalesStart, setEditSalesStart] = useState("");
+  const [editSalesEnd, setEditSalesEnd] = useState("");
+  const [newCode, setNewCode] = useState("");
+  const [newName, setNewName] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+  const [newPriceNok, setNewPriceNok] = useState(0);
+  const [newCapacity, setNewCapacity] = useState(100);
+  const [newVisible, setNewVisible] = useState(true);
+  const [newSalesStart, setNewSalesStart] = useState("");
+  const [newSalesEnd, setNewSalesEnd] = useState("");
+
   const { data: stats, isLoading: statsLoading } = useTicketStats();
   const { data: issues, isLoading: issuesLoading } = useTicketIssues();
   const { data: checkInStats, isLoading: checkInLoading } = useCheckInStats();
