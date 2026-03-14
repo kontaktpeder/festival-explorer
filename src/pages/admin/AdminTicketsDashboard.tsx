@@ -24,6 +24,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import {
   AlertCircle,
   CheckCircle,
   Download,
@@ -37,6 +47,11 @@ import {
   Loader2,
   TestTube,
   Zap,
+  Plus,
+  Pencil,
+  Eye,
+  EyeOff,
+  Calendar,
 } from "lucide-react";
 
 // Fast Stripe-gebyr per betalt billett

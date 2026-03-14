@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Ticket, Music, ShieldCheck, Smartphone, Lock, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
 import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
 import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
 
@@ -19,6 +21,8 @@ interface TicketTypeWithCount {
   capacity: number;
   visible: boolean;
   issued: number;
+  sales_start: string | null;
+  sales_end: string | null;
 }
 
 /** UI-only tag/badge config per ticket code */
@@ -37,6 +41,22 @@ function getTicketMeta(code: string) {
   }
 }
 
+function isSaleOpen(t: { sales_start: string | null; sales_end: string | null }): boolean {
+  const now = Date.now();
+  if (t.sales_start && new Date(t.sales_start).getTime() > now) return false;
+  if (t.sales_end && new Date(t.sales_end).getTime() < now) return false;
+  return true;
+}
+
+function getSaleStatusLabel(t: { sales_start: string | null; sales_end: string | null }): string | null {
+  const now = Date.now();
+  if (t.sales_start && new Date(t.sales_start).getTime() > now) {
+    return `Åpner ${format(new Date(t.sales_start), "d. MMM yyyy", { locale: nb })}`;
+  }
+  if (t.sales_end && new Date(t.sales_end).getTime() < now) return "Salget er stengt";
+  return null;
+}
+
 export default function TicketsPage() {
   const [buyerName, setBuyerName] = useState("");
   const [buyerEmail, setBuyerEmail] = useState("");
@@ -51,7 +71,7 @@ export default function TicketsPage() {
     queryFn: async () => {
       const { data: types, error } = await supabase
         .from("ticket_types")
-        .select("id, code, name, description, price_nok, capacity, visible")
+        .select("id, code, name, description, price_nok, capacity, visible, sales_start, sales_end")
         .eq("visible", true)
         .order("sort_order");
       if (error) throw error;
@@ -139,9 +159,12 @@ export default function TicketsPage() {
 
   const renderTicketCard = (type: TicketTypeWithCount) => {
     const soldOut = type.issued >= type.capacity;
+    const saleOpen = isSaleOpen(type);
+    const saleStatusLabel = getSaleStatusLabel(type);
+    const canSelect = !soldOut && saleOpen;
     const remaining = type.capacity - type.issued;
     const limitedCapacity = type.code === "FESTIVALPASS_BOILER";
-    const showRemaining = !soldOut && remaining <= 20 && !limitedCapacity;
+    const showRemaining = !soldOut && saleOpen && remaining <= 20 && !limitedCapacity;
     const meta = getTicketMeta(type.code);
     const isSelected = selectedType === type.id;
 
@@ -149,11 +172,11 @@ export default function TicketsPage() {
       <div key={type.id}>
         <div
           className={`ticket-card rounded-lg transition-all duration-200 ${
-            soldOut
+            !canSelect
               ? "opacity-50 cursor-not-allowed"
               : "cursor-pointer hover:scale-[1.01]"
           } ${isSelected ? "selected" : ""}`}
-          onClick={() => !soldOut && setSelectedType(type.id)}
+          onClick={() => canSelect && setSelectedType(type.id)}
         >
           <div className="p-4 space-y-2">
             <div className="flex items-center justify-between">
@@ -165,7 +188,7 @@ export default function TicketsPage() {
                       {meta.badge}
                     </Badge>
                   )}
-                  {meta.recommended && !soldOut && (
+                  {meta.recommended && canSelect && (
                     <span className="text-[10px] text-accent/60 uppercase tracking-wider font-mono">
                       Anbefalt
                     </span>
@@ -179,6 +202,8 @@ export default function TicketsPage() {
                 )}
                 {soldOut ? (
                   <p className="text-xs font-semibold text-destructive">Utsolgt</p>
+                ) : saleStatusLabel ? (
+                  <p className="text-xs font-semibold text-muted-foreground">{saleStatusLabel}</p>
                 ) : limitedCapacity ? (
                   <p className="text-xs font-semibold text-accent">Begrenset kapasitet</p>
                 ) : showRemaining ? (
@@ -191,7 +216,7 @@ export default function TicketsPage() {
             </div>
           </div>
         </div>
-        {isSelected && renderPurchaseForm()}
+        {isSelected && canSelect && renderPurchaseForm()}
       </div>
     );
   };
