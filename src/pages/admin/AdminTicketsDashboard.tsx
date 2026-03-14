@@ -381,9 +381,8 @@ function useCheckInStats() {
       const boilerroomAccess = typedTickets.filter((t) => {
         const code = t.ticket_types?.code?.toUpperCase() || "";
         const name = t.ticket_types?.name?.toUpperCase() || "";
-        // Match codes/names containing BOILERROOM, BOILER_ROOM, BOILER ROOM, or add-on variants
-        return code.includes("BOILERROOM") || code.includes("BOILER_ROOM") || code.includes("BOILER-ROOM") ||
-               name.includes("BOILERROOM") || name.includes("BOILER ROOM") || name.includes("BOILER-ROOM");
+        // Match codes/names containing BOILER in any form (BOILERROOM, BOILER_ROOM, BOILER_ADDON, etc.)
+        return code.includes("BOILER") || name.includes("BOILER");
       });
 
       const boilerroomCheckedIn = boilerroomAccess.filter(

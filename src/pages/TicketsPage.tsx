@@ -34,8 +34,9 @@ function getTicketMeta(code: string) {
       return { tag: "Konserter", badge: null, recommended: false };
     case "FESTIVALPASS_BOILER":
       return { tag: "Konserter + BOILER ROOM", badge: "FULL TILGANG", recommended: true };
+    case "BOILER_ADDON":
+      return { tag: "Kun BOILER ROOM", badge: "ADD-ON", recommended: false };
     case "BOILER":
-      return { tag: "Kun BOILER ROOM", badge: null, recommended: false };
     default:
       return { tag: null, badge: null, recommended: false };
   }
@@ -118,7 +119,9 @@ export default function TicketsPage() {
   if (typesLoading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>;
 
   const festivalPassCodes = ["EARLYBIRD", "ORDINAR", "FESTIVALPASS_BOILER"];
+  const addOnCodes = ["BOILER_ADDON"];
   const festivalPasses = (ticketTypes || []).filter((t) => festivalPassCodes.includes(t.code));
+  const addOns = (ticketTypes || []).filter((t) => addOnCodes.includes(t.code));
 
   const renderPurchaseForm = () => (
     <div className="ticket-card rounded-lg mt-2 animate-fade-in">
@@ -163,7 +166,7 @@ export default function TicketsPage() {
     const saleStatusLabel = getSaleStatusLabel(type);
     const canSelect = !soldOut && saleOpen;
     const remaining = type.capacity - type.issued;
-    const limitedCapacity = type.code === "FESTIVALPASS_BOILER";
+    const limitedCapacity = type.code === "FESTIVALPASS_BOILER" || type.code === "BOILER_ADDON";
     const showRemaining = !soldOut && saleOpen && remaining <= 20 && !limitedCapacity;
     const meta = getTicketMeta(type.code);
     const isSelected = selectedType === type.id;
@@ -277,7 +280,15 @@ export default function TicketsPage() {
           </div>
         )}
 
-
+        {/* Add-on: BOILER ROOM */}
+        {addOns.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/70">
+              Add-on
+            </h3>
+            {addOns.map(renderTicketCard)}
+          </div>
+        )}
         {/* Trust */}
         <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/40 pt-2">
           <ShieldCheck className="w-3.5 h-3.5" />
