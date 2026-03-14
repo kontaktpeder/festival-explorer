@@ -77,6 +77,7 @@ function formatTime(iso: string) {
 export function LineupPostersSection({
   artists,
   programSlots,
+  festivalSlots,
   eventIdToSlug,
   zoneEventSlugs,
 }: LineupPostersSectionProps) {
