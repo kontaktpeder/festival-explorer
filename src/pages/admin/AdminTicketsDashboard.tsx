@@ -24,6 +24,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import {
   AlertCircle,
   CheckCircle,
   Download,
@@ -37,6 +47,11 @@ import {
   Loader2,
   TestTube,
   Zap,
+  Plus,
+  Pencil,
+  Eye,
+  EyeOff,
+  Calendar,
 } from "lucide-react";
 
 // Fast Stripe-gebyr per betalt billett
@@ -68,10 +83,16 @@ const TYPE_ORDER = ['EARLYBIRD', 'ORDINAR', 'FESTIVALPASS_BOILER', 'BOILER', 'LI
 
 interface TicketType {
   id: string;
+  event_id: string;
   name: string;
   code: string;
+  description: string | null;
   price_nok: number;
   capacity: number;
+  visible: boolean | null;
+  sort_order: number | null;
+  sales_start: string | null;
+  sales_end: string | null;
 }
 
 interface TicketWithRelations {
@@ -469,6 +490,21 @@ export default function AdminTicketsDashboard() {
   const [internalNote, setInternalNote] = useState("");
   const [capacityDraft, setCapacityDraft] = useState<Record<string, number>>({});
 
+  // Ticket type management state
+  const [editingTypeId, setEditingTypeId] = useState<string | null>(null);
+  const [addTypeOpen, setAddTypeOpen] = useState(false);
+  const [editVisible, setEditVisible] = useState(true);
+  const [editSalesStart, setEditSalesStart] = useState("");
+  const [editSalesEnd, setEditSalesEnd] = useState("");
+  const [newCode, setNewCode] = useState("");
+  const [newName, setNewName] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+  const [newPriceNok, setNewPriceNok] = useState(0);
+  const [newCapacity, setNewCapacity] = useState(100);
+  const [newVisible, setNewVisible] = useState(true);
+  const [newSalesStart, setNewSalesStart] = useState("");
+  const [newSalesEnd, setNewSalesEnd] = useState("");
+
   const { data: stats, isLoading: statsLoading } = useTicketStats();
   const { data: issues, isLoading: issuesLoading } = useTicketIssues();
   const { data: checkInStats, isLoading: checkInLoading } = useCheckInStats();
@@ -560,6 +596,72 @@ export default function AdminTicketsDashboard() {
     onError: (error: Error) => {
       toast.error("Kunne ikke oppdatere kapasitet: " + error.message);
     },
+  });
+
+  // Ticket type visibility/sales window mutation
+  const updateTicketTypeMeta = useMutation({
+    mutationFn: async ({
+      ticketTypeId,
+      visible,
+      sales_start,
+      sales_end,
+    }: {
+      ticketTypeId: string;
+      visible: boolean;
+      sales_start: string | null;
+      sales_end: string | null;
+    }) => {
+      const { error } = await supabase
+        .from("ticket_types")
+        .update({
+          visible,
+          sales_start: sales_start || null,
+          sales_end: sales_end || null,
+        })
+        .eq("id", ticketTypeId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ticket-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["ticket-types-with-counts"] });
+      toast.success("Billettype oppdatert");
+      setEditingTypeId(null);
+    },
+    onError: (e: Error) => toast.error("Feil: " + e.message),
+  });
+
+  // Create new ticket type mutation
+  const createTicketType = useMutation({
+    mutationFn: async (payload: {
+      event_id: string;
+      code: string;
+      name: string;
+      description: string | null;
+      price_nok: number;
+      capacity: number;
+      visible: boolean;
+      sales_start: string | null;
+      sales_end: string | null;
+      sort_order: number;
+    }) => {
+      const { error } = await supabase.from("ticket_types").insert(payload);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ticket-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["ticket-types-with-counts"] });
+      toast.success("Billettype opprettet");
+      setAddTypeOpen(false);
+      setNewCode("");
+      setNewName("");
+      setNewDescription("");
+      setNewPriceNok(0);
+      setNewCapacity(100);
+      setNewVisible(true);
+      setNewSalesStart("");
+      setNewSalesEnd("");
+    },
+    onError: (e: Error) => toast.error("Feil: " + e.message),
   });
 
   // Export CSV
@@ -935,6 +1037,95 @@ export default function AdminTicketsDashboard() {
               </Card>
             )}
           </div>
+
+          {/* Billettyper – synlighet og salgsvindu */}
+          {isAdmin && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Billettyper</CardTitle>
+                    <CardDescription>
+                      Velg hva som vises på /tickets (synlig) og når salget er åpent (salgsvindu). Tomme felt = alltid åpent.
+                    </CardDescription>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => setAddTypeOpen(true)}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Legg til
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Type</TableHead>
+                      <TableHead className="w-20 text-center">Synlig</TableHead>
+                      <TableHead>Salg åpner</TableHead>
+                      <TableHead>Salg stenger</TableHead>
+                      <TableHead className="w-20" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {stats?.salesByType.map((type) => (
+                      <TableRow key={type.id}>
+                        <TableCell>
+                          <span className="font-medium">{type.name}</span>
+                          <span className="text-muted-foreground text-xs ml-1">({type.code})</span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Switch
+                            checked={type.visible ?? true}
+                            onCheckedChange={(checked) =>
+                              updateTicketTypeMeta.mutate({
+                                ticketTypeId: type.id,
+                                visible: checked,
+                                sales_start: type.sales_start ?? null,
+                                sales_end: type.sales_end ?? null,
+                              })
+                            }
+                            disabled={updateTicketTypeMeta.isPending}
+                          />
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {type.sales_start
+                            ? format(new Date(type.sales_start), "d. MMM yyyy HH:mm", { locale: nb })
+                            : "–"}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {type.sales_end
+                            ? format(new Date(type.sales_end), "d. MMM yyyy HH:mm", { locale: nb })
+                            : "–"}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setEditingTypeId(type.id);
+                              setEditVisible(type.visible ?? true);
+                              setEditSalesStart(
+                                type.sales_start
+                                  ? format(new Date(type.sales_start), "yyyy-MM-dd'T'HH:mm")
+                                  : ""
+                              );
+                              setEditSalesEnd(
+                                type.sales_end
+                                  ? format(new Date(type.sales_end), "yyyy-MM-dd'T'HH:mm")
+                                  : ""
+                              );
+                            }}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Kapasitet per billettype – redigerbar */}
           <Card>
@@ -1533,6 +1724,165 @@ export default function AdminTicketsDashboard() {
         </TabsContent>
         )}
       </Tabs>
+
+      {/* Edit sales window dialog */}
+      <Dialog open={!!editingTypeId} onOpenChange={(open) => !open && setEditingTypeId(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Rediger salgsvindu</DialogTitle>
+            <DialogDescription>
+              Synlighet og når salget åpner/stenger. Tom = alltid åpent.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Switch checked={editVisible} onCheckedChange={setEditVisible} id="edit-visible" />
+              <Label htmlFor="edit-visible">Vis på billettsiden</Label>
+            </div>
+            <div className="space-y-1">
+              <Label>Salg åpner (valgfri)</Label>
+              <Input
+                type="datetime-local"
+                value={editSalesStart}
+                onChange={(e) => setEditSalesStart(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Salg stenger (valgfri)</Label>
+              <Input
+                type="datetime-local"
+                value={editSalesEnd}
+                onChange={(e) => setEditSalesEnd(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingTypeId(null)}>
+              Avbryt
+            </Button>
+            <Button
+              onClick={() => {
+                if (!editingTypeId) return;
+                updateTicketTypeMeta.mutate({
+                  ticketTypeId: editingTypeId,
+                  visible: editVisible,
+                  sales_start: editSalesStart.trim() || null,
+                  sales_end: editSalesEnd.trim() || null,
+                });
+              }}
+              disabled={updateTicketTypeMeta.isPending}
+            >
+              Lagre
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add ticket type dialog */}
+      <Dialog open={addTypeOpen} onOpenChange={setAddTypeOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Legg til billettype</DialogTitle>
+            <DialogDescription>
+              Ny produkttype som vises på /tickets. Kode bør være unik (f.eks. EARLYBIRD, VIP).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <Label>Kode</Label>
+              <Input
+                placeholder="EARLYBIRD"
+                value={newCode}
+                onChange={(e) => setNewCode(e.target.value.toUpperCase())}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Navn</Label>
+              <Input
+                placeholder="Early Bird"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Beskrivelse (valgfri)</Label>
+              <Input
+                placeholder="Festivalpass til redusert pris"
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>Pris (øre)</Label>
+                <Input
+                  type="number"
+                  value={newPriceNok}
+                  onChange={(e) => setNewPriceNok(parseInt(e.target.value, 10) || 0)}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label>Kapasitet</Label>
+                <Input
+                  type="number"
+                  value={newCapacity}
+                  onChange={(e) => setNewCapacity(parseInt(e.target.value, 10) || 100)}
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Switch checked={newVisible} onCheckedChange={setNewVisible} id="new-visible" />
+              <Label htmlFor="new-visible">Synlig på billettsiden</Label>
+            </div>
+            <div className="space-y-1">
+              <Label>Salg åpner (valgfri)</Label>
+              <Input
+                type="datetime-local"
+                value={newSalesStart}
+                onChange={(e) => setNewSalesStart(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Salg stenger (valgfri)</Label>
+              <Input
+                type="datetime-local"
+                value={newSalesEnd}
+                onChange={(e) => setNewSalesEnd(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddTypeOpen(false)}>
+              Avbryt
+            </Button>
+            <Button
+              onClick={() => {
+                const eventId = stats?.salesByType?.[0]?.event_id;
+                if (!eventId) {
+                  toast.error("Kunne ikke finne event – opprett minst én type manuelt først.");
+                  return;
+                }
+                const maxSort = Math.max(0, ...(stats?.salesByType?.map((t) => t.sort_order ?? 0) ?? []));
+                createTicketType.mutate({
+                  event_id: eventId,
+                  code: newCode.trim().toUpperCase(),
+                  name: newName.trim(),
+                  description: newDescription.trim() || null,
+                  price_nok: newPriceNok,
+                  capacity: newCapacity,
+                  visible: newVisible,
+                  sales_start: newSalesStart.trim() || null,
+                  sales_end: newSalesEnd.trim() || null,
+                  sort_order: maxSort + 1,
+                });
+              }}
+              disabled={createTicketType.isPending || !newCode.trim() || !newName.trim()}
+            >
+              Opprett
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
