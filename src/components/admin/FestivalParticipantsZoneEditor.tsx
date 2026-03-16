@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Loader2, ArrowUp, ArrowDown, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, ArrowUp, ArrowDown, Trash2, ChevronDown, ChevronUp, FolderPlus } from "lucide-react";
 import { toast } from "sonner";
 import { PersonaSearchPicker } from "@/components/persona/PersonaSearchPicker";
 import { usePersonaSearch, type PersonaOption } from "@/hooks/usePersonaSearch";
