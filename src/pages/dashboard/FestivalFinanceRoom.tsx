@@ -95,6 +95,7 @@ export default function FestivalFinanceRoom() {
   const { id: festivalId } = useParams<{ id: string }>();
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
+  const [showOnlyMissingAttachments, setShowOnlyMissingAttachments] = useState(false);
 
   const toggleCategory = (key: string) => {
     setOpenCategories((prev) => {
