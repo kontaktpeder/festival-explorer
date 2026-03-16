@@ -477,6 +477,7 @@ export default function FestivalFinanceRoom() {
                                     {recipients.map((r) => (
                                       <SelectItem key={r.id} value={r.name}>
                                         {r.name}
+                                        {r.kind === "project" && " · Prosjekt"}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
