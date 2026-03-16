@@ -90,7 +90,7 @@ export function useRecipientSearch(festivalId?: string) {
         recipients.push({
           id: `venue:${v.id}`,
           kind: "venue",
-          name: v.title,
+          name: v.name,
           subtitle: "Venue",
         });
       });
