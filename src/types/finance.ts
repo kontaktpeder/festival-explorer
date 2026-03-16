@@ -41,6 +41,9 @@ export interface FestivalFinanceEntry {
   paid_by_kind: string | null;
   paid_by_id: string | null;
   paid_by_label: string | null;
+  voucher_number: string | null;
+  attachment_url: string | null;
+  attachment_name: string | null;
   created_at: string;
   created_by: string;
 }
