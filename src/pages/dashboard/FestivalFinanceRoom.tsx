@@ -478,6 +478,7 @@ export default function FestivalFinanceRoom() {
                                       <SelectItem key={r.id} value={r.name}>
                                         {r.name}
                                         {r.kind === "project" && " · Prosjekt"}
+                                        {r.kind === "venue" && " · Venue"}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
