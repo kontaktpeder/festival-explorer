@@ -371,6 +371,9 @@ export default function FestivalFinanceRoom() {
       {items.map((e) => (
         <EntryCard key={e.id} actions={expenseActions(e)} fields={
           <div className="space-y-2">
+            {e.voucher_number && (
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{e.voucher_number}</p>
+            )}
             <div>
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beskrivelse</label>
               <Input className="h-8 text-sm" defaultValue={e.description} onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} />
@@ -398,6 +401,11 @@ export default function FestivalFinanceRoom() {
             <div>
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Betalt av</label>
               <PaidBySelect entry={e} />
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Paperclip className="h-3 w-3" /> Vedlegg</label>
+              <Input className="h-7 text-xs mt-1" defaultValue={e.attachment_name || ""} placeholder="Bilagsnavn" onBlur={(ev) => onExpenseFieldChange(e, "attachment_name", ev.target.value)} />
+              <Input className="h-7 text-xs mt-1" defaultValue={e.attachment_url || ""} placeholder="Lenke til kvittering" onBlur={(ev) => onExpenseFieldChange(e, "attachment_url", ev.target.value)} />
             </div>
           </div>
         } />
