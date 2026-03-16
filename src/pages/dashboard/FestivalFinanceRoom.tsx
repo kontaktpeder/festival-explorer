@@ -673,7 +673,40 @@ export default function FestivalFinanceRoom() {
                                 onChange={(val) => onExpenseFieldChange(e, "counterparty", val)}
                               />
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="min-w-[160px]">
+                              <Select
+                                value={e.paid_by_id ?? "__none__"}
+                                onValueChange={(value) => {
+                                  if (value === "__none__") {
+                                    expenseMutation.mutate({
+                                      id: e.id,
+                                      paid_by_kind: null,
+                                      paid_by_id: null,
+                                      paid_by_label: null,
+                                    });
+                                    return;
+                                  }
+                                  const selected = payers.find((p) => p.id === value);
+                                  expenseMutation.mutate({
+                                    id: e.id,
+                                    paid_by_kind: selected ? "persona" : "other",
+                                    paid_by_id: selected?.id ?? null,
+                                    paid_by_label: selected?.name ?? null,
+                                  });
+                                }}
+                              >
+                                <SelectTrigger className="h-8 text-xs">
+                                  <SelectValue placeholder="Velg betaler" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="__none__">Ingen valgt</SelectItem>
+                                  {payers.map((p) => (
+                                    <SelectItem key={p.id} value={p.id}>
+                                      {p.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                               <Input
                                 type="number"
                                 className="w-[100px] text-right"
