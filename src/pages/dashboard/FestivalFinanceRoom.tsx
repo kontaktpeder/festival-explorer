@@ -456,41 +456,11 @@ export default function FestivalFinanceRoom() {
                                 }
                               />
                             </TableCell>
-                            <TableCell className="min-w-[180px]">
-                              {recipients && recipients.length > 0 && (
-                                <Select
-                                  value={
-                                    recipients.some((r) => r.name === e.counterparty)
-                                      ? e.counterparty || ""
-                                      : "__custom"
-                                  }
-                                  onValueChange={(val) => {
-                                    if (val === "__custom") return;
-                                    onExpenseFieldChange(e, "counterparty", val);
-                                  }}
-                                >
-                                  <SelectTrigger className="w-full h-8 mb-1 text-xs">
-                                    <SelectValue placeholder="Velg mottaker" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="__custom">Annen / fritekst</SelectItem>
-                                    {recipients.map((r) => (
-                                      <SelectItem key={r.id} value={r.name}>
-                                        {r.name}
-                                        {r.kind === "project" && " · Prosjekt"}
-                                        {r.kind === "venue" && " · Venue"}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              )}
-                              <Input
-                                className="w-full h-8 text-xs"
-                                defaultValue={e.counterparty || ""}
-                                placeholder="Mottaker (fri tekst)"
-                                onBlur={(ev) =>
-                                  onExpenseFieldChange(e, "counterparty", ev.target.value)
-                                }
+                            <TableCell className="min-w-[200px]">
+                              <RecipientPicker
+                                festivalId={festivalId!}
+                                value={e.counterparty}
+                                onChange={(val) => onExpenseFieldChange(e, "counterparty", val)}
                               />
                             </TableCell>
                             <TableCell>
