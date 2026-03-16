@@ -125,6 +125,53 @@ export function useUpsertExpenseEntry(bookId: string) {
   });
 }
 
+export function useUpsertIncomeEntry(bookId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Partial<FestivalFinanceEntry> & { id?: string; created_by?: string }) => {
+      const base = {
+        book_id: bookId,
+        entry_type: "income" as FinanceEntryType,
+        source_type: payload.source_type ?? "manual",
+      };
+
+      if (payload.id) {
+        const { id, created_by, created_at, ...rest } = payload;
+        const { data, error } = await supabase
+          .from("festival_finance_entries")
+          .update({ ...rest, ...base })
+          .eq("id", id)
+          .select("*")
+          .single();
+        if (error) throw error;
+        return data as FestivalFinanceEntry;
+      } else {
+        const { data, error } = await supabase
+          .from("festival_finance_entries")
+          .insert({
+            ...base,
+            created_by: payload.created_by!,
+            description: payload.description ?? "",
+            gross_amount: payload.gross_amount ?? 0,
+            net_amount: payload.net_amount ?? payload.gross_amount ?? 0,
+            date_incurred: payload.date_incurred ?? new Date().toISOString().slice(0, 10),
+            status: (payload.status ?? "confirmed") as FinanceEntryStatus,
+            category: payload.category ?? null,
+            counterparty: payload.counterparty ?? null,
+            notes: payload.notes ?? null,
+          })
+          .select("*")
+          .single();
+        if (error) throw error;
+        return data as FestivalFinanceEntry;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["finance-entries", bookId] });
+    },
+  });
+}
+
 export function useDeleteFinanceEntry(bookId: string) {
   const queryClient = useQueryClient();
   return useMutation({

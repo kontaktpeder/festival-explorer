@@ -31,6 +31,7 @@ import {
   useFinanceEntries,
   useCreateFinanceBook,
   useUpsertExpenseEntry,
+  useUpsertIncomeEntry,
   useDeleteFinanceEntry,
   useImportTicketRevenue,
   useFinanceCategoriesForFestival,
@@ -90,6 +91,7 @@ export default function FestivalFinanceRoom() {
 
   const { data: entries, isLoading: entriesLoading } = useFinanceEntries(activeBookId || undefined);
   const expenseMutation = useUpsertExpenseEntry(activeBookId || "");
+  const incomeMutation = useUpsertIncomeEntry(activeBookId || "");
   const deleteEntry = useDeleteFinanceEntry(activeBookId || "");
 
   const isLoading = booksLoading || (!!activeBookId && entriesLoading);
@@ -128,6 +130,20 @@ export default function FestivalFinanceRoom() {
     return Array.from(groups.values()).sort((a, b) =>
       a.category.localeCompare(b.category, "nb")
     );
+  }, [entries]);
+
+  const incomeGroups = useMemo(() => {
+    const groups = new Map<string, { category: string; items: FestivalFinanceEntry[]; totalNet: number }>();
+    (entries || [])
+      .filter((e) => e.entry_type === "income" && e.source_type !== "ticket")
+      .forEach((e) => {
+        const key = e.category || "Uten kategori";
+        const existing = groups.get(key) || { category: key, items: [], totalNet: 0 };
+        existing.items.push(e);
+        existing.totalNet += e.net_amount;
+        groups.set(key, existing);
+      });
+    return Array.from(groups.values()).sort((a, b) => a.category.localeCompare(b.category, "nb"));
   }, [entries]);
 
   const netIncome = incomeTotal - feeTotal;
@@ -179,6 +195,37 @@ export default function FestivalFinanceRoom() {
       patch[field] = value;
     }
     expenseMutation.mutate(patch);
+  };
+
+  const handleAddIncome = () => {
+    if (!activeBookId || !user) return;
+    const today = new Date().toISOString().slice(0, 10);
+    incomeMutation.mutate({
+      description: "",
+      category: null,
+      counterparty: null,
+      gross_amount: 0,
+      net_amount: 0,
+      date_incurred: today,
+      created_by: user.id,
+    });
+  };
+
+  const onIncomeFieldChange = (
+    entry: FestivalFinanceEntry,
+    field: keyof FestivalFinanceEntry,
+    value: string
+  ) => {
+    const patch: any = { id: entry.id };
+    if (field === "gross_amount" || field === "net_amount") {
+      const n = parseInt(value.replace(/\s/g, ""), 10);
+      patch[field] = isNaN(n) ? 0 : n * 100;
+    } else if (field === "date_incurred") {
+      patch.date_incurred = value;
+    } else {
+      patch[field] = value;
+    }
+    incomeMutation.mutate(patch);
   };
 
   if (!festivalId) {
@@ -305,7 +352,7 @@ export default function FestivalFinanceRoom() {
                   </TableHeader>
                   <TableBody>
                     {(entries || [])
-                      .filter((e) => e.entry_type === "income")
+                      .filter((e) => e.entry_type === "income" && e.source_type === "ticket")
                       .map((e) => (
                         <TableRow key={e.id}>
                           <TableCell>{e.description}</TableCell>
@@ -323,7 +370,7 @@ export default function FestivalFinanceRoom() {
                           </TableCell>
                         </TableRow>
                       ))}
-                    {(entries || []).filter((e) => e.entry_type === "income")
+                    {(entries || []).filter((e) => e.entry_type === "income" && e.source_type === "ticket")
                       .length === 0 && (
                       <TableRow>
                         <TableCell
@@ -336,6 +383,148 @@ export default function FestivalFinanceRoom() {
                     )}
                   </TableBody>
                 </Table>
+              </CardContent>
+            </Card>
+
+            {/* Manual income */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Andre inntekter</CardTitle>
+                    <CardDescription>
+                      Legg inn sponsorer, støtte, barandel, merch m.m.
+                    </CardDescription>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={handleAddIncome}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Ny inntekt
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {incomeGroups.map((group) => (
+                  <div key={group.category} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold">{group.category}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {group.items.length} linje{group.items.length === 1 ? "" : "r"}
+                        </span>
+                      </div>
+                      <span className="text-sm font-semibold">
+                        {formatNok(group.totalNet)}
+                      </span>
+                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Dato</TableHead>
+                          <TableHead>Beskrivelse</TableHead>
+                          <TableHead>Kategori</TableHead>
+                          <TableHead>Fra</TableHead>
+                          <TableHead className="text-right">Beløp (kr)</TableHead>
+                          <TableHead className="w-16 text-right">Handling</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {group.items.map((e) => (
+                          <TableRow key={e.id}>
+                            <TableCell>
+                              <Input
+                                type="date"
+                                className="w-[130px]"
+                                defaultValue={e.date_incurred}
+                                onBlur={(ev) =>
+                                  onIncomeFieldChange(e, "date_incurred", ev.target.value)
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                defaultValue={e.description}
+                                placeholder="F.eks. Sponsor, støtte, barandel"
+                                onBlur={(ev) =>
+                                  onIncomeFieldChange(e, "description", ev.target.value)
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                list="finance-category-suggestions"
+                                className="w-[140px]"
+                                defaultValue={e.category || ""}
+                                placeholder="Kategori"
+                                onBlur={(ev) =>
+                                  onIncomeFieldChange(e, "category", ev.target.value)
+                                }
+                              />
+                            </TableCell>
+                            <TableCell className="min-w-[200px]">
+                              <Input
+                                className="h-8 text-xs"
+                                defaultValue={e.counterparty || ""}
+                                placeholder="Fra (sponsor, ordning osv.)"
+                                onBlur={(ev) =>
+                                  onIncomeFieldChange(e, "counterparty", ev.target.value)
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="number"
+                                className="w-[100px] text-right"
+                                defaultValue={
+                                  e.net_amount ? (e.net_amount / 100).toString() : "0"
+                                }
+                                onBlur={(ev) =>
+                                  onIncomeFieldChange(e, "net_amount", ev.target.value)
+                                }
+                              />
+                            </TableCell>
+                            <TableCell className="space-x-1 text-right">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                title="Dupliser rad"
+                                onClick={() => {
+                                  if (!user) return;
+                                  incomeMutation.mutate({
+                                    description: e.description,
+                                    category: e.category,
+                                    counterparty: e.counterparty,
+                                    gross_amount: e.gross_amount,
+                                    net_amount: e.net_amount,
+                                    date_incurred: e.date_incurred,
+                                    notes: e.notes,
+                                    created_by: user.id,
+                                  });
+                                }}
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive"
+                                title="Slett rad"
+                                onClick={() => deleteEntry.mutate(e.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ))}
+                {incomeGroups.length === 0 && (
+                  <div className="text-center text-muted-foreground py-8">
+                    Ingen manuelle inntekter lagt til ennå.
+                  </div>
+                )}
               </CardContent>
             </Card>
 
