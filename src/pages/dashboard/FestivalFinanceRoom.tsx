@@ -105,6 +105,25 @@ export default function FestivalFinanceRoom() {
     return { incomeTotal: income, feeTotal: fee, expenseTotal: expense };
   }, [entries]);
 
+  const expenseGroups = useMemo(() => {
+    const groups = new Map<
+      string,
+      { category: string; items: FestivalFinanceEntry[]; totalNet: number }
+    >();
+    (entries || [])
+      .filter((e) => e.entry_type === "expense")
+      .forEach((e) => {
+        const key = e.category || "Uten kategori";
+        const existing = groups.get(key) || { category: key, items: [], totalNet: 0 };
+        existing.items.push(e);
+        existing.totalNet += e.net_amount;
+        groups.set(key, existing);
+      });
+    return Array.from(groups.values()).sort((a, b) =>
+      a.category.localeCompare(b.category, "nb")
+    );
+  }, [entries]);
+
   const netIncome = incomeTotal - feeTotal;
   const result = netIncome - expenseTotal;
 
