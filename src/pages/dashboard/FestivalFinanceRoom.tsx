@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RecipientPicker } from "@/components/finance/RecipientPicker";
 import { Plus, Trash2, ArrowLeft } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
 
