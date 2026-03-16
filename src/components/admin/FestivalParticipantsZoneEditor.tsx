@@ -182,7 +182,7 @@ export function FestivalParticipantsZoneEditor({
       });
     }
 
-    await Promise.all(fetches);
+    await Promise.all(fetches.map((fn) => fn()));
     setResolved(map);
     setLoading(false);
   }, [festivalId, zone]);
