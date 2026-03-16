@@ -294,7 +294,7 @@ export default function FestivalFinanceRoom() {
           <TableHead className="w-[130px]">Underkategori</TableHead>
           <TableHead>Mottaker</TableHead>
           <TableHead className="w-[140px]">Betalt av</TableHead>
-          <TableHead className="w-[100px] text-right">Beløp (kr)</TableHead>
+          <TableHead className="w-[130px] text-right">Beløp (kr)</TableHead>
           <TableHead className="w-20 text-right" />
         </TableRow>
       </TableHeader>
