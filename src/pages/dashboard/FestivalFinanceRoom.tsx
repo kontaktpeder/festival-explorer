@@ -20,8 +20,9 @@ import {
 } from "@/components/ui/collapsible";
 import { RecipientPicker } from "@/components/finance/RecipientPicker";
 import { useFinancePayers } from "@/hooks/useFinancePayers";
-import { Plus, Trash2, ArrowLeft, Undo2, TrendingUp, TrendingDown, Receipt, Wallet, ChevronRight, FolderOpen, Download, Paperclip } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Undo2, TrendingUp, TrendingDown, Receipt, Wallet, ChevronRight, FolderOpen, Download, Paperclip, ExternalLink, Upload } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { useFinanceAttachmentUpload } from "@/hooks/useFinanceAttachmentUpload";
 
 import {
   useFinanceBooks, useFinanceEntries, useCreateFinanceBook,
