@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Loader2, ArrowUp, ArrowDown, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, ArrowUp, ArrowDown, Trash2, ChevronDown, ChevronUp, FolderPlus } from "lucide-react";
 import { toast } from "sonner";
 import { PersonaSearchPicker } from "@/components/persona/PersonaSearchPicker";
 import { usePersonaSearch, type PersonaOption } from "@/hooks/usePersonaSearch";
@@ -31,7 +31,7 @@ interface FestivalParticipantRow {
   id: string;
   festival_id: string;
   zone: FestivalZone;
-  participant_kind: "persona";
+  participant_kind: "persona" | "entity" | "project" | "venue";
   participant_id: string;
   role_label: string | null;
   sort_order: number;
@@ -146,20 +146,43 @@ export function FestivalParticipantsZoneEditor({
       return;
     }
 
-    const list = ((data || []) as any[]).filter(
-      (r) => r.participant_kind === "persona"
-    ) as FestivalParticipantRow[];
+    const list = (data || []) as FestivalParticipantRow[];
     setRows(list);
 
-    const personaIds = list.map((r) => r.participant_id);
+    const personaIds = list.filter((r) => r.participant_kind === "persona").map((r) => r.participant_id);
+    const entityIds = list.filter((r) => r.participant_kind === "entity").map((r) => r.participant_id);
+    const projectIds = list.filter((r) => r.participant_kind === "project").map((r) => r.participant_id);
+    const venueIds = list.filter((r) => r.participant_kind === "venue").map((r) => r.participant_id);
     const map: Record<string, ResolvedRef> = {};
+
+    const fetches: (() => Promise<void>)[] = [];
+
     if (personaIds.length > 0) {
-      const { data: pData } = await supabase
-        .from("personas")
-        .select("id,name,slug,type,category_tags")
-        .in("id", personaIds);
-      (pData || []).forEach((p: any) => (map[p.id] = p));
+      fetches.push(async () => {
+        const { data: pData } = await supabase.from("personas").select("id,name,slug,type,category_tags").in("id", personaIds);
+        (pData || []).forEach((p: any) => (map[p.id] = p));
+      });
     }
+    if (entityIds.length > 0) {
+      fetches.push(async () => {
+        const { data: eData } = await supabase.from("entities").select("id,name,slug,type").in("id", entityIds);
+        (eData || []).forEach((e: any) => (map[e.id] = { id: e.id, name: e.name, slug: e.slug, type: e.type }));
+      });
+    }
+    if (projectIds.length > 0) {
+      fetches.push(async () => {
+        const { data: prData } = await supabase.from("projects").select("id,name,slug").in("id", projectIds);
+        (prData || []).forEach((p: any) => (map[p.id] = { id: p.id, name: p.name, slug: p.slug }));
+      });
+    }
+    if (venueIds.length > 0) {
+      fetches.push(async () => {
+        const { data: vData } = await supabase.from("venues").select("id,name,slug").in("id", venueIds);
+        (vData || []).forEach((v: any) => (map[v.id] = { id: v.id, name: v.name, slug: v.slug }));
+      });
+    }
+
+    await Promise.all(fetches.map((fn) => fn()));
     setResolved(map);
     setLoading(false);
   }, [festivalId, zone]);
@@ -235,7 +258,7 @@ export function FestivalParticipantsZoneEditor({
       id: r.id,
       festival_id: r.festival_id,
       participant_id: r.participant_id,
-      participant_kind: "persona" as const,
+      participant_kind: r.participant_kind,
       zone: r.zone as string,
       sort_order: i + 1,
     }));
@@ -276,6 +299,80 @@ export function FestivalParticipantsZoneEditor({
     });
   };
 
+  const addAllProjectsAndVenues = async () => {
+    setLoading(true);
+    try {
+      const { data: fes, error: feError } = await supabase
+        .from("festival_events")
+        .select("event_id")
+        .eq("festival_id", festivalId);
+      if (feError) throw feError;
+      const eventIds = (fes || []).map((fe: any) => fe.event_id).filter(Boolean) as string[];
+      if (eventIds.length === 0) {
+        toast.info("Ingen events koblet til festivalen ennå.");
+        setLoading(false);
+        return;
+      }
+
+      const [{ data: eventProjects, error: epError }, { data: eventsWithVenue, error: evError }] = await Promise.all([
+        supabase.from("event_projects").select("project_id").in("event_id", eventIds),
+        supabase.from("events").select("id, venue_id").in("id", eventIds),
+      ]);
+      if (epError) throw epError;
+      if (evError) throw evError;
+
+      const projectIds = Array.from(new Set((eventProjects || []).map((ep: any) => ep.project_id).filter(Boolean))) as string[];
+      const venueIds = Array.from(new Set((eventsWithVenue || []).map((e: any) => e.venue_id).filter(Boolean))) as string[];
+
+      const existingKeys = new Set(rows.map((r) => `${r.participant_kind}:${r.participant_id}`));
+      const nextSortStart = rows.length === 0 ? 1 : Math.max(...rows.map((r) => r.sort_order || 0)) + 1;
+      const newRows: any[] = [];
+      let sort = nextSortStart;
+
+      const defaultPerms = {
+        can_edit_festival: false, can_edit_events: false, can_access_media: false,
+        can_scan_tickets: false, can_see_ticket_stats: false, can_create_internal_ticket: false,
+        can_see_report: false, can_see_revenue: false, can_edit_festival_media: false, can_view_runsheet: false,
+      };
+
+      projectIds.forEach((pid) => {
+        if (!existingKeys.has(`project:${pid}`)) {
+          newRows.push({ festival_id: festivalId, zone, participant_kind: "project", participant_id: pid, role_label: null, sort_order: sort++, ...defaultPerms });
+        }
+      });
+      venueIds.forEach((vid) => {
+        if (!existingKeys.has(`venue:${vid}`)) {
+          newRows.push({ festival_id: festivalId, zone, participant_kind: "venue", participant_id: vid, role_label: null, sort_order: sort++, ...defaultPerms });
+        }
+      });
+
+      if (newRows.length === 0) {
+        toast.info("Alle prosjekter og venues er allerede lagt til.");
+        setLoading(false);
+        return;
+      }
+
+      const { error: insertError } = await supabase.from("festival_participants").insert(newRows);
+      if (insertError) throw insertError;
+      toast.success(`La til ${newRows.length} prosjekter/venues.`);
+      await loadRows();
+    } catch (e: any) {
+      console.error(e);
+      toast.error("Kunne ikke legge til prosjekter/venues");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const kindLabel = (kind: string) => {
+    switch (kind) {
+      case "project": return "Prosjekt";
+      case "venue": return "Venue";
+      case "entity": return "Entitet";
+      default: return null;
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -299,6 +396,23 @@ export function FestivalParticipantsZoneEditor({
           disabledIds={new Set(rows.map((r) => r.participant_id))}
         />
 
+        {/* Bulk add projects & venues */}
+        <div className="flex items-center justify-between gap-2 bg-muted/30 border border-border rounded-lg p-3">
+          <p className="text-xs text-muted-foreground">
+            Legg til prosjekter og venues fra festivalens program.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={addAllProjectsAndVenues}
+            disabled={loading}
+            className="gap-1.5 shrink-0"
+          >
+            <FolderPlus className="h-3.5 w-3.5" />
+            Legg til
+          </Button>
+        </div>
+
         {/* List */}
         {loading ? (
           <div className="flex justify-center py-8">
@@ -308,6 +422,9 @@ export function FestivalParticipantsZoneEditor({
           <div className="space-y-2">
             {rows.map((row, index) => {
               const isExpanded = expandedRows.has(row.id);
+              const isPersona = row.participant_kind === "persona";
+              const ref = resolved[row.participant_id];
+              const kLabel = kindLabel(row.participant_kind);
               return (
               <div
                 key={row.id}
@@ -315,19 +432,34 @@ export function FestivalParticipantsZoneEditor({
               >
                 <div className="p-3 flex items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    <span className="font-medium text-sm truncate">
-                      {resolved[row.participant_id]?.name || "Ukjent"}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm truncate">
+                        {ref?.name || "Ukjent"}
+                      </span>
+                      {kLabel && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
+                          {kLabel}
+                        </span>
+                      )}
+                    </div>
+                    {isPersona ? (
                     <DebouncedRoleInput
                       initialValue={row.role_label || ""}
                       placeholder={
-                        (getPersonaTypeLabel(resolved[row.participant_id]?.type) ?? resolved[row.participant_id]?.category_tags?.[0])
-                          ? `Rolle (standard: ${getPersonaTypeLabel(resolved[row.participant_id]?.type) ?? resolved[row.participant_id]?.category_tags?.[0]})`
+                        (getPersonaTypeLabel(ref?.type) ?? ref?.category_tags?.[0])
+                          ? `Rolle (standard: ${getPersonaTypeLabel(ref?.type) ?? ref?.category_tags?.[0]})`
                           : "Rolle (valgfritt)"
                       }
-                      fallbackRole={getPersonaTypeLabel(resolved[row.participant_id]?.type) ?? resolved[row.participant_id]?.category_tags?.[0]}
+                      fallbackRole={getPersonaTypeLabel(ref?.type) ?? ref?.category_tags?.[0]}
                       onSave={(v) => saveRoleLabel(row.id, v)}
                     />
+                    ) : (
+                    <DebouncedRoleInput
+                      initialValue={row.role_label || ""}
+                      placeholder="Rolle (valgfritt)"
+                      onSave={(v) => saveRoleLabel(row.id, v)}
+                    />
+                    )}
                   </div>
 
                   <div className="flex gap-1 shrink-0">
