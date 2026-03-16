@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Table, TableHeader, TableRow, TableHead, TableBody, TableCell,
 } from "@/components/ui/table";
@@ -18,7 +20,7 @@ import {
 } from "@/components/ui/collapsible";
 import { RecipientPicker } from "@/components/finance/RecipientPicker";
 import { useFinancePayers } from "@/hooks/useFinancePayers";
-import { Plus, Trash2, ArrowLeft, Undo2, TrendingUp, TrendingDown, Receipt, Wallet, ChevronRight, FolderOpen } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Undo2, TrendingUp, TrendingDown, Receipt, Wallet, ChevronRight, FolderOpen, Download, Paperclip } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
 
 import {
@@ -93,6 +95,7 @@ export default function FestivalFinanceRoom() {
   const { id: festivalId } = useParams<{ id: string }>();
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
+  const [showOnlyMissingAttachments, setShowOnlyMissingAttachments] = useState(false);
 
   const toggleCategory = (key: string) => {
     setOpenCategories((prev) => {
@@ -151,19 +154,25 @@ export default function FestivalFinanceRoom() {
     return { incomeTotal: income, feeTotal: fee, expenseTotal: expense, reimbursementTotal: reimbursements };
   }, [entries]);
 
+  const filteredEntries = useMemo(() => {
+    const all = entries || [];
+    if (!showOnlyMissingAttachments) return all;
+    return all.filter((e) => !e.attachment_url || e.attachment_url.trim() === "");
+  }, [entries, showOnlyMissingAttachments]);
+
   const expenseGroups = useMemo(
-    () => buildCategoryGroups((entries || []).filter((e) => e.source_type !== "reimbursement"), "expense"),
-    [entries]
+    () => buildCategoryGroups(filteredEntries.filter((e) => e.source_type !== "reimbursement"), "expense"),
+    [filteredEntries]
   );
 
   const incomeGroups = useMemo(
-    () => buildCategoryGroups((entries || []).filter((e) => e.source_type !== "ticket"), "income"),
-    [entries]
+    () => buildCategoryGroups(filteredEntries.filter((e) => e.source_type !== "ticket"), "income"),
+    [filteredEntries]
   );
 
   const reimbursementEntries = useMemo(
-    () => (entries || []).filter((e) => e.source_type === "reimbursement"),
-    [entries]
+    () => filteredEntries.filter((e) => e.source_type === "reimbursement"),
+    [filteredEntries]
   );
 
   const netIncome = incomeTotal - feeTotal;
@@ -191,11 +200,20 @@ export default function FestivalFinanceRoom() {
     } catch (e: any) { toast.error(e.message || "Kunne ikke opprette bok"); }
   };
 
+  const generateVoucherNumber = (allEntries: FestivalFinanceEntry[]) => {
+    const existing = (allEntries || []).map((e) => e.voucher_number).filter(Boolean) as string[];
+    if (!existing.length) return "B-0001";
+    const last = existing.map((s) => parseInt(s.replace(/\D/g, ""), 10)).filter((n) => !isNaN(n)).sort((a, b) => b - a)[0];
+    return `B-${((last || 0) + 1).toString().padStart(4, "0")}`;
+  };
+
   const handleAddExpense = () => {
     if (!activeBookId || !user) return;
+    const voucher = generateVoucherNumber(entries || []);
     expenseMutation.mutate({
       description: "", category: null, counterparty: null,
-      gross_amount: 0, net_amount: 0, date_incurred: new Date().toISOString().slice(0, 10), created_by: user.id,
+      gross_amount: 0, net_amount: 0, date_incurred: new Date().toISOString().slice(0, 10),
+      voucher_number: voucher, created_by: user.id,
     });
   };
 
@@ -211,9 +229,11 @@ export default function FestivalFinanceRoom() {
 
   const handleAddIncome = () => {
     if (!activeBookId || !user) return;
+    const voucher = generateVoucherNumber(entries || []);
     incomeMutation.mutate({
       description: "", category: null, counterparty: null,
-      gross_amount: 0, net_amount: 0, date_incurred: new Date().toISOString().slice(0, 10), created_by: user.id,
+      gross_amount: 0, net_amount: 0, date_incurred: new Date().toISOString().slice(0, 10),
+      voucher_number: voucher, created_by: user.id,
     });
   };
 
@@ -235,6 +255,29 @@ export default function FestivalFinanceRoom() {
       await importTickets.mutateAsync({ bookId: activeBookId, ticketEventId: ticketEvent.id });
       toast.success("Billettsalg importert til økonomiboken.");
     } catch (e: any) { toast.error(e?.message || "Kunne ikke importere billettsalg."); }
+  };
+
+  const handleExportCSV = () => {
+    if (!entries || entries.length === 0) { toast.info("Ingen transaksjoner å eksportere."); return; }
+    const headers = ["Dato", "Bilagsnr", "Type", "Kategori", "Underkategori", "Beskrivelse", "Mottaker", "Betalt av", "Beløp (kr)", "Status", "Vedlegg"];
+    const rows = entries.map((e) => {
+      const amount = (e.net_amount ?? 0) / 100;
+      return [
+        e.date_incurred ?? "", e.voucher_number ?? "", e.entry_type ?? "", e.category ?? "", e.subcategory ?? "",
+        e.description ?? "", e.counterparty ?? "", e.paid_by_label ?? "",
+        amount.toString().replace(".", ","), e.status ?? "", e.attachment_url ?? "",
+      ];
+    });
+    const csvContent = [headers, ...rows].map((r) => r.map((field) => `"${String(field).replace(/"/g, '""')}"`).join(";")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `festival-finance-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   if (!festivalId) return <p className="p-6 text-muted-foreground">Mangler festival-ID.</p>;
@@ -289,24 +332,33 @@ export default function FestivalFinanceRoom() {
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead className="w-[80px]">Bilagsnr</TableHead>
           <TableHead className="w-[110px]">Dato</TableHead>
           <TableHead>Beskrivelse</TableHead>
           <TableHead className="w-[130px]">Underkategori</TableHead>
           <TableHead>Mottaker</TableHead>
           <TableHead className="w-[140px]">Betalt av</TableHead>
           <TableHead className="w-[130px] text-right">Beløp (kr)</TableHead>
+          <TableHead className="w-[180px]">Vedlegg</TableHead>
           <TableHead className="w-20 text-right" />
         </TableRow>
       </TableHeader>
       <TableBody>
         {items.map((e) => (
           <TableRow key={e.id}>
+            <TableCell className="text-xs text-muted-foreground tabular-nums">{e.voucher_number ?? ""}</TableCell>
             <TableCell><Input type="date" className="h-8 text-xs" defaultValue={e.date_incurred} onBlur={(ev) => onExpenseFieldChange(e, "date_incurred", ev.target.value)} /></TableCell>
             <TableCell><Input className="h-8 text-xs" defaultValue={e.description} onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} /></TableCell>
             <TableCell><Input list="finance-subcategory-suggestions" className="h-8 text-xs" defaultValue={e.subcategory || ""} placeholder="Underkategori" onBlur={(ev) => onExpenseFieldChange(e, "subcategory", ev.target.value)} /></TableCell>
             <TableCell><RecipientPicker festivalId={festivalId!} value={e.counterparty} onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} /></TableCell>
             <TableCell><PaidBySelect entry={e} /></TableCell>
             <TableCell><Input type="number" className="h-8 text-xs text-right tabular-nums" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} /></TableCell>
+            <TableCell>
+              <div className="space-y-1">
+                <Input className="h-7 text-xs" defaultValue={e.attachment_name || ""} placeholder="Bilagsnavn" onBlur={(ev) => onExpenseFieldChange(e, "attachment_name", ev.target.value)} />
+                <Input className="h-7 text-xs" defaultValue={e.attachment_url || ""} placeholder="Lenke til kvittering" onBlur={(ev) => onExpenseFieldChange(e, "attachment_url", ev.target.value)} />
+              </div>
+            </TableCell>
             <TableCell className="text-right"><div className="flex items-center justify-end gap-0.5">{expenseActions(e)}</div></TableCell>
           </TableRow>
         ))}
@@ -319,6 +371,9 @@ export default function FestivalFinanceRoom() {
       {items.map((e) => (
         <EntryCard key={e.id} actions={expenseActions(e)} fields={
           <div className="space-y-2">
+            {e.voucher_number && (
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{e.voucher_number}</p>
+            )}
             <div>
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beskrivelse</label>
               <Input className="h-8 text-sm" defaultValue={e.description} onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} />
@@ -346,6 +401,11 @@ export default function FestivalFinanceRoom() {
             <div>
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Betalt av</label>
               <PaidBySelect entry={e} />
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Paperclip className="h-3 w-3" /> Vedlegg</label>
+              <Input className="h-7 text-xs mt-1" defaultValue={e.attachment_name || ""} placeholder="Bilagsnavn" onBlur={(ev) => onExpenseFieldChange(e, "attachment_name", ev.target.value)} />
+              <Input className="h-7 text-xs mt-1" defaultValue={e.attachment_url || ""} placeholder="Lenke til kvittering" onBlur={(ev) => onExpenseFieldChange(e, "attachment_url", ev.target.value)} />
             </div>
           </div>
         } />
@@ -481,6 +541,9 @@ export default function FestivalFinanceRoom() {
                 </SelectContent>
               </Select>
             )}
+            <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={!entries || entries.length === 0}>
+              <Download className="h-4 w-4 mr-1" /> CSV
+            </Button>
             <Button variant="outline" size="sm" onClick={handleCreateBook} disabled={createBook.isPending}>
               <Plus className="h-4 w-4 mr-1" /> Ny bok
             </Button>
@@ -592,6 +655,10 @@ export default function FestivalFinanceRoom() {
                     <CardDescription className="text-xs">Festivalens kostnader</CardDescription>
                   </div>
                   <Button size="sm" variant="outline" onClick={handleAddExpense}><Plus className="h-4 w-4 mr-1" /> Ny rad</Button>
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <Switch id="only-missing-attachments" checked={showOnlyMissingAttachments} onCheckedChange={setShowOnlyMissingAttachments} />
+                  <Label htmlFor="only-missing-attachments" className="text-xs text-muted-foreground">Vis kun rader uten vedlegg</Label>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">

@@ -1291,6 +1291,8 @@ export type Database = {
       }
       festival_finance_entries: {
         Row: {
+          attachment_name: string | null
+          attachment_url: string | null
           book_id: string
           category: string | null
           category_id: string | null
@@ -1320,8 +1322,11 @@ export type Database = {
           unit_amount: number | null
           vat_amount: number | null
           vat_rate: number | null
+          voucher_number: string | null
         }
         Insert: {
+          attachment_name?: string | null
+          attachment_url?: string | null
           book_id: string
           category?: string | null
           category_id?: string | null
@@ -1351,8 +1356,11 @@ export type Database = {
           unit_amount?: number | null
           vat_amount?: number | null
           vat_rate?: number | null
+          voucher_number?: string | null
         }
         Update: {
+          attachment_name?: string | null
+          attachment_url?: string | null
           book_id?: string
           category?: string | null
           category_id?: string | null
@@ -1382,6 +1390,7 @@ export type Database = {
           unit_amount?: number | null
           vat_amount?: number | null
           vat_rate?: number | null
+          voucher_number?: string | null
         }
         Relationships: [
           {
