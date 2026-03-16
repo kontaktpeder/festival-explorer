@@ -1099,6 +1099,7 @@ export default function AdminTicketsDashboard() {
                     <TableRow>
                       <TableHead>Type</TableHead>
                       <TableHead className="w-20 text-center">Synlig</TableHead>
+                      <TableHead className="w-28 text-center">Stripe-gebyr</TableHead>
                       <TableHead>Salg åpner</TableHead>
                       <TableHead>Salg stenger</TableHead>
                       <TableHead className="w-20" />
