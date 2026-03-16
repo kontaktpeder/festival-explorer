@@ -258,7 +258,7 @@ export function FestivalParticipantsZoneEditor({
       id: r.id,
       festival_id: r.festival_id,
       participant_id: r.participant_id,
-      participant_kind: "persona" as const,
+      participant_kind: r.participant_kind,
       zone: r.zone as string,
       sort_order: i + 1,
     }));
