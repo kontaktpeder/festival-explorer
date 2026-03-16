@@ -458,7 +458,27 @@ export default function FestivalFinanceRoom() {
                               }
                             />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="space-x-1 text-right">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => {
+                                if (!user) return;
+                                expenseMutation.mutate({
+                                  description: e.description,
+                                  category: e.category,
+                                  counterparty: e.counterparty,
+                                  gross_amount: e.gross_amount,
+                                  net_amount: e.net_amount,
+                                  date_incurred: e.date_incurred,
+                                  notes: e.notes,
+                                  created_by: user.id,
+                                });
+                              }}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="icon"
