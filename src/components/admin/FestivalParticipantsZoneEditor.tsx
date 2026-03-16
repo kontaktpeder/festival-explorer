@@ -422,6 +422,9 @@ export function FestivalParticipantsZoneEditor({
           <div className="space-y-2">
             {rows.map((row, index) => {
               const isExpanded = expandedRows.has(row.id);
+              const isPersona = row.participant_kind === "persona";
+              const ref = resolved[row.participant_id];
+              const kLabel = kindLabel(row.participant_kind);
               return (
               <div
                 key={row.id}
@@ -429,19 +432,34 @@ export function FestivalParticipantsZoneEditor({
               >
                 <div className="p-3 flex items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    <span className="font-medium text-sm truncate">
-                      {resolved[row.participant_id]?.name || "Ukjent"}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm truncate">
+                        {ref?.name || "Ukjent"}
+                      </span>
+                      {kLabel && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
+                          {kLabel}
+                        </span>
+                      )}
+                    </div>
+                    {isPersona ? (
                     <DebouncedRoleInput
                       initialValue={row.role_label || ""}
                       placeholder={
-                        (getPersonaTypeLabel(resolved[row.participant_id]?.type) ?? resolved[row.participant_id]?.category_tags?.[0])
-                          ? `Rolle (standard: ${getPersonaTypeLabel(resolved[row.participant_id]?.type) ?? resolved[row.participant_id]?.category_tags?.[0]})`
+                        (getPersonaTypeLabel(ref?.type) ?? ref?.category_tags?.[0])
+                          ? `Rolle (standard: ${getPersonaTypeLabel(ref?.type) ?? ref?.category_tags?.[0]})`
                           : "Rolle (valgfritt)"
                       }
-                      fallbackRole={getPersonaTypeLabel(resolved[row.participant_id]?.type) ?? resolved[row.participant_id]?.category_tags?.[0]}
+                      fallbackRole={getPersonaTypeLabel(ref?.type) ?? ref?.category_tags?.[0]}
                       onSave={(v) => saveRoleLabel(row.id, v)}
                     />
+                    ) : (
+                    <DebouncedRoleInput
+                      initialValue={row.role_label || ""}
+                      placeholder="Rolle (valgfritt)"
+                      onSave={(v) => saveRoleLabel(row.id, v)}
+                    />
+                    )}
                   </div>
 
                   <div className="flex gap-1 shrink-0">
