@@ -352,7 +352,7 @@ export default function FestivalFinanceRoom() {
                   </TableHeader>
                   <TableBody>
                     {(entries || [])
-                      .filter((e) => e.entry_type === "income")
+                      .filter((e) => e.entry_type === "income" && e.source_type === "ticket")
                       .map((e) => (
                         <TableRow key={e.id}>
                           <TableCell>{e.description}</TableCell>
