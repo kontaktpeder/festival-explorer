@@ -154,19 +154,25 @@ export default function FestivalFinanceRoom() {
     return { incomeTotal: income, feeTotal: fee, expenseTotal: expense, reimbursementTotal: reimbursements };
   }, [entries]);
 
+  const filteredEntries = useMemo(() => {
+    const all = entries || [];
+    if (!showOnlyMissingAttachments) return all;
+    return all.filter((e) => !e.attachment_url || e.attachment_url.trim() === "");
+  }, [entries, showOnlyMissingAttachments]);
+
   const expenseGroups = useMemo(
-    () => buildCategoryGroups((entries || []).filter((e) => e.source_type !== "reimbursement"), "expense"),
-    [entries]
+    () => buildCategoryGroups(filteredEntries.filter((e) => e.source_type !== "reimbursement"), "expense"),
+    [filteredEntries]
   );
 
   const incomeGroups = useMemo(
-    () => buildCategoryGroups((entries || []).filter((e) => e.source_type !== "ticket"), "income"),
-    [entries]
+    () => buildCategoryGroups(filteredEntries.filter((e) => e.source_type !== "ticket"), "income"),
+    [filteredEntries]
   );
 
   const reimbursementEntries = useMemo(
-    () => (entries || []).filter((e) => e.source_type === "reimbursement"),
-    [entries]
+    () => filteredEntries.filter((e) => e.source_type === "reimbursement"),
+    [filteredEntries]
   );
 
   const netIncome = incomeTotal - feeTotal;
