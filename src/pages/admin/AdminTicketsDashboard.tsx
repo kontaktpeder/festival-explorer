@@ -1158,6 +1158,7 @@ export default function AdminTicketsDashboard() {
                             onClick={() => {
                               setEditingTypeId(type.id);
                               setEditVisible(type.visible ?? true);
+                              setEditChargeStripeFee((type as any).charge_stripe_fee ?? true);
                               setEditSalesStart(
                                 type.sales_start
                                   ? format(new Date(type.sales_start), "yyyy-MM-dd'T'HH:mm")
