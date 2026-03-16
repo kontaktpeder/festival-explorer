@@ -386,6 +386,148 @@ export default function FestivalFinanceRoom() {
               </CardContent>
             </Card>
 
+            {/* Manual income */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Andre inntekter</CardTitle>
+                    <CardDescription>
+                      Legg inn sponsorer, støtte, barandel, merch m.m.
+                    </CardDescription>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={handleAddIncome}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Ny inntekt
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {incomeGroups.map((group) => (
+                  <div key={group.category} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold">{group.category}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {group.items.length} linje{group.items.length === 1 ? "" : "r"}
+                        </span>
+                      </div>
+                      <span className="text-sm font-semibold">
+                        {formatNok(group.totalNet)}
+                      </span>
+                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Dato</TableHead>
+                          <TableHead>Beskrivelse</TableHead>
+                          <TableHead>Kategori</TableHead>
+                          <TableHead>Fra</TableHead>
+                          <TableHead className="text-right">Beløp (kr)</TableHead>
+                          <TableHead className="w-16 text-right">Handling</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {group.items.map((e) => (
+                          <TableRow key={e.id}>
+                            <TableCell>
+                              <Input
+                                type="date"
+                                className="w-[130px]"
+                                defaultValue={e.date_incurred}
+                                onBlur={(ev) =>
+                                  onIncomeFieldChange(e, "date_incurred", ev.target.value)
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                defaultValue={e.description}
+                                placeholder="F.eks. Sponsor, støtte, barandel"
+                                onBlur={(ev) =>
+                                  onIncomeFieldChange(e, "description", ev.target.value)
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                list="finance-category-suggestions"
+                                className="w-[140px]"
+                                defaultValue={e.category || ""}
+                                placeholder="Kategori"
+                                onBlur={(ev) =>
+                                  onIncomeFieldChange(e, "category", ev.target.value)
+                                }
+                              />
+                            </TableCell>
+                            <TableCell className="min-w-[200px]">
+                              <Input
+                                className="h-8 text-xs"
+                                defaultValue={e.counterparty || ""}
+                                placeholder="Fra (sponsor, ordning osv.)"
+                                onBlur={(ev) =>
+                                  onIncomeFieldChange(e, "counterparty", ev.target.value)
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="number"
+                                className="w-[100px] text-right"
+                                defaultValue={
+                                  e.net_amount ? (e.net_amount / 100).toString() : "0"
+                                }
+                                onBlur={(ev) =>
+                                  onIncomeFieldChange(e, "net_amount", ev.target.value)
+                                }
+                              />
+                            </TableCell>
+                            <TableCell className="space-x-1 text-right">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                title="Dupliser rad"
+                                onClick={() => {
+                                  if (!user) return;
+                                  incomeMutation.mutate({
+                                    description: e.description,
+                                    category: e.category,
+                                    counterparty: e.counterparty,
+                                    gross_amount: e.gross_amount,
+                                    net_amount: e.net_amount,
+                                    date_incurred: e.date_incurred,
+                                    notes: e.notes,
+                                    created_by: user.id,
+                                  });
+                                }}
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive"
+                                title="Slett rad"
+                                onClick={() => deleteEntry.mutate(e.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ))}
+                {incomeGroups.length === 0 && (
+                  <div className="text-center text-muted-foreground py-8">
+                    Ingen manuelle inntekter lagt til ennå.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Expenses table */}
             <Card>
               <CardHeader>
