@@ -326,7 +326,7 @@ export default function FestivalFinanceRoom() {
         {activeBookId && !isLoading && (
           <>
             {/* Summary cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               <Card>
                 <CardHeader className="pb-2">
                   <CardDescription>Brutto inntekter</CardDescription>
@@ -351,6 +351,18 @@ export default function FestivalFinanceRoom() {
                   <p className="text-xl font-bold">{formatNok(netIncome)}</p>
                 </CardContent>
               </Card>
+              {reimbursementTotal !== 0 && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardDescription>Refusjoner</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-xl font-bold text-emerald-500">
+                      {formatNok(-reimbursementTotal)}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
               <Card>
                 <CardHeader className="pb-2">
                   <CardDescription>Resultat</CardDescription>
