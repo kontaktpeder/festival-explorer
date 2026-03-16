@@ -197,6 +197,37 @@ export default function FestivalFinanceRoom() {
     expenseMutation.mutate(patch);
   };
 
+  const handleAddIncome = () => {
+    if (!activeBookId || !user) return;
+    const today = new Date().toISOString().slice(0, 10);
+    incomeMutation.mutate({
+      description: "",
+      category: null,
+      counterparty: null,
+      gross_amount: 0,
+      net_amount: 0,
+      date_incurred: today,
+      created_by: user.id,
+    });
+  };
+
+  const onIncomeFieldChange = (
+    entry: FestivalFinanceEntry,
+    field: keyof FestivalFinanceEntry,
+    value: string
+  ) => {
+    const patch: any = { id: entry.id };
+    if (field === "gross_amount" || field === "net_amount") {
+      const n = parseInt(value.replace(/\s/g, ""), 10);
+      patch[field] = isNaN(n) ? 0 : n * 100;
+    } else if (field === "date_incurred") {
+      patch.date_incurred = value;
+    } else {
+      patch[field] = value;
+    }
+    incomeMutation.mutate(patch);
+  };
+
   if (!festivalId) {
     return <p className="p-6 text-muted-foreground">Mangler festival-ID.</p>;
   }
