@@ -32,7 +32,9 @@ import {
   useUpsertExpenseEntry,
   useDeleteFinanceEntry,
   useImportTicketRevenue,
+  useFinanceCategoriesForFestival,
 } from "@/hooks/useFestivalFinance";
+import { useFestivalRecipients } from "@/hooks/useFestivalRecipients";
 import type { FestivalFinanceEntry } from "@/types/finance";
 
 function formatNok(ore: number | null | undefined): string {
