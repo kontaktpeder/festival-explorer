@@ -47,6 +47,7 @@ import FestivalSettingsRoom from "./pages/dashboard/FestivalSettingsRoom";
 import FestivalTeamRoom from "./pages/dashboard/FestivalTeamRoom";
 import FestivalEventsRoom from "./pages/dashboard/FestivalEventsRoom";
 import FestivalWorkspaceRoom from "./pages/dashboard/FestivalWorkspaceRoom";
+import FestivalFinanceRoom from "./pages/dashboard/FestivalFinanceRoom";
 import VenueRoom from "./pages/dashboard/VenueRoom";
 import VenueEventsRoom from "./pages/dashboard/VenueEventsRoom";
 import VenueTeamRoom from "./pages/dashboard/VenueTeamRoom";
