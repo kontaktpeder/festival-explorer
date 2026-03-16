@@ -162,3 +162,35 @@ export function useImportTicketRevenue() {
     },
   });
 }
+
+/** Distinct category strings used across all books for a festival */
+export function useFinanceCategoriesForFestival(festivalId?: string) {
+  return useQuery({
+    queryKey: ["finance-categories-festival", festivalId],
+    queryFn: async () => {
+      if (!festivalId) return [] as string[];
+
+      const { data: books, error: booksError } = await supabase
+        .from("festival_finance_books")
+        .select("id")
+        .eq("festival_id", festivalId);
+
+      if (booksError) throw booksError;
+      if (!books || books.length === 0) return [] as string[];
+
+      const { data, error } = await supabase
+        .from("festival_finance_entries")
+        .select("category")
+        .in("book_id", books.map((b) => b.id));
+
+      if (error) throw error;
+
+      const set = new Set<string>();
+      (data || []).forEach((row: any) => {
+        if (row.category) set.add(row.category as string);
+      });
+      return Array.from(set).sort((a, b) => a.localeCompare(b, "nb"));
+    },
+    enabled: !!festivalId,
+  });
+}
