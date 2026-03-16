@@ -500,6 +500,7 @@ export default function AdminTicketsDashboard() {
   const [editVisible, setEditVisible] = useState(true);
   const [editSalesStart, setEditSalesStart] = useState("");
   const [editSalesEnd, setEditSalesEnd] = useState("");
+  const [editChargeStripeFee, setEditChargeStripeFee] = useState(true);
   const [newCode, setNewCode] = useState("");
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
