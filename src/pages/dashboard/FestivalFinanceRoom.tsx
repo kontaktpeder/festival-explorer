@@ -32,7 +32,9 @@ import {
   useUpsertExpenseEntry,
   useDeleteFinanceEntry,
   useImportTicketRevenue,
+  useFinanceCategoriesForFestival,
 } from "@/hooks/useFestivalFinance";
+import { useFestivalRecipients } from "@/hooks/useFestivalRecipients";
 import type { FestivalFinanceEntry } from "@/types/finance";
 
 function formatNok(ore: number | null | undefined): string {
@@ -81,6 +83,9 @@ export default function FestivalFinanceRoom() {
     if (books && books.length > 0) return books[0].id;
     return null;
   }, [books, selectedBookId]);
+
+  const { data: categorySuggestions } = useFinanceCategoriesForFestival(festivalId);
+  const { data: recipients } = useFestivalRecipients(festivalId);
 
   const { data: entries, isLoading: entriesLoading } = useFinanceEntries(activeBookId || undefined);
   const expenseMutation = useUpsertExpenseEntry(activeBookId || "");
@@ -411,8 +416,9 @@ export default function FestivalFinanceRoom() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Dato</TableHead>
+                         <TableHead>Dato</TableHead>
                           <TableHead>Beskrivelse</TableHead>
+                          <TableHead>Kategori</TableHead>
                           <TableHead>Mottaker</TableHead>
                           <TableHead className="text-right">Beløp (kr)</TableHead>
                           <TableHead className="w-16 text-right">Handling</TableHead>
@@ -441,8 +447,45 @@ export default function FestivalFinanceRoom() {
                             </TableCell>
                             <TableCell>
                               <Input
+                                list="finance-category-suggestions"
                                 className="w-[140px]"
+                                defaultValue={e.category || ""}
+                                placeholder="Kategori"
+                                onBlur={(ev) =>
+                                  onExpenseFieldChange(e, "category", ev.target.value)
+                                }
+                              />
+                            </TableCell>
+                            <TableCell className="min-w-[180px]">
+                              {recipients && recipients.length > 0 && (
+                                <Select
+                                  value={
+                                    recipients.some((r) => r.name === e.counterparty)
+                                      ? e.counterparty || ""
+                                      : "__custom"
+                                  }
+                                  onValueChange={(val) => {
+                                    if (val === "__custom") return;
+                                    onExpenseFieldChange(e, "counterparty", val);
+                                  }}
+                                >
+                                  <SelectTrigger className="w-full h-8 mb-1 text-xs">
+                                    <SelectValue placeholder="Velg mottaker" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="__custom">Annen / fritekst</SelectItem>
+                                    {recipients.map((r) => (
+                                      <SelectItem key={r.id} value={r.name}>
+                                        {r.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
+                              <Input
+                                className="w-full h-8 text-xs"
                                 defaultValue={e.counterparty || ""}
+                                placeholder="Mottaker (fri tekst)"
                                 onBlur={(ev) =>
                                   onExpenseFieldChange(e, "counterparty", ev.target.value)
                                 }
@@ -503,6 +546,11 @@ export default function FestivalFinanceRoom() {
                     Ingen utgifter lagt til ennå.
                   </div>
                 )}
+                <datalist id="finance-category-suggestions">
+                  {(categorySuggestions || []).map((cat) => (
+                    <option key={cat} value={cat} />
+                  ))}
+                </datalist>
               </CardContent>
             </Card>
           </>
