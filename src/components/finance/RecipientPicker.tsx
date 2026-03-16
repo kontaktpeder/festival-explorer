@@ -1,7 +1,5 @@
-import { useState, useRef } from "react";
+import { useMemo, useState, useRef } from "react";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useRecipientSearch, type RecipientOption } from "@/hooks/useRecipientSearch";
 
@@ -11,17 +9,23 @@ interface Props {
   onChange: (value: string) => void;
 }
 
+/**
+ * Searchable recipient picker that shows acts (from program) and venues.
+ * Supports free-text fallback.
+ */
 export function RecipientPicker({ festivalId, value, onChange }: Props) {
   const [query, setQuery] = useState("");
-  const [includeAll, setIncludeAll] = useState(false);
   const [open, setOpen] = useState(false);
   const blurTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const { data: allRecipients = [] } = useRecipientSearch(festivalId);
 
-  const { data: results = [], isLoading } = useRecipientSearch(
-    festivalId,
-    query,
-    includeAll
-  );
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return allRecipients;
+    return allRecipients.filter((r) =>
+      r.name.toLowerCase().includes(q)
+    );
+  }, [allRecipients, query]);
 
   const handleSelect = (opt: RecipientOption) => {
     onChange(opt.name);
@@ -44,52 +48,24 @@ export function RecipientPicker({ festivalId, value, onChange }: Props) {
         placeholder="Søk mottaker…"
         defaultValue={value || ""}
         onChange={(e) => {
-          const v = e.target.value;
-          setQuery(v);
-          setOpen(!!v.trim());
+          setQuery(e.target.value);
+          setOpen(true);
         }}
-        onFocus={(e) => {
-          if (e.target.value.trim()) {
-            setQuery(e.target.value);
-            setOpen(true);
-          }
+        onFocus={() => {
+          if (allRecipients.length > 0) setOpen(true);
         }}
         onBlur={handleBlur}
       />
 
-      {open && query.trim() && (
+      {open && filtered.length > 0 && (
         <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-md max-h-56 overflow-y-auto">
-          {/* Toggle */}
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
-            <Switch
-              id="include-all"
-              checked={includeAll}
-              onCheckedChange={(checked) => {
-                setIncludeAll(checked);
-                if (query.trim()) setOpen(true);
-              }}
-              className="scale-75"
-            />
-            <Label htmlFor="include-all" className="text-[10px] text-muted-foreground cursor-pointer">
-              Inkluder alt i appen
-            </Label>
-          </div>
-
-          {isLoading && (
-            <div className="px-3 py-3 text-xs text-muted-foreground">Søker…</div>
-          )}
-          {!isLoading && results.length === 0 && (
-            <div className="px-3 py-3 text-xs text-muted-foreground">
-              Ingen treff. Tab ut for fritekst.
-            </div>
-          )}
-          {results.map((r) => (
+          {filtered.map((r) => (
             <button
               key={`${r.kind}:${r.id}`}
               type="button"
               className="flex items-center justify-between w-full px-3 py-1.5 text-xs hover:bg-accent/50 text-left transition-colors"
               onMouseDown={(e) => {
-                e.preventDefault(); // prevent blur before click
+                e.preventDefault();
                 handleSelect(r);
               }}
             >

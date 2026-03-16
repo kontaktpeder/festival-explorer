@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type RecipientKind = "persona" | "project" | "venue";
+export type RecipientKind = "act" | "venue";
 
 export interface RecipientOption {
   id: string;
@@ -10,93 +10,99 @@ export interface RecipientOption {
   subtitle?: string;
 }
 
-export function useRecipientSearch(
-  festivalId: string | undefined,
-  query: string,
-  includeAll: boolean
-) {
+/**
+ * Henter acts (entities/personas fra program-slots) og venues
+ * som er knyttet til festivalens events.
+ * Brukes som kilde til økonomi-mottakere.
+ */
+export function useRecipientSearch(festivalId?: string) {
   return useQuery({
-    queryKey: ["recipient-search", festivalId, query, includeAll],
-    enabled: !!query.trim(),
+    queryKey: ["finance-recipients-program", festivalId],
+    enabled: !!festivalId,
     queryFn: async () => {
-      if (!query.trim()) return [] as RecipientOption[];
-      const like = `%${query}%`;
+      if (!festivalId) return [] as RecipientOption[];
 
-      // 1) Find relevant event IDs if narrowing to festival
-      let eventIds: string[] = [];
-      if (festivalId && !includeAll) {
-        const { data: fes, error: feError } = await supabase
-          .from("festival_events")
-          .select("event_id")
-          .eq("festival_id", festivalId);
-        if (feError) throw feError;
-        eventIds = (fes || []).map((fe) => fe.event_id).filter(Boolean);
-      }
+      const recipients: RecipientOption[] = [];
 
-      const results: RecipientOption[] = [];
+      // 1) Festival events (with venue_id)
+      const { data: fes, error: feError } = await supabase
+        .from("festival_events")
+        .select("event_id, event:events(id, venue_id)")
+        .eq("festival_id", festivalId);
 
-      // 2) Personas
-      {
-        const { data, error } = await supabase
-          .from("personas")
-          .select("id, name")
-          .ilike("name", like)
-          .limit(10);
-        if (error) throw error;
-        (data || []).forEach((p) => {
-          results.push({ id: p.id, kind: "persona", name: p.name, subtitle: "Person" });
+      if (feError) throw feError;
+
+      const eventIds = (fes || [])
+        .map((fe) => fe.event_id)
+        .filter(Boolean) as string[];
+
+      if (eventIds.length === 0) return [];
+
+      // 2) Acts from program slots + venues in parallel
+      const venueIds = [
+        ...new Set(
+          (fes || [])
+            .map((fe: any) => fe.event?.venue_id)
+            .filter(Boolean)
+        ),
+      ] as string[];
+
+      const [slotsRes, venuesRes] = await Promise.all([
+        supabase
+          .from("event_program_slots")
+          .select(`
+            id,
+            performer_kind,
+            performer_name_override,
+            performer_entity:entities!event_program_slots_performer_entity_id_fkey (id, name),
+            performer_persona:personas!event_program_slots_performer_persona_id_fkey (id, name)
+          `)
+          .in("event_id", eventIds)
+          .eq("is_canceled", false),
+        venueIds.length > 0
+          ? supabase.from("venues").select("id, name").in("id", venueIds)
+          : { data: [] as { id: string; name: string }[], error: null },
+      ]);
+
+      if (slotsRes.error) throw slotsRes.error;
+      if (venuesRes.error) throw venuesRes.error;
+
+      (slotsRes.data || []).forEach((slot: any) => {
+        if (slot.performer_entity) {
+          recipients.push({
+            id: `entity:${slot.performer_entity.id}`,
+            kind: "act",
+            name: slot.performer_name_override || slot.performer_entity.name,
+            subtitle: "Akt (prosjekt)",
+          });
+        }
+        if (slot.performer_persona) {
+          recipients.push({
+            id: `persona:${slot.performer_persona.id}`,
+            kind: "act",
+            name: slot.performer_name_override || slot.performer_persona.name,
+            subtitle: "Akt (person)",
+          });
+        }
+      });
+
+      (venuesRes.data || []).forEach((v) => {
+        recipients.push({
+          id: `venue:${v.id}`,
+          kind: "venue",
+          name: v.name,
+          subtitle: "Venue",
         });
-      }
+      });
 
-      // 3) Projects
-      {
-        let projectIds: string[] | null = null;
-        if (eventIds.length > 0 && !includeAll) {
-          const { data: eps, error: epError } = await supabase
-            .from("event_projects")
-            .select("project_id")
-            .in("event_id", eventIds);
-          if (epError) throw epError;
-          projectIds = [...new Set((eps || []).map((ep) => ep.project_id).filter(Boolean))];
-        }
+      // Deduplicate by name
+      const byName = new Map<string, RecipientOption>();
+      recipients.forEach((r) => {
+        if (!byName.has(r.name)) byName.set(r.name, r);
+      });
 
-        if (projectIds === null || projectIds.length > 0) {
-          let q = supabase.from("projects").select("id, name").ilike("name", like).limit(10);
-          if (projectIds) q = q.in("id", projectIds);
-          const { data, error } = await q;
-          if (error) throw error;
-          (data || []).forEach((pr) => {
-            results.push({ id: pr.id, kind: "project", name: pr.name, subtitle: "Prosjekt" });
-          });
-        }
-      }
-
-      // 4) Venues
-      {
-        let venueIds: string[] | null = null;
-        if (eventIds.length > 0 && !includeAll) {
-          const { data: evs, error: evError } = await supabase
-            .from("events")
-            .select("venue_id")
-            .in("id", eventIds);
-          if (evError) throw evError;
-          venueIds = [...new Set((evs || []).map((e) => e.venue_id).filter(Boolean))] as string[];
-        }
-
-        if (venueIds === null || venueIds.length > 0) {
-          let q = supabase.from("venues").select("id, name").ilike("name", like).limit(10);
-          if (venueIds) q = q.in("id", venueIds);
-          const { data, error } = await q;
-          if (error) throw error;
-          (data || []).forEach((vn) => {
-            results.push({ id: vn.id, kind: "venue", name: vn.name, subtitle: "Venue" });
-          });
-        }
-      }
-
-      const order: Record<RecipientKind, number> = { persona: 0, project: 1, venue: 2 };
-      return results.sort(
-        (a, b) => order[a.kind] - order[b.kind] || a.name.localeCompare(b.name, "nb")
+      return Array.from(byName.values()).sort((a, b) =>
+        a.name.localeCompare(b.name, "nb")
       );
     },
   });
