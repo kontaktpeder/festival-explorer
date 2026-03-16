@@ -546,6 +546,11 @@ export default function FestivalFinanceRoom() {
                     Ingen utgifter lagt til ennå.
                   </div>
                 )}
+                <datalist id="finance-category-suggestions">
+                  {(categorySuggestions || []).map((cat) => (
+                    <option key={cat} value={cat} />
+                  ))}
+                </datalist>
               </CardContent>
             </Card>
           </>
