@@ -155,7 +155,7 @@ export function FestivalParticipantsZoneEditor({
     const venueIds = list.filter((r) => r.participant_kind === "venue").map((r) => r.participant_id);
     const map: Record<string, ResolvedRef> = {};
 
-    const fetches: Promise<void>[] = [];
+    const fetches: Promise<any>[] = [];
 
     if (personaIds.length > 0) {
       fetches.push(
