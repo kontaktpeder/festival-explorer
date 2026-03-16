@@ -91,6 +91,7 @@ export default function FestivalFinanceRoom() {
 
   const { data: entries, isLoading: entriesLoading } = useFinanceEntries(activeBookId || undefined);
   const expenseMutation = useUpsertExpenseEntry(activeBookId || "");
+  const incomeMutation = useUpsertIncomeEntry(activeBookId || "");
   const deleteEntry = useDeleteFinanceEntry(activeBookId || "");
 
   const isLoading = booksLoading || (!!activeBookId && entriesLoading);
