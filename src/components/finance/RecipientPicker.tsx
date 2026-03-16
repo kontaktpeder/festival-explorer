@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useRecipientSearch, type RecipientOption } from "@/hooks/useRecipientSearch";
@@ -10,31 +10,36 @@ interface Props {
 }
 
 /**
- * Searchable recipient picker that shows acts (from program) and venues.
+ * Searchable recipient picker that shows acts (from participants) and venues.
  * Supports free-text fallback.
  */
 export function RecipientPicker({ festivalId, value, onChange }: Props) {
-  const [query, setQuery] = useState("");
+  const [inputValue, setInputValue] = useState(value || "");
   const [open, setOpen] = useState(false);
   const blurTimeout = useRef<ReturnType<typeof setTimeout>>();
   const { data: allRecipients = [] } = useRecipientSearch(festivalId);
 
+  // Sync when external value changes (e.g. different row rendered)
+  useEffect(() => {
+    setInputValue(value || "");
+  }, [value]);
+
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = inputValue.trim().toLowerCase();
     if (!q) return allRecipients;
     return allRecipients.filter((r) =>
       r.name.toLowerCase().includes(q)
     );
-  }, [allRecipients, query]);
+  }, [allRecipients, inputValue]);
 
   const handleSelect = (opt: RecipientOption) => {
+    setInputValue(opt.name);
     onChange(opt.name);
     setOpen(false);
-    setQuery("");
   };
 
-  const handleBlur = (ev: React.FocusEvent<HTMLInputElement>) => {
-    const v = ev.target.value.trim();
+  const handleBlur = () => {
+    const v = inputValue.trim();
     if (v && v !== (value || "").trim()) {
       onChange(v);
     }
@@ -46,9 +51,9 @@ export function RecipientPicker({ festivalId, value, onChange }: Props) {
       <Input
         className="w-full h-8 text-xs"
         placeholder="Søk mottaker…"
-        defaultValue={value || ""}
+        value={inputValue}
         onChange={(e) => {
-          setQuery(e.target.value);
+          setInputValue(e.target.value);
           setOpen(true);
         }}
         onFocus={() => {
