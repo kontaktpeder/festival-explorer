@@ -127,12 +127,17 @@ export default function FestivalFinanceRoom() {
 
   const handleAddExpense = () => {
     if (!activeBookId || !user) return;
+    const lastExpense = (entries || [])
+      .filter((e) => e.entry_type === "expense")
+      .slice(-1)[0];
+    const today = new Date().toISOString().slice(0, 10);
     expenseMutation.mutate({
-      description: "Ny utgift",
-      category: "Diverse",
+      description: lastExpense?.description || "Ny utgift",
+      category: lastExpense?.category || "Diverse",
+      counterparty: lastExpense?.counterparty || null,
       gross_amount: 0,
       net_amount: 0,
-      date_incurred: new Date().toISOString().slice(0, 10),
+      date_incurred: lastExpense?.date_incurred || today,
       created_by: user.id,
     });
   };
