@@ -146,20 +146,43 @@ export function FestivalParticipantsZoneEditor({
       return;
     }
 
-    const list = ((data || []) as any[]).filter(
-      (r) => r.participant_kind === "persona"
-    ) as FestivalParticipantRow[];
+    const list = (data || []) as FestivalParticipantRow[];
     setRows(list);
 
-    const personaIds = list.map((r) => r.participant_id);
+    const personaIds = list.filter((r) => r.participant_kind === "persona").map((r) => r.participant_id);
+    const entityIds = list.filter((r) => r.participant_kind === "entity").map((r) => r.participant_id);
+    const projectIds = list.filter((r) => r.participant_kind === "project").map((r) => r.participant_id);
+    const venueIds = list.filter((r) => r.participant_kind === "venue").map((r) => r.participant_id);
     const map: Record<string, ResolvedRef> = {};
+
+    const fetches: Promise<void>[] = [];
+
     if (personaIds.length > 0) {
-      const { data: pData } = await supabase
-        .from("personas")
-        .select("id,name,slug,type,category_tags")
-        .in("id", personaIds);
-      (pData || []).forEach((p: any) => (map[p.id] = p));
+      fetches.push(
+        supabase.from("personas").select("id,name,slug,type,category_tags").in("id", personaIds)
+          .then(({ data: pData }) => { (pData || []).forEach((p: any) => (map[p.id] = p)); })
+      );
     }
+    if (entityIds.length > 0) {
+      fetches.push(
+        supabase.from("entities").select("id,name,slug,type").in("id", entityIds)
+          .then(({ data: eData }) => { (eData || []).forEach((e: any) => (map[e.id] = { id: e.id, name: e.name, slug: e.slug, type: e.type })); })
+      );
+    }
+    if (projectIds.length > 0) {
+      fetches.push(
+        supabase.from("projects").select("id,name,slug").in("id", projectIds)
+          .then(({ data: prData }) => { (prData || []).forEach((p: any) => (map[p.id] = { id: p.id, name: p.name, slug: p.slug })); })
+      );
+    }
+    if (venueIds.length > 0) {
+      fetches.push(
+        supabase.from("venues").select("id,name,slug").in("id", venueIds)
+          .then(({ data: vData }) => { (vData || []).forEach((v: any) => (map[v.id] = { id: v.id, name: v.name, slug: v.slug })); })
+      );
+    }
+
+    await Promise.all(fetches);
     setResolved(map);
     setLoading(false);
   }, [festivalId, zone]);
