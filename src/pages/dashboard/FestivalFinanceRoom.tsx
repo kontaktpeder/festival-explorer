@@ -127,12 +127,17 @@ export default function FestivalFinanceRoom() {
 
   const handleAddExpense = () => {
     if (!activeBookId || !user) return;
+    const lastExpense = (entries || [])
+      .filter((e) => e.entry_type === "expense")
+      .slice(-1)[0];
+    const today = new Date().toISOString().slice(0, 10);
     expenseMutation.mutate({
-      description: "Ny utgift",
-      category: "Diverse",
+      description: lastExpense?.description || "Ny utgift",
+      category: lastExpense?.category || "Diverse",
+      counterparty: lastExpense?.counterparty || null,
       gross_amount: 0,
       net_amount: 0,
-      date_incurred: new Date().toISOString().slice(0, 10),
+      date_incurred: lastExpense?.date_incurred || today,
       created_by: user.id,
     });
   };
@@ -322,10 +327,50 @@ export default function FestivalFinanceRoom() {
                       Legg inn og rediger festivalens kostnader.
                     </CardDescription>
                   </div>
-                  <Button size="sm" onClick={handleAddExpense}>
-                    <Plus className="h-4 w-4 mr-1" />
-                    Legg til utgift
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline" onClick={handleAddExpense}>
+                      <Plus className="h-4 w-4 mr-1" />
+                      Ny rad
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (!activeBookId || !user) return;
+                        const today = new Date().toISOString().slice(0, 10);
+                        expenseMutation.mutate({
+                          description: "Artist",
+                          category: "Artister",
+                          counterparty: null,
+                          gross_amount: 0,
+                          net_amount: 0,
+                          date_incurred: today,
+                          created_by: user.id,
+                        });
+                      }}
+                    >
+                      + Artist
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (!activeBookId || !user) return;
+                        const today = new Date().toISOString().slice(0, 10);
+                        expenseMutation.mutate({
+                          description: "Lyd/teknikk",
+                          category: "Lyd/lys",
+                          counterparty: null,
+                          gross_amount: 0,
+                          net_amount: 0,
+                          date_incurred: today,
+                          created_by: user.id,
+                        });
+                      }}
+                    >
+                      + Lyd/teknikk
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -413,7 +458,27 @@ export default function FestivalFinanceRoom() {
                               }
                             />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="space-x-1 text-right">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => {
+                                if (!user) return;
+                                expenseMutation.mutate({
+                                  description: e.description,
+                                  category: e.category,
+                                  counterparty: e.counterparty,
+                                  gross_amount: e.gross_amount,
+                                  net_amount: e.net_amount,
+                                  date_incurred: e.date_incurred,
+                                  notes: e.notes,
+                                  created_by: user.id,
+                                });
+                              }}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="icon"
