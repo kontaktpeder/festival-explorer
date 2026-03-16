@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type RecipientKind = "act" | "venue";
+export type RecipientKind = "act" | "venue" | "team";
 
 export interface RecipientOption {
   id: string;
@@ -11,9 +11,10 @@ export interface RecipientOption {
 }
 
 /**
- * Henter acts (personas/entities fra event_participants) og venues
- * som er knyttet til festivalens events.
- * Brukes som kilde til økonomi-mottakere.
+ * Henter mottakere fra:
+ * - event_participants (På scenen/Bak scenen/Arrangør) → kind = 'act'
+ * - festival_participants (team: personas/entities) → kind = 'team'
+ * - venues brukt i festivalens events → kind = 'venue'
  */
 export function useRecipientSearch(festivalId?: string) {
   return useQuery({
@@ -24,50 +25,62 @@ export function useRecipientSearch(festivalId?: string) {
 
       const recipients: RecipientOption[] = [];
 
-      // 1) Festival events
-      const { data: fes, error: feError } = await supabase
-        .from("festival_events")
-        .select("event_id")
-        .eq("festival_id", festivalId);
+      // 1) Festival events + festival_participants in parallel
+      const [festEventsRes, festPartsRes] = await Promise.all([
+        supabase
+          .from("festival_events")
+          .select("event_id")
+          .eq("festival_id", festivalId),
+        supabase
+          .from("festival_participants")
+          .select("participant_kind, participant_id, role_label, zone")
+          .eq("festival_id", festivalId),
+      ]);
 
-      if (feError) throw feError;
+      if (festEventsRes.error) throw festEventsRes.error;
+      if (festPartsRes.error) throw festPartsRes.error;
 
-      const eventIds = (fes || [])
+      const eventIds = (festEventsRes.data || [])
         .map((fe) => fe.event_id)
         .filter(Boolean) as string[];
 
-      if (eventIds.length === 0) return [];
+      const festParts = festPartsRes.data || [];
 
-      // 2) Participants from event_participants
-      const { data: participants, error: epError } = await supabase
-        .from("event_participants")
-        .select("participant_kind, participant_id, role_label")
-        .in("event_id", eventIds);
+      // 2) Event participants (acts)
+      const { data: eventParts, error: epError } = eventIds.length
+        ? await supabase
+            .from("event_participants")
+            .select("participant_kind, participant_id, role_label, zone")
+            .in("event_id", eventIds)
+        : { data: [] as any[], error: null };
 
       if (epError) throw epError;
+
+      // Collect all persona/entity IDs from both sources
+      const allParticipants = [...(eventParts || []), ...festParts];
 
       const personaIds = new Set<string>();
       const entityIds = new Set<string>();
 
-      (participants || []).forEach((p) => {
+      allParticipants.forEach((p: any) => {
         if (p.participant_kind === "persona") personaIds.add(p.participant_id);
         if (p.participant_kind === "entity") entityIds.add(p.participant_id);
       });
 
-      // 3) Look up names + venues in parallel
-      const { data: eventsWithVenue, error: evError } = await supabase
-        .from("events")
-        .select("id, venue_id")
-        .in("id", eventIds);
+      // 3) Venues from events
+      const { data: eventsWithVenue, error: evError } = eventIds.length
+        ? await supabase.from("events").select("id, venue_id").in("id", eventIds)
+        : { data: [] as any[], error: null };
 
       if (evError) throw evError;
 
       const venueIds = [
         ...new Set(
-          (eventsWithVenue || []).map((e) => e.venue_id).filter(Boolean)
+          (eventsWithVenue || []).map((e: any) => e.venue_id).filter(Boolean)
         ),
       ] as string[];
 
+      // 4) Look up personas, entities, venues in parallel
       const [personasRes, entitiesRes, venuesRes] = await Promise.all([
         personaIds.size > 0
           ? supabase.from("personas").select("id, name, type").in("id", Array.from(personaIds))
@@ -90,8 +103,8 @@ export function useRecipientSearch(festivalId?: string) {
       const entityMap = new Map<string, any>();
       (entitiesRes.data || []).forEach((e: any) => entityMap.set(e.id, e));
 
-      // 4) Build act recipients from participants
-      (participants || []).forEach((p) => {
+      // 5) Build act recipients from event_participants
+      (eventParts || []).forEach((p: any) => {
         if (p.participant_kind === "persona") {
           const persona = personaMap.get(p.participant_id);
           if (persona) {
@@ -109,13 +122,38 @@ export function useRecipientSearch(festivalId?: string) {
               id: `entity:${ent.id}`,
               kind: "act",
               name: ent.name,
-              subtitle: p.role_label || "Prosjekt/act",
+              subtitle: p.role_label || "Akt (prosjekt/entity)",
             });
           }
         }
       });
 
-      // 5) Venues
+      // 6) Build team recipients from festival_participants
+      festParts.forEach((p: any) => {
+        if (p.participant_kind === "persona") {
+          const persona = personaMap.get(p.participant_id);
+          if (persona) {
+            recipients.push({
+              id: `persona:${persona.id}`,
+              kind: "team",
+              name: persona.name,
+              subtitle: p.role_label || "Team (person)",
+            });
+          }
+        } else if (p.participant_kind === "entity") {
+          const ent = entityMap.get(p.participant_id);
+          if (ent) {
+            recipients.push({
+              id: `entity:${ent.id}`,
+              kind: "team",
+              name: ent.name,
+              subtitle: p.role_label || "Team (prosjekt)",
+            });
+          }
+        }
+      });
+
+      // 7) Venues
       (venuesRes.data || []).forEach((v: any) => {
         recipients.push({
           id: `venue:${v.id}`,
@@ -125,7 +163,7 @@ export function useRecipientSearch(festivalId?: string) {
         });
       });
 
-      // Deduplicate by name
+      // 8) Deduplicate by name
       const byName = new Map<string, RecipientOption>();
       recipients.forEach((r) => {
         if (!byName.has(r.name)) byName.set(r.name, r);
