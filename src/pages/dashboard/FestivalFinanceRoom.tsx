@@ -31,6 +31,7 @@ import {
   useFinanceEntries,
   useCreateFinanceBook,
   useUpsertExpenseEntry,
+  useUpsertIncomeEntry,
   useDeleteFinanceEntry,
   useImportTicketRevenue,
   useFinanceCategoriesForFestival,
