@@ -11,23 +11,23 @@ export interface RecipientOption {
 }
 
 /**
- * Henter acts (entities/personas fra program-slots) og venues
+ * Henter acts (personas/entities fra event_participants) og venues
  * som er knyttet til festivalens events.
  * Brukes som kilde til økonomi-mottakere.
  */
 export function useRecipientSearch(festivalId?: string) {
   return useQuery({
-    queryKey: ["finance-recipients-program", festivalId],
+    queryKey: ["finance-recipients-participants", festivalId],
     enabled: !!festivalId,
     queryFn: async () => {
       if (!festivalId) return [] as RecipientOption[];
 
       const recipients: RecipientOption[] = [];
 
-      // 1) Festival events (with venue_id)
+      // 1) Festival events
       const { data: fes, error: feError } = await supabase
         .from("festival_events")
-        .select("event_id, event:events(id, venue_id)")
+        .select("event_id")
         .eq("festival_id", festivalId);
 
       if (feError) throw feError;
@@ -38,54 +38,84 @@ export function useRecipientSearch(festivalId?: string) {
 
       if (eventIds.length === 0) return [];
 
-      // 2) Acts from program slots + venues in parallel
+      // 2) Participants from event_participants
+      const { data: participants, error: epError } = await supabase
+        .from("event_participants")
+        .select("participant_kind, participant_id, role_label")
+        .in("event_id", eventIds);
+
+      if (epError) throw epError;
+
+      const personaIds = new Set<string>();
+      const entityIds = new Set<string>();
+
+      (participants || []).forEach((p) => {
+        if (p.participant_kind === "persona") personaIds.add(p.participant_id);
+        if (p.participant_kind === "entity") entityIds.add(p.participant_id);
+      });
+
+      // 3) Look up names + venues in parallel
+      const { data: eventsWithVenue, error: evError } = await supabase
+        .from("events")
+        .select("id, venue_id")
+        .in("id", eventIds);
+
+      if (evError) throw evError;
+
       const venueIds = [
         ...new Set(
-          (fes || [])
-            .map((fe: any) => fe.event?.venue_id)
-            .filter(Boolean)
+          (eventsWithVenue || []).map((e) => e.venue_id).filter(Boolean)
         ),
       ] as string[];
 
-      const [slotsRes, venuesRes] = await Promise.all([
-        supabase
-          .from("event_program_slots")
-          .select(`
-            id,
-            performer_kind,
-            performer_name_override,
-            performer_entity:entities!event_program_slots_performer_entity_id_fkey (id, name),
-            performer_persona:personas!event_program_slots_performer_persona_id_fkey (id, name)
-          `)
-          .in("event_id", eventIds)
-          .eq("is_canceled", false),
+      const [personasRes, entitiesRes, venuesRes] = await Promise.all([
+        personaIds.size > 0
+          ? supabase.from("personas").select("id, name, type").in("id", Array.from(personaIds))
+          : Promise.resolve({ data: [] as any[], error: null }),
+        entityIds.size > 0
+          ? supabase.from("entities").select("id, name").in("id", Array.from(entityIds))
+          : Promise.resolve({ data: [] as any[], error: null }),
         venueIds.length > 0
           ? supabase.from("venues").select("id, name").in("id", venueIds)
-          : { data: [] as { id: string; name: string }[], error: null },
+          : Promise.resolve({ data: [] as any[], error: null }),
       ]);
 
-      if (slotsRes.error) throw slotsRes.error;
+      if (personasRes.error) throw personasRes.error;
+      if (entitiesRes.error) throw entitiesRes.error;
       if (venuesRes.error) throw venuesRes.error;
 
-      (slotsRes.data || []).forEach((slot: any) => {
-        if (slot.performer_entity) {
-          recipients.push({
-            id: `entity:${slot.performer_entity.id}`,
-            kind: "act",
-            name: slot.performer_name_override || slot.performer_entity.name,
-            subtitle: "Akt (prosjekt)",
-          });
-        }
-        if (slot.performer_persona) {
-          recipients.push({
-            id: `persona:${slot.performer_persona.id}`,
-            kind: "act",
-            name: slot.performer_name_override || slot.performer_persona.name,
-            subtitle: "Akt (person)",
-          });
+      const personaMap = new Map<string, any>();
+      (personasRes.data || []).forEach((p: any) => personaMap.set(p.id, p));
+
+      const entityMap = new Map<string, any>();
+      (entitiesRes.data || []).forEach((e: any) => entityMap.set(e.id, e));
+
+      // 4) Build act recipients from participants
+      (participants || []).forEach((p) => {
+        if (p.participant_kind === "persona") {
+          const persona = personaMap.get(p.participant_id);
+          if (persona) {
+            recipients.push({
+              id: `persona:${persona.id}`,
+              kind: "act",
+              name: persona.name,
+              subtitle: p.role_label || persona.type || "Person",
+            });
+          }
+        } else if (p.participant_kind === "entity") {
+          const ent = entityMap.get(p.participant_id);
+          if (ent) {
+            recipients.push({
+              id: `entity:${ent.id}`,
+              kind: "act",
+              name: ent.name,
+              subtitle: p.role_label || "Prosjekt/act",
+            });
+          }
         }
       });
 
+      // 5) Venues
       (venuesRes.data || []).forEach((v: any) => {
         recipients.push({
           id: `venue:${v.id}`,
