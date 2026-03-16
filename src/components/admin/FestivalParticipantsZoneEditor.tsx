@@ -299,6 +299,80 @@ export function FestivalParticipantsZoneEditor({
     });
   };
 
+  const addAllProjectsAndVenues = async () => {
+    setLoading(true);
+    try {
+      const { data: fes, error: feError } = await supabase
+        .from("festival_events")
+        .select("event_id")
+        .eq("festival_id", festivalId);
+      if (feError) throw feError;
+      const eventIds = (fes || []).map((fe: any) => fe.event_id).filter(Boolean) as string[];
+      if (eventIds.length === 0) {
+        toast.info("Ingen events koblet til festivalen ennå.");
+        setLoading(false);
+        return;
+      }
+
+      const [{ data: eventProjects, error: epError }, { data: eventsWithVenue, error: evError }] = await Promise.all([
+        supabase.from("event_projects").select("project_id").in("event_id", eventIds),
+        supabase.from("events").select("id, venue_id").in("id", eventIds),
+      ]);
+      if (epError) throw epError;
+      if (evError) throw evError;
+
+      const projectIds = Array.from(new Set((eventProjects || []).map((ep: any) => ep.project_id).filter(Boolean))) as string[];
+      const venueIds = Array.from(new Set((eventsWithVenue || []).map((e: any) => e.venue_id).filter(Boolean))) as string[];
+
+      const existingKeys = new Set(rows.map((r) => `${r.participant_kind}:${r.participant_id}`));
+      const nextSortStart = rows.length === 0 ? 1 : Math.max(...rows.map((r) => r.sort_order || 0)) + 1;
+      const newRows: any[] = [];
+      let sort = nextSortStart;
+
+      const defaultPerms = {
+        can_edit_festival: false, can_edit_events: false, can_access_media: false,
+        can_scan_tickets: false, can_see_ticket_stats: false, can_create_internal_ticket: false,
+        can_see_report: false, can_see_revenue: false, can_edit_festival_media: false, can_view_runsheet: false,
+      };
+
+      projectIds.forEach((pid) => {
+        if (!existingKeys.has(`project:${pid}`)) {
+          newRows.push({ festival_id: festivalId, zone, participant_kind: "project", participant_id: pid, role_label: null, sort_order: sort++, ...defaultPerms });
+        }
+      });
+      venueIds.forEach((vid) => {
+        if (!existingKeys.has(`venue:${vid}`)) {
+          newRows.push({ festival_id: festivalId, zone, participant_kind: "venue", participant_id: vid, role_label: null, sort_order: sort++, ...defaultPerms });
+        }
+      });
+
+      if (newRows.length === 0) {
+        toast.info("Alle prosjekter og venues er allerede lagt til.");
+        setLoading(false);
+        return;
+      }
+
+      const { error: insertError } = await supabase.from("festival_participants").insert(newRows);
+      if (insertError) throw insertError;
+      toast.success(`La til ${newRows.length} prosjekter/venues.`);
+      await loadRows();
+    } catch (e: any) {
+      console.error(e);
+      toast.error("Kunne ikke legge til prosjekter/venues");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const kindLabel = (kind: string) => {
+    switch (kind) {
+      case "project": return "Prosjekt";
+      case "venue": return "Venue";
+      case "entity": return "Entitet";
+      default: return null;
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -321,6 +395,23 @@ export function FestivalParticipantsZoneEditor({
           emptyMessage="Ingen personer funnet"
           disabledIds={new Set(rows.map((r) => r.participant_id))}
         />
+
+        {/* Bulk add projects & venues */}
+        <div className="flex items-center justify-between gap-2 bg-muted/30 border border-border rounded-lg p-3">
+          <p className="text-xs text-muted-foreground">
+            Legg til prosjekter og venues fra festivalens program.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={addAllProjectsAndVenues}
+            disabled={loading}
+            className="gap-1.5 shrink-0"
+          >
+            <FolderPlus className="h-3.5 w-3.5" />
+            Legg til
+          </Button>
+        </div>
 
         {/* List */}
         {loading ? (
