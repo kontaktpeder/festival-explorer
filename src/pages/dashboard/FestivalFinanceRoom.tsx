@@ -201,11 +201,19 @@ export default function FestivalFinanceRoom() {
     } catch (e: any) { toast.error(e.message || "Kunne ikke opprette bok"); }
   };
 
-  const generateVoucherNumber = (allEntries: FestivalFinanceEntry[]) => {
-    const existing = (allEntries || []).map((e) => e.voucher_number).filter(Boolean) as string[];
-    if (!existing.length) return "B-0001";
-    const last = existing.map((s) => parseInt(s.replace(/\D/g, ""), 10)).filter((n) => !isNaN(n)).sort((a, b) => b - a)[0];
-    return `B-${((last || 0) + 1).toString().padStart(4, "0")}`;
+  const { uploadAttachment, isUploading: isUploadingAttachment } = useFinanceAttachmentUpload();
+
+  const generateYearlyVoucherNumber = (allEntries: FestivalFinanceEntry[]) => {
+    const year = new Date().getFullYear().toString();
+    const thisYears = (allEntries || [])
+      .map((e) => e.voucher_number)
+      .filter((v): v is string => Boolean(v && v.startsWith(year + "-")));
+    if (!thisYears.length) return `${year}-0001`;
+    const last = thisYears
+      .map((s) => parseInt(s.replace(`${year}-`, ""), 10))
+      .filter((n) => !isNaN(n))
+      .sort((a, b) => b - a)[0];
+    return `${year}-${((last || 0) + 1).toString().padStart(4, "0")}`;
   };
 
   const handleAddExpense = () => {
