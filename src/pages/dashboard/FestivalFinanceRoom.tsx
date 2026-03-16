@@ -162,7 +162,13 @@ export default function FestivalFinanceRoom() {
   return (
     <div className="min-h-[100svh] bg-background">
       <div className="max-w-5xl mx-auto px-3 py-4 md:p-8 space-y-6">
-        <BackToFestival festivalId={festivalId} />
+        <Link
+          to={`/dashboard/festival/${festivalId}`}
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-accent transition-colors py-3"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Tilbake til festivalrommet</span>
+        </Link>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
