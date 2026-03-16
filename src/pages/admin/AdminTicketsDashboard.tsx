@@ -1860,6 +1860,10 @@ export default function AdminTicketsDashboard() {
               <Switch checked={editVisible} onCheckedChange={setEditVisible} id="edit-visible" />
               <Label htmlFor="edit-visible">Vis på billettsiden</Label>
             </div>
+            <div className="flex items-center gap-3">
+              <Switch checked={editChargeStripeFee} onCheckedChange={setEditChargeStripeFee} id="edit-stripe-fee" />
+              <Label htmlFor="edit-stripe-fee">Stripe-gebyr i regnskap</Label>
+            </div>
             <div className="space-y-1">
               <Label>Salg åpner (valgfri)</Label>
               <Input
@@ -1889,6 +1893,7 @@ export default function AdminTicketsDashboard() {
                   visible: editVisible,
                   sales_start: editSalesStart.trim() || null,
                   sales_end: editSalesEnd.trim() || null,
+                  charge_stripe_fee: editChargeStripeFee,
                 });
               }}
               disabled={updateTicketTypeMeta.isPending}
