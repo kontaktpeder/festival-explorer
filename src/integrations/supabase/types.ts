@@ -1307,6 +1307,9 @@ export type Database = {
           linked_entry_id: string | null
           net_amount: number
           notes: string | null
+          paid_by_id: string | null
+          paid_by_kind: string | null
+          paid_by_label: string | null
           quantity: number | null
           sort_order: number | null
           source_ref_id: string | null
@@ -1335,6 +1338,9 @@ export type Database = {
           linked_entry_id?: string | null
           net_amount: number
           notes?: string | null
+          paid_by_id?: string | null
+          paid_by_kind?: string | null
+          paid_by_label?: string | null
           quantity?: number | null
           sort_order?: number | null
           source_ref_id?: string | null
@@ -1363,6 +1369,9 @@ export type Database = {
           linked_entry_id?: string | null
           net_amount?: number
           notes?: string | null
+          paid_by_id?: string | null
+          paid_by_kind?: string | null
+          paid_by_label?: string | null
           quantity?: number | null
           sort_order?: number | null
           source_ref_id?: string | null

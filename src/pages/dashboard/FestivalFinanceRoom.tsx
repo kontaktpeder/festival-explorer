@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RecipientPicker } from "@/components/finance/RecipientPicker";
+import { useFinancePayers } from "@/hooks/useFinancePayers";
 import { Plus, Trash2, ArrowLeft, Undo2 } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
 
@@ -87,7 +88,8 @@ export default function FestivalFinanceRoom() {
   }, [books, selectedBookId]);
 
   const { data: categorySuggestions } = useFinanceCategoriesForFestival(festivalId);
-  
+  const { data: payers = [] } = useFinancePayers(festivalId);
+
 
   const { data: entries, isLoading: entriesLoading } = useFinanceEntries(activeBookId || undefined);
   const expenseMutation = useUpsertExpenseEntry(activeBookId || "");
@@ -627,6 +629,7 @@ export default function FestivalFinanceRoom() {
                           <TableHead>Beskrivelse</TableHead>
                           <TableHead>Kategori</TableHead>
                           <TableHead>Mottaker</TableHead>
+                          <TableHead>Betalt av</TableHead>
                           <TableHead className="text-right">Beløp (kr)</TableHead>
                           <TableHead className="w-16 text-right">Handling</TableHead>
                         </TableRow>
@@ -670,7 +673,40 @@ export default function FestivalFinanceRoom() {
                                 onChange={(val) => onExpenseFieldChange(e, "counterparty", val)}
                               />
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="min-w-[160px]">
+                              <Select
+                                value={e.paid_by_id ?? "__none__"}
+                                onValueChange={(value) => {
+                                  if (value === "__none__") {
+                                    expenseMutation.mutate({
+                                      id: e.id,
+                                      paid_by_kind: null,
+                                      paid_by_id: null,
+                                      paid_by_label: null,
+                                    });
+                                    return;
+                                  }
+                                  const selected = payers.find((p) => p.id === value);
+                                  expenseMutation.mutate({
+                                    id: e.id,
+                                    paid_by_kind: selected ? "persona" : "other",
+                                    paid_by_id: selected?.id ?? null,
+                                    paid_by_label: selected?.name ?? null,
+                                  });
+                                }}
+                              >
+                                <SelectTrigger className="h-8 text-xs">
+                                  <SelectValue placeholder="Velg betaler" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="__none__">Ingen valgt</SelectItem>
+                                  {payers.map((p) => (
+                                    <SelectItem key={p.id} value={p.id}>
+                                      {p.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                               <Input
                                 type="number"
                                 className="w-[100px] text-right"
