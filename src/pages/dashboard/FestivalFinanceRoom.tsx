@@ -327,10 +327,50 @@ export default function FestivalFinanceRoom() {
                       Legg inn og rediger festivalens kostnader.
                     </CardDescription>
                   </div>
-                  <Button size="sm" onClick={handleAddExpense}>
-                    <Plus className="h-4 w-4 mr-1" />
-                    Legg til utgift
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline" onClick={handleAddExpense}>
+                      <Plus className="h-4 w-4 mr-1" />
+                      Ny rad
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (!activeBookId || !user) return;
+                        const today = new Date().toISOString().slice(0, 10);
+                        expenseMutation.mutate({
+                          description: "Artist",
+                          category: "Artister",
+                          counterparty: null,
+                          gross_amount: 0,
+                          net_amount: 0,
+                          date_incurred: today,
+                          created_by: user.id,
+                        });
+                      }}
+                    >
+                      + Artist
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (!activeBookId || !user) return;
+                        const today = new Date().toISOString().slice(0, 10);
+                        expenseMutation.mutate({
+                          description: "Lyd/teknikk",
+                          category: "Lyd/lys",
+                          counterparty: null,
+                          gross_amount: 0,
+                          net_amount: 0,
+                          date_incurred: today,
+                          created_by: user.id,
+                        });
+                      }}
+                    >
+                      + Lyd/teknikk
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
