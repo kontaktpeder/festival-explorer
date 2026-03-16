@@ -96,21 +96,30 @@ export default function FestivalFinanceRoom() {
 
   const isLoading = booksLoading || (!!activeBookId && entriesLoading);
 
-  const { incomeTotal, feeTotal, expenseTotal } = useMemo(() => {
+  const { incomeTotal, feeTotal, expenseTotal, reimbursementTotal } = useMemo(() => {
     let income = 0;
     let fee = 0;
     let expense = 0;
+    let reimbursements = 0;
 
     (entries || []).forEach((e) => {
       if (e.entry_type === "income") {
-        income += e.gross_amount;
-        if (e.fee_amount) fee += e.fee_amount;
+        if (e.source_type === "ticket") {
+          income += e.gross_amount;
+          if (e.fee_amount) fee += e.fee_amount;
+        } else if (e.source_type !== "reimbursement") {
+          income += e.net_amount;
+        }
       } else if (e.entry_type === "expense") {
-        expense += e.net_amount;
+        if (e.source_type === "reimbursement") {
+          reimbursements += e.net_amount; // negative value
+        } else {
+          expense += e.net_amount;
+        }
       }
     });
 
-    return { incomeTotal: income, feeTotal: fee, expenseTotal: expense };
+    return { incomeTotal: income, feeTotal: fee, expenseTotal: expense, reimbursementTotal: reimbursements };
   }, [entries]);
 
   const expenseGroups = useMemo(() => {
