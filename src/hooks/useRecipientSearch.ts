@@ -60,8 +60,8 @@ export function useRecipientSearch(festivalId?: string) {
           .in("event_id", eventIds)
           .eq("is_canceled", false),
         venueIds.length > 0
-          ? supabase.from("venues").select("id, name").in("id", venueIds)
-          : { data: [] as { id: string; name: string }[], error: null },
+          ? supabase.from("venues").select("id, title").in("id", venueIds)
+          : { data: [] as { id: string; title: string }[], error: null },
       ]);
 
       if (slotsRes.error) throw slotsRes.error;
@@ -86,11 +86,11 @@ export function useRecipientSearch(festivalId?: string) {
         }
       });
 
-      (venuesRes.data || []).forEach((v) => {
+      (venuesRes.data || []).forEach((v: any) => {
         recipients.push({
           id: `venue:${v.id}`,
           kind: "venue",
-          name: v.name,
+          name: v.title,
           subtitle: "Venue",
         });
       });
