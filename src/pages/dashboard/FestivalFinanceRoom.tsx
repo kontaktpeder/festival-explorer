@@ -8,63 +8,83 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
+  Table, TableHeader, TableRow, TableHead, TableBody, TableCell,
 } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  Collapsible, CollapsibleContent, CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { RecipientPicker } from "@/components/finance/RecipientPicker";
 import { useFinancePayers } from "@/hooks/useFinancePayers";
-import { Plus, Trash2, ArrowLeft, Undo2, TrendingUp, TrendingDown, Receipt, Wallet } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Undo2, TrendingUp, TrendingDown, Receipt, Wallet, ChevronRight, FolderOpen } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
 
 import {
-  useFinanceBooks,
-  useFinanceEntries,
-  useCreateFinanceBook,
-  useUpsertExpenseEntry,
-  useUpsertIncomeEntry,
-  useDeleteFinanceEntry,
-  useImportTicketRevenue,
-  useFinanceCategoriesForFestival,
+  useFinanceBooks, useFinanceEntries, useCreateFinanceBook,
+  useUpsertExpenseEntry, useUpsertIncomeEntry, useDeleteFinanceEntry,
+  useImportTicketRevenue, useFinanceCategoriesForFestival,
 } from "@/hooks/useFestivalFinance";
 
 import type { FestivalFinanceEntry } from "@/types/finance";
 
 function formatNok(ore: number | null | undefined): string {
   const v = (ore ?? 0) / 100;
-  return new Intl.NumberFormat("nb-NO", {
-    style: "currency",
-    currency: "NOK",
-    minimumFractionDigits: 0,
-  }).format(v);
+  return new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK", minimumFractionDigits: 0 }).format(v);
 }
 
-/* ── Reusable mobile entry card ── */
-function EntryCard({
-  entry,
-  fields,
-  actions,
-}: {
-  entry: FestivalFinanceEntry;
-  fields: React.ReactNode;
-  actions: React.ReactNode;
-}) {
+/* ── Types for grouped data ── */
+interface SubGroup {
+  subcategory: string;
+  items: FestivalFinanceEntry[];
+  totalNet: number;
+}
+interface CategoryGroup {
+  category: string;
+  items: FestivalFinanceEntry[];
+  subGroups: SubGroup[];
+  totalNet: number;
+}
+
+function buildCategoryGroups(entries: FestivalFinanceEntry[], entryType: "expense" | "income", excludeSourceType?: string): CategoryGroup[] {
+  const groups = new Map<string, CategoryGroup>();
+  const filtered = entries.filter((e) => e.entry_type === entryType && (excludeSourceType ? e.source_type !== excludeSourceType : true));
+
+  filtered.forEach((e) => {
+    const catKey = e.category || "Uten kategori";
+    if (!groups.has(catKey)) {
+      groups.set(catKey, { category: catKey, items: [], subGroups: [], totalNet: 0 });
+    }
+    const g = groups.get(catKey)!;
+    g.items.push(e);
+    g.totalNet += e.net_amount;
+  });
+
+  // Build subcategory groups within each category
+  groups.forEach((g) => {
+    const subMap = new Map<string, SubGroup>();
+    g.items.forEach((e) => {
+      const subKey = e.subcategory || "";
+      if (!subMap.has(subKey)) {
+        subMap.set(subKey, { subcategory: subKey, items: [], totalNet: 0 });
+      }
+      const s = subMap.get(subKey)!;
+      s.items.push(e);
+      s.totalNet += e.net_amount;
+    });
+    g.subGroups = Array.from(subMap.values()).sort((a, b) => a.subcategory.localeCompare(b.subcategory, "nb"));
+  });
+
+  return Array.from(groups.values()).sort((a, b) => a.category.localeCompare(b.category, "nb"));
+}
+
+/* ── Mobile entry card ── */
+function EntryCard({ fields, actions }: { fields: React.ReactNode; actions: React.ReactNode }) {
   return (
     <div className="rounded-md border border-border/60 bg-card/60 p-3 space-y-3">
       {fields}
-      <div className="flex items-center justify-end gap-1 pt-1 border-t border-border/30">
-        {actions}
-      </div>
+      <div className="flex items-center justify-end gap-1 pt-1 border-t border-border/30">{actions}</div>
     </div>
   );
 }
@@ -72,23 +92,25 @@ function EntryCard({
 export default function FestivalFinanceRoom() {
   const { id: festivalId } = useParams<{ id: string }>();
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
+  const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
+
+  const toggleCategory = (key: string) => {
+    setOpenCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  };
 
   const { data: user } = useQuery({
     queryKey: ["current-user"],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      return user;
-    },
+    queryFn: async () => { const { data: { user } } = await supabase.auth.getUser(); return user; },
   });
 
   const { data: festival } = useQuery({
     queryKey: ["festival-for-finance", festivalId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("festivals")
-        .select("id, name")
-        .eq("id", festivalId!)
-        .single();
+      const { data, error } = await supabase.from("festivals").select("id, name").eq("id", festivalId!).single();
       if (error) throw error;
       return data;
     },
@@ -116,199 +138,116 @@ export default function FestivalFinanceRoom() {
   const isLoading = booksLoading || (!!activeBookId && entriesLoading);
 
   const { incomeTotal, feeTotal, expenseTotal, reimbursementTotal } = useMemo(() => {
-    let income = 0;
-    let fee = 0;
-    let expense = 0;
-    let reimbursements = 0;
-
+    let income = 0, fee = 0, expense = 0, reimbursements = 0;
     (entries || []).forEach((e) => {
       if (e.entry_type === "income") {
-        if (e.source_type === "ticket") {
-          income += e.gross_amount;
-          if (e.fee_amount) fee += e.fee_amount;
-        } else if (e.source_type !== "reimbursement") {
-          income += e.net_amount;
-        }
+        if (e.source_type === "ticket") { income += e.gross_amount; if (e.fee_amount) fee += e.fee_amount; }
+        else if (e.source_type !== "reimbursement") { income += e.net_amount; }
       } else if (e.entry_type === "expense") {
-        if (e.source_type === "reimbursement") {
-          reimbursements += e.net_amount;
-        } else {
-          expense += e.net_amount;
-        }
+        if (e.source_type === "reimbursement") { reimbursements += e.net_amount; }
+        else { expense += e.net_amount; }
       }
     });
-
     return { incomeTotal: income, feeTotal: fee, expenseTotal: expense, reimbursementTotal: reimbursements };
   }, [entries]);
 
-  const expenseGroups = useMemo(() => {
-    const groups = new Map<string, { category: string; items: FestivalFinanceEntry[]; totalNet: number }>();
-    (entries || [])
-      .filter((e) => e.entry_type === "expense" && e.source_type !== "reimbursement")
-      .forEach((e) => {
-        const key = e.category || "Uten kategori";
-        const existing = groups.get(key) || { category: key, items: [], totalNet: 0 };
-        existing.items.push(e);
-        existing.totalNet += e.net_amount;
-        groups.set(key, existing);
-      });
-    return Array.from(groups.values()).sort((a, b) => a.category.localeCompare(b.category, "nb"));
-  }, [entries]);
+  const expenseGroups = useMemo(
+    () => buildCategoryGroups((entries || []).filter((e) => e.source_type !== "reimbursement"), "expense"),
+    [entries]
+  );
+
+  const incomeGroups = useMemo(
+    () => buildCategoryGroups((entries || []).filter((e) => e.source_type !== "ticket"), "income"),
+    [entries]
+  );
 
   const reimbursementEntries = useMemo(
     () => (entries || []).filter((e) => e.source_type === "reimbursement"),
     [entries]
   );
 
-  const incomeGroups = useMemo(() => {
-    const groups = new Map<string, { category: string; items: FestivalFinanceEntry[]; totalNet: number }>();
-    (entries || [])
-      .filter((e) => e.entry_type === "income" && e.source_type !== "ticket")
-      .forEach((e) => {
-        const key = e.category || "Uten kategori";
-        const existing = groups.get(key) || { category: key, items: [], totalNet: 0 };
-        existing.items.push(e);
-        existing.totalNet += e.net_amount;
-        groups.set(key, existing);
-      });
-    return Array.from(groups.values()).sort((a, b) => a.category.localeCompare(b.category, "nb"));
-  }, [entries]);
-
   const netIncome = incomeTotal - feeTotal;
   const netExpense = expenseTotal + reimbursementTotal;
   const result = netIncome - netExpense;
+
+  // Unique subcategory suggestions per category
+  const subcategorySuggestions = useMemo(() => {
+    const subs = new Set<string>();
+    (entries || []).forEach((e) => { if (e.subcategory) subs.add(e.subcategory); });
+    return Array.from(subs).sort();
+  }, [entries]);
 
   const handleCreateBook = async () => {
     if (!user) return;
     try {
       const defaultName = "Regnskap";
       const book = await createBook.mutateAsync({
-        festival_id: festivalId || null,
-        ticket_event_id: null,
+        festival_id: festivalId || null, ticket_event_id: null,
         name: books && books.length === 0 ? defaultName : `${defaultName} ${(books?.length || 0) + 1}`,
         created_by: user.id,
       });
       setSelectedBookId(book.id);
       toast.success("Økonomibok opprettet");
-    } catch (e: any) {
-      toast.error(e.message || "Kunne ikke opprette bok");
-    }
+    } catch (e: any) { toast.error(e.message || "Kunne ikke opprette bok"); }
   };
 
   const handleAddExpense = () => {
     if (!activeBookId || !user) return;
-    const today = new Date().toISOString().slice(0, 10);
     expenseMutation.mutate({
-      description: "",
-      category: null,
-      counterparty: null,
-      gross_amount: 0,
-      net_amount: 0,
-      date_incurred: today,
-      created_by: user.id,
+      description: "", category: null, counterparty: null,
+      gross_amount: 0, net_amount: 0, date_incurred: new Date().toISOString().slice(0, 10), created_by: user.id,
     });
   };
 
-  const onExpenseFieldChange = (
-    entry: FestivalFinanceEntry,
-    field: keyof FestivalFinanceEntry,
-    value: string
-  ) => {
+  const onExpenseFieldChange = (entry: FestivalFinanceEntry, field: keyof FestivalFinanceEntry, value: string) => {
     const patch: any = { id: entry.id };
     if (field === "gross_amount" || field === "net_amount") {
       const n = parseInt(value.replace(/\s/g, ""), 10);
       patch[field] = isNaN(n) ? 0 : n * 100;
-    } else if (field === "date_incurred") {
-      patch.date_incurred = value;
-    } else {
-      patch[field] = value;
-    }
+    } else if (field === "date_incurred") { patch.date_incurred = value; }
+    else { patch[field] = value; }
     expenseMutation.mutate(patch);
   };
 
   const handleAddIncome = () => {
     if (!activeBookId || !user) return;
-    const today = new Date().toISOString().slice(0, 10);
     incomeMutation.mutate({
-      description: "",
-      category: null,
-      counterparty: null,
-      gross_amount: 0,
-      net_amount: 0,
-      date_incurred: today,
-      created_by: user.id,
+      description: "", category: null, counterparty: null,
+      gross_amount: 0, net_amount: 0, date_incurred: new Date().toISOString().slice(0, 10), created_by: user.id,
     });
   };
 
-  const onIncomeFieldChange = (
-    entry: FestivalFinanceEntry,
-    field: keyof FestivalFinanceEntry,
-    value: string
-  ) => {
+  const onIncomeFieldChange = (entry: FestivalFinanceEntry, field: keyof FestivalFinanceEntry, value: string) => {
     const patch: any = { id: entry.id };
     if (field === "gross_amount" || field === "net_amount") {
       const n = parseInt(value.replace(/\s/g, ""), 10);
       patch[field] = isNaN(n) ? 0 : n * 100;
-    } else if (field === "date_incurred") {
-      patch.date_incurred = value;
-    } else {
-      patch[field] = value;
-    }
+    } else if (field === "date_incurred") { patch.date_incurred = value; }
+    else { patch[field] = value; }
     incomeMutation.mutate(patch);
   };
 
   const handleImportTickets = async () => {
-    if (!activeBookId) {
-      toast.error("Ingen økonomibok valgt.");
-      return;
-    }
-    const { data: ticketEvent, error } = await supabase
-      .from("ticket_events")
-      .select("id")
-      .limit(1)
-      .single();
-    if (error || !ticketEvent) {
-      toast.error("Fant ingen ticket event å importere fra.");
-      return;
-    }
+    if (!activeBookId) { toast.error("Ingen økonomibok valgt."); return; }
+    const { data: ticketEvent, error } = await supabase.from("ticket_events").select("id").limit(1).single();
+    if (error || !ticketEvent) { toast.error("Fant ingen ticket event å importere fra."); return; }
     try {
-      await importTickets.mutateAsync({
-        bookId: activeBookId,
-        ticketEventId: ticketEvent.id,
-      });
+      await importTickets.mutateAsync({ bookId: activeBookId, ticketEventId: ticketEvent.id });
       toast.success("Billettsalg importert til økonomiboken.");
-    } catch (e: any) {
-      toast.error(e?.message || "Kunne ikke importere billettsalg.");
-    }
+    } catch (e: any) { toast.error(e?.message || "Kunne ikke importere billettsalg."); }
   };
 
-  if (!festivalId) {
-    return <p className="p-6 text-muted-foreground">Mangler festival-ID.</p>;
-  }
+  if (!festivalId) return <p className="p-6 text-muted-foreground">Mangler festival-ID.</p>;
 
   /* ── Shared action buttons ── */
   const expenseActions = (e: FestivalFinanceEntry) => (
     <>
       <Button variant="ghost" size="icon" className="h-8 w-8" title="Dupliser"
-        onClick={() => {
-          if (!user) return;
-          expenseMutation.mutate({
-            description: e.description, category: e.category, counterparty: e.counterparty,
-            gross_amount: e.gross_amount, net_amount: e.net_amount, date_incurred: e.date_incurred,
-            notes: e.notes, created_by: user.id,
-          });
-        }}>
+        onClick={() => { if (!user) return; expenseMutation.mutate({ description: e.description, category: e.category, subcategory: e.subcategory, counterparty: e.counterparty, gross_amount: e.gross_amount, net_amount: e.net_amount, date_incurred: e.date_incurred, notes: e.notes, created_by: user.id }); }}>
         <Plus className="h-4 w-4" />
       </Button>
       <Button variant="ghost" size="icon" className="h-8 w-8" title="Refusjon"
-        onClick={() => {
-          if (!user) return;
-          expenseMutation.mutate({
-            description: `Refusjon: ${e.description}`, category: e.category || "Refusjon / kostnadsdeling",
-            counterparty: null, gross_amount: -(e.net_amount ?? 0), net_amount: -(e.net_amount ?? 0),
-            date_incurred: e.date_incurred, source_type: "reimbursement", linked_entry_id: e.id, created_by: user.id,
-          });
-        }}>
+        onClick={() => { if (!user) return; expenseMutation.mutate({ description: `Refusjon: ${e.description}`, category: e.category || "Refusjon / kostnadsdeling", counterparty: null, gross_amount: -(e.net_amount ?? 0), net_amount: -(e.net_amount ?? 0), date_incurred: e.date_incurred, source_type: "reimbursement", linked_entry_id: e.id, created_by: user.id }); }}>
         <Undo2 className="h-4 w-4" />
       </Button>
       <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" title="Slett"
@@ -321,14 +260,7 @@ export default function FestivalFinanceRoom() {
   const incomeActions = (e: FestivalFinanceEntry) => (
     <>
       <Button variant="ghost" size="icon" className="h-8 w-8" title="Dupliser"
-        onClick={() => {
-          if (!user) return;
-          incomeMutation.mutate({
-            description: e.description, category: e.category, counterparty: e.counterparty,
-            gross_amount: e.gross_amount, net_amount: e.net_amount, date_incurred: e.date_incurred,
-            notes: e.notes, created_by: user.id,
-          });
-        }}>
+        onClick={() => { if (!user) return; incomeMutation.mutate({ description: e.description, category: e.category, subcategory: e.subcategory, counterparty: e.counterparty, gross_amount: e.gross_amount, net_amount: e.net_amount, date_incurred: e.date_incurred, notes: e.notes, created_by: user.id }); }}>
         <Plus className="h-4 w-4" />
       </Button>
       <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" title="Slett"
@@ -338,73 +270,220 @@ export default function FestivalFinanceRoom() {
     </>
   );
 
-  /* ── Paid-by selector (shared) ── */
   const PaidBySelect = ({ entry }: { entry: FestivalFinanceEntry }) => (
-    <Select
-      value={entry.paid_by_id ?? "__none__"}
-      onValueChange={(value) => {
-        if (value === "__none__") {
-          expenseMutation.mutate({ id: entry.id, paid_by_kind: null, paid_by_id: null, paid_by_label: null });
-          return;
-        }
-        const selected = payers.find((p) => p.id === value);
-        expenseMutation.mutate({
-          id: entry.id,
-          paid_by_kind: selected ? "persona" : "other",
-          paid_by_id: selected?.id ?? null,
-          paid_by_label: selected?.name ?? null,
-        });
-      }}
-    >
-      <SelectTrigger className="h-8 text-xs w-full">
-        <SelectValue placeholder="Velg betaler" />
-      </SelectTrigger>
+    <Select value={entry.paid_by_id ?? "__none__"} onValueChange={(value) => {
+      if (value === "__none__") { expenseMutation.mutate({ id: entry.id, paid_by_kind: null, paid_by_id: null, paid_by_label: null }); return; }
+      const selected = payers.find((p) => p.id === value);
+      expenseMutation.mutate({ id: entry.id, paid_by_kind: selected ? "persona" : "other", paid_by_id: selected?.id ?? null, paid_by_label: selected?.name ?? null });
+    }}>
+      <SelectTrigger className="h-8 text-xs w-full"><SelectValue placeholder="Velg betaler" /></SelectTrigger>
       <SelectContent>
         <SelectItem value="__none__">Ingen valgt</SelectItem>
-        {payers.map((p) => (
-          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-        ))}
+        {payers.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
       </SelectContent>
     </Select>
   );
 
+  /* ── Render entries in a table (desktop) ── */
+  const renderExpenseTable = (items: FestivalFinanceEntry[]) => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-[110px]">Dato</TableHead>
+          <TableHead>Beskrivelse</TableHead>
+          <TableHead className="w-[130px]">Underkategori</TableHead>
+          <TableHead>Mottaker</TableHead>
+          <TableHead className="w-[140px]">Betalt av</TableHead>
+          <TableHead className="w-[100px] text-right">Beløp (kr)</TableHead>
+          <TableHead className="w-20 text-right" />
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {items.map((e) => (
+          <TableRow key={e.id}>
+            <TableCell><Input type="date" className="h-8 text-xs" defaultValue={e.date_incurred} onBlur={(ev) => onExpenseFieldChange(e, "date_incurred", ev.target.value)} /></TableCell>
+            <TableCell><Input className="h-8 text-xs" defaultValue={e.description} onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} /></TableCell>
+            <TableCell><Input list="finance-subcategory-suggestions" className="h-8 text-xs" defaultValue={e.subcategory || ""} placeholder="Underkategori" onBlur={(ev) => onExpenseFieldChange(e, "subcategory", ev.target.value)} /></TableCell>
+            <TableCell><RecipientPicker festivalId={festivalId!} value={e.counterparty} onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} /></TableCell>
+            <TableCell><PaidBySelect entry={e} /></TableCell>
+            <TableCell><Input type="number" className="h-8 text-xs text-right tabular-nums" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} /></TableCell>
+            <TableCell className="text-right"><div className="flex items-center justify-end gap-0.5">{expenseActions(e)}</div></TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+
+  const renderExpenseMobileCards = (items: FestivalFinanceEntry[]) => (
+    <div className="space-y-2">
+      {items.map((e) => (
+        <EntryCard key={e.id} actions={expenseActions(e)} fields={
+          <div className="space-y-2">
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beskrivelse</label>
+              <Input className="h-8 text-sm" defaultValue={e.description} onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Dato</label>
+                <Input type="date" className="h-8 text-sm" defaultValue={e.date_incurred} onBlur={(ev) => onExpenseFieldChange(e, "date_incurred", ev.target.value)} />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beløp (kr)</label>
+                <Input type="number" className="h-8 text-sm text-right tabular-nums" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Underkategori</label>
+                <Input list="finance-subcategory-suggestions" className="h-8 text-sm" defaultValue={e.subcategory || ""} placeholder="Underkategori" onBlur={(ev) => onExpenseFieldChange(e, "subcategory", ev.target.value)} />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Mottaker</label>
+                <RecipientPicker festivalId={festivalId!} value={e.counterparty} onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} />
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Betalt av</label>
+              <PaidBySelect entry={e} />
+            </div>
+          </div>
+        } />
+      ))}
+    </div>
+  );
+
+  const renderIncomeTable = (items: FestivalFinanceEntry[]) => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-[110px]">Dato</TableHead>
+          <TableHead>Beskrivelse</TableHead>
+          <TableHead className="w-[130px]">Underkategori</TableHead>
+          <TableHead>Fra</TableHead>
+          <TableHead className="w-[100px] text-right">Beløp (kr)</TableHead>
+          <TableHead className="w-20 text-right" />
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {items.map((e) => (
+          <TableRow key={e.id}>
+            <TableCell><Input type="date" className="h-8 text-xs" defaultValue={e.date_incurred} onBlur={(ev) => onIncomeFieldChange(e, "date_incurred", ev.target.value)} /></TableCell>
+            <TableCell><Input className="h-8 text-xs" defaultValue={e.description} placeholder="Beskrivelse" onBlur={(ev) => onIncomeFieldChange(e, "description", ev.target.value)} /></TableCell>
+            <TableCell><Input list="finance-subcategory-suggestions" className="h-8 text-xs" defaultValue={e.subcategory || ""} placeholder="Underkategori" onBlur={(ev) => onIncomeFieldChange(e, "subcategory", ev.target.value)} /></TableCell>
+            <TableCell><Input className="h-8 text-xs" defaultValue={e.counterparty || ""} placeholder="Fra (sponsor, ordning)" onBlur={(ev) => onIncomeFieldChange(e, "counterparty", ev.target.value)} /></TableCell>
+            <TableCell><Input type="number" className="h-8 text-xs text-right tabular-nums" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onIncomeFieldChange(e, "net_amount", ev.target.value)} /></TableCell>
+            <TableCell className="text-right">{incomeActions(e)}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+
+  const renderIncomeMobileCards = (items: FestivalFinanceEntry[]) => (
+    <div className="space-y-2">
+      {items.map((e) => (
+        <EntryCard key={e.id} actions={incomeActions(e)} fields={
+          <div className="grid grid-cols-2 gap-2">
+            <div className="col-span-2">
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beskrivelse</label>
+              <Input className="h-8 text-sm" defaultValue={e.description} placeholder="Beskrivelse" onBlur={(ev) => onIncomeFieldChange(e, "description", ev.target.value)} />
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Dato</label>
+              <Input type="date" className="h-8 text-sm" defaultValue={e.date_incurred} onBlur={(ev) => onIncomeFieldChange(e, "date_incurred", ev.target.value)} />
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beløp (kr)</label>
+              <Input type="number" className="h-8 text-sm text-right tabular-nums" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onIncomeFieldChange(e, "net_amount", ev.target.value)} />
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Underkategori</label>
+              <Input list="finance-subcategory-suggestions" className="h-8 text-sm" defaultValue={e.subcategory || ""} placeholder="Underkategori" onBlur={(ev) => onIncomeFieldChange(e, "subcategory", ev.target.value)} />
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Fra</label>
+              <Input className="h-8 text-sm" defaultValue={e.counterparty || ""} placeholder="Sponsor" onBlur={(ev) => onIncomeFieldChange(e, "counterparty", ev.target.value)} />
+            </div>
+          </div>
+        } />
+      ))}
+    </div>
+  );
+
+  /* ── Collapsible category group ── */
+  const renderCategoryGroup = (
+    group: CategoryGroup,
+    keyPrefix: string,
+    renderDesktop: (items: FestivalFinanceEntry[]) => React.ReactNode,
+    renderMobile: (items: FestivalFinanceEntry[]) => React.ReactNode,
+  ) => {
+    const groupKey = `${keyPrefix}-${group.category}`;
+    const isOpen = openCategories.has(groupKey);
+    const hasSubGroups = group.subGroups.length > 1 || (group.subGroups.length === 1 && group.subGroups[0].subcategory !== "");
+
+    return (
+      <Collapsible key={group.category} open={isOpen} onOpenChange={() => toggleCategory(groupKey)}>
+        <CollapsibleTrigger asChild>
+          <button className="w-full flex items-center justify-between px-2 py-2 rounded-md hover:bg-muted/50 transition-colors group">
+            <div className="flex items-center gap-2">
+              <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-90" : ""}`} />
+              <FolderOpen className="h-4 w-4 text-accent/70" />
+              <span className="text-sm font-semibold">{group.category}</span>
+              <span className="text-xs text-muted-foreground">{group.items.length} linje{group.items.length === 1 ? "" : "r"}</span>
+            </div>
+            <span className="text-sm font-semibold tabular-nums">{formatNok(group.totalNet)}</span>
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pl-2 md:pl-4 space-y-3 pt-1">
+          {hasSubGroups ? (
+            group.subGroups.map((sub) => (
+              <div key={sub.subcategory || "__none__"} className="space-y-1">
+                {sub.subcategory && (
+                  <div className="flex items-center justify-between px-2 py-1">
+                    <span className="text-xs font-medium text-muted-foreground">{sub.subcategory}</span>
+                    <span className="text-xs font-medium tabular-nums text-muted-foreground">{formatNok(sub.totalNet)}</span>
+                  </div>
+                )}
+                <div className="hidden md:block">{renderDesktop(sub.items)}</div>
+                <div className="md:hidden">{renderMobile(sub.items)}</div>
+              </div>
+            ))
+          ) : (
+            <>
+              <div className="hidden md:block">{renderDesktop(group.items)}</div>
+              <div className="md:hidden">{renderMobile(group.items)}</div>
+            </>
+          )}
+        </CollapsibleContent>
+      </Collapsible>
+    );
+  };
+
   return (
     <div className="min-h-[100svh] bg-background">
       <div className="max-w-6xl mx-auto px-3 py-4 md:px-8 md:py-8 space-y-6">
-        {/* Header */}
-        <Link
-          to={`/dashboard/festival/${festivalId}`}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-accent transition-colors py-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Tilbake til festivalrommet</span>
+        <Link to={`/dashboard/festival/${festivalId}`} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-accent transition-colors py-2">
+          <ArrowLeft className="w-4 h-4" /><span>Tilbake til festivalrommet</span>
         </Link>
 
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Økonomi</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                Regnskap for festivalen
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              {books && books.length > 0 && (
-                <Select value={activeBookId || ""} onValueChange={(v) => setSelectedBookId(v)}>
-                  <SelectTrigger className="w-[180px] md:w-[220px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {books.map((b) => (
-                      <SelectItem key={b.id} value={b.id}>{b.name} ({b.type})</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              <Button variant="outline" size="sm" onClick={handleCreateBook} disabled={createBook.isPending}>
-                <Plus className="h-4 w-4 mr-1" /> Ny bok
-              </Button>
-            </div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Økonomi</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">Regnskap for festivalen</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {books && books.length > 0 && (
+              <Select value={activeBookId || ""} onValueChange={(v) => setSelectedBookId(v)}>
+                <SelectTrigger className="w-[180px] md:w-[220px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {books.map((b) => <SelectItem key={b.id} value={b.id}>{b.name} ({b.type})</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
+            <Button variant="outline" size="sm" onClick={handleCreateBook} disabled={createBook.isPending}>
+              <Plus className="h-4 w-4 mr-1" /> Ny bok
+            </Button>
           </div>
         </div>
 
@@ -413,20 +492,18 @@ export default function FestivalFinanceRoom() {
         {activeBookId && !isLoading && (
           <>
             {/* ── Summary cards ── */}
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
               <SummaryCard label="Brutto inntekter" value={formatNok(incomeTotal)} icon={<TrendingUp className="h-4 w-4 text-accent" />} />
               <SummaryCard label="Gebyrer" value={formatNok(feeTotal)} icon={<Receipt className="h-4 w-4 text-muted-foreground" />} />
               <SummaryCard label="Netto inntekter" value={formatNok(netIncome)} icon={<Wallet className="h-4 w-4 text-accent" />} />
+              <SummaryCard label="Totale utgifter" value={formatNok(expenseTotal)} icon={<TrendingDown className="h-4 w-4 text-destructive" />} />
               {reimbursementTotal !== 0 && (
                 <SummaryCard label="Refusjoner" value={formatNok(-reimbursementTotal)} valueClass="text-emerald-500" icon={<Undo2 className="h-4 w-4 text-emerald-500" />} />
               )}
-              <SummaryCard
-                label="Resultat"
-                value={formatNok(result)}
+              <SummaryCard label="Resultat" value={formatNok(result)}
                 valueClass={result >= 0 ? "text-emerald-500" : "text-destructive"}
-                icon={<TrendingDown className="h-4 w-4" />}
-                className="col-span-2 md:col-span-1"
-              />
+                icon={result >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                className="col-span-2 md:col-span-1" />
             </div>
 
             {/* ── Ticket income ── */}
@@ -437,20 +514,15 @@ export default function FestivalFinanceRoom() {
                     <CardTitle className="text-base md:text-lg">Inntekter fra billetter</CardTitle>
                     <CardDescription className="text-xs">Aggregerte linjer per billettype (importert)</CardDescription>
                   </div>
-                  <Button size="sm" variant="outline" onClick={handleImportTickets} disabled={importTickets.isPending}>
-                    Importer billettsalg
-                  </Button>
+                  <Button size="sm" variant="outline" onClick={handleImportTickets} disabled={importTickets.isPending}>Importer billettsalg</Button>
                 </div>
               </CardHeader>
               <CardContent>
                 {(() => {
                   const ticketEntries = (entries || []).filter((e) => e.entry_type === "income" && e.source_type === "ticket");
-                  if (!ticketEntries.length) {
-                    return <p className="text-center text-muted-foreground py-6 text-sm">Ingen inntekter importert ennå.</p>;
-                  }
+                  if (!ticketEntries.length) return <p className="text-center text-muted-foreground py-6 text-sm">Ingen inntekter importert ennå.</p>;
                   return (
                     <>
-                      {/* Desktop table */}
                       <div className="hidden md:block">
                         <Table>
                           <TableHeader>
@@ -475,7 +547,6 @@ export default function FestivalFinanceRoom() {
                           </TableBody>
                         </Table>
                       </div>
-                      {/* Mobile cards */}
                       <div className="md:hidden space-y-2">
                         {ticketEntries.map((e) => (
                           <div key={e.id} className="rounded-md border border-border/60 bg-card/60 p-3">
@@ -503,106 +574,12 @@ export default function FestivalFinanceRoom() {
                     <CardTitle className="text-base md:text-lg">Andre inntekter</CardTitle>
                     <CardDescription className="text-xs">Sponsorer, støtte, barandel, merch m.m.</CardDescription>
                   </div>
-                  <Button size="sm" variant="outline" onClick={handleAddIncome}>
-                    <Plus className="h-4 w-4 mr-1" /> Ny inntekt
-                  </Button>
+                  <Button size="sm" variant="outline" onClick={handleAddIncome}><Plus className="h-4 w-4 mr-1" /> Ny inntekt</Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
-                {incomeGroups.map((group) => (
-                  <div key={group.category} className="space-y-2">
-                    <div className="flex items-center justify-between px-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold">{group.category}</span>
-                        <span className="text-xs text-muted-foreground">{group.items.length} linje{group.items.length === 1 ? "" : "r"}</span>
-                      </div>
-                      <span className="text-sm font-semibold tabular-nums">{formatNok(group.totalNet)}</span>
-                    </div>
-
-                    {/* Desktop */}
-                    <div className="hidden md:block">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="w-[120px]">Dato</TableHead>
-                            <TableHead>Beskrivelse</TableHead>
-                            <TableHead className="w-[140px]">Kategori</TableHead>
-                            <TableHead>Fra</TableHead>
-                            <TableHead className="w-[110px] text-right">Beløp (kr)</TableHead>
-                            <TableHead className="w-20 text-right" />
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {group.items.map((e) => (
-                            <TableRow key={e.id}>
-                              <TableCell>
-                                <Input type="date" className="h-8 text-xs" defaultValue={e.date_incurred}
-                                  onBlur={(ev) => onIncomeFieldChange(e, "date_incurred", ev.target.value)} />
-                              </TableCell>
-                              <TableCell>
-                                <Input className="h-8 text-xs" defaultValue={e.description} placeholder="Beskrivelse"
-                                  onBlur={(ev) => onIncomeFieldChange(e, "description", ev.target.value)} />
-                              </TableCell>
-                              <TableCell>
-                                <Input list="finance-category-suggestions" className="h-8 text-xs" defaultValue={e.category || ""} placeholder="Kategori"
-                                  onBlur={(ev) => onIncomeFieldChange(e, "category", ev.target.value)} />
-                              </TableCell>
-                              <TableCell>
-                                <Input className="h-8 text-xs" defaultValue={e.counterparty || ""} placeholder="Fra (sponsor, ordning)"
-                                  onBlur={(ev) => onIncomeFieldChange(e, "counterparty", ev.target.value)} />
-                              </TableCell>
-                              <TableCell>
-                                <Input type="number" className="h-8 text-xs text-right tabular-nums"
-                                  defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"}
-                                  onBlur={(ev) => onIncomeFieldChange(e, "net_amount", ev.target.value)} />
-                              </TableCell>
-                              <TableCell className="text-right">{incomeActions(e)}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-
-                    {/* Mobile */}
-                    <div className="md:hidden space-y-2">
-                      {group.items.map((e) => (
-                        <EntryCard key={e.id} entry={e} actions={incomeActions(e)} fields={
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="col-span-2">
-                              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beskrivelse</label>
-                              <Input className="h-8 text-sm" defaultValue={e.description} placeholder="Beskrivelse"
-                                onBlur={(ev) => onIncomeFieldChange(e, "description", ev.target.value)} />
-                            </div>
-                            <div>
-                              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Dato</label>
-                              <Input type="date" className="h-8 text-sm" defaultValue={e.date_incurred}
-                                onBlur={(ev) => onIncomeFieldChange(e, "date_incurred", ev.target.value)} />
-                            </div>
-                            <div>
-                              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beløp (kr)</label>
-                              <Input type="number" className="h-8 text-sm text-right tabular-nums"
-                                defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"}
-                                onBlur={(ev) => onIncomeFieldChange(e, "net_amount", ev.target.value)} />
-                            </div>
-                            <div>
-                              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Kategori</label>
-                              <Input list="finance-category-suggestions" className="h-8 text-sm" defaultValue={e.category || ""} placeholder="Kategori"
-                                onBlur={(ev) => onIncomeFieldChange(e, "category", ev.target.value)} />
-                            </div>
-                            <div>
-                              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Fra</label>
-                              <Input className="h-8 text-sm" defaultValue={e.counterparty || ""} placeholder="Sponsor"
-                                onBlur={(ev) => onIncomeFieldChange(e, "counterparty", ev.target.value)} />
-                            </div>
-                          </div>
-                        } />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-                {incomeGroups.length === 0 && (
-                  <p className="text-center text-muted-foreground py-6 text-sm">Ingen manuelle inntekter lagt til ennå.</p>
-                )}
+              <CardContent className="space-y-2">
+                {incomeGroups.map((group) => renderCategoryGroup(group, "income", renderIncomeTable, renderIncomeMobileCards))}
+                {incomeGroups.length === 0 && <p className="text-center text-muted-foreground py-6 text-sm">Ingen manuelle inntekter lagt til ennå.</p>}
               </CardContent>
             </Card>
 
@@ -614,126 +591,26 @@ export default function FestivalFinanceRoom() {
                     <CardTitle className="text-base md:text-lg">Utgifter</CardTitle>
                     <CardDescription className="text-xs">Festivalens kostnader</CardDescription>
                   </div>
-                  <Button size="sm" variant="outline" onClick={handleAddExpense}>
-                    <Plus className="h-4 w-4 mr-1" /> Ny rad
-                  </Button>
+                  <Button size="sm" variant="outline" onClick={handleAddExpense}><Plus className="h-4 w-4 mr-1" /> Ny rad</Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
-                {expenseGroups.map((group) => (
-                  <div key={group.category} className="space-y-2">
-                    <div className="flex items-center justify-between px-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold">{group.category}</span>
-                        <span className="text-xs text-muted-foreground">{group.items.length} linje{group.items.length === 1 ? "" : "r"}</span>
-                      </div>
-                      <span className="text-sm font-semibold tabular-nums">{formatNok(group.totalNet)}</span>
-                    </div>
+              <CardContent className="space-y-2">
+                {expenseGroups.map((group) => renderCategoryGroup(group, "expense", renderExpenseTable, renderExpenseMobileCards))}
+                {expenseGroups.length === 0 && <p className="text-center text-muted-foreground py-6 text-sm">Ingen utgifter lagt til ennå.</p>}
 
-                    {/* Desktop */}
-                    <div className="hidden md:block">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="w-[120px]">Dato</TableHead>
-                            <TableHead>Beskrivelse</TableHead>
-                            <TableHead className="w-[140px]">Kategori</TableHead>
-                            <TableHead>Mottaker</TableHead>
-                            <TableHead className="w-[150px]">Betalt av</TableHead>
-                            <TableHead className="w-[110px] text-right">Beløp (kr)</TableHead>
-                            <TableHead className="w-24 text-right" />
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {group.items.map((e) => (
-                            <TableRow key={e.id}>
-                              <TableCell>
-                                <Input type="date" className="h-8 text-xs" defaultValue={e.date_incurred}
-                                  onBlur={(ev) => onExpenseFieldChange(e, "date_incurred", ev.target.value)} />
-                              </TableCell>
-                              <TableCell>
-                                <Input className="h-8 text-xs" defaultValue={e.description}
-                                  onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} />
-                              </TableCell>
-                              <TableCell>
-                                <Input list="finance-category-suggestions" className="h-8 text-xs" defaultValue={e.category || ""} placeholder="Kategori"
-                                  onBlur={(ev) => onExpenseFieldChange(e, "category", ev.target.value)} />
-                              </TableCell>
-                              <TableCell>
-                                <RecipientPicker festivalId={festivalId!} value={e.counterparty}
-                                  onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} />
-                              </TableCell>
-                              <TableCell>
-                                <PaidBySelect entry={e} />
-                              </TableCell>
-                              <TableCell>
-                                <Input type="number" className="h-8 text-xs text-right tabular-nums"
-                                  defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"}
-                                  onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} />
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex items-center justify-end gap-0.5">
-                                  {expenseActions(e)}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-
-                    {/* Mobile */}
-                    <div className="md:hidden space-y-2">
-                      {group.items.map((e) => (
-                        <EntryCard key={e.id} entry={e} actions={expenseActions(e)} fields={
-                          <div className="space-y-2">
-                            <div>
-                              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beskrivelse</label>
-                              <Input className="h-8 text-sm" defaultValue={e.description}
-                                onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                              <div>
-                                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Dato</label>
-                                <Input type="date" className="h-8 text-sm" defaultValue={e.date_incurred}
-                                  onBlur={(ev) => onExpenseFieldChange(e, "date_incurred", ev.target.value)} />
-                              </div>
-                              <div>
-                                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beløp (kr)</label>
-                                <Input type="number" className="h-8 text-sm text-right tabular-nums"
-                                  defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"}
-                                  onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} />
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                              <div>
-                                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Kategori</label>
-                                <Input list="finance-category-suggestions" className="h-8 text-sm" defaultValue={e.category || ""} placeholder="Kategori"
-                                  onBlur={(ev) => onExpenseFieldChange(e, "category", ev.target.value)} />
-                              </div>
-                              <div>
-                                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Mottaker</label>
-                                <RecipientPicker festivalId={festivalId!} value={e.counterparty}
-                                  onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} />
-                              </div>
-                            </div>
-                            <div>
-                              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Betalt av</label>
-                              <PaidBySelect entry={e} />
-                            </div>
-                          </div>
-                        } />
-                      ))}
-                    </div>
+                {/* Total expenses footer */}
+                {expenseGroups.length > 0 && (
+                  <div className="flex items-center justify-between px-2 pt-3 border-t border-border/50">
+                    <span className="text-sm font-bold">Totale utgifter</span>
+                    <span className="text-sm font-bold tabular-nums">{formatNok(expenseTotal)}</span>
                   </div>
-                ))}
-                {expenseGroups.length === 0 && (
-                  <p className="text-center text-muted-foreground py-6 text-sm">Ingen utgifter lagt til ennå.</p>
                 )}
+
                 <datalist id="finance-category-suggestions">
-                  {(categorySuggestions || []).map((cat) => (
-                    <option key={cat} value={cat} />
-                  ))}
+                  {(categorySuggestions || []).map((cat) => <option key={cat} value={cat} />)}
+                </datalist>
+                <datalist id="finance-subcategory-suggestions">
+                  {subcategorySuggestions.map((s) => <option key={s} value={s} />)}
                 </datalist>
               </CardContent>
             </Card>
@@ -746,15 +623,14 @@ export default function FestivalFinanceRoom() {
                   <CardDescription className="text-xs">Poster som reduserer utgiftene</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {/* Desktop */}
                   <div className="hidden md:block">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-[120px]">Dato</TableHead>
+                          <TableHead className="w-[110px]">Dato</TableHead>
                           <TableHead>Beskrivelse</TableHead>
-                          <TableHead className="w-[140px]">Kategori</TableHead>
-                          <TableHead className="w-[110px] text-right">Beløp (kr)</TableHead>
+                          <TableHead className="w-[130px]">Kategori</TableHead>
+                          <TableHead className="w-[100px] text-right">Beløp (kr)</TableHead>
                           <TableHead className="w-16 text-right" />
                         </TableRow>
                       </TableHeader>
@@ -762,43 +638,26 @@ export default function FestivalFinanceRoom() {
                         {reimbursementEntries.map((e) => (
                           <TableRow key={e.id}>
                             <TableCell className="text-sm tabular-nums">{e.date_incurred}</TableCell>
-                            <TableCell>
-                              <Input className="h-8 text-xs" defaultValue={e.description}
-                                onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} />
-                            </TableCell>
+                            <TableCell><Input className="h-8 text-xs" defaultValue={e.description} onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} /></TableCell>
                             <TableCell className="text-sm text-muted-foreground">{e.category || "–"}</TableCell>
-                            <TableCell>
-                              <Input type="number" className="h-8 text-xs text-right tabular-nums"
-                                defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"}
-                                onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} />
-                            </TableCell>
+                            <TableCell><Input type="number" className="h-8 text-xs text-right tabular-nums" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} /></TableCell>
                             <TableCell className="text-right">
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" title="Slett"
-                                onClick={() => deleteEntry.mutate(e.id)}>
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" title="Slett" onClick={() => deleteEntry.mutate(e.id)}><Trash2 className="h-4 w-4" /></Button>
                             </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
                     </Table>
                   </div>
-                  {/* Mobile */}
                   <div className="md:hidden space-y-2">
                     {reimbursementEntries.map((e) => (
-                      <EntryCard key={e.id} entry={e}
-                        actions={
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" title="Slett"
-                            onClick={() => deleteEntry.mutate(e.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        }
+                      <EntryCard key={e.id}
+                        actions={<Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" title="Slett" onClick={() => deleteEntry.mutate(e.id)}><Trash2 className="h-4 w-4" /></Button>}
                         fields={
                           <div className="space-y-2">
                             <div>
                               <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beskrivelse</label>
-                              <Input className="h-8 text-sm" defaultValue={e.description}
-                                onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} />
+                              <Input className="h-8 text-sm" defaultValue={e.description} onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} />
                             </div>
                             <div className="grid grid-cols-2 gap-2">
                               <div>
@@ -807,9 +666,7 @@ export default function FestivalFinanceRoom() {
                               </div>
                               <div>
                                 <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beløp (kr)</label>
-                                <Input type="number" className="h-8 text-sm text-right tabular-nums"
-                                  defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"}
-                                  onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} />
+                                <Input type="number" className="h-8 text-sm text-right tabular-nums" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} />
                               </div>
                             </div>
                           </div>
@@ -827,9 +684,7 @@ export default function FestivalFinanceRoom() {
           <Card>
             <CardContent className="py-12 text-center">
               <p className="text-muted-foreground mb-4">Ingen økonomibok funnet. Opprett en for å komme i gang.</p>
-              <Button onClick={handleCreateBook} disabled={createBook.isPending}>
-                <Plus className="h-4 w-4 mr-1" /> Opprett økonomibok
-              </Button>
+              <Button onClick={handleCreateBook} disabled={createBook.isPending}><Plus className="h-4 w-4 mr-1" /> Opprett økonomibok</Button>
             </CardContent>
           </Card>
         )}
@@ -838,19 +693,8 @@ export default function FestivalFinanceRoom() {
   );
 }
 
-/* ── Summary card component ── */
-function SummaryCard({
-  label,
-  value,
-  icon,
-  valueClass,
-  className,
-}: {
-  label: string;
-  value: string;
-  icon?: React.ReactNode;
-  valueClass?: string;
-  className?: string;
+function SummaryCard({ label, value, icon, valueClass, className }: {
+  label: string; value: string; icon?: React.ReactNode; valueClass?: string; className?: string;
 }) {
   return (
     <Card className={className}>
