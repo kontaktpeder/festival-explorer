@@ -1126,6 +1126,21 @@ export default function AdminTicketsDashboard() {
                             disabled={updateTicketTypeMeta.isPending}
                           />
                         </TableCell>
+                        <TableCell className="text-center">
+                          <Switch
+                            checked={(type as any).charge_stripe_fee ?? true}
+                            onCheckedChange={(checked) =>
+                              updateTicketTypeMeta.mutate({
+                                ticketTypeId: type.id,
+                                visible: type.visible ?? true,
+                                sales_start: type.sales_start ?? null,
+                                sales_end: type.sales_end ?? null,
+                                charge_stripe_fee: checked,
+                              })
+                            }
+                            disabled={updateTicketTypeMeta.isPending}
+                          />
+                        </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {type.sales_start
                             ? format(new Date(type.sales_start), "d. MMM yyyy HH:mm", { locale: nb })
