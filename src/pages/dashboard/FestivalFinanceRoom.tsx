@@ -200,11 +200,20 @@ export default function FestivalFinanceRoom() {
     } catch (e: any) { toast.error(e.message || "Kunne ikke opprette bok"); }
   };
 
+  const generateVoucherNumber = (allEntries: FestivalFinanceEntry[]) => {
+    const existing = (allEntries || []).map((e) => e.voucher_number).filter(Boolean) as string[];
+    if (!existing.length) return "B-0001";
+    const last = existing.map((s) => parseInt(s.replace(/\D/g, ""), 10)).filter((n) => !isNaN(n)).sort((a, b) => b - a)[0];
+    return `B-${((last || 0) + 1).toString().padStart(4, "0")}`;
+  };
+
   const handleAddExpense = () => {
     if (!activeBookId || !user) return;
+    const voucher = generateVoucherNumber(entries || []);
     expenseMutation.mutate({
       description: "", category: null, counterparty: null,
-      gross_amount: 0, net_amount: 0, date_incurred: new Date().toISOString().slice(0, 10), created_by: user.id,
+      gross_amount: 0, net_amount: 0, date_incurred: new Date().toISOString().slice(0, 10),
+      voucher_number: voucher, created_by: user.id,
     });
   };
 
@@ -220,9 +229,11 @@ export default function FestivalFinanceRoom() {
 
   const handleAddIncome = () => {
     if (!activeBookId || !user) return;
+    const voucher = generateVoucherNumber(entries || []);
     incomeMutation.mutate({
       description: "", category: null, counterparty: null,
-      gross_amount: 0, net_amount: 0, date_incurred: new Date().toISOString().slice(0, 10), created_by: user.id,
+      gross_amount: 0, net_amount: 0, date_incurred: new Date().toISOString().slice(0, 10),
+      voucher_number: voucher, created_by: user.id,
     });
   };
 
