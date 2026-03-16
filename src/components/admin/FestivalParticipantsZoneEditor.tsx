@@ -31,7 +31,7 @@ interface FestivalParticipantRow {
   id: string;
   festival_id: string;
   zone: FestivalZone;
-  participant_kind: "persona";
+  participant_kind: "persona" | "entity" | "project" | "venue";
   participant_id: string;
   role_label: string | null;
   sort_order: number;
