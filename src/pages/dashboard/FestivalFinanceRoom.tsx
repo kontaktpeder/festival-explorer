@@ -128,7 +128,7 @@ export default function FestivalFinanceRoom() {
       { category: string; items: FestivalFinanceEntry[]; totalNet: number }
     >();
     (entries || [])
-      .filter((e) => e.entry_type === "expense")
+      .filter((e) => e.entry_type === "expense" && e.source_type !== "reimbursement")
       .forEach((e) => {
         const key = e.category || "Uten kategori";
         const existing = groups.get(key) || { category: key, items: [], totalNet: 0 };
@@ -140,6 +140,11 @@ export default function FestivalFinanceRoom() {
       a.category.localeCompare(b.category, "nb")
     );
   }, [entries]);
+
+  const reimbursementEntries = useMemo(
+    () => (entries || []).filter((e) => e.source_type === "reimbursement"),
+    [entries]
+  );
 
   const incomeGroups = useMemo(() => {
     const groups = new Map<string, { category: string; items: FestivalFinanceEntry[]; totalNet: number }>();
