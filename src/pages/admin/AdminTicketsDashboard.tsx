@@ -610,19 +610,25 @@ export default function AdminTicketsDashboard() {
       visible,
       sales_start,
       sales_end,
+      charge_stripe_fee,
     }: {
       ticketTypeId: string;
       visible: boolean;
       sales_start: string | null;
       sales_end: string | null;
+      charge_stripe_fee?: boolean;
     }) => {
+      const updatePayload: Record<string, unknown> = {
+        visible,
+        sales_start: sales_start || null,
+        sales_end: sales_end || null,
+      };
+      if (charge_stripe_fee !== undefined) {
+        updatePayload.charge_stripe_fee = charge_stripe_fee;
+      }
       const { error } = await supabase
         .from("ticket_types")
-        .update({
-          visible,
-          sales_start: sales_start || null,
-          sales_end: sales_end || null,
-        })
+        .update(updatePayload as any)
         .eq("id", ticketTypeId);
       if (error) throw error;
     },
