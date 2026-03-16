@@ -433,28 +433,8 @@ export default function FestivalFinanceRoom() {
             </div>
             <div>
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Paperclip className="h-3 w-3" /> Vedlegg</label>
-              <Input className="h-7 text-xs mt-1" defaultValue={e.attachment_name || ""} placeholder="Bilagsnavn" onBlur={(ev) => onExpenseFieldChange(e, "attachment_name", ev.target.value)} />
-              <div className="flex items-center gap-2 mt-1">
-                <label className="cursor-pointer">
-                  <input type="file" className="hidden" onChange={async (ev) => {
-                    const file = ev.target.files?.[0];
-                    if (!file || !festivalId) return;
-                    try {
-                      const result = await uploadAttachment(file, festivalId, e.voucher_number);
-                      onExpenseFieldChange(e, "attachment_url", result.url);
-                      if (!e.attachment_name) onExpenseFieldChange(e, "attachment_name", result.name);
-                    } catch (err: any) { toast.error(err.message || "Kunne ikke laste opp bilag"); }
-                    finally { ev.target.value = ""; }
-                  }} />
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-accent cursor-pointer">
-                    <Upload className="h-3 w-3" /> {isUploadingAttachment ? "Laster..." : "Last opp"}
-                  </span>
-                </label>
-                {e.attachment_url && (
-                  <a href={e.attachment_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-xs text-accent hover:underline">
-                    <ExternalLink className="h-3 w-3" /> Åpne
-                  </a>
-                )}
+              <div className="mt-1">
+                <AttachmentCell entry={e} onFieldChange={onExpenseFieldChange} />
               </div>
             </div>
           </div>
