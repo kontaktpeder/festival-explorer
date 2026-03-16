@@ -332,24 +332,33 @@ export default function FestivalFinanceRoom() {
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead className="w-[80px]">Bilagsnr</TableHead>
           <TableHead className="w-[110px]">Dato</TableHead>
           <TableHead>Beskrivelse</TableHead>
           <TableHead className="w-[130px]">Underkategori</TableHead>
           <TableHead>Mottaker</TableHead>
           <TableHead className="w-[140px]">Betalt av</TableHead>
           <TableHead className="w-[130px] text-right">Beløp (kr)</TableHead>
+          <TableHead className="w-[180px]">Vedlegg</TableHead>
           <TableHead className="w-20 text-right" />
         </TableRow>
       </TableHeader>
       <TableBody>
         {items.map((e) => (
           <TableRow key={e.id}>
+            <TableCell className="text-xs text-muted-foreground tabular-nums">{e.voucher_number ?? ""}</TableCell>
             <TableCell><Input type="date" className="h-8 text-xs" defaultValue={e.date_incurred} onBlur={(ev) => onExpenseFieldChange(e, "date_incurred", ev.target.value)} /></TableCell>
             <TableCell><Input className="h-8 text-xs" defaultValue={e.description} onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} /></TableCell>
             <TableCell><Input list="finance-subcategory-suggestions" className="h-8 text-xs" defaultValue={e.subcategory || ""} placeholder="Underkategori" onBlur={(ev) => onExpenseFieldChange(e, "subcategory", ev.target.value)} /></TableCell>
             <TableCell><RecipientPicker festivalId={festivalId!} value={e.counterparty} onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} /></TableCell>
             <TableCell><PaidBySelect entry={e} /></TableCell>
             <TableCell><Input type="number" className="h-8 text-xs text-right tabular-nums" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} /></TableCell>
+            <TableCell>
+              <div className="space-y-1">
+                <Input className="h-7 text-xs" defaultValue={e.attachment_name || ""} placeholder="Bilagsnavn" onBlur={(ev) => onExpenseFieldChange(e, "attachment_name", ev.target.value)} />
+                <Input className="h-7 text-xs" defaultValue={e.attachment_url || ""} placeholder="Lenke til kvittering" onBlur={(ev) => onExpenseFieldChange(e, "attachment_url", ev.target.value)} />
+              </div>
+            </TableCell>
             <TableCell className="text-right"><div className="flex items-center justify-end gap-0.5">{expenseActions(e)}</div></TableCell>
           </TableRow>
         ))}
