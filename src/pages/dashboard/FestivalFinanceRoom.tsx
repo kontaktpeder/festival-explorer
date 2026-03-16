@@ -392,136 +392,117 @@ export default function FestivalFinanceRoom() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Dato</TableHead>
-                      <TableHead>Kategori</TableHead>
-                      <TableHead>Beskrivelse</TableHead>
-                      <TableHead>Mottaker</TableHead>
-                      <TableHead className="text-right">Beløp (kr)</TableHead>
-                      <TableHead className="w-10" />
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {(entries || [])
-                      .filter((e) => e.entry_type === "expense")
-                      .map((e) => (
-                        <TableRow key={e.id}>
-                          <TableCell>
-                            <Input
-                              type="date"
-                              className="w-[130px]"
-                              defaultValue={e.date_incurred}
-                              onBlur={(ev) =>
-                                onExpenseFieldChange(
-                                  e,
-                                  "date_incurred",
-                                  ev.target.value
-                                )
-                              }
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              className="w-[120px]"
-                              defaultValue={e.category || ""}
-                              onBlur={(ev) =>
-                                onExpenseFieldChange(
-                                  e,
-                                  "category",
-                                  ev.target.value
-                                )
-                              }
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              defaultValue={e.description}
-                              onBlur={(ev) =>
-                                onExpenseFieldChange(
-                                  e,
-                                  "description",
-                                  ev.target.value
-                                )
-                              }
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              className="w-[120px]"
-                              defaultValue={e.counterparty || ""}
-                              onBlur={(ev) =>
-                                onExpenseFieldChange(
-                                  e,
-                                  "counterparty",
-                                  ev.target.value
-                                )
-                              }
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              type="number"
-                              className="w-[100px] text-right"
-                              defaultValue={
-                                e.net_amount ? (e.net_amount / 100).toString() : "0"
-                              }
-                              onBlur={(ev) =>
-                                onExpenseFieldChange(
-                                  e,
-                                  "net_amount",
-                                  ev.target.value
-                                )
-                              }
-                            />
-                          </TableCell>
-                          <TableCell className="space-x-1 text-right">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => {
-                                if (!user) return;
-                                expenseMutation.mutate({
-                                  description: e.description,
-                                  category: e.category,
-                                  counterparty: e.counterparty,
-                                  gross_amount: e.gross_amount,
-                                  net_amount: e.net_amount,
-                                  date_incurred: e.date_incurred,
-                                  notes: e.notes,
-                                  created_by: user.id,
-                                });
-                              }}
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive"
-                              onClick={() => deleteEntry.mutate(e.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
+              <CardContent className="space-y-6">
+                {expenseGroups.map((group) => (
+                  <div key={group.category} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold">
+                          {group.category}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {group.items.length} linje{group.items.length === 1 ? "" : "r"}
+                        </span>
+                      </div>
+                      <span className="text-sm font-semibold">
+                        {formatNok(group.totalNet)}
+                      </span>
+                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Dato</TableHead>
+                          <TableHead>Beskrivelse</TableHead>
+                          <TableHead>Mottaker</TableHead>
+                          <TableHead className="text-right">Beløp (kr)</TableHead>
+                          <TableHead className="w-16 text-right">Handling</TableHead>
                         </TableRow>
-                      ))}
-                    {(entries || []).filter((e) => e.entry_type === "expense")
-                      .length === 0 && (
-                      <TableRow>
-                        <TableCell
-                          colSpan={6}
-                          className="text-center text-muted-foreground py-8"
-                        >
-                          Ingen utgifter lagt til ennå.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {group.items.map((e) => (
+                          <TableRow key={e.id}>
+                            <TableCell>
+                              <Input
+                                type="date"
+                                className="w-[130px]"
+                                defaultValue={e.date_incurred}
+                                onBlur={(ev) =>
+                                  onExpenseFieldChange(e, "date_incurred", ev.target.value)
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                defaultValue={e.description}
+                                onBlur={(ev) =>
+                                  onExpenseFieldChange(e, "description", ev.target.value)
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                className="w-[140px]"
+                                defaultValue={e.counterparty || ""}
+                                onBlur={(ev) =>
+                                  onExpenseFieldChange(e, "counterparty", ev.target.value)
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="number"
+                                className="w-[100px] text-right"
+                                defaultValue={
+                                  e.net_amount ? (e.net_amount / 100).toString() : "0"
+                                }
+                                onBlur={(ev) =>
+                                  onExpenseFieldChange(e, "net_amount", ev.target.value)
+                                }
+                              />
+                            </TableCell>
+                            <TableCell className="space-x-1 text-right">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                title="Dupliser rad"
+                                onClick={() => {
+                                  if (!user) return;
+                                  expenseMutation.mutate({
+                                    description: e.description,
+                                    category: e.category,
+                                    counterparty: e.counterparty,
+                                    gross_amount: e.gross_amount,
+                                    net_amount: e.net_amount,
+                                    date_incurred: e.date_incurred,
+                                    notes: e.notes,
+                                    created_by: user.id,
+                                  });
+                                }}
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive"
+                                title="Slett rad"
+                                onClick={() => deleteEntry.mutate(e.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ))}
+                {expenseGroups.length === 0 && (
+                  <div className="text-center text-muted-foreground py-8">
+                    Ingen utgifter lagt til ennå.
+                  </div>
+                )}
               </CardContent>
             </Card>
           </>
