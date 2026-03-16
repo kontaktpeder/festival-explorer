@@ -491,6 +491,8 @@ export default function FestivalFinanceRoom() {
                                 }
                               />
                             </TableCell>
+                            <TableCell>
+                              <Input
                                 type="number"
                                 className="w-[100px] text-right"
                                 defaultValue={
