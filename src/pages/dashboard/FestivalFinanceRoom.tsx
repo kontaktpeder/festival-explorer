@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { RecipientPicker } from "@/components/finance/RecipientPicker";
 import { useFinancePayers } from "@/hooks/useFinancePayers";
-import { Plus, Trash2, ArrowLeft, Undo2 } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Undo2, TrendingUp, TrendingDown, Receipt, Wallet } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
 
 import {
@@ -49,11 +49,30 @@ function formatNok(ore: number | null | undefined): string {
   }).format(v);
 }
 
+/* ── Reusable mobile entry card ── */
+function EntryCard({
+  entry,
+  fields,
+  actions,
+}: {
+  entry: FestivalFinanceEntry;
+  fields: React.ReactNode;
+  actions: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-md border border-border/60 bg-card/60 p-3 space-y-3">
+      {fields}
+      <div className="flex items-center justify-end gap-1 pt-1 border-t border-border/30">
+        {actions}
+      </div>
+    </div>
+  );
+}
+
 export default function FestivalFinanceRoom() {
   const { id: festivalId } = useParams<{ id: string }>();
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
 
-  // Get current user
   const { data: user } = useQuery({
     queryKey: ["current-user"],
     queryFn: async () => {
@@ -62,7 +81,6 @@ export default function FestivalFinanceRoom() {
     },
   });
 
-  // Get festival info (for ticket_event_id if needed)
   const { data: festival } = useQuery({
     queryKey: ["festival-for-finance", festivalId],
     queryFn: async () => {
@@ -90,7 +108,6 @@ export default function FestivalFinanceRoom() {
   const { data: categorySuggestions } = useFinanceCategoriesForFestival(festivalId);
   const { data: payers = [] } = useFinancePayers(festivalId);
 
-
   const { data: entries, isLoading: entriesLoading } = useFinanceEntries(activeBookId || undefined);
   const expenseMutation = useUpsertExpenseEntry(activeBookId || "");
   const incomeMutation = useUpsertIncomeEntry(activeBookId || "");
@@ -114,7 +131,7 @@ export default function FestivalFinanceRoom() {
         }
       } else if (e.entry_type === "expense") {
         if (e.source_type === "reimbursement") {
-          reimbursements += e.net_amount; // negative value
+          reimbursements += e.net_amount;
         } else {
           expense += e.net_amount;
         }
@@ -125,10 +142,7 @@ export default function FestivalFinanceRoom() {
   }, [entries]);
 
   const expenseGroups = useMemo(() => {
-    const groups = new Map<
-      string,
-      { category: string; items: FestivalFinanceEntry[]; totalNet: number }
-    >();
+    const groups = new Map<string, { category: string; items: FestivalFinanceEntry[]; totalNet: number }>();
     (entries || [])
       .filter((e) => e.entry_type === "expense" && e.source_type !== "reimbursement")
       .forEach((e) => {
@@ -138,9 +152,7 @@ export default function FestivalFinanceRoom() {
         existing.totalNet += e.net_amount;
         groups.set(key, existing);
       });
-    return Array.from(groups.values()).sort((a, b) =>
-      a.category.localeCompare(b.category, "nb")
-    );
+    return Array.from(groups.values()).sort((a, b) => a.category.localeCompare(b.category, "nb"));
   }, [entries]);
 
   const reimbursementEntries = useMemo(
@@ -163,7 +175,7 @@ export default function FestivalFinanceRoom() {
   }, [entries]);
 
   const netIncome = incomeTotal - feeTotal;
-  const netExpense = expenseTotal + reimbursementTotal; // reimbursementTotal is negative
+  const netExpense = expenseTotal + reimbursementTotal;
   const result = netIncome - netExpense;
 
   const handleCreateBook = async () => {
@@ -274,52 +286,125 @@ export default function FestivalFinanceRoom() {
     return <p className="p-6 text-muted-foreground">Mangler festival-ID.</p>;
   }
 
+  /* ── Shared action buttons ── */
+  const expenseActions = (e: FestivalFinanceEntry) => (
+    <>
+      <Button variant="ghost" size="icon" className="h-8 w-8" title="Dupliser"
+        onClick={() => {
+          if (!user) return;
+          expenseMutation.mutate({
+            description: e.description, category: e.category, counterparty: e.counterparty,
+            gross_amount: e.gross_amount, net_amount: e.net_amount, date_incurred: e.date_incurred,
+            notes: e.notes, created_by: user.id,
+          });
+        }}>
+        <Plus className="h-4 w-4" />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8" title="Refusjon"
+        onClick={() => {
+          if (!user) return;
+          expenseMutation.mutate({
+            description: `Refusjon: ${e.description}`, category: e.category || "Refusjon / kostnadsdeling",
+            counterparty: null, gross_amount: -(e.net_amount ?? 0), net_amount: -(e.net_amount ?? 0),
+            date_incurred: e.date_incurred, source_type: "reimbursement", linked_entry_id: e.id, created_by: user.id,
+          });
+        }}>
+        <Undo2 className="h-4 w-4" />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" title="Slett"
+        onClick={() => deleteEntry.mutate(e.id)}>
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </>
+  );
+
+  const incomeActions = (e: FestivalFinanceEntry) => (
+    <>
+      <Button variant="ghost" size="icon" className="h-8 w-8" title="Dupliser"
+        onClick={() => {
+          if (!user) return;
+          incomeMutation.mutate({
+            description: e.description, category: e.category, counterparty: e.counterparty,
+            gross_amount: e.gross_amount, net_amount: e.net_amount, date_incurred: e.date_incurred,
+            notes: e.notes, created_by: user.id,
+          });
+        }}>
+        <Plus className="h-4 w-4" />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" title="Slett"
+        onClick={() => deleteEntry.mutate(e.id)}>
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </>
+  );
+
+  /* ── Paid-by selector (shared) ── */
+  const PaidBySelect = ({ entry }: { entry: FestivalFinanceEntry }) => (
+    <Select
+      value={entry.paid_by_id ?? "__none__"}
+      onValueChange={(value) => {
+        if (value === "__none__") {
+          expenseMutation.mutate({ id: entry.id, paid_by_kind: null, paid_by_id: null, paid_by_label: null });
+          return;
+        }
+        const selected = payers.find((p) => p.id === value);
+        expenseMutation.mutate({
+          id: entry.id,
+          paid_by_kind: selected ? "persona" : "other",
+          paid_by_id: selected?.id ?? null,
+          paid_by_label: selected?.name ?? null,
+        });
+      }}
+    >
+      <SelectTrigger className="h-8 text-xs w-full">
+        <SelectValue placeholder="Velg betaler" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="__none__">Ingen valgt</SelectItem>
+        {payers.map((p) => (
+          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
   return (
     <div className="min-h-[100svh] bg-background">
-      <div className="max-w-5xl mx-auto px-3 py-4 md:p-8 space-y-6">
+      <div className="max-w-6xl mx-auto px-3 py-4 md:px-8 md:py-8 space-y-6">
+        {/* Header */}
         <Link
           to={`/dashboard/festival/${festivalId}`}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-accent transition-colors py-3"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-accent transition-colors py-2"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Tilbake til festivalrommet</span>
         </Link>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold">Økonomi</h1>
-            <p className="text-sm text-muted-foreground">
-              Regnskap for festivalen. Importer billettsalg og legg til utgifter.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {books && books.length > 0 && (
-              <Select
-                value={activeBookId || ""}
-                onValueChange={(v) => setSelectedBookId(v)}
-              >
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {books.map((b) => (
-                    <SelectItem key={b.id} value={b.id}>
-                      {b.name} ({b.type})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCreateBook}
-              disabled={createBook.isPending}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Ny bok
-            </Button>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Økonomi</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Regnskap for festivalen
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {books && books.length > 0 && (
+                <Select value={activeBookId || ""} onValueChange={(v) => setSelectedBookId(v)}>
+                  <SelectTrigger className="w-[180px] md:w-[220px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {books.map((b) => (
+                      <SelectItem key={b.id} value={b.id}>{b.name} ({b.type})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              <Button variant="outline" size="sm" onClick={handleCreateBook} disabled={createBook.isPending}>
+                <Plus className="h-4 w-4 mr-1" /> Ny bok
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -327,461 +412,323 @@ export default function FestivalFinanceRoom() {
 
         {activeBookId && !isLoading && (
           <>
-            {/* Summary cards */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription>Brutto inntekter</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xl font-bold">{formatNok(incomeTotal)}</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription>Gebyrer</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xl font-bold">{formatNok(feeTotal)}</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription>Netto inntekter</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xl font-bold">{formatNok(netIncome)}</p>
-                </CardContent>
-              </Card>
+            {/* ── Summary cards ── */}
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5">
+              <SummaryCard label="Brutto inntekter" value={formatNok(incomeTotal)} icon={<TrendingUp className="h-4 w-4 text-accent" />} />
+              <SummaryCard label="Gebyrer" value={formatNok(feeTotal)} icon={<Receipt className="h-4 w-4 text-muted-foreground" />} />
+              <SummaryCard label="Netto inntekter" value={formatNok(netIncome)} icon={<Wallet className="h-4 w-4 text-accent" />} />
               {reimbursementTotal !== 0 && (
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardDescription>Refusjoner</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-xl font-bold text-emerald-500">
-                      {formatNok(-reimbursementTotal)}
-                    </p>
-                  </CardContent>
-                </Card>
+                <SummaryCard label="Refusjoner" value={formatNok(-reimbursementTotal)} valueClass="text-emerald-500" icon={<Undo2 className="h-4 w-4 text-emerald-500" />} />
               )}
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardDescription>Resultat</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p
-                    className={`text-xl font-bold ${
-                      result >= 0 ? "text-emerald-500" : "text-destructive"
-                    }`}
-                  >
-                    {formatNok(result)}
-                  </p>
-                </CardContent>
-              </Card>
+              <SummaryCard
+                label="Resultat"
+                value={formatNok(result)}
+                valueClass={result >= 0 ? "text-emerald-500" : "text-destructive"}
+                icon={<TrendingDown className="h-4 w-4" />}
+                className="col-span-2 md:col-span-1"
+              />
             </div>
 
-            {/* Income table */}
+            {/* ── Ticket income ── */}
             <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
+              <CardHeader className="pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
-                    <CardTitle className="text-lg">Inntekter fra billetter</CardTitle>
-                    <CardDescription>
-                      Aggregerte linjer per billettype (read only).
-                    </CardDescription>
+                    <CardTitle className="text-base md:text-lg">Inntekter fra billetter</CardTitle>
+                    <CardDescription className="text-xs">Aggregerte linjer per billettype (importert)</CardDescription>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleImportTickets}
-                    disabled={importTickets.isPending}
-                  >
+                  <Button size="sm" variant="outline" onClick={handleImportTickets} disabled={importTickets.isPending}>
                     Importer billettsalg
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Beskrivelse</TableHead>
-                      <TableHead className="text-right">Antall</TableHead>
-                      <TableHead className="text-right">Brutto</TableHead>
-                      <TableHead className="text-right">Gebyr</TableHead>
-                      <TableHead className="text-right">Netto</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {(entries || [])
-                      .filter((e) => e.entry_type === "income" && e.source_type === "ticket")
-                      .map((e) => (
-                        <TableRow key={e.id}>
-                          <TableCell>{e.description}</TableCell>
-                          <TableCell className="text-right">
-                            {e.quantity ?? "-"}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {formatNok(e.gross_amount)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {formatNok(e.fee_amount)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {formatNok(e.net_amount)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    {(entries || []).filter((e) => e.entry_type === "income" && e.source_type === "ticket")
-                      .length === 0 && (
-                      <TableRow>
-                        <TableCell
-                          colSpan={5}
-                          className="text-center text-muted-foreground py-8"
-                        >
-                          Ingen inntekter importert ennå.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                {(() => {
+                  const ticketEntries = (entries || []).filter((e) => e.entry_type === "income" && e.source_type === "ticket");
+                  if (!ticketEntries.length) {
+                    return <p className="text-center text-muted-foreground py-6 text-sm">Ingen inntekter importert ennå.</p>;
+                  }
+                  return (
+                    <>
+                      {/* Desktop table */}
+                      <div className="hidden md:block">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Beskrivelse</TableHead>
+                              <TableHead className="text-right">Antall</TableHead>
+                              <TableHead className="text-right">Brutto</TableHead>
+                              <TableHead className="text-right">Gebyr</TableHead>
+                              <TableHead className="text-right">Netto</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {ticketEntries.map((e) => (
+                              <TableRow key={e.id}>
+                                <TableCell className="font-medium">{e.description}</TableCell>
+                                <TableCell className="text-right tabular-nums">{e.quantity ?? "-"}</TableCell>
+                                <TableCell className="text-right tabular-nums">{formatNok(e.gross_amount)}</TableCell>
+                                <TableCell className="text-right tabular-nums text-muted-foreground">{formatNok(e.fee_amount)}</TableCell>
+                                <TableCell className="text-right tabular-nums font-medium">{formatNok(e.net_amount)}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                      {/* Mobile cards */}
+                      <div className="md:hidden space-y-2">
+                        {ticketEntries.map((e) => (
+                          <div key={e.id} className="rounded-md border border-border/60 bg-card/60 p-3">
+                            <p className="font-medium text-sm">{e.description}</p>
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
+                              <span>Antall</span><span className="text-right text-foreground tabular-nums">{e.quantity ?? "-"}</span>
+                              <span>Brutto</span><span className="text-right text-foreground tabular-nums">{formatNok(e.gross_amount)}</span>
+                              <span>Gebyr</span><span className="text-right tabular-nums">{formatNok(e.fee_amount)}</span>
+                              <span>Netto</span><span className="text-right text-foreground font-medium tabular-nums">{formatNok(e.net_amount)}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  );
+                })()}
               </CardContent>
             </Card>
 
-            {/* Manual income */}
+            {/* ── Manual income ── */}
             <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
+              <CardHeader className="pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
-                    <CardTitle className="text-lg">Andre inntekter</CardTitle>
-                    <CardDescription>
-                      Legg inn sponsorer, støtte, barandel, merch m.m.
-                    </CardDescription>
+                    <CardTitle className="text-base md:text-lg">Andre inntekter</CardTitle>
+                    <CardDescription className="text-xs">Sponsorer, støtte, barandel, merch m.m.</CardDescription>
                   </div>
                   <Button size="sm" variant="outline" onClick={handleAddIncome}>
-                    <Plus className="h-4 w-4 mr-1" />
-                    Ny inntekt
+                    <Plus className="h-4 w-4 mr-1" /> Ny inntekt
                   </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 {incomeGroups.map((group) => (
                   <div key={group.category} className="space-y-2">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between px-1">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold">{group.category}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {group.items.length} linje{group.items.length === 1 ? "" : "r"}
-                        </span>
+                        <span className="text-xs text-muted-foreground">{group.items.length} linje{group.items.length === 1 ? "" : "r"}</span>
                       </div>
-                      <span className="text-sm font-semibold">
-                        {formatNok(group.totalNet)}
-                      </span>
+                      <span className="text-sm font-semibold tabular-nums">{formatNok(group.totalNet)}</span>
                     </div>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Dato</TableHead>
-                          <TableHead>Beskrivelse</TableHead>
-                          <TableHead>Kategori</TableHead>
-                          <TableHead>Fra</TableHead>
-                          <TableHead className="text-right">Beløp (kr)</TableHead>
-                          <TableHead className="w-16 text-right">Handling</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {group.items.map((e) => (
-                          <TableRow key={e.id}>
-                            <TableCell>
-                              <Input
-                                type="date"
-                                className="w-[130px]"
-                                defaultValue={e.date_incurred}
-                                onBlur={(ev) =>
-                                  onIncomeFieldChange(e, "date_incurred", ev.target.value)
-                                }
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                defaultValue={e.description}
-                                placeholder="F.eks. Sponsor, støtte, barandel"
-                                onBlur={(ev) =>
-                                  onIncomeFieldChange(e, "description", ev.target.value)
-                                }
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                list="finance-category-suggestions"
-                                className="w-[140px]"
-                                defaultValue={e.category || ""}
-                                placeholder="Kategori"
-                                onBlur={(ev) =>
-                                  onIncomeFieldChange(e, "category", ev.target.value)
-                                }
-                              />
-                            </TableCell>
-                            <TableCell className="min-w-[200px]">
-                              <Input
-                                className="h-8 text-xs"
-                                defaultValue={e.counterparty || ""}
-                                placeholder="Fra (sponsor, ordning osv.)"
-                                onBlur={(ev) =>
-                                  onIncomeFieldChange(e, "counterparty", ev.target.value)
-                                }
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                type="number"
-                                className="w-[100px] text-right"
-                                defaultValue={
-                                  e.net_amount ? (e.net_amount / 100).toString() : "0"
-                                }
-                                onBlur={(ev) =>
-                                  onIncomeFieldChange(e, "net_amount", ev.target.value)
-                                }
-                              />
-                            </TableCell>
-                            <TableCell className="space-x-1 text-right">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                title="Dupliser rad"
-                                onClick={() => {
-                                  if (!user) return;
-                                  incomeMutation.mutate({
-                                    description: e.description,
-                                    category: e.category,
-                                    counterparty: e.counterparty,
-                                    gross_amount: e.gross_amount,
-                                    net_amount: e.net_amount,
-                                    date_incurred: e.date_incurred,
-                                    notes: e.notes,
-                                    created_by: user.id,
-                                  });
-                                }}
-                              >
-                                <Plus className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive"
-                                title="Slett rad"
-                                onClick={() => deleteEntry.mutate(e.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
+
+                    {/* Desktop */}
+                    <div className="hidden md:block">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-[120px]">Dato</TableHead>
+                            <TableHead>Beskrivelse</TableHead>
+                            <TableHead className="w-[140px]">Kategori</TableHead>
+                            <TableHead>Fra</TableHead>
+                            <TableHead className="w-[110px] text-right">Beløp (kr)</TableHead>
+                            <TableHead className="w-20 text-right" />
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {group.items.map((e) => (
+                            <TableRow key={e.id}>
+                              <TableCell>
+                                <Input type="date" className="h-8 text-xs" defaultValue={e.date_incurred}
+                                  onBlur={(ev) => onIncomeFieldChange(e, "date_incurred", ev.target.value)} />
+                              </TableCell>
+                              <TableCell>
+                                <Input className="h-8 text-xs" defaultValue={e.description} placeholder="Beskrivelse"
+                                  onBlur={(ev) => onIncomeFieldChange(e, "description", ev.target.value)} />
+                              </TableCell>
+                              <TableCell>
+                                <Input list="finance-category-suggestions" className="h-8 text-xs" defaultValue={e.category || ""} placeholder="Kategori"
+                                  onBlur={(ev) => onIncomeFieldChange(e, "category", ev.target.value)} />
+                              </TableCell>
+                              <TableCell>
+                                <Input className="h-8 text-xs" defaultValue={e.counterparty || ""} placeholder="Fra (sponsor, ordning)"
+                                  onBlur={(ev) => onIncomeFieldChange(e, "counterparty", ev.target.value)} />
+                              </TableCell>
+                              <TableCell>
+                                <Input type="number" className="h-8 text-xs text-right tabular-nums"
+                                  defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"}
+                                  onBlur={(ev) => onIncomeFieldChange(e, "net_amount", ev.target.value)} />
+                              </TableCell>
+                              <TableCell className="text-right">{incomeActions(e)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Mobile */}
+                    <div className="md:hidden space-y-2">
+                      {group.items.map((e) => (
+                        <EntryCard key={e.id} entry={e} actions={incomeActions(e)} fields={
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="col-span-2">
+                              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beskrivelse</label>
+                              <Input className="h-8 text-sm" defaultValue={e.description} placeholder="Beskrivelse"
+                                onBlur={(ev) => onIncomeFieldChange(e, "description", ev.target.value)} />
+                            </div>
+                            <div>
+                              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Dato</label>
+                              <Input type="date" className="h-8 text-sm" defaultValue={e.date_incurred}
+                                onBlur={(ev) => onIncomeFieldChange(e, "date_incurred", ev.target.value)} />
+                            </div>
+                            <div>
+                              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beløp (kr)</label>
+                              <Input type="number" className="h-8 text-sm text-right tabular-nums"
+                                defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"}
+                                onBlur={(ev) => onIncomeFieldChange(e, "net_amount", ev.target.value)} />
+                            </div>
+                            <div>
+                              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Kategori</label>
+                              <Input list="finance-category-suggestions" className="h-8 text-sm" defaultValue={e.category || ""} placeholder="Kategori"
+                                onBlur={(ev) => onIncomeFieldChange(e, "category", ev.target.value)} />
+                            </div>
+                            <div>
+                              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Fra</label>
+                              <Input className="h-8 text-sm" defaultValue={e.counterparty || ""} placeholder="Sponsor"
+                                onBlur={(ev) => onIncomeFieldChange(e, "counterparty", ev.target.value)} />
+                            </div>
+                          </div>
+                        } />
+                      ))}
+                    </div>
                   </div>
                 ))}
                 {incomeGroups.length === 0 && (
-                  <div className="text-center text-muted-foreground py-8">
-                    Ingen manuelle inntekter lagt til ennå.
-                  </div>
+                  <p className="text-center text-muted-foreground py-6 text-sm">Ingen manuelle inntekter lagt til ennå.</p>
                 )}
               </CardContent>
             </Card>
 
-            {/* Expenses table */}
+            {/* ── Expenses ── */}
             <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
+              <CardHeader className="pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
-                    <CardTitle className="text-lg">Utgifter</CardTitle>
-                    <CardDescription>
-                      Legg inn og rediger festivalens kostnader.
-                    </CardDescription>
+                    <CardTitle className="text-base md:text-lg">Utgifter</CardTitle>
+                    <CardDescription className="text-xs">Festivalens kostnader</CardDescription>
                   </div>
                   <Button size="sm" variant="outline" onClick={handleAddExpense}>
-                    <Plus className="h-4 w-4 mr-1" />
-                    Ny rad
+                    <Plus className="h-4 w-4 mr-1" /> Ny rad
                   </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 {expenseGroups.map((group) => (
                   <div key={group.category} className="space-y-2">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between px-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold">
-                          {group.category}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {group.items.length} linje{group.items.length === 1 ? "" : "r"}
-                        </span>
+                        <span className="text-sm font-semibold">{group.category}</span>
+                        <span className="text-xs text-muted-foreground">{group.items.length} linje{group.items.length === 1 ? "" : "r"}</span>
                       </div>
-                      <span className="text-sm font-semibold">
-                        {formatNok(group.totalNet)}
-                      </span>
+                      <span className="text-sm font-semibold tabular-nums">{formatNok(group.totalNet)}</span>
                     </div>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                         <TableHead>Dato</TableHead>
-                          <TableHead>Beskrivelse</TableHead>
-                          <TableHead>Kategori</TableHead>
-                          <TableHead>Mottaker</TableHead>
-                          <TableHead>Betalt av</TableHead>
-                          <TableHead className="text-right">Beløp (kr)</TableHead>
-                          <TableHead className="w-16 text-right">Handling</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {group.items.map((e) => (
-                          <TableRow key={e.id}>
-                            <TableCell>
-                              <Input
-                                type="date"
-                                className="w-[130px]"
-                                defaultValue={e.date_incurred}
-                                onBlur={(ev) =>
-                                  onExpenseFieldChange(e, "date_incurred", ev.target.value)
-                                }
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                defaultValue={e.description}
-                                onBlur={(ev) =>
-                                  onExpenseFieldChange(e, "description", ev.target.value)
-                                }
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                list="finance-category-suggestions"
-                                className="w-[140px]"
-                                defaultValue={e.category || ""}
-                                placeholder="Kategori"
-                                onBlur={(ev) =>
-                                  onExpenseFieldChange(e, "category", ev.target.value)
-                                }
-                              />
-                            </TableCell>
-                            <TableCell className="min-w-[200px]">
-                              <RecipientPicker
-                                festivalId={festivalId!}
-                                value={e.counterparty}
-                                onChange={(val) => onExpenseFieldChange(e, "counterparty", val)}
-                              />
-                            </TableCell>
-                            <TableCell className="min-w-[160px]">
-                              <Select
-                                value={e.paid_by_id ?? "__none__"}
-                                onValueChange={(value) => {
-                                  if (value === "__none__") {
-                                    expenseMutation.mutate({
-                                      id: e.id,
-                                      paid_by_kind: null,
-                                      paid_by_id: null,
-                                      paid_by_label: null,
-                                    });
-                                    return;
-                                  }
-                                  const selected = payers.find((p) => p.id === value);
-                                  expenseMutation.mutate({
-                                    id: e.id,
-                                    paid_by_kind: selected ? "persona" : "other",
-                                    paid_by_id: selected?.id ?? null,
-                                    paid_by_label: selected?.name ?? null,
-                                  });
-                                }}
-                              >
-                                <SelectTrigger className="h-8 text-xs">
-                                  <SelectValue placeholder="Velg betaler" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="__none__">Ingen valgt</SelectItem>
-                                  {payers.map((p) => (
-                                    <SelectItem key={p.id} value={p.id}>
-                                      {p.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <Input
-                                type="number"
-                                className="w-[100px] text-right"
-                                defaultValue={
-                                  e.net_amount ? (e.net_amount / 100).toString() : "0"
-                                }
-                                onBlur={(ev) =>
-                                  onExpenseFieldChange(e, "net_amount", ev.target.value)
-                                }
-                              />
-                            </TableCell>
-                            <TableCell className="space-x-1 text-right">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                title="Dupliser rad"
-                                onClick={() => {
-                                  if (!user) return;
-                                  expenseMutation.mutate({
-                                    description: e.description,
-                                    category: e.category,
-                                    counterparty: e.counterparty,
-                                    gross_amount: e.gross_amount,
-                                    net_amount: e.net_amount,
-                                    date_incurred: e.date_incurred,
-                                    notes: e.notes,
-                                    created_by: user.id,
-                                  });
-                                }}
-                              >
-                                <Plus className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                title="Legg til refusjon"
-                                onClick={() => {
-                                  if (!user) return;
-                                  expenseMutation.mutate({
-                                    description: `Refusjon: ${e.description}`,
-                                    category: e.category || "Refusjon / kostnadsdeling",
-                                    counterparty: null,
-                                    gross_amount: -(e.net_amount ?? 0),
-                                    net_amount: -(e.net_amount ?? 0),
-                                    date_incurred: e.date_incurred,
-                                    source_type: "reimbursement",
-                                    linked_entry_id: e.id,
-                                    created_by: user.id,
-                                  });
-                                }}
-                              >
-                                <Undo2 className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive"
-                                title="Slett rad"
-                                onClick={() => deleteEntry.mutate(e.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
+
+                    {/* Desktop */}
+                    <div className="hidden md:block">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-[120px]">Dato</TableHead>
+                            <TableHead>Beskrivelse</TableHead>
+                            <TableHead className="w-[140px]">Kategori</TableHead>
+                            <TableHead>Mottaker</TableHead>
+                            <TableHead className="w-[150px]">Betalt av</TableHead>
+                            <TableHead className="w-[110px] text-right">Beløp (kr)</TableHead>
+                            <TableHead className="w-24 text-right" />
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {group.items.map((e) => (
+                            <TableRow key={e.id}>
+                              <TableCell>
+                                <Input type="date" className="h-8 text-xs" defaultValue={e.date_incurred}
+                                  onBlur={(ev) => onExpenseFieldChange(e, "date_incurred", ev.target.value)} />
+                              </TableCell>
+                              <TableCell>
+                                <Input className="h-8 text-xs" defaultValue={e.description}
+                                  onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} />
+                              </TableCell>
+                              <TableCell>
+                                <Input list="finance-category-suggestions" className="h-8 text-xs" defaultValue={e.category || ""} placeholder="Kategori"
+                                  onBlur={(ev) => onExpenseFieldChange(e, "category", ev.target.value)} />
+                              </TableCell>
+                              <TableCell>
+                                <RecipientPicker festivalId={festivalId!} value={e.counterparty}
+                                  onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} />
+                              </TableCell>
+                              <TableCell>
+                                <PaidBySelect entry={e} />
+                              </TableCell>
+                              <TableCell>
+                                <Input type="number" className="h-8 text-xs text-right tabular-nums"
+                                  defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"}
+                                  onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} />
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-0.5">
+                                  {expenseActions(e)}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Mobile */}
+                    <div className="md:hidden space-y-2">
+                      {group.items.map((e) => (
+                        <EntryCard key={e.id} entry={e} actions={expenseActions(e)} fields={
+                          <div className="space-y-2">
+                            <div>
+                              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beskrivelse</label>
+                              <Input className="h-8 text-sm" defaultValue={e.description}
+                                onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Dato</label>
+                                <Input type="date" className="h-8 text-sm" defaultValue={e.date_incurred}
+                                  onBlur={(ev) => onExpenseFieldChange(e, "date_incurred", ev.target.value)} />
+                              </div>
+                              <div>
+                                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beløp (kr)</label>
+                                <Input type="number" className="h-8 text-sm text-right tabular-nums"
+                                  defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"}
+                                  onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} />
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Kategori</label>
+                                <Input list="finance-category-suggestions" className="h-8 text-sm" defaultValue={e.category || ""} placeholder="Kategori"
+                                  onBlur={(ev) => onExpenseFieldChange(e, "category", ev.target.value)} />
+                              </div>
+                              <div>
+                                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Mottaker</label>
+                                <RecipientPicker festivalId={festivalId!} value={e.counterparty}
+                                  onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Betalt av</label>
+                              <PaidBySelect entry={e} />
+                            </div>
+                          </div>
+                        } />
+                      ))}
+                    </div>
                   </div>
                 ))}
                 {expenseGroups.length === 0 && (
-                  <div className="text-center text-muted-foreground py-8">
-                    Ingen utgifter lagt til ennå.
-                  </div>
+                  <p className="text-center text-muted-foreground py-6 text-sm">Ingen utgifter lagt til ennå.</p>
                 )}
                 <datalist id="finance-category-suggestions">
                   {(categorySuggestions || []).map((cat) => (
@@ -791,70 +738,85 @@ export default function FestivalFinanceRoom() {
               </CardContent>
             </Card>
 
-            {/* Reimbursements */}
+            {/* ── Reimbursements ── */}
             {reimbursementEntries.length > 0 && (
               <Card>
-                <CardHeader>
-                  <div>
-                    <CardTitle className="text-lg">Refusjoner / kostnadsdeling</CardTitle>
-                    <CardDescription>
-                      Poster som reduserer utgiftene (f.eks. delt kostnad, refundert beløp).
-                    </CardDescription>
-                  </div>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base md:text-lg">Refusjoner / kostnadsdeling</CardTitle>
+                  <CardDescription className="text-xs">Poster som reduserer utgiftene</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Dato</TableHead>
-                        <TableHead>Beskrivelse</TableHead>
-                        <TableHead>Kategori</TableHead>
-                        <TableHead className="text-right">Beløp (kr)</TableHead>
-                        <TableHead className="w-16 text-right">Handling</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {reimbursementEntries.map((e) => (
-                        <TableRow key={e.id}>
-                          <TableCell className="text-sm">{e.date_incurred}</TableCell>
-                          <TableCell>
-                            <Input
-                              defaultValue={e.description}
-                              onBlur={(ev) =>
-                                onExpenseFieldChange(e, "description", ev.target.value)
-                              }
-                            />
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {e.category || "–"}
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              type="number"
-                              className="w-[100px] text-right"
-                              defaultValue={
-                                e.net_amount ? (e.net_amount / 100).toString() : "0"
-                              }
-                              onBlur={(ev) =>
-                                onExpenseFieldChange(e, "net_amount", ev.target.value)
-                              }
-                            />
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive"
-                              title="Slett rad"
-                              onClick={() => deleteEntry.mutate(e.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
+                  {/* Desktop */}
+                  <div className="hidden md:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[120px]">Dato</TableHead>
+                          <TableHead>Beskrivelse</TableHead>
+                          <TableHead className="w-[140px]">Kategori</TableHead>
+                          <TableHead className="w-[110px] text-right">Beløp (kr)</TableHead>
+                          <TableHead className="w-16 text-right" />
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {reimbursementEntries.map((e) => (
+                          <TableRow key={e.id}>
+                            <TableCell className="text-sm tabular-nums">{e.date_incurred}</TableCell>
+                            <TableCell>
+                              <Input className="h-8 text-xs" defaultValue={e.description}
+                                onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} />
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{e.category || "–"}</TableCell>
+                            <TableCell>
+                              <Input type="number" className="h-8 text-xs text-right tabular-nums"
+                                defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"}
+                                onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} />
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" title="Slett"
+                                onClick={() => deleteEntry.mutate(e.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  {/* Mobile */}
+                  <div className="md:hidden space-y-2">
+                    {reimbursementEntries.map((e) => (
+                      <EntryCard key={e.id} entry={e}
+                        actions={
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" title="Slett"
+                            onClick={() => deleteEntry.mutate(e.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        }
+                        fields={
+                          <div className="space-y-2">
+                            <div>
+                              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beskrivelse</label>
+                              <Input className="h-8 text-sm" defaultValue={e.description}
+                                onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Dato</label>
+                                <p className="text-sm tabular-nums mt-1">{e.date_incurred}</p>
+                              </div>
+                              <div>
+                                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beløp (kr)</label>
+                                <Input type="number" className="h-8 text-sm text-right tabular-nums"
+                                  defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"}
+                                  onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} />
+                              </div>
+                            </div>
+                          </div>
+                        }
+                      />
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             )}
@@ -864,17 +826,41 @@ export default function FestivalFinanceRoom() {
         {!activeBookId && !isLoading && (
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-muted-foreground mb-4">
-                Ingen økonomibok funnet. Opprett en for å komme i gang.
-              </p>
+              <p className="text-muted-foreground mb-4">Ingen økonomibok funnet. Opprett en for å komme i gang.</p>
               <Button onClick={handleCreateBook} disabled={createBook.isPending}>
-                <Plus className="h-4 w-4 mr-1" />
-                Opprett økonomibok
+                <Plus className="h-4 w-4 mr-1" /> Opprett økonomibok
               </Button>
             </CardContent>
           </Card>
         )}
       </div>
     </div>
+  );
+}
+
+/* ── Summary card component ── */
+function SummaryCard({
+  label,
+  value,
+  icon,
+  valueClass,
+  className,
+}: {
+  label: string;
+  value: string;
+  icon?: React.ReactNode;
+  valueClass?: string;
+  className?: string;
+}) {
+  return (
+    <Card className={className}>
+      <CardContent className="p-3 md:p-4">
+        <div className="flex items-center gap-2 mb-1">
+          {icon}
+          <span className="text-[10px] md:text-xs uppercase tracking-wider text-muted-foreground">{label}</span>
+        </div>
+        <p className={`text-lg md:text-xl font-bold tabular-nums ${valueClass || ""}`}>{value}</p>
+      </CardContent>
+    </Card>
   );
 }
