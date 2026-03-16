@@ -337,59 +337,58 @@ export default function FestivalFinanceRoom() {
   );
 
   /* ── Render entries in a table (desktop) ── */
+  const AttachmentCell = ({ entry, onFieldChange }: { entry: FestivalFinanceEntry; onFieldChange: typeof onExpenseFieldChange }) => (
+    <div className="flex items-center gap-1.5">
+      {entry.attachment_url ? (
+        <a href={entry.attachment_url} target="_blank" rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-xs text-accent hover:underline truncate max-w-[120px]" title={entry.attachment_name || "Åpne vedlegg"}>
+          <Paperclip className="h-3 w-3 shrink-0" />
+          <span className="truncate">{entry.attachment_name || "Vedlegg"}</span>
+        </a>
+      ) : (
+        <label className="cursor-pointer inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-accent transition-colors">
+          <input type="file" className="hidden" onChange={async (ev) => {
+            const file = ev.target.files?.[0];
+            if (!file || !festivalId) return;
+            try {
+              const result = await uploadAttachment(file, festivalId, entry.voucher_number);
+              onFieldChange(entry, "attachment_url", result.url);
+              onFieldChange(entry, "attachment_name", result.name);
+            } catch (err: any) { toast.error(err.message || "Kunne ikke laste opp bilag"); }
+            finally { ev.target.value = ""; }
+          }} />
+          <Upload className="h-3 w-3 shrink-0" />
+          <span>{isUploadingAttachment ? "..." : "Last opp"}</span>
+        </label>
+      )}
+    </div>
+  );
+
   const renderExpenseTable = (items: FestivalFinanceEntry[]) => (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[80px]">Bilagsnr</TableHead>
-          <TableHead className="w-[110px]">Dato</TableHead>
-          <TableHead>Beskrivelse</TableHead>
-          <TableHead className="w-[130px]">Underkategori</TableHead>
-          <TableHead>Mottaker</TableHead>
-          <TableHead className="w-[140px]">Betalt av</TableHead>
-          <TableHead className="w-[130px] text-right">Beløp (kr)</TableHead>
-          <TableHead className="w-[180px]">Vedlegg</TableHead>
-          <TableHead className="w-20 text-right" />
+          <TableHead className="w-[90px]">Bilagsnr</TableHead>
+          <TableHead className="w-[100px]">Dato</TableHead>
+          <TableHead className="min-w-[120px]">Beskrivelse</TableHead>
+          <TableHead className="w-[120px]">Mottaker</TableHead>
+          <TableHead className="w-[120px]">Betalt av</TableHead>
+          <TableHead className="w-[100px] text-right">Beløp (kr)</TableHead>
+          <TableHead className="w-[130px]">Vedlegg</TableHead>
+          <TableHead className="w-16 text-right" />
         </TableRow>
       </TableHeader>
       <TableBody>
         {items.map((e) => (
           <TableRow key={e.id}>
-            <TableCell className="text-xs text-muted-foreground tabular-nums">{e.voucher_number ?? ""}</TableCell>
-            <TableCell><Input type="date" className="h-8 text-xs" defaultValue={e.date_incurred} onBlur={(ev) => onExpenseFieldChange(e, "date_incurred", ev.target.value)} /></TableCell>
-            <TableCell><Input className="h-8 text-xs" defaultValue={e.description} onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} /></TableCell>
-            <TableCell><Input list="finance-subcategory-suggestions" className="h-8 text-xs" defaultValue={e.subcategory || ""} placeholder="Underkategori" onBlur={(ev) => onExpenseFieldChange(e, "subcategory", ev.target.value)} /></TableCell>
+            <TableCell className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">{e.voucher_number ?? ""}</TableCell>
+            <TableCell><Input type="date" className="h-7 text-xs px-1.5" defaultValue={e.date_incurred} onBlur={(ev) => onExpenseFieldChange(e, "date_incurred", ev.target.value)} /></TableCell>
+            <TableCell><Input className="h-7 text-xs" defaultValue={e.description} onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} /></TableCell>
             <TableCell><RecipientPicker festivalId={festivalId!} value={e.counterparty} onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} /></TableCell>
             <TableCell><PaidBySelect entry={e} /></TableCell>
-            <TableCell><Input type="number" className="h-8 text-xs text-right tabular-nums" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} /></TableCell>
-            <TableCell>
-              <div className="space-y-1">
-                <Input className="h-7 text-xs" defaultValue={e.attachment_name || ""} placeholder="Bilagsnavn" onBlur={(ev) => onExpenseFieldChange(e, "attachment_name", ev.target.value)} />
-                <div className="flex items-center gap-1">
-                  <label className="cursor-pointer">
-                    <input type="file" className="hidden" onChange={async (ev) => {
-                      const file = ev.target.files?.[0];
-                      if (!file || !festivalId) return;
-                      try {
-                        const result = await uploadAttachment(file, festivalId, e.voucher_number);
-                        onExpenseFieldChange(e, "attachment_url", result.url);
-                        if (!e.attachment_name) onExpenseFieldChange(e, "attachment_name", result.name);
-                      } catch (err: any) { toast.error(err.message || "Kunne ikke laste opp bilag"); }
-                      finally { ev.target.value = ""; }
-                    }} />
-                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-accent cursor-pointer">
-                      <Upload className="h-3 w-3" /> {isUploadingAttachment ? "Laster..." : "Last opp"}
-                    </span>
-                  </label>
-                  {e.attachment_url && (
-                    <a href={e.attachment_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-xs text-accent hover:underline">
-                      <ExternalLink className="h-3 w-3" /> Åpne
-                    </a>
-                  )}
-                </div>
-              </div>
-            </TableCell>
-            <TableCell className="text-right"><div className="flex items-center justify-end gap-0.5">{expenseActions(e)}</div></TableCell>
+            <TableCell><Input type="number" className="h-7 text-xs text-right tabular-nums px-1.5" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} /></TableCell>
+            <TableCell><AttachmentCell entry={e} onFieldChange={onExpenseFieldChange} /></TableCell>
+            <TableCell className="text-right"><div className="flex items-center justify-end gap-0">{expenseActions(e)}</div></TableCell>
           </TableRow>
         ))}
       </TableBody>
