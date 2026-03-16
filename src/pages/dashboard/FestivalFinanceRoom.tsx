@@ -228,6 +228,31 @@ export default function FestivalFinanceRoom() {
     incomeMutation.mutate(patch);
   };
 
+  const handleImportTickets = async () => {
+    if (!activeBookId) {
+      toast.error("Ingen økonomibok valgt.");
+      return;
+    }
+    const { data: ticketEvent, error } = await supabase
+      .from("ticket_events")
+      .select("id")
+      .limit(1)
+      .single();
+    if (error || !ticketEvent) {
+      toast.error("Fant ingen ticket event å importere fra.");
+      return;
+    }
+    try {
+      await importTickets.mutateAsync({
+        bookId: activeBookId,
+        ticketEventId: ticketEvent.id,
+      });
+      toast.success("Billettsalg importert til økonomiboken.");
+    } catch (e: any) {
+      toast.error(e?.message || "Kunne ikke importere billettsalg.");
+    }
+  };
+
   if (!festivalId) {
     return <p className="p-6 text-muted-foreground">Mangler festival-ID.</p>;
   }
