@@ -161,7 +161,8 @@ export default function FestivalFinanceRoom() {
   }, [entries]);
 
   const netIncome = incomeTotal - feeTotal;
-  const result = netIncome - expenseTotal;
+  const netExpense = expenseTotal + reimbursementTotal; // reimbursementTotal is negative
+  const result = netIncome - netExpense;
 
   const handleCreateBook = async () => {
     if (!user) return;
