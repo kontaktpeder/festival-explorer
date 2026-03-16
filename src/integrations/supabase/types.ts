@@ -1163,6 +1163,238 @@ export type Database = {
           },
         ]
       }
+      festival_finance_attachments: {
+        Row: {
+          created_at: string
+          entry_id: string
+          file_name: string
+          file_url: string
+          id: string
+          mime_type: string | null
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          entry_id: string
+          file_name: string
+          file_url: string
+          id?: string
+          mime_type?: string | null
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          entry_id?: string
+          file_name?: string
+          file_url?: string
+          id?: string
+          mime_type?: string | null
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "festival_finance_attachments_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "festival_finance_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "festival_finance_attachments_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      festival_finance_books: {
+        Row: {
+          created_at: string
+          created_by: string
+          currency: string
+          festival_id: string | null
+          id: string
+          name: string
+          status: string
+          ticket_event_id: string | null
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          currency?: string
+          festival_id?: string | null
+          id?: string
+          name: string
+          status?: string
+          ticket_event_id?: string | null
+          type: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          currency?: string
+          festival_id?: string | null
+          id?: string
+          name?: string
+          status?: string
+          ticket_event_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "festival_finance_books_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "festival_finance_books_ticket_event_id_fkey"
+            columns: ["ticket_event_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      festival_finance_categories: {
+        Row: {
+          color: string | null
+          entry_type: string
+          festival_id: string | null
+          id: string
+          is_default: boolean
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          color?: string | null
+          entry_type: string
+          festival_id?: string | null
+          id?: string
+          is_default?: boolean
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          color?: string | null
+          entry_type?: string
+          festival_id?: string | null
+          id?: string
+          is_default?: boolean
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      festival_finance_entries: {
+        Row: {
+          book_id: string
+          category: string | null
+          category_id: string | null
+          counterparty: string | null
+          created_at: string
+          created_by: string
+          date_incurred: string
+          date_paid: string | null
+          description: string
+          entry_type: string
+          fee_amount: number | null
+          gross_amount: number
+          id: string
+          net_amount: number
+          notes: string | null
+          quantity: number | null
+          sort_order: number | null
+          source_ref_id: string | null
+          source_ref_type: string | null
+          source_type: string
+          status: string
+          subcategory: string | null
+          unit_amount: number | null
+          vat_amount: number | null
+          vat_rate: number | null
+        }
+        Insert: {
+          book_id: string
+          category?: string | null
+          category_id?: string | null
+          counterparty?: string | null
+          created_at?: string
+          created_by: string
+          date_incurred: string
+          date_paid?: string | null
+          description: string
+          entry_type: string
+          fee_amount?: number | null
+          gross_amount: number
+          id?: string
+          net_amount: number
+          notes?: string | null
+          quantity?: number | null
+          sort_order?: number | null
+          source_ref_id?: string | null
+          source_ref_type?: string | null
+          source_type?: string
+          status?: string
+          subcategory?: string | null
+          unit_amount?: number | null
+          vat_amount?: number | null
+          vat_rate?: number | null
+        }
+        Update: {
+          book_id?: string
+          category?: string | null
+          category_id?: string | null
+          counterparty?: string | null
+          created_at?: string
+          created_by?: string
+          date_incurred?: string
+          date_paid?: string | null
+          description?: string
+          entry_type?: string
+          fee_amount?: number | null
+          gross_amount?: number
+          id?: string
+          net_amount?: number
+          notes?: string | null
+          quantity?: number | null
+          sort_order?: number | null
+          source_ref_id?: string | null
+          source_ref_type?: string | null
+          source_type?: string
+          status?: string
+          subcategory?: string | null
+          unit_amount?: number | null
+          vat_amount?: number | null
+          vat_rate?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "festival_finance_entries_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "festival_finance_books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "festival_finance_entries_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "festival_finance_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "festival_finance_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       festival_media: {
         Row: {
           created_at: string | null
@@ -2790,6 +3022,10 @@ export type Database = {
       has_staff_role: {
         Args: { _role: string; _user_id: string }
         Returns: boolean
+      }
+      import_ticket_revenue_for_book: {
+        Args: { p_book_id: string; p_ticket_event_id: string }
+        Returns: undefined
       }
       is_admin: { Args: never; Returns: boolean }
       is_entity_admin: { Args: { p_entity_id: string }; Returns: boolean }
