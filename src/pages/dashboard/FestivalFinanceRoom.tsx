@@ -84,6 +84,9 @@ export default function FestivalFinanceRoom() {
     return null;
   }, [books, selectedBookId]);
 
+  const { data: categorySuggestions } = useFinanceCategoriesForFestival(festivalId);
+  const { data: recipients } = useFestivalRecipients(festivalId);
+
   const { data: entries, isLoading: entriesLoading } = useFinanceEntries(activeBookId || undefined);
   const expenseMutation = useUpsertExpenseEntry(activeBookId || "");
   const deleteEntry = useDeleteFinanceEntry(activeBookId || "");
