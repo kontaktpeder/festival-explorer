@@ -202,9 +202,16 @@ export default function FestivalRoom() {
       hidden: !p?.can_access_media,
     },
     {
+      title: "Økonomi",
+      description: "Inntekter, utgifter og resultat",
+      icon: BarChart3,
+      to: `/dashboard/festival/${id}/finance`,
+      hidden: !p?.can_see_revenue && !p?.can_see_ticket_stats && !p?.can_see_report,
+    },
+    {
       title: "Rapport",
       description: "Sammendrag og innsikt",
-      icon: BarChart3,
+      icon: FileText,
       disabled: true,
       hidden: !p?.can_see_report,
     },
