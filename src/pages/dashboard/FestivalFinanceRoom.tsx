@@ -257,6 +257,29 @@ export default function FestivalFinanceRoom() {
     } catch (e: any) { toast.error(e?.message || "Kunne ikke importere billettsalg."); }
   };
 
+  const handleExportCSV = () => {
+    if (!entries || entries.length === 0) { toast.info("Ingen transaksjoner å eksportere."); return; }
+    const headers = ["Dato", "Bilagsnr", "Type", "Kategori", "Underkategori", "Beskrivelse", "Mottaker", "Betalt av", "Beløp (kr)", "Status", "Vedlegg"];
+    const rows = entries.map((e) => {
+      const amount = (e.net_amount ?? 0) / 100;
+      return [
+        e.date_incurred ?? "", e.voucher_number ?? "", e.entry_type ?? "", e.category ?? "", e.subcategory ?? "",
+        e.description ?? "", e.counterparty ?? "", e.paid_by_label ?? "",
+        amount.toString().replace(".", ","), e.status ?? "", e.attachment_url ?? "",
+      ];
+    });
+    const csvContent = [headers, ...rows].map((r) => r.map((field) => `"${String(field).replace(/"/g, '""')}"`).join(";")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `festival-finance-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   if (!festivalId) return <p className="p-6 text-muted-foreground">Mangler festival-ID.</p>;
 
   /* ── Shared action buttons ── */
