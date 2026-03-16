@@ -362,6 +362,14 @@ export default function FestivalFinanceRoom() {
                       Aggregerte linjer per billettype (read only).
                     </CardDescription>
                   </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleImportTickets}
+                    disabled={importTickets.isPending}
+                  >
+                    Importer billettsalg
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
