@@ -370,7 +370,7 @@ export default function FestivalFinanceRoom() {
                           </TableCell>
                         </TableRow>
                       ))}
-                    {(entries || []).filter((e) => e.entry_type === "income")
+                    {(entries || []).filter((e) => e.entry_type === "income" && e.source_type === "ticket")
                       .length === 0 && (
                       <TableRow>
                         <TableCell
