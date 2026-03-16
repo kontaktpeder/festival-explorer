@@ -155,31 +155,31 @@ export function FestivalParticipantsZoneEditor({
     const venueIds = list.filter((r) => r.participant_kind === "venue").map((r) => r.participant_id);
     const map: Record<string, ResolvedRef> = {};
 
-    const fetches: Promise<any>[] = [];
+    const fetches: (() => Promise<void>)[] = [];
 
     if (personaIds.length > 0) {
-      fetches.push(
-        supabase.from("personas").select("id,name,slug,type,category_tags").in("id", personaIds)
-          .then(({ data: pData }) => { (pData || []).forEach((p: any) => (map[p.id] = p)); })
-      );
+      fetches.push(async () => {
+        const { data: pData } = await supabase.from("personas").select("id,name,slug,type,category_tags").in("id", personaIds);
+        (pData || []).forEach((p: any) => (map[p.id] = p));
+      });
     }
     if (entityIds.length > 0) {
-      fetches.push(
-        supabase.from("entities").select("id,name,slug,type").in("id", entityIds)
-          .then(({ data: eData }) => { (eData || []).forEach((e: any) => (map[e.id] = { id: e.id, name: e.name, slug: e.slug, type: e.type })); })
-      );
+      fetches.push(async () => {
+        const { data: eData } = await supabase.from("entities").select("id,name,slug,type").in("id", entityIds);
+        (eData || []).forEach((e: any) => (map[e.id] = { id: e.id, name: e.name, slug: e.slug, type: e.type }));
+      });
     }
     if (projectIds.length > 0) {
-      fetches.push(
-        supabase.from("projects").select("id,name,slug").in("id", projectIds)
-          .then(({ data: prData }) => { (prData || []).forEach((p: any) => (map[p.id] = { id: p.id, name: p.name, slug: p.slug })); })
-      );
+      fetches.push(async () => {
+        const { data: prData } = await supabase.from("projects").select("id,name,slug").in("id", projectIds);
+        (prData || []).forEach((p: any) => (map[p.id] = { id: p.id, name: p.name, slug: p.slug }));
+      });
     }
     if (venueIds.length > 0) {
-      fetches.push(
-        supabase.from("venues").select("id,name,slug").in("id", venueIds)
-          .then(({ data: vData }) => { (vData || []).forEach((v: any) => (map[v.id] = { id: v.id, name: v.name, slug: v.slug })); })
-      );
+      fetches.push(async () => {
+        const { data: vData } = await supabase.from("venues").select("id,name,slug").in("id", venueIds);
+        (vData || []).forEach((v: any) => (map[v.id] = { id: v.id, name: v.name, slug: v.slug }));
+      });
     }
 
     await Promise.all(fetches);
