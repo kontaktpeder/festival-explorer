@@ -707,6 +707,28 @@ export default function FestivalFinanceRoom() {
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                className="h-8 w-8"
+                                title="Legg til refusjon"
+                                onClick={() => {
+                                  if (!user) return;
+                                  expenseMutation.mutate({
+                                    description: `Refusjon: ${e.description}`,
+                                    category: e.category || "Refusjon / kostnadsdeling",
+                                    counterparty: null,
+                                    gross_amount: -(e.net_amount ?? 0),
+                                    net_amount: -(e.net_amount ?? 0),
+                                    date_incurred: e.date_incurred,
+                                    source_type: "reimbursement",
+                                    linked_entry_id: e.id,
+                                    created_by: user.id,
+                                  });
+                                }}
+                              >
+                                <Undo2 className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 className="h-8 w-8 text-destructive"
                                 title="Slett rad"
                                 onClick={() => deleteEntry.mutate(e.id)}
