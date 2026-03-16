@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,8 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Plus, RefreshCw, Trash2, ArrowLeft } from "lucide-react";
-import { BackToFestival } from "@/components/ui/BackToFestival";
+import { Plus, Trash2, ArrowLeft } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
 
 import {
