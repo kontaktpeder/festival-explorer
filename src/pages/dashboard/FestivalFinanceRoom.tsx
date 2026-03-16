@@ -20,8 +20,9 @@ import {
 } from "@/components/ui/collapsible";
 import { RecipientPicker } from "@/components/finance/RecipientPicker";
 import { useFinancePayers } from "@/hooks/useFinancePayers";
-import { Plus, Trash2, ArrowLeft, Undo2, TrendingUp, TrendingDown, Receipt, Wallet, ChevronRight, FolderOpen, Download, Paperclip } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Undo2, TrendingUp, TrendingDown, Receipt, Wallet, ChevronRight, FolderOpen, Download, Paperclip, ExternalLink, Upload } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { useFinanceAttachmentUpload } from "@/hooks/useFinanceAttachmentUpload";
 
 import {
   useFinanceBooks, useFinanceEntries, useCreateFinanceBook,
@@ -200,16 +201,24 @@ export default function FestivalFinanceRoom() {
     } catch (e: any) { toast.error(e.message || "Kunne ikke opprette bok"); }
   };
 
-  const generateVoucherNumber = (allEntries: FestivalFinanceEntry[]) => {
-    const existing = (allEntries || []).map((e) => e.voucher_number).filter(Boolean) as string[];
-    if (!existing.length) return "B-0001";
-    const last = existing.map((s) => parseInt(s.replace(/\D/g, ""), 10)).filter((n) => !isNaN(n)).sort((a, b) => b - a)[0];
-    return `B-${((last || 0) + 1).toString().padStart(4, "0")}`;
+  const { uploadAttachment, isUploading: isUploadingAttachment } = useFinanceAttachmentUpload();
+
+  const generateYearlyVoucherNumber = (allEntries: FestivalFinanceEntry[]) => {
+    const year = new Date().getFullYear().toString();
+    const thisYears = (allEntries || [])
+      .map((e) => e.voucher_number)
+      .filter((v): v is string => Boolean(v && v.startsWith(year + "-")));
+    if (!thisYears.length) return `${year}-0001`;
+    const last = thisYears
+      .map((s) => parseInt(s.replace(`${year}-`, ""), 10))
+      .filter((n) => !isNaN(n))
+      .sort((a, b) => b - a)[0];
+    return `${year}-${((last || 0) + 1).toString().padStart(4, "0")}`;
   };
 
   const handleAddExpense = () => {
     if (!activeBookId || !user) return;
-    const voucher = generateVoucherNumber(entries || []);
+    const voucher = generateYearlyVoucherNumber(entries || []);
     expenseMutation.mutate({
       description: "", category: null, counterparty: null,
       gross_amount: 0, net_amount: 0, date_incurred: new Date().toISOString().slice(0, 10),
@@ -229,7 +238,7 @@ export default function FestivalFinanceRoom() {
 
   const handleAddIncome = () => {
     if (!activeBookId || !user) return;
-    const voucher = generateVoucherNumber(entries || []);
+    const voucher = generateYearlyVoucherNumber(entries || []);
     incomeMutation.mutate({
       description: "", category: null, counterparty: null,
       gross_amount: 0, net_amount: 0, date_incurred: new Date().toISOString().slice(0, 10),
@@ -356,7 +365,28 @@ export default function FestivalFinanceRoom() {
             <TableCell>
               <div className="space-y-1">
                 <Input className="h-7 text-xs" defaultValue={e.attachment_name || ""} placeholder="Bilagsnavn" onBlur={(ev) => onExpenseFieldChange(e, "attachment_name", ev.target.value)} />
-                <Input className="h-7 text-xs" defaultValue={e.attachment_url || ""} placeholder="Lenke til kvittering" onBlur={(ev) => onExpenseFieldChange(e, "attachment_url", ev.target.value)} />
+                <div className="flex items-center gap-1">
+                  <label className="cursor-pointer">
+                    <input type="file" className="hidden" onChange={async (ev) => {
+                      const file = ev.target.files?.[0];
+                      if (!file || !festivalId) return;
+                      try {
+                        const result = await uploadAttachment(file, festivalId, e.voucher_number);
+                        onExpenseFieldChange(e, "attachment_url", result.url);
+                        if (!e.attachment_name) onExpenseFieldChange(e, "attachment_name", result.name);
+                      } catch (err: any) { toast.error(err.message || "Kunne ikke laste opp bilag"); }
+                      finally { ev.target.value = ""; }
+                    }} />
+                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-accent cursor-pointer">
+                      <Upload className="h-3 w-3" /> {isUploadingAttachment ? "Laster..." : "Last opp"}
+                    </span>
+                  </label>
+                  {e.attachment_url && (
+                    <a href={e.attachment_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-xs text-accent hover:underline">
+                      <ExternalLink className="h-3 w-3" /> Åpne
+                    </a>
+                  )}
+                </div>
               </div>
             </TableCell>
             <TableCell className="text-right"><div className="flex items-center justify-end gap-0.5">{expenseActions(e)}</div></TableCell>
@@ -405,7 +435,28 @@ export default function FestivalFinanceRoom() {
             <div>
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Paperclip className="h-3 w-3" /> Vedlegg</label>
               <Input className="h-7 text-xs mt-1" defaultValue={e.attachment_name || ""} placeholder="Bilagsnavn" onBlur={(ev) => onExpenseFieldChange(e, "attachment_name", ev.target.value)} />
-              <Input className="h-7 text-xs mt-1" defaultValue={e.attachment_url || ""} placeholder="Lenke til kvittering" onBlur={(ev) => onExpenseFieldChange(e, "attachment_url", ev.target.value)} />
+              <div className="flex items-center gap-2 mt-1">
+                <label className="cursor-pointer">
+                  <input type="file" className="hidden" onChange={async (ev) => {
+                    const file = ev.target.files?.[0];
+                    if (!file || !festivalId) return;
+                    try {
+                      const result = await uploadAttachment(file, festivalId, e.voucher_number);
+                      onExpenseFieldChange(e, "attachment_url", result.url);
+                      if (!e.attachment_name) onExpenseFieldChange(e, "attachment_name", result.name);
+                    } catch (err: any) { toast.error(err.message || "Kunne ikke laste opp bilag"); }
+                    finally { ev.target.value = ""; }
+                  }} />
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-accent cursor-pointer">
+                    <Upload className="h-3 w-3" /> {isUploadingAttachment ? "Laster..." : "Last opp"}
+                  </span>
+                </label>
+                {e.attachment_url && (
+                  <a href={e.attachment_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-0.5 text-xs text-accent hover:underline">
+                    <ExternalLink className="h-3 w-3" /> Åpne
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         } />
