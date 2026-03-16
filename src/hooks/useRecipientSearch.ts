@@ -86,11 +86,11 @@ export function useRecipientSearch(festivalId?: string) {
         }
       });
 
-      (venuesRes.data || []).forEach((v) => {
+      (venuesRes.data || []).forEach((v: any) => {
         recipients.push({
           id: `venue:${v.id}`,
           kind: "venue",
-          name: v.name,
+          name: v.title,
           subtitle: "Venue",
         });
       });
