@@ -500,6 +500,7 @@ export default function AdminTicketsDashboard() {
   const [editVisible, setEditVisible] = useState(true);
   const [editSalesStart, setEditSalesStart] = useState("");
   const [editSalesEnd, setEditSalesEnd] = useState("");
+  const [editChargeStripeFee, setEditChargeStripeFee] = useState(true);
   const [newCode, setNewCode] = useState("");
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
@@ -609,19 +610,25 @@ export default function AdminTicketsDashboard() {
       visible,
       sales_start,
       sales_end,
+      charge_stripe_fee,
     }: {
       ticketTypeId: string;
       visible: boolean;
       sales_start: string | null;
       sales_end: string | null;
+      charge_stripe_fee?: boolean;
     }) => {
+      const updatePayload: Record<string, unknown> = {
+        visible,
+        sales_start: sales_start || null,
+        sales_end: sales_end || null,
+      };
+      if (charge_stripe_fee !== undefined) {
+        updatePayload.charge_stripe_fee = charge_stripe_fee;
+      }
       const { error } = await supabase
         .from("ticket_types")
-        .update({
-          visible,
-          sales_start: sales_start || null,
-          sales_end: sales_end || null,
-        })
+        .update(updatePayload as any)
         .eq("id", ticketTypeId);
       if (error) throw error;
     },
@@ -1092,6 +1099,7 @@ export default function AdminTicketsDashboard() {
                     <TableRow>
                       <TableHead>Type</TableHead>
                       <TableHead className="w-20 text-center">Synlig</TableHead>
+                      <TableHead className="w-28 text-center">Stripe-gebyr</TableHead>
                       <TableHead>Salg åpner</TableHead>
                       <TableHead>Salg stenger</TableHead>
                       <TableHead className="w-20" />
@@ -1118,6 +1126,21 @@ export default function AdminTicketsDashboard() {
                             disabled={updateTicketTypeMeta.isPending}
                           />
                         </TableCell>
+                        <TableCell className="text-center">
+                          <Switch
+                            checked={(type as any).charge_stripe_fee ?? true}
+                            onCheckedChange={(checked) =>
+                              updateTicketTypeMeta.mutate({
+                                ticketTypeId: type.id,
+                                visible: type.visible ?? true,
+                                sales_start: type.sales_start ?? null,
+                                sales_end: type.sales_end ?? null,
+                                charge_stripe_fee: checked,
+                              })
+                            }
+                            disabled={updateTicketTypeMeta.isPending}
+                          />
+                        </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {type.sales_start
                             ? format(new Date(type.sales_start), "d. MMM yyyy HH:mm", { locale: nb })
@@ -1135,6 +1158,7 @@ export default function AdminTicketsDashboard() {
                             onClick={() => {
                               setEditingTypeId(type.id);
                               setEditVisible(type.visible ?? true);
+                              setEditChargeStripeFee((type as any).charge_stripe_fee ?? true);
                               setEditSalesStart(
                                 type.sales_start
                                   ? format(new Date(type.sales_start), "yyyy-MM-dd'T'HH:mm")
@@ -1836,6 +1860,10 @@ export default function AdminTicketsDashboard() {
               <Switch checked={editVisible} onCheckedChange={setEditVisible} id="edit-visible" />
               <Label htmlFor="edit-visible">Vis på billettsiden</Label>
             </div>
+            <div className="flex items-center gap-3">
+              <Switch checked={editChargeStripeFee} onCheckedChange={setEditChargeStripeFee} id="edit-stripe-fee" />
+              <Label htmlFor="edit-stripe-fee">Stripe-gebyr i regnskap</Label>
+            </div>
             <div className="space-y-1">
               <Label>Salg åpner (valgfri)</Label>
               <Input
@@ -1865,6 +1893,7 @@ export default function AdminTicketsDashboard() {
                   visible: editVisible,
                   sales_start: editSalesStart.trim() || null,
                   sales_end: editSalesEnd.trim() || null,
+                  charge_stripe_fee: editChargeStripeFee,
                 });
               }}
               disabled={updateTicketTypeMeta.isPending}

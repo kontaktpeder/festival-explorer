@@ -2458,6 +2458,7 @@ export type Database = {
       ticket_types: {
         Row: {
           capacity: number
+          charge_stripe_fee: boolean
           code: string
           created_at: string | null
           currency: string | null
@@ -2474,6 +2475,7 @@ export type Database = {
         }
         Insert: {
           capacity: number
+          charge_stripe_fee?: boolean
           code: string
           created_at?: string | null
           currency?: string | null
@@ -2490,6 +2492,7 @@ export type Database = {
         }
         Update: {
           capacity?: number
+          charge_stripe_fee?: boolean
           code?: string
           created_at?: string | null
           currency?: string | null
