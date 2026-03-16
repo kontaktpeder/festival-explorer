@@ -238,7 +238,7 @@ export default function FestivalFinanceRoom() {
 
   const handleAddIncome = () => {
     if (!activeBookId || !user) return;
-    const voucher = generateVoucherNumber(entries || []);
+    const voucher = generateYearlyVoucherNumber(entries || []);
     incomeMutation.mutate({
       description: "", category: null, counterparty: null,
       gross_amount: 0, net_amount: 0, date_incurred: new Date().toISOString().slice(0, 10),
