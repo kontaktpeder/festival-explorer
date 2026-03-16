@@ -76,7 +76,7 @@ export function RecipientPicker({ festivalId, value, onChange }: Props) {
             >
               <span className="truncate">{r.name}</span>
               <Badge variant="secondary" className="ml-2 text-[10px] px-1.5 py-0 h-4 shrink-0">
-                {r.subtitle}
+                {r.subtitle || (r.kind === "act" ? "Akt" : r.kind === "team" ? "Team" : "Venue")}
               </Badge>
             </button>
           ))}
