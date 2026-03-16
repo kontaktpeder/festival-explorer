@@ -88,7 +88,8 @@ export default function FestivalFinanceRoom() {
   }, [books, selectedBookId]);
 
   const { data: categorySuggestions } = useFinanceCategoriesForFestival(festivalId);
-  
+  const { data: payers = [] } = useFinancePayers(festivalId);
+
 
   const { data: entries, isLoading: entriesLoading } = useFinanceEntries(activeBookId || undefined);
   const expenseMutation = useUpsertExpenseEntry(activeBookId || "");
