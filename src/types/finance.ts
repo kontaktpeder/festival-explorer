@@ -38,6 +38,9 @@ export interface FestivalFinanceEntry {
   sort_order: number | null;
   notes: string | null;
   linked_entry_id: string | null;
+  paid_by_kind: string | null;
+  paid_by_id: string | null;
+  paid_by_label: string | null;
   created_at: string;
   created_by: string;
 }
