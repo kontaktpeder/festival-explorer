@@ -524,6 +524,9 @@ export default function FestivalFinanceRoom() {
                 </SelectContent>
               </Select>
             )}
+            <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={!entries || entries.length === 0}>
+              <Download className="h-4 w-4 mr-1" /> CSV
+            </Button>
             <Button variant="outline" size="sm" onClick={handleCreateBook} disabled={createBook.isPending}>
               <Plus className="h-4 w-4 mr-1" /> Ny bok
             </Button>
