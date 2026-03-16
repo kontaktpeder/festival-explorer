@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RecipientPicker } from "@/components/finance/RecipientPicker";
-import { Plus, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Undo2 } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
 
 import {
@@ -96,21 +96,30 @@ export default function FestivalFinanceRoom() {
 
   const isLoading = booksLoading || (!!activeBookId && entriesLoading);
 
-  const { incomeTotal, feeTotal, expenseTotal } = useMemo(() => {
+  const { incomeTotal, feeTotal, expenseTotal, reimbursementTotal } = useMemo(() => {
     let income = 0;
     let fee = 0;
     let expense = 0;
+    let reimbursements = 0;
 
     (entries || []).forEach((e) => {
       if (e.entry_type === "income") {
-        income += e.gross_amount;
-        if (e.fee_amount) fee += e.fee_amount;
+        if (e.source_type === "ticket") {
+          income += e.gross_amount;
+          if (e.fee_amount) fee += e.fee_amount;
+        } else if (e.source_type !== "reimbursement") {
+          income += e.net_amount;
+        }
       } else if (e.entry_type === "expense") {
-        expense += e.net_amount;
+        if (e.source_type === "reimbursement") {
+          reimbursements += e.net_amount; // negative value
+        } else {
+          expense += e.net_amount;
+        }
       }
     });
 
-    return { incomeTotal: income, feeTotal: fee, expenseTotal: expense };
+    return { incomeTotal: income, feeTotal: fee, expenseTotal: expense, reimbursementTotal: reimbursements };
   }, [entries]);
 
   const expenseGroups = useMemo(() => {
@@ -119,7 +128,7 @@ export default function FestivalFinanceRoom() {
       { category: string; items: FestivalFinanceEntry[]; totalNet: number }
     >();
     (entries || [])
-      .filter((e) => e.entry_type === "expense")
+      .filter((e) => e.entry_type === "expense" && e.source_type !== "reimbursement")
       .forEach((e) => {
         const key = e.category || "Uten kategori";
         const existing = groups.get(key) || { category: key, items: [], totalNet: 0 };
@@ -131,6 +140,11 @@ export default function FestivalFinanceRoom() {
       a.category.localeCompare(b.category, "nb")
     );
   }, [entries]);
+
+  const reimbursementEntries = useMemo(
+    () => (entries || []).filter((e) => e.source_type === "reimbursement"),
+    [entries]
+  );
 
   const incomeGroups = useMemo(() => {
     const groups = new Map<string, { category: string; items: FestivalFinanceEntry[]; totalNet: number }>();
@@ -147,7 +161,8 @@ export default function FestivalFinanceRoom() {
   }, [entries]);
 
   const netIncome = incomeTotal - feeTotal;
-  const result = netIncome - expenseTotal;
+  const netExpense = expenseTotal + reimbursementTotal; // reimbursementTotal is negative
+  const result = netIncome - netExpense;
 
   const handleCreateBook = async () => {
     if (!user) return;
@@ -311,7 +326,7 @@ export default function FestivalFinanceRoom() {
         {activeBookId && !isLoading && (
           <>
             {/* Summary cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               <Card>
                 <CardHeader className="pb-2">
                   <CardDescription>Brutto inntekter</CardDescription>
@@ -336,6 +351,18 @@ export default function FestivalFinanceRoom() {
                   <p className="text-xl font-bold">{formatNok(netIncome)}</p>
                 </CardContent>
               </Card>
+              {reimbursementTotal !== 0 && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardDescription>Refusjoner</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-xl font-bold text-emerald-500">
+                      {formatNok(-reimbursementTotal)}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
               <Card>
                 <CardHeader className="pb-2">
                   <CardDescription>Resultat</CardDescription>
@@ -680,6 +707,28 @@ export default function FestivalFinanceRoom() {
                               <Button
                                 variant="ghost"
                                 size="icon"
+                                className="h-8 w-8"
+                                title="Legg til refusjon"
+                                onClick={() => {
+                                  if (!user) return;
+                                  expenseMutation.mutate({
+                                    description: `Refusjon: ${e.description}`,
+                                    category: e.category || "Refusjon / kostnadsdeling",
+                                    counterparty: null,
+                                    gross_amount: -(e.net_amount ?? 0),
+                                    net_amount: -(e.net_amount ?? 0),
+                                    date_incurred: e.date_incurred,
+                                    source_type: "reimbursement",
+                                    linked_entry_id: e.id,
+                                    created_by: user.id,
+                                  });
+                                }}
+                              >
+                                <Undo2 className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 className="h-8 w-8 text-destructive"
                                 title="Slett rad"
                                 onClick={() => deleteEntry.mutate(e.id)}
@@ -705,6 +754,74 @@ export default function FestivalFinanceRoom() {
                 </datalist>
               </CardContent>
             </Card>
+
+            {/* Reimbursements */}
+            {reimbursementEntries.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <div>
+                    <CardTitle className="text-lg">Refusjoner / kostnadsdeling</CardTitle>
+                    <CardDescription>
+                      Poster som reduserer utgiftene (f.eks. delt kostnad, refundert beløp).
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Dato</TableHead>
+                        <TableHead>Beskrivelse</TableHead>
+                        <TableHead>Kategori</TableHead>
+                        <TableHead className="text-right">Beløp (kr)</TableHead>
+                        <TableHead className="w-16 text-right">Handling</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {reimbursementEntries.map((e) => (
+                        <TableRow key={e.id}>
+                          <TableCell className="text-sm">{e.date_incurred}</TableCell>
+                          <TableCell>
+                            <Input
+                              defaultValue={e.description}
+                              onBlur={(ev) =>
+                                onExpenseFieldChange(e, "description", ev.target.value)
+                              }
+                            />
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {e.category || "–"}
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              className="w-[100px] text-right"
+                              defaultValue={
+                                e.net_amount ? (e.net_amount / 100).toString() : "0"
+                              }
+                              onBlur={(ev) =>
+                                onExpenseFieldChange(e, "net_amount", ev.target.value)
+                              }
+                            />
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive"
+                              title="Slett rad"
+                              onClick={() => deleteEntry.mutate(e.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
           </>
         )}
 

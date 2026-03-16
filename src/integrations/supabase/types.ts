@@ -1304,6 +1304,7 @@ export type Database = {
           fee_amount: number | null
           gross_amount: number
           id: string
+          linked_entry_id: string | null
           net_amount: number
           notes: string | null
           quantity: number | null
@@ -1331,6 +1332,7 @@ export type Database = {
           fee_amount?: number | null
           gross_amount: number
           id?: string
+          linked_entry_id?: string | null
           net_amount: number
           notes?: string | null
           quantity?: number | null
@@ -1358,6 +1360,7 @@ export type Database = {
           fee_amount?: number | null
           gross_amount?: number
           id?: string
+          linked_entry_id?: string | null
           net_amount?: number
           notes?: string | null
           quantity?: number | null
@@ -1391,6 +1394,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "festival_finance_entries_linked_entry_id_fkey"
+            columns: ["linked_entry_id"]
+            isOneToOne: false
+            referencedRelation: "festival_finance_entries"
             referencedColumns: ["id"]
           },
         ]

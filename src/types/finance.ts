@@ -37,6 +37,7 @@ export interface FestivalFinanceEntry {
   source_ref_id: string | null;
   sort_order: number | null;
   notes: string | null;
+  linked_entry_id: string | null;
   created_at: string;
   created_by: string;
 }
