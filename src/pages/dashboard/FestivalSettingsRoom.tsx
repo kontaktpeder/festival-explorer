@@ -7,6 +7,7 @@ import AdminSections from "@/pages/admin/AdminSections";
 import { FestivalDocuments } from "@/components/dashboard/FestivalDocuments";
 import { FestivalProgramTypes } from "@/components/dashboard/FestivalProgramTypes";
 import { Separator } from "@/components/ui/separator";
+import { FestivalCaseEditor } from "@/components/dashboard/FestivalCaseEditor";
 
 export default function FestivalSettingsRoom() {
   const { id } = useParams<{ id: string }>();
@@ -44,6 +45,8 @@ export default function FestivalSettingsRoom() {
       }
     >
       <div className="space-y-8">
+        <FestivalCaseEditor festivalId={id!} festivalSlug={festival?.slug} />
+        <Separator className="opacity-20" />
         <FestivalDocuments festivalId={id!} />
         <Separator className="opacity-20" />
         <FestivalProgramTypes festivalId={id!} />
