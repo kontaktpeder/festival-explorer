@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import FestivalPage from "./pages/FestivalPage";
+import FestivalTemplatePage from "./pages/FestivalTemplatePage";
+import GiggenFestivalCasePage from "./pages/GiggenFestivalCasePage";
 import FestivalOslo2026Page from "./pages/FestivalOslo2026Page";
 import FestivalProgramPage from "./pages/FestivalProgramPage";
 import EventPage from "./pages/EventPage";
@@ -98,8 +100,8 @@ const App = () => (
           <Route path="/" element={<LandingPage />} />
           <Route path="/festival" element={<Navigate to="/" replace />} />
           <Route path="/festival/program" element={<FestivalProgramPage />} />
-          <Route path="/festival/program" element={<FestivalProgramPage />} />
-          <Route path="/festival/:slug" element={<FestivalPage />} />
+          <Route path="/festival/:slug" element={<FestivalTemplatePage />} />
+          <Route path="/festival-case/giggen" element={<GiggenFestivalCasePage />} />
           <Route path="/festival-oslo-2026" element={<FestivalOslo2026Page />} />
           <Route path="/event-room/:id" element={<EventRoomPage />} />
           <Route path="/event/:slug" element={<EventPage />} />
