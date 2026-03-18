@@ -19,7 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useCreateAccessRequest } from "@/hooks/useAccessRequests";
 import giggenLogo from "@/assets/giggen-logo-final.png";
 
-const FESTIVAL_CASE_SLUG = "giggen-festival-for-en-kveld";
+const FESTIVAL_CASE_URL = "/festival/case/giggen-festival-for-en-kveld";
 
 function Section({
   id,
