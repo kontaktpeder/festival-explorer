@@ -264,22 +264,6 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
         </div>
       </div>
       
-      {/* Mobile: Fixed bottom CTA button - positioned above Safari UI zone */}
-      {isMobile && (
-        <div
-          className="fixed inset-x-0 z-50 flex justify-center pointer-events-none"
-          style={{
-            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)'
-          }}
-        >
-          <Link
-            to="/tickets"
-            className="pointer-events-auto bg-accent text-accent-foreground font-black rounded-full px-6 py-3 text-sm shadow-lg"
-          >
-            Kjøp festivalpass
-          </Link>
-        </div>
-      )}
     </>
   );
 }
