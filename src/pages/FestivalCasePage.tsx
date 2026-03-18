@@ -143,30 +143,30 @@ export default function FestivalCasePage() {
 
         {/* ═══ HERO — full-bleed poster image ═══ */}
         <section className="relative">
-          <div className="relative w-full" style={{ aspectRatio: "16/9" }}>
+          <div className="relative w-full aspect-[3/4] sm:aspect-[16/9]">
             <img
               src={caseHeroBg}
               alt={shell.name}
               className="absolute inset-0 w-full h-full object-cover"
             />
-            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-background to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-background to-transparent" />
           </div>
         </section>
 
         {/* ═══ INTRO — below hero ═══ */}
-        <section className="px-5 md:px-10 pt-8 md:pt-12 pb-10 md:pb-14">
+        <section className="px-5 md:px-10 -mt-6 relative z-10 pt-0 pb-8 md:pb-14">
           <div className="mx-auto max-w-4xl">
-            <p className="text-[10px] uppercase tracking-[0.5em] text-accent/80 mb-4">Case</p>
+            <p className="text-[10px] uppercase tracking-[0.5em] text-accent/80 mb-3">Case</p>
             {caseContent.case_summary && (
-              <p className="text-lg md:text-xl text-foreground/90 max-w-2xl leading-relaxed">
+              <p className="text-base md:text-xl text-foreground/90 max-w-2xl leading-relaxed">
                 {caseContent.case_summary}
               </p>
             )}
-            <div className="mt-8 flex flex-col sm:flex-row gap-3">
-              <Button asChild className="h-12 px-6 font-semibold">
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <Button asChild className="h-11 px-6 font-semibold text-sm">
                 <Link to="/request-access">Få hjelp til å sette opp ditt event</Link>
               </Button>
-              <Button asChild variant="ghost" className="h-12 px-6 font-semibold text-muted-foreground hover:text-foreground">
+              <Button asChild variant="ghost" className="h-11 px-6 font-semibold text-sm text-muted-foreground hover:text-foreground">
                 <Link to="/">Tilbake til GIGGEN</Link>
               </Button>
             </div>
@@ -177,12 +177,12 @@ export default function FestivalCasePage() {
         {stats.length > 0 && (
           <>
             <Divider />
-            <section className="px-5 md:px-10 py-10 md:py-14">
-              <div className="mx-auto max-w-4xl flex flex-wrap gap-x-10 gap-y-6">
+            <section className="px-5 md:px-10 py-8 md:py-14">
+              <div className="mx-auto max-w-4xl grid grid-cols-2 sm:flex sm:flex-wrap gap-x-10 gap-y-5">
                 {stats.map((s) => (
                   <div key={s.label}>
                     <p className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground/50">{s.label}</p>
-                    <p className="mt-1.5 text-2xl md:text-3xl font-bold tracking-tight">{s.value}</p>
+                    <p className="mt-1 text-xl md:text-3xl font-bold tracking-tight">{s.value}</p>
                   </div>
                 ))}
               </div>
@@ -194,7 +194,7 @@ export default function FestivalCasePage() {
         {caseContent.case_video_embed_url && (
           <>
             <Divider />
-            <section className="px-5 md:px-10 py-10 md:py-14">
+            <section className="px-5 md:px-10 py-8 md:py-14">
               <div className="mx-auto max-w-4xl">
                 <VimeoVideo url={caseContent.case_video_embed_url} />
               </div>
@@ -206,10 +206,10 @@ export default function FestivalCasePage() {
         {caseContent.case_what_was_this && (
           <>
             <Divider />
-            <section className="px-5 md:px-10 py-14 md:py-20">
+            <section className="px-5 md:px-10 py-10 md:py-20">
               <div className="mx-auto max-w-4xl">
                 <SectionLabel>Om prosjektet</SectionLabel>
-                <p className="text-lg md:text-xl text-foreground/90 leading-relaxed whitespace-pre-wrap max-w-3xl">
+                <p className="text-base md:text-xl text-foreground/90 leading-relaxed whitespace-pre-wrap max-w-3xl">
                   {caseContent.case_what_was_this}
                 </p>
               </div>
@@ -217,21 +217,21 @@ export default function FestivalCasePage() {
           </>
         )}
 
-        {/* ═══ HVORDAN GIGGEN BLE BRUKT — numbered steps ═══ */}
+        {/* ═══ PROSESSEN — numbered steps ═══ */}
         <Divider />
-        <section className="px-5 md:px-10 py-14 md:py-20">
+        <section className="px-5 md:px-10 py-10 md:py-20">
           <div className="mx-auto max-w-4xl">
             <SectionLabel>Prosessen</SectionLabel>
-            <div className="space-y-8 md:space-y-0 md:grid md:grid-cols-3 md:gap-12">
+            <div className="space-y-6 md:space-y-0 md:grid md:grid-cols-3 md:gap-12">
               {[
                 { n: "01", title: "Opprett event", desc: "Sett navn, sted og tidspunkt." },
                 { n: "02", title: "Bygg lineup", desc: "Legg til artister og program." },
                 { n: "03", title: "Publiser og gjennomfør", desc: "Del side, selg billetter, scan i døra." },
               ].map((s) => (
                 <div key={s.n}>
-                  <span className="text-3xl md:text-4xl font-bold text-accent/30">{s.n}</span>
-                  <h3 className="mt-2 text-lg font-semibold">{s.title}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
+                  <span className="text-2xl md:text-4xl font-bold text-accent/30">{s.n}</span>
+                  <h3 className="mt-1.5 text-base md:text-lg font-semibold">{s.title}</h3>
+                  <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
                 </div>
               ))}
             </div>
@@ -242,7 +242,7 @@ export default function FestivalCasePage() {
         {artistCount > 0 && (
           <>
             <Divider />
-            <section className="px-5 md:px-10 py-14 md:py-20">
+            <section className="px-5 md:px-10 py-10 md:py-20">
               <div className="mx-auto max-w-4xl">
                 <SectionLabel>Lineup</SectionLabel>
                 <div className="flex flex-wrap gap-x-1 gap-y-0">
@@ -250,7 +250,7 @@ export default function FestivalCasePage() {
                     <span key={a.id ?? a.slug ?? a.name}>
                       <Link
                         to={a.slug ? `/project/${a.slug}` : "#"}
-                        className="text-lg md:text-xl font-semibold hover:text-accent transition-colors"
+                        className="text-base md:text-xl font-semibold hover:text-accent transition-colors"
                       >
                         {a.name ?? "Artist"}
                       </Link>
@@ -265,19 +265,19 @@ export default function FestivalCasePage() {
           </>
         )}
 
-        {/* ═══ WORKED / CHALLENGES — two columns ═══ */}
+        {/* ═══ WORKED / CHALLENGES ═══ */}
         {(worked.length > 0 || challenges.length > 0) && (
           <>
             <Divider />
-            <section className="px-5 md:px-10 py-14 md:py-20">
-              <div className="mx-auto max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
+            <section className="px-5 md:px-10 py-10 md:py-20">
+              <div className="mx-auto max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
                 {worked.length > 0 && (
                   <div>
                     <SectionLabel>Fungerte bra</SectionLabel>
-                    <ul className="space-y-3">
+                    <ul className="space-y-2.5">
                       {worked.map((x, i) => (
-                        <li key={i} className="flex gap-3 text-sm md:text-base text-foreground/80 leading-relaxed">
-                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent/60" />
+                        <li key={i} className="flex gap-3 text-sm text-foreground/80 leading-relaxed">
+                          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent/60" />
                           <span>{x}</span>
                         </li>
                       ))}
@@ -287,10 +287,10 @@ export default function FestivalCasePage() {
                 {challenges.length > 0 && (
                   <div>
                     <SectionLabel>Utfordringer / læring</SectionLabel>
-                    <ul className="space-y-3">
+                    <ul className="space-y-2.5">
                       {challenges.map((x, i) => (
-                        <li key={i} className="flex gap-3 text-sm md:text-base text-foreground/80 leading-relaxed">
-                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
+                        <li key={i} className="flex gap-3 text-sm text-foreground/80 leading-relaxed">
+                          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
                           <span>{x}</span>
                         </li>
                       ))}
@@ -306,10 +306,10 @@ export default function FestivalCasePage() {
         {caseContent.case_quote && (
           <>
             <Divider />
-            <section className="px-5 md:px-10 py-16 md:py-24">
+            <section className="px-5 md:px-10 py-12 md:py-24">
               <div className="mx-auto max-w-3xl text-center">
-                <span className="text-5xl md:text-7xl font-serif text-accent/30 leading-none select-none">"</span>
-                <p className="mt-2 text-xl md:text-2xl font-semibold leading-relaxed tracking-tight">
+                <span className="text-4xl md:text-7xl font-serif text-accent/30 leading-none select-none">"</span>
+                <p className="mt-1 text-lg md:text-2xl font-semibold leading-relaxed tracking-tight">
                   {caseContent.case_quote}
                 </p>
               </div>
@@ -319,20 +319,20 @@ export default function FestivalCasePage() {
 
         {/* ═══ CTA ═══ */}
         <Divider />
-        <section className="px-5 md:px-10 py-16 md:py-24">
+        <section className="px-5 md:px-10 py-14 md:py-24">
           <div className="mx-auto max-w-4xl text-center">
             <SectionLabel>Neste steg</SectionLabel>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+            <h2 className="text-2xl md:text-5xl font-bold tracking-tight">
               Vil du lage noe lignende?
             </h2>
-            <p className="mt-4 text-muted-foreground">Vi onboarder deg personlig.</p>
-            <Button asChild className="mt-8 h-12 px-8 font-semibold">
+            <p className="mt-3 text-sm md:text-base text-muted-foreground">Vi onboarder deg personlig.</p>
+            <Button asChild className="mt-6 h-11 px-8 font-semibold text-sm">
               <Link to="/request-access">Få hjelp til å sette opp ditt event</Link>
             </Button>
           </div>
         </section>
 
-        <div className="h-16" />
+        <div className="h-12 md:h-16" />
       </div>
     </PageLayout>
   );
