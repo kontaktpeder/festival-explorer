@@ -168,8 +168,8 @@ export default function LandingPage() {
             </h1>
 
             <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed">
-              GIGGEN samler booking, program, og billetter på ett sted – laget
-              for artister og arrangører i startfasen.
+              GIGGEN samler booking, program og billetter på ett sted – laget for artister og arrangører i startfasen.
+            
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
