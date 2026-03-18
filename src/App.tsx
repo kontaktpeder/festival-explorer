@@ -154,7 +154,7 @@ const App = () => (
             <Route path="/dashboard/venue/:id/settings" element={<VenueSettingsRoom />} />
 
 
-          <Route path="/p/:slug" element={<PersonaPage />} />
+          <Route path="/p/:slug" element={<PublicChrome footerVariant="giggen"><PersonaPage /></PublicChrome>} />
           
           {/* Admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
