@@ -180,6 +180,15 @@ export default function LandingPage() {
               </Button>
             </div>
 
+            <div className="mt-2 text-sm text-muted-foreground/80 text-center">
+              <Link
+                to="/om-giggen"
+                className="inline-flex items-center gap-2 underline underline-offset-4 hover:text-accent transition-colors"
+              >
+                Hva er GIGGEN?
+              </Link>
+            </div>
+
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-xs text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-accent" />
