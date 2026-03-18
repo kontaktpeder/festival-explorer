@@ -390,7 +390,7 @@ export default function OmGiggenPage() {
           >
             <Link to="/request-access">
               <Mail className="w-5 h-5 mr-3" />
-              Be om tilgang
+              Ta kontakt
             </Link>
           </Button>
         </div>
