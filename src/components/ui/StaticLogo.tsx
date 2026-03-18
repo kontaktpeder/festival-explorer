@@ -4,52 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import giggenLogo from "@/assets/giggen-logo-final.png";
 
-/** Smart bottom CTA that hides on scroll-down, shows on scroll-up */
-function SmartBottomCta() {
-  const [visible, setVisible] = useState(true);
-  const lastScrollY = useRef(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentY = window.scrollY;
-      if (currentY > lastScrollY.current + 8) {
-        setVisible(false); // scrolling down
-      } else if (currentY < lastScrollY.current - 4) {
-        setVisible(true); // scrolling up
-      }
-      lastScrollY.current = currentY;
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  return (
-    <div
-      className="fixed inset-x-0 z-50 flex justify-center items-center gap-3 pointer-events-none transition-all duration-300"
-      style={{
-        bottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0)' : 'translateY(20px)',
-      }}
-    >
-      <Link
-        to="/tickets"
-        className="pointer-events-auto bg-accent text-accent-foreground font-black rounded-full px-5 py-2.5 text-sm shadow-lg"
-      >
-        Kjøp festivalpass
-      </Link>
-      <button
-        type="button"
-        onClick={() => {
-          window.dispatchEvent(new CustomEvent("giggen:open-lineup"));
-        }}
-        className="pointer-events-auto font-bold text-xs uppercase tracking-wider text-foreground/80 hover:text-accent transition-colors py-2.5 px-3"
-      >
-        Se lineup
-      </button>
-    </div>
-  );
-}
 
 interface StaticLogoProps {
   /** If true, logo starts large and centered (for festival/homepage hero) */
@@ -182,12 +136,6 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
                 >
                   Backstage
                 </Link>
-                <Link
-                  to="/tickets"
-                  className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-7 py-3 text-base transition-all shadow-lg"
-                >
-                  Kjøp festivalpass
-                </Link>
               </div>
             </div>
           </div>
@@ -254,8 +202,6 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
 
 
 
-            {/* ALWAYS VISIBLE: Fixed bottom CTA – ticket + Se lineup, smart hide on scroll */}
-            <SmartBottomCta />
           </>
         )}
       </>
@@ -306,13 +252,6 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
 
           {/* Right: Actions - CTA only on desktop, Backstage always */}
           <div className="flex items-center gap-3 md:gap-4">
-            {/* Primary CTA - desktop only */}
-            <Link
-              to="/tickets"
-              className="hidden md:block bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-7 py-3 text-base transition-all"
-            >
-              Kjøp festivalpass
-            </Link>
             
             {/* Secondary: Backstage */}
             <Link
@@ -325,22 +264,6 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
         </div>
       </div>
       
-      {/* Mobile: Fixed bottom CTA button - positioned above Safari UI zone */}
-      {isMobile && (
-        <div
-          className="fixed inset-x-0 z-50 flex justify-center pointer-events-none"
-          style={{
-            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)'
-          }}
-        >
-          <Link
-            to="/tickets"
-            className="pointer-events-auto bg-accent text-accent-foreground font-black rounded-full px-6 py-3 text-sm shadow-lg"
-          >
-            Kjøp festivalpass
-          </Link>
-        </div>
-      )}
     </>
   );
 }
