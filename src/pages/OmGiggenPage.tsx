@@ -161,18 +161,24 @@ export default function OmGiggenPage() {
             style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
           >
             <strong className="font-bold text-white">
-              GIGGEN startet med et enkelt ønske om å spille mer musikk live.
+              GIGGEN startet med et enkelt ønske: å spille mer musikk live.
             </strong>{" "}
-            Med tiden oppdaget den beskjedne bassisten at det "enkle" ønsket innebar mer enn bare å spille på scenen. Alt fra å 
-            mestre kaotiske sosiale medier, bygge et sosialt intellekt, og å bli sin 
-            helt egne regnskapsfører, var oppgaver som også måtte gjøres. Overveldende, kort fortalt.
+            Med tiden oppdaget jeg at det «enkle» ønsket innebar langt mer enn å stå på scenen.
+            Sosiale medier. Nettverk. Økonomi. Planlegging. Alt rundt det å faktisk få en konsert til å skje.
           </p>
           
           <p 
             className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-300 text-lg md:text-xl text-white/70 mt-8"
             style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
           >
-            En frustrasjon vokste, modnet, og ble til et større engasjement for alle 
+            Overveldende, kort fortalt.
+          </p>
+
+          <p 
+            className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-[400ms] text-lg md:text-xl text-white/70 mt-8"
+            style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
+          >
+            En frustrasjon vokste – og ble til et engasjement for alle 
             som vil skape sin egen scene, eller løfte fram de som allerede finnes.
           </p>
         </div>
@@ -213,8 +219,8 @@ export default function OmGiggenPage() {
             className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-200 text-xl md:text-2xl text-white/80 leading-relaxed"
             style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
           >
-            Vi hyller de som tar beslutningene i egne hender. De som ikke venter på at 
-            jobber og muligheter skal bli servert, men skaper dem selv.
+            Vi hyller de som tar ting i egne hender.
+            De som ikke venter på muligheter – men skaper dem selv.
           </p>
         </div>
       </section>
@@ -243,45 +249,45 @@ export default function OmGiggenPage() {
               className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out text-lg md:text-xl text-white/80 leading-relaxed"
               style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
             >
-              I dag er GIGGEN nettsiden du nå er inne på. Her kan du idag bli kjent med alle 
-              i vår fantastiske{" "}
-              <Link 
-                to="/festival#lineup" 
-                className="text-orange-400 hover:text-orange-300 underline underline-offset-4 transition-colors"
-              >
-                PÅ SCENEN
-              </Link>
-              , hvor festivalen skal holdes på{" "}
-              <Link 
-              to="/project/josefines-vertshus" 
-                className="text-orange-400 hover:text-orange-300 underline underline-offset-4 transition-colors"
-              >
-                Josefines Vertshus
-              </Link>
-              {" "}og{" "}
-              <Link 
-                to="/tickets" 
-                className="text-orange-400 hover:text-orange-300 underline underline-offset-4 transition-colors"
-              >
-                kjøpe billett
-              </Link>
-              {" "}til festivalen.
+              I dag er GIGGEN plattformen du er inne på nå.
             </p>
-            
-            <p 
-              className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-100 text-lg md:text-xl text-white/80 leading-relaxed"
-              style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
-            >
-              Alle medvirkende har og fått tilgang til{" "}
-              <Link 
-                to="/dashboard" 
-                className="text-orange-400 hover:text-orange-300 underline underline-offset-4 transition-colors"
+
+            <div className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-100">
+              <p 
+                className="text-lg md:text-xl text-white/80 leading-relaxed mb-4"
+                style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
               >
-                backstage
-              </Link>
-              . Dette er et rom som lar deg kontrollere din egne offentlige visning, 
-              knytte kontakter, starte nye band, selge egne billetter, og mer...
-            </p>
+                Her kan du:
+              </p>
+              <ul className="space-y-2 text-lg md:text-xl text-white/70 leading-relaxed" style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}>
+                <li>bli kjent med hvem som står på scenen</li>
+                <li>se hva som skjer</li>
+                <li>og kjøpe billett til ekte arrangementer</li>
+              </ul>
+            </div>
+
+            <div className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-200">
+              <p 
+                className="text-lg md:text-xl text-white/80 leading-relaxed mb-4"
+                style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
+              >
+                Samtidig har medvirkende tilgang til{" "}
+                <Link 
+                  to="/dashboard" 
+                  className="text-orange-400 hover:text-orange-300 underline underline-offset-4 transition-colors"
+                >
+                  Backstage
+                </Link>
+                {" "}– et rom hvor du kan:
+              </p>
+              <ul className="space-y-2 text-lg md:text-xl text-white/70 leading-relaxed" style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}>
+                <li>styre din egen offentlige visning</li>
+                <li>knytte kontakter</li>
+                <li>starte prosjekter</li>
+                <li>selge billetter</li>
+                <li>og bygge noe eget</li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -299,7 +305,7 @@ export default function OmGiggenPage() {
               className="text-4xl md:text-6xl font-bold tracking-tight mb-8 group-hover:text-orange-400 transition-colors"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
-              GIGGEN festival
+              GIGGEN Festival
             </h2>
           </Link>
           
@@ -307,9 +313,16 @@ export default function OmGiggenPage() {
             className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-100 text-lg md:text-xl text-white/80 leading-relaxed"
             style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
           >
-            Festivalen markerer starten på en ny måte å følge band, artister og musikere på. 
-            Du skal ikke trenge stipend, priser eller bransjestempel for å fortelle historien din. 
-            Og du skal ikke måtte forstå algoritmer eller kjempe om oppmerksomhet i et evig scroll.
+            Festivalen er et proof of concept.
+            En ny måte å samle artister, publikum og program på – uten at du trenger 
+            bransjestempel, priser eller algoritmer for å bli sett.
+          </p>
+
+          <p 
+            className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-200 text-lg md:text-xl text-white/70 leading-relaxed mt-8"
+            style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
+          >
+            Du skal kunne fortelle historien din fordi du faktisk gjør noe. Ikke fordi du roper høyest.
           </p>
         </div>
       </section>
@@ -348,14 +361,28 @@ export default function OmGiggenPage() {
         <div className="absolute inset-0 opacity-20 pointer-events-none bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 256 256%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E')]" />
         
         <div className="relative z-10 max-w-2xl mx-auto text-center">
+          <h3 
+            className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out text-2xl md:text-3xl font-bold tracking-tight mb-8"
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            Er GIGGEN noe for deg?
+          </h3>
+
           <p 
-            className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out text-lg md:text-xl text-white/70 leading-relaxed mb-10"
+            className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out text-lg md:text-xl text-white/70 leading-relaxed mb-4"
             style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
           >
-            Tror du GIGGEN er noe for deg? Vi vil høre fra deg som engasjerer deg i 
-            nyoppstartede prosjekter, jobber på, rundt eller bak en scene, kan noe, 
-            er hyggelig, eller bare har lyst til å slå av en prat.
+            Vi vil høre fra deg som:
           </p>
+          <ul 
+            className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-100 space-y-2 text-lg md:text-xl text-white/70 leading-relaxed mb-10"
+            style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
+          >
+            <li>bygger noe eget</li>
+            <li>jobber på, rundt eller bak en scene</li>
+            <li>har noe å bidra med</li>
+            <li>eller bare er nysgjerrig</li>
+          </ul>
           
           <Button 
             asChild
@@ -363,7 +390,7 @@ export default function OmGiggenPage() {
           >
             <Link to="/request-access">
               <Mail className="w-5 h-5 mr-3" />
-              Be om tilgang
+              Ta kontakt
             </Link>
           </Button>
         </div>
