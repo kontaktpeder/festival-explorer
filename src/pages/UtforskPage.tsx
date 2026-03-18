@@ -28,7 +28,7 @@ import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { CroppedImage } from "@/components/ui/CroppedImage";
 import { getEntityPublicRoute } from "@/lib/entity-types";
-import { FestivalFooter } from "@/components/festival/FestivalFooter";
+
 import {
   useUtforskEntities,
   useUtforskEvents,
