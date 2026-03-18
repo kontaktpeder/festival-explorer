@@ -1,0 +1,423 @@
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  ArrowRight,
+  Calendar,
+  CheckCircle2,
+  Layers3,
+  Music2,
+  Ticket,
+  Wand2,
+  FolderOpen,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { StaticLogo } from "@/components/ui/StaticLogo";
+import { useToast } from "@/hooks/use-toast";
+import { useCreateAccessRequest } from "@/hooks/useAccessRequests";
+import giggenLogo from "@/assets/giggen-logo-final.png";
+
+const FESTIVAL_CASE_SLUG = "giggen-festival-for-en-kveld";
+
+function Section({
+  id,
+  eyebrow,
+  title,
+  children,
+}: {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section id={id} className="py-20 md:py-28 px-5">
+      <div className="max-w-5xl mx-auto">
+        {eyebrow && (
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">
+            {eyebrow}
+          </p>
+        )}
+        {title && (
+          <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-10" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            {title}
+          </h2>
+        )}
+        <div>{children}</div>
+      </div>
+    </section>
+  );
+}
+
+function Card({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border/60 bg-card/60 p-5 hover:border-accent/40 transition-colors">
+      <div className="flex items-start gap-4">
+        <div className="rounded-lg bg-accent/10 p-2.5 text-accent shrink-0">
+          {icon}
+        </div>
+        <div>
+          <h3 className="font-semibold text-foreground text-sm mb-1">{title}</h3>
+          <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StepCard({
+  step,
+  title,
+  description,
+}: {
+  step: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="text-center">
+      <div className="flex flex-col items-center gap-3 mb-3">
+        <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-accent text-accent-foreground font-black text-sm">
+          {step}
+        </span>
+        <div className="hidden md:block w-px h-4 bg-border" />
+      </div>
+      <h3 className="font-semibold text-foreground mb-1">{title}</h3>
+      <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">{description}</p>
+    </div>
+  );
+}
+
+export default function LandingPage() {
+  const { toast } = useToast();
+  const createRequest = useCreateAccessRequest();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const festivalCaseUrl = useMemo(
+    () => `/festival/${FESTIVAL_CASE_SLUG}`,
+    []
+  );
+
+  const submitQuickAccess = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !email.trim()) {
+      toast({
+        title: "Mangler informasjon",
+        description: "Fyll inn navn og e-post.",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      await createRequest.mutateAsync({
+        name: name.trim(),
+        email: email.trim(),
+        role_type: "organizer",
+        message: "Sendt fra landingssiden",
+      });
+      setSubmitted(true);
+    } catch (err: any) {
+      toast({
+        title: "Feil",
+        description: err?.message || "Kunne ikke sende forespørsel",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <PageLayout>
+      <div className="min-h-screen bg-background text-foreground">
+        <StaticLogo />
+
+        {/* ══════════════ HERO ══════════════ */}
+        <section className="relative min-h-[85vh] flex items-center justify-center px-5 pt-24 pb-16 overflow-hidden">
+          {/* Decorative glows */}
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/8 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
+
+          <div className="relative z-10 max-w-3xl mx-auto text-center">
+            <img
+              src={giggenLogo}
+              alt="GIGGEN"
+              className="h-14 md:h-20 mx-auto mb-8 drop-shadow-lg"
+            />
+
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-accent mb-4">
+              Backstage for live-musikkbyggere
+            </p>
+
+            <h1
+              className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6"
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            >
+              Alt du trenger for å lage live musikkopplevelser
+            </h1>
+
+            <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed">
+              GIGGEN samler booking, program, og billetter på ett sted – laget
+              for artister og arrangører i startfasen.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
+              <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-8">
+                <a href="#tilgang">
+                  Be om tilgang <ArrowRight className="w-4 h-4 ml-1" />
+                </a>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="rounded-full px-8">
+                <Link to={festivalCaseUrl}>Se festivalen</Link>
+              </Button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-accent" />
+                Lukket test – manuell onboarding
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-accent" />
+                Billetter + scan i døra
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* ══════════════ WHAT IS ══════════════ */}
+        <Section id="hva" eyebrow="Hva er GIGGEN?" title="Én plattform for hele showet">
+          <div className="grid md:grid-cols-2 gap-12 items-start">
+            <div>
+              <p className="text-muted-foreground leading-relaxed mb-6">
+                GIGGEN er en plattform for deg som vil arrangere konserter, bygge
+                lineup, og selge billetter — uten å sette opp alt selv fra scratch.
+              </p>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3 text-sm text-foreground/80">
+                  <Wand2 className="w-4 h-4 text-accent shrink-0" />
+                  Lag event og lineup på minutter
+                </li>
+                <li className="flex items-center gap-3 text-sm text-foreground/80">
+                  <Layers3 className="w-4 h-4 text-accent shrink-0" />
+                  Samle program, artister og info ett sted
+                </li>
+                <li className="flex items-center gap-3 text-sm text-foreground/80">
+                  <Ticket className="w-4 h-4 text-accent shrink-0" />
+                  Selg billetter og scan i døra
+                </li>
+              </ul>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Card icon={<Calendar className="w-5 h-5" />} title="Event" description="Sted, tid, publisering. Ett sted å holde orden." />
+              <Card icon={<Music2 className="w-5 h-5" />} title="Lineup + program" description="Legg inn artister og set times uten å lage et regneark." />
+              <Card icon={<Ticket className="w-5 h-5" />} title="Billetter" description="Salg, QR-koder og validator – rett fra plattformen." />
+              <Card icon={<FolderOpen className="w-5 h-5" />} title="Filbank" description="Del kontrakter, teknisk og assets i et ryddig rom." />
+            </div>
+          </div>
+        </Section>
+
+        {/* ══════════════ HOW IT WORKS ══════════════ */}
+        <Section id="hvordan" eyebrow="Slik fungerer det" title="Fra idé til konsert">
+          <div className="grid md:grid-cols-3 gap-10">
+            <StepCard step="1" title="Opprett event" description="Legg inn sted, tid og beskrivelse." />
+            <StepCard step="2" title="Bygg lineup" description="Legg til artister, set times og program." />
+            <StepCard step="3" title="Publiser og selg" description="Del siden, selg billetter, scan i døra." />
+          </div>
+        </Section>
+
+        {/* ══════════════ REAL CASE ══════════════ */}
+        <section className="py-20 md:py-28 px-5 bg-card/40">
+          <div className="max-w-3xl mx-auto text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">
+              Case
+            </p>
+            <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              GIGGEN Festival
+            </h2>
+            <p className="text-muted-foreground leading-relaxed mb-8 max-w-xl mx-auto">
+              GIGGEN Festival er vårt første proof of concept – en ekte festival bygget og drevet gjennom plattformen.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button asChild variant="outline" size="lg" className="rounded-full px-8">
+                <Link to={festivalCaseUrl}>Se festivalen</Link>
+              </Button>
+              <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-8">
+                <a href="#tilgang">
+                  Be om tilgang <ArrowRight className="w-4 h-4 ml-1" />
+                </a>
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* ══════════════ FOR WHO ══════════════ */}
+        <Section id="for-hvem" eyebrow="Hvem er det for?" title="Artister og arrangører">
+          <div className="grid md:grid-cols-2 gap-10">
+            <div className="rounded-xl border border-border/60 bg-card/60 p-6">
+              <h3 className="font-bold text-foreground text-lg mb-4">For artister</h3>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3 text-sm text-foreground/80">
+                  <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
+                  Få oversikt over gigs
+                </li>
+                <li className="flex items-center gap-3 text-sm text-foreground/80">
+                  <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
+                  Vær en del av lineup
+                </li>
+                <li className="flex items-center gap-3 text-sm text-foreground/80">
+                  <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
+                  Del din profil
+                </li>
+              </ul>
+            </div>
+
+            <div className="rounded-xl border border-border/60 bg-card/60 p-6">
+              <h3 className="font-bold text-foreground text-lg mb-4">For arrangører</h3>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3 text-sm text-foreground/80">
+                  <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
+                  Bygg events raskt
+                </li>
+                <li className="flex items-center gap-3 text-sm text-foreground/80">
+                  <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
+                  Samle alt på én side
+                </li>
+                <li className="flex items-center gap-3 text-sm text-foreground/80">
+                  <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
+                  Få kontroll på billetter og program
+                </li>
+              </ul>
+            </div>
+          </div>
+        </Section>
+
+        {/* ══════════════ ACCESS + FORM ══════════════ */}
+        <section id="tilgang" className="py-20 md:py-28 px-5 bg-card/40">
+          <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-start">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">
+                Tilgang
+              </p>
+              <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                Lukket test
+              </h2>
+              <p className="text-muted-foreground leading-relaxed mb-6">
+                GIGGEN er foreløpig i lukket test. Vi inviterer et begrenset antall
+                arrangører og artister for å teste plattformen tett.
+              </p>
+              <div className="flex flex-wrap gap-3 mb-4">
+                <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-8">
+                  <Link to="/request-access">
+                    Be om tilgang <ArrowRight className="w-4 h-4 ml-1" />
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="lg" className="rounded-full px-8">
+                  <Link to={festivalCaseUrl}>Se festivalen</Link>
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">Du får svar innen kort tid.</p>
+            </div>
+
+            <div className="rounded-xl border border-border/60 bg-card p-6">
+              <div className="flex items-center gap-2 mb-1">
+                <Wand2 className="w-4 h-4 text-accent" />
+                <h3 className="font-bold text-foreground">Rask forespørsel</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-5">
+                Bare navn + e-post. Vi tar resten på mail.
+              </p>
+
+              {submitted ? (
+                <div className="text-center py-6">
+                  <p className="font-semibold text-foreground mb-1">Sendt.</p>
+                  <p className="text-sm text-muted-foreground">Vi tar kontakt så snart vi kan.</p>
+                </div>
+              ) : (
+                <form onSubmit={submitQuickAccess} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="landing-name">Navn</Label>
+                    <Input
+                      id="landing-name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      maxLength={100}
+                      placeholder="Ditt fulle navn"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="landing-email">E-post</Label>
+                    <Input
+                      id="landing-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      maxLength={255}
+                      placeholder="din@epost.no"
+                      required
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    disabled={createRequest.isPending}
+                    className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold"
+                  >
+                    {createRequest.isPending ? "Sender…" : "Be om tilgang"}
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </form>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* ══════════════ FINAL CTA ══════════════ */}
+        <section className="py-24 md:py-32 px-5">
+          <div className="max-w-3xl mx-auto text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">
+              Klar for å teste?
+            </p>
+            <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-8" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              Vil du teste GIGGEN?
+            </h2>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-8">
+                <a href="#tilgang">
+                  Be om tilgang <ArrowRight className="w-4 h-4 ml-1" />
+                </a>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="rounded-full px-8">
+                <Link to={festivalCaseUrl}>Se festivalen</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* ══════════════ FOOTER ══════════════ */}
+        <footer className="border-t border-border/40 py-8 px-5">
+          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+            <span>© {new Date().getFullYear()} GIGGEN</span>
+            <div className="flex items-center gap-4">
+              <Link to="/personvern" className="hover:text-accent transition-colors">Personvern</Link>
+              <Link to="/vilkar" className="hover:text-accent transition-colors">Vilkår</Link>
+              <Link to="/dashboard" className="hover:text-accent transition-colors">Backstage</Link>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </PageLayout>
+  );
+}

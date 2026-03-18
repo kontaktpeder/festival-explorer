@@ -95,8 +95,9 @@ const App = () => (
       <BrowserRouter>
         <PublicErrorBoundary>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/festival" element={<FestivalPage />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/festival" element={<Navigate to="/" replace />} />
+          <Route path="/festival/program" element={<FestivalProgramPage />} />
           <Route path="/festival/program" element={<FestivalProgramPage />} />
           <Route path="/festival/:slug" element={<FestivalPage />} />
           <Route path="/festival-oslo-2026" element={<FestivalOslo2026Page />} />
