@@ -8,8 +8,8 @@ import {
   Music2,
   Ticket,
   Wand2,
-  FolderOpen,
-} from "lucide-react";
+  FolderOpen } from
+"lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,41 +25,41 @@ function Section({
   id,
   eyebrow,
   title,
-  children,
-}: {
-  id?: string;
-  eyebrow?: string;
-  title?: string;
-  children: React.ReactNode;
-}) {
+  children
+
+
+
+
+
+}: {id?: string;eyebrow?: string;title?: string;children: React.ReactNode;}) {
   return (
     <section id={id} className="py-20 md:py-28 px-5">
       <div className="max-w-5xl mx-auto">
-        {eyebrow && (
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">
+        {eyebrow &&
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">
             {eyebrow}
           </p>
-        )}
-        {title && (
-          <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-10" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+        }
+        {title &&
+        <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-10" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             {title}
           </h2>
-        )}
+        }
         <div>{children}</div>
       </div>
-    </section>
-  );
+    </section>);
+
 }
 
 function Card({
   icon,
   title,
-  description,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}) {
+  description
+
+
+
+
+}: {icon: React.ReactNode;title: string;description: string;}) {
   return (
     <div className="rounded-xl border border-border/60 bg-card/60 p-5 hover:border-accent/40 transition-colors">
       <div className="flex items-start gap-4">
@@ -71,19 +71,19 @@ function Card({
           <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
 
 function StepCard({
   step,
   title,
-  description,
-}: {
-  step: string;
-  title: string;
-  description: string;
-}) {
+  description
+
+
+
+
+}: {step: string;title: string;description: string;}) {
   return (
     <div className="text-center">
       <div className="flex flex-col items-center gap-3 mb-3">
@@ -94,8 +94,8 @@ function StepCard({
       </div>
       <h3 className="font-semibold text-foreground mb-1">{title}</h3>
       <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">{description}</p>
-    </div>
-  );
+    </div>);
+
 }
 
 export default function LandingPage() {
@@ -117,7 +117,7 @@ export default function LandingPage() {
       toast({
         title: "Mangler informasjon",
         description: "Fyll inn navn og e-post.",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
@@ -126,14 +126,14 @@ export default function LandingPage() {
         name: name.trim(),
         email: email.trim(),
         role_type: "organizer",
-        message: "Sendt fra landingssiden",
+        message: "Sendt fra landingssiden"
       });
       setSubmitted(true);
     } catch (err: any) {
       toast({
         title: "Feil",
         description: err?.message || "Kunne ikke sende forespørsel",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
@@ -153,8 +153,8 @@ export default function LandingPage() {
             <img
               src={giggenLogo}
               alt="GIGGEN"
-              className="h-14 md:h-20 mx-auto mb-8 drop-shadow-lg"
-            />
+              className="h-14 md:h-20 mx-auto mb-8 drop-shadow-lg" />
+            
 
             <p className="text-xs font-bold uppercase tracking-[0.25em] text-accent mb-4">
               Backstage for live-musikkbyggere
@@ -162,9 +162,9 @@ export default function LandingPage() {
 
             <h1
               className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-            >
-              Alt du trenger for å lage live musikkopplevelser
+              style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              
+              Lag konserter, uten kaos
             </h1>
 
             <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed">
@@ -340,46 +340,46 @@ export default function LandingPage() {
                 Bare navn + e-post. Vi tar resten på mail.
               </p>
 
-              {submitted ? (
-                <div className="text-center py-6">
+              {submitted ?
+              <div className="text-center py-6">
                   <p className="font-semibold text-foreground mb-1">Sendt.</p>
                   <p className="text-sm text-muted-foreground">Vi tar kontakt så snart vi kan.</p>
-                </div>
-              ) : (
-                <form onSubmit={submitQuickAccess} className="space-y-4">
+                </div> :
+
+              <form onSubmit={submitQuickAccess} className="space-y-4">
                   <div className="space-y-1.5">
                     <Label htmlFor="landing-name">Navn</Label>
                     <Input
-                      id="landing-name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      maxLength={100}
-                      placeholder="Ditt fulle navn"
-                      required
-                    />
+                    id="landing-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    maxLength={100}
+                    placeholder="Ditt fulle navn"
+                    required />
+                  
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="landing-email">E-post</Label>
                     <Input
-                      id="landing-email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      maxLength={255}
-                      placeholder="din@epost.no"
-                      required
-                    />
+                    id="landing-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    maxLength={255}
+                    placeholder="din@epost.no"
+                    required />
+                  
                   </div>
                   <Button
-                    type="submit"
-                    disabled={createRequest.isPending}
-                    className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold"
-                  >
+                  type="submit"
+                  disabled={createRequest.isPending}
+                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold">
+                  
                     {createRequest.isPending ? "Sender…" : "Be om tilgang"}
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </form>
-              )}
+              }
             </div>
           </div>
         </section>
@@ -418,6 +418,6 @@ export default function LandingPage() {
           </div>
         </footer>
       </div>
-    </PageLayout>
-  );
+    </PageLayout>);
+
 }
