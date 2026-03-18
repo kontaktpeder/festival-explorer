@@ -307,7 +307,7 @@ export default function FestivalOslo2026Page() {
 
           {/* Tilbake */}
           <div className="pt-4">
-            <Link to="/festival" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+            <Link to="/" className="text-sm text-muted-foreground hover:text-accent transition-colors">
               ← Tilbake til festival
             </Link>
           </div>

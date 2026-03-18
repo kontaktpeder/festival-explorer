@@ -292,7 +292,7 @@ export default function OmGiggenPage() {
         
         <div className="relative z-10 max-w-3xl mx-auto text-center">
           <Link 
-            to="/festival"
+            to="/festival/giggen-festival-for-en-kveld"
             className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out inline-block group"
           >
             <h2 
