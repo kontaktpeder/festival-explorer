@@ -100,8 +100,8 @@ const App = () => (
           <Route path="/" element={<LandingPage />} />
           <Route path="/festival" element={<Navigate to="/" replace />} />
           <Route path="/festival/program" element={<FestivalProgramPage />} />
-          <Route path="/festival/program" element={<FestivalProgramPage />} />
-          <Route path="/festival/:slug" element={<FestivalPage />} />
+          <Route path="/festival/:slug" element={<FestivalTemplatePage />} />
+          <Route path="/festival-case/giggen" element={<GiggenFestivalCasePage />} />
           <Route path="/festival-oslo-2026" element={<FestivalOslo2026Page />} />
           <Route path="/event-room/:id" element={<EventRoomPage />} />
           <Route path="/event/:slug" element={<EventPage />} />
