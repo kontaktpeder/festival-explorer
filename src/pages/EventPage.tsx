@@ -13,7 +13,7 @@ import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
 import { TeamCreditsSection } from "@/components/ui/TeamCreditsSection";
-import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
+
 import { ShareImageSection } from "@/components/share/ShareImageSection";
 import { ProgramView } from "@/components/program/ProgramView";
 import { mapEventSlotsToProgramCategory } from "@/lib/program-mappers";
