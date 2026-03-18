@@ -103,6 +103,7 @@ const App = () => (
           <Route path="/festival/program" element={<FestivalProgramPage />} />
           <Route path="/festival/:slug" element={<FestivalTemplatePage />} />
           <Route path="/festival-case/giggen" element={<GiggenFestivalCasePage />} />
+          <Route path="/festival/case/:slug" element={<FestivalCasePage />} />
           <Route path="/festival-oslo-2026" element={<FestivalOslo2026Page />} />
           <Route path="/event-room/:id" element={<EventRoomPage />} />
           <Route path="/event/:slug" element={<EventPage />} />
