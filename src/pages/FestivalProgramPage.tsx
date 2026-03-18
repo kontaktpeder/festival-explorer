@@ -78,7 +78,6 @@ export default function FestivalProgramPage() {
           </div>
         )}
       </div>
-      <FestivalFooter />
     </PageLayout>
   );
 }

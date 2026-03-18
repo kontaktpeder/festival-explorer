@@ -407,8 +407,6 @@ export default function PersonaPage() {
           </section>
         )}
 
-        {/* What is GIGGEN footer */}
-        <WhatIsGiggenFooter />
 
         {/* Spacer at bottom */}
         <div className="h-8 md:h-12" />

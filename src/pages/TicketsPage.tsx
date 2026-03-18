@@ -297,8 +297,6 @@ export default function TicketsPage() {
       </div>
       </div>
 
-      {/* Les mer om GIGGEN */}
-      <WhatIsGiggenFooter />
     </div>
   );
 }

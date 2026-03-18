@@ -303,7 +303,6 @@ export default function EventPage() {
           Les mer: Festival i Oslo 2026
         </Link>
       </div>
-      <WhatIsGiggenFooter />
     </PageLayout>
   );
 }

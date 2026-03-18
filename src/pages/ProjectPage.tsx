@@ -302,7 +302,6 @@ export default function ProjectPage() {
         </div>
       </div>
 
-      <WhatIsGiggenFooter />
     </PageLayout>
   );
 }

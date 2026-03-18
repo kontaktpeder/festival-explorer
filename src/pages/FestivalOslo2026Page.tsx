@@ -315,7 +315,6 @@ export default function FestivalOslo2026Page() {
         </div>
       </div>
 
-      <FestivalFooter />
     </PageLayout>
   );
 }

@@ -843,9 +843,7 @@ export default function FestivalPage() {
                   venue={venue}
                   festivalTeam={festivalTeam}
                 />
-              ) : (
-                <FestivalFooter />
-              )}
+              ) : null}
             </div>
           );
         }

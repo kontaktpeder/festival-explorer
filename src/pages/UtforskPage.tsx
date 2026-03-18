@@ -369,8 +369,6 @@ export default function UtforskPage() {
         )}
       </main>
 
-      {/* ── Footer ───────────────────────────── */}
-      <FestivalFooter />
     </div>
   );
 }

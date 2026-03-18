@@ -434,8 +434,6 @@ export default function OmGiggenPage() {
         </section>
       )}
 
-      {/* Footer */}
-      <FestivalFooter />
 
       {/* Reveal animation styles */}
       <style>{`

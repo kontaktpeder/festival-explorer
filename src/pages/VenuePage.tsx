@@ -242,7 +242,6 @@ export default function VenuePage() {
         </div>
       </div>
 
-      <WhatIsGiggenFooter />
     </PageLayout>
   );
 }

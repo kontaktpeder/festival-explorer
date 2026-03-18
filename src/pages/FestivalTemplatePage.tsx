@@ -760,9 +760,7 @@ function FestivalTemplateInner({ slug }: { slug: string }) {
                   venue={venue}
                   festivalTeam={festivalTeam}
                 />
-              ) : (
-                <FestivalFooter />
-              )}
+              ) : null}
             </div>
           );
         }
