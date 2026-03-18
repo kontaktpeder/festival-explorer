@@ -219,8 +219,8 @@ export default function OmGiggenPage() {
             className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-200 text-xl md:text-2xl text-white/80 leading-relaxed"
             style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
           >
-            Vi hyller de som tar beslutningene i egne hender. De som ikke venter på at 
-            jobber og muligheter skal bli servert, men skaper dem selv.
+            Vi hyller de som tar ting i egne hender.
+            De som ikke venter på muligheter – men skaper dem selv.
           </p>
         </div>
       </section>
