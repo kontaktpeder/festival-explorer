@@ -160,7 +160,7 @@ export default function FestivalCasePage() {
                   </Button>
                 </div>
                 {caseContent.case_video_embed_url && (
-                  <div className="mt-8"><VimeoEmbed value={caseContent.case_video_embed_url} /></div>
+                  <div className="mt-8"><VimeoVideo url={caseContent.case_video_embed_url} /></div>
                 )}
               </div>
             </div>
