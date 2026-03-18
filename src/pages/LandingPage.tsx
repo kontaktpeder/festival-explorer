@@ -106,10 +106,7 @@ export default function LandingPage() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const festivalCaseUrl = useMemo(
-    () => `/festival/${FESTIVAL_CASE_SLUG}`,
-    []
-  );
+  const festivalCaseUrl = FESTIVAL_CASE_URL;
 
   const submitQuickAccess = async (e: React.FormEvent) => {
     e.preventDefault();

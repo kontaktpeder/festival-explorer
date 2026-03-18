@@ -148,7 +148,7 @@ function EntityGridCard({ entity }: { entity: Entity }) {
 function FestivalBanner() {
   return (
     <Link
-      to="/festival/giggen-festival-for-en-kveld"
+      to="/festival/case/giggen-festival-for-en-kveld"
       className="group block mx-4 mb-6 relative overflow-hidden"
     >
       <div className="relative bg-accent/5 border-l-2 border-accent/40 px-4 py-3 flex items-center justify-between">
