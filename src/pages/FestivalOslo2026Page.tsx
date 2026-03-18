@@ -240,7 +240,7 @@ export default function FestivalOslo2026Page() {
             )}
             <div className="pt-2">
               <Link
-                to="/festival"
+                to="/festival/giggen-festival-for-en-kveld"
                 className="text-sm text-accent hover:underline"
               >
                 Se fullt program →
