@@ -240,7 +240,7 @@ export default function FestivalOslo2026Page() {
             )}
             <div className="pt-2">
               <Link
-                to="/festival"
+                to="/festival/giggen-festival-for-en-kveld"
                 className="text-sm text-accent hover:underline"
               >
                 Se fullt program →
@@ -273,7 +273,7 @@ export default function FestivalOslo2026Page() {
                 <Link to="/tickets">Kjøp billetter</Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/festival">Se program</Link>
+                <Link to="/festival/giggen-festival-for-en-kveld">Se program</Link>
               </Button>
             </div>
           </section>
@@ -307,7 +307,7 @@ export default function FestivalOslo2026Page() {
 
           {/* Tilbake */}
           <div className="pt-4">
-            <Link to="/festival" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+            <Link to="/" className="text-sm text-muted-foreground hover:text-accent transition-colors">
               ← Tilbake til festival
             </Link>
           </div>

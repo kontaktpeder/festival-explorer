@@ -230,7 +230,7 @@ export default function TicketsPage() {
       <div className="px-4 md:px-8 pt-4">
         <div className="max-w-2xl mx-auto">
           <Link
-            to="/festival"
+            to="/"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-accent transition-colors py-3"
           >
             <ArrowLeft className="w-4 h-4" />

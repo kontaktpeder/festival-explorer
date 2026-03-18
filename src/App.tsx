@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Index from "./pages/Index";
+import LandingPage from "./pages/LandingPage";
 import FestivalPage from "./pages/FestivalPage";
 import FestivalOslo2026Page from "./pages/FestivalOslo2026Page";
 import FestivalProgramPage from "./pages/FestivalProgramPage";
@@ -95,8 +95,9 @@ const App = () => (
       <BrowserRouter>
         <PublicErrorBoundary>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/festival" element={<FestivalPage />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/festival" element={<Navigate to="/" replace />} />
+          <Route path="/festival/program" element={<FestivalProgramPage />} />
           <Route path="/festival/program" element={<FestivalProgramPage />} />
           <Route path="/festival/:slug" element={<FestivalPage />} />
           <Route path="/festival-oslo-2026" element={<FestivalOslo2026Page />} />

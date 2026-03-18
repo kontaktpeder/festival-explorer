@@ -124,7 +124,7 @@ export default function OmGiggenPage() {
       {/* Back button */}
       <div className="fixed top-6 left-6 z-50">
         <Link
-          to="/festival"
+          to="/"
           className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -292,7 +292,7 @@ export default function OmGiggenPage() {
         
         <div className="relative z-10 max-w-3xl mx-auto text-center">
           <Link 
-            to="/festival"
+            to="/festival/giggen-festival-for-en-kveld"
             className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out inline-block group"
           >
             <h2 
