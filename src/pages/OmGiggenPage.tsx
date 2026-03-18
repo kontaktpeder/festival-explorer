@@ -313,9 +313,16 @@ export default function OmGiggenPage() {
             className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-100 text-lg md:text-xl text-white/80 leading-relaxed"
             style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
           >
-            Festivalen markerer starten på en ny måte å følge band, artister og musikere på. 
-            Du skal ikke trenge stipend, priser eller bransjestempel for å fortelle historien din. 
-            Og du skal ikke måtte forstå algoritmer eller kjempe om oppmerksomhet i et evig scroll.
+            Festivalen er et proof of concept.
+            En ny måte å samle artister, publikum og program på – uten at du trenger 
+            bransjestempel, priser eller algoritmer for å bli sett.
+          </p>
+
+          <p 
+            className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-200 text-lg md:text-xl text-white/70 leading-relaxed mt-8"
+            style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
+          >
+            Du skal kunne fortelle historien din fordi du faktisk gjør noe. Ikke fordi du roper høyest.
           </p>
         </div>
       </section>
