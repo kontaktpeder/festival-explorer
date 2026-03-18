@@ -7,6 +7,7 @@ import AdminSections from "@/pages/admin/AdminSections";
 import { FestivalDocuments } from "@/components/dashboard/FestivalDocuments";
 import { FestivalProgramTypes } from "@/components/dashboard/FestivalProgramTypes";
 import { Separator } from "@/components/ui/separator";
+import { FestivalCaseEditor } from "@/components/dashboard/FestivalCaseEditor";
 
 export default function FestivalSettingsRoom() {
   const { id } = useParams<{ id: string }>();
