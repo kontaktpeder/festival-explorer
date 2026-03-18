@@ -124,7 +124,7 @@ export default function OmGiggenPage() {
       {/* Back button */}
       <div className="fixed top-6 left-6 z-50">
         <Link
-          to="/festival"
+          to="/"
           className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm"
         >
           <ArrowLeft className="w-4 h-4" />
