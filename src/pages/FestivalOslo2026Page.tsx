@@ -273,7 +273,7 @@ export default function FestivalOslo2026Page() {
                 <Link to="/tickets">Kjøp billetter</Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/festival">Se program</Link>
+                <Link to="/festival/giggen-festival-for-en-kveld">Se program</Link>
               </Button>
             </div>
           </section>
