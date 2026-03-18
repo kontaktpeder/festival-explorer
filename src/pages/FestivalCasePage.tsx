@@ -9,37 +9,12 @@ import { StaticLogo } from "@/components/ui/StaticLogo";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { VimeoVideo } from "@/components/ui/VimeoVideo";
 
 /* ── helpers ── */
 
 function splitLines(value?: string | null): string[] {
   return (value || "").split("\n").map((s) => s.trim()).filter(Boolean);
-}
-
-function extractVimeoId(input?: string | null): string | null {
-  if (!input) return null;
-  const iframeMatch = input.match(/player\.vimeo\.com\/video\/(\d+)/i);
-  if (iframeMatch?.[1]) return iframeMatch[1];
-  const urlMatch = input.match(/vimeo\.com\/(\d+)/i);
-  if (urlMatch?.[1]) return urlMatch[1];
-  const idMatch = input.match(/^\s*(\d{6,12})\s*$/);
-  if (idMatch?.[1]) return idMatch[1];
-  return null;
-}
-
-function VimeoEmbed({ value }: { value?: string | null }) {
-  const id = extractVimeoId(value);
-  if (!id) return null;
-  return (
-    <div className="relative w-full overflow-hidden rounded-2xl" style={{ paddingTop: "56.25%" }}>
-      <iframe
-        src={`https://player.vimeo.com/video/${id}?badge=0&autopause=0&player_id=0&app_id=58479`}
-        allow="autoplay; fullscreen; picture-in-picture"
-        className="absolute inset-0 w-full h-full"
-        title="Video"
-      />
-    </div>
-  );
 }
 
 function StatCard({ label, value }: { label: string; value: string }) {
@@ -185,7 +160,7 @@ export default function FestivalCasePage() {
                   </Button>
                 </div>
                 {caseContent.case_video_embed_url && (
-                  <div className="mt-8"><VimeoEmbed value={caseContent.case_video_embed_url} /></div>
+                  <div className="mt-8"><VimeoVideo url={caseContent.case_video_embed_url} /></div>
                 )}
               </div>
             </div>
