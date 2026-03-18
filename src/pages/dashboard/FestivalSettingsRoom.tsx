@@ -45,6 +45,8 @@ export default function FestivalSettingsRoom() {
       }
     >
       <div className="space-y-8">
+        <FestivalCaseEditor festivalId={id!} festivalSlug={festival?.slug} />
+        <Separator className="opacity-20" />
         <FestivalDocuments festivalId={id!} />
         <Separator className="opacity-20" />
         <FestivalProgramTypes festivalId={id!} />
