@@ -202,8 +202,6 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
 
 
 
-            {/* ALWAYS VISIBLE: Fixed bottom CTA – ticket + Se lineup, smart hide on scroll */}
-            <SmartBottomCta />
           </>
         )}
       </>
