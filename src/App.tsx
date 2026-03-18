@@ -7,6 +7,7 @@ import LandingPage from "./pages/LandingPage";
 import FestivalPage from "./pages/FestivalPage";
 import FestivalTemplatePage from "./pages/FestivalTemplatePage";
 import GiggenFestivalCasePage from "./pages/GiggenFestivalCasePage";
+import FestivalCasePage from "./pages/FestivalCasePage";
 import FestivalOslo2026Page from "./pages/FestivalOslo2026Page";
 import FestivalProgramPage from "./pages/FestivalProgramPage";
 import EventPage from "./pages/EventPage";
