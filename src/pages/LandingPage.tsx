@@ -175,7 +175,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
               <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-8">
                 <a href="#tilgang">
-                  Be om tilgang <ArrowRight className="w-4 h-4 ml-1" />
+                  Få hjelp til å sette opp ditt event <ArrowRight className="w-4 h-4 ml-1" />
                 </a>
               </Button>
               <Button asChild variant="outline" size="lg" className="rounded-full px-8">
@@ -256,7 +256,7 @@ export default function LandingPage() {
               </Button>
               <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-8">
                 <a href="#tilgang">
-                  Be om tilgang <ArrowRight className="w-4 h-4 ml-1" />
+                  Få hjelp til å sette opp ditt event <ArrowRight className="w-4 h-4 ml-1" />
                 </a>
               </Button>
             </div>
@@ -321,7 +321,7 @@ export default function LandingPage() {
               <div className="flex flex-wrap gap-3 mb-4">
                 <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-8">
                   <Link to="/request-access">
-                    Be om tilgang <ArrowRight className="w-4 h-4 ml-1" />
+                    Få hjelp til å sette opp ditt event <ArrowRight className="w-4 h-4 ml-1" />
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="rounded-full px-8">
@@ -375,7 +375,7 @@ export default function LandingPage() {
                   disabled={createRequest.isPending}
                   className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold">
                   
-                    {createRequest.isPending ? "Sender…" : "Be om tilgang"}
+                    {createRequest.isPending ? "Sender…" : "Få hjelp til å sette opp ditt event"}
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </form>
@@ -396,7 +396,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-8">
                 <a href="#tilgang">
-                  Be om tilgang <ArrowRight className="w-4 h-4 ml-1" />
+                  Få hjelp til å sette opp ditt event <ArrowRight className="w-4 h-4 ml-1" />
                 </a>
               </Button>
               <Button asChild variant="outline" size="lg" className="rounded-full px-8">
