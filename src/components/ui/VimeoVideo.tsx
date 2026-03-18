@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useCallback, useRef, useState } from "react";
+import { Volume2, VolumeX } from "lucide-react";
 
 type VimeoVideoProps = {
   /** Full Vimeo URL, embed code, or just the video ID */
@@ -39,6 +40,21 @@ export const VimeoVideo: React.FC<VimeoVideoProps> = ({
   className = "",
 }) => {
   const id = extractVimeoId(url);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [muted, setMuted] = useState(true);
+
+  const toggleMute = useCallback(() => {
+    const iframe = iframeRef.current;
+    if (!iframe?.contentWindow) return;
+
+    const newMuted = !muted;
+    iframe.contentWindow.postMessage(
+      JSON.stringify({ method: "setVolume", value: newMuted ? 0 : 1 }),
+      "*"
+    );
+    setMuted(newMuted);
+  }, [muted]);
+
   if (!id) return null;
 
   const params = new URLSearchParams({
@@ -57,6 +73,7 @@ export const VimeoVideo: React.FC<VimeoVideoProps> = ({
   return (
     <div className={`relative w-full overflow-hidden rounded-2xl ${className}`} style={{ paddingTop: "56.25%" }}>
       <iframe
+        ref={iframeRef}
         src={src}
         allow="autoplay; fullscreen; picture-in-picture"
         className="absolute inset-0 w-full h-full"
@@ -65,6 +82,13 @@ export const VimeoVideo: React.FC<VimeoVideoProps> = ({
       {background && (
         <div className="pointer-events-none absolute inset-0 bg-black/40" />
       )}
+      <button
+        onClick={toggleMute}
+        className="absolute bottom-3 right-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-sm transition-colors hover:bg-black/80"
+        aria-label={muted ? "Slå på lyd" : "Slå av lyd"}
+      >
+        {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+      </button>
     </div>
   );
 };
