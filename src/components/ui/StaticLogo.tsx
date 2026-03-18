@@ -182,12 +182,6 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
                 >
                   Backstage
                 </Link>
-                <Link
-                  to="/tickets"
-                  className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-7 py-3 text-base transition-all shadow-lg"
-                >
-                  Kjøp festivalpass
-                </Link>
               </div>
             </div>
           </div>
