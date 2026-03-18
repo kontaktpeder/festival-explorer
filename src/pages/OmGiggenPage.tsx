@@ -305,7 +305,7 @@ export default function OmGiggenPage() {
               className="text-4xl md:text-6xl font-bold tracking-tight mb-8 group-hover:text-orange-400 transition-colors"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
-              GIGGEN festival
+              GIGGEN Festival
             </h2>
           </Link>
           
