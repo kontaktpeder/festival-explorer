@@ -141,34 +141,34 @@ export default function FestivalCasePage() {
       <div className="min-h-screen bg-background text-foreground">
         <StaticLogo />
 
-        {/* ═══ HERO — full-bleed poster ═══ */}
-        <section className="relative min-h-[85vh] md:min-h-[90vh] flex items-end overflow-hidden">
-          <img
-            src={caseHeroBg}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+        {/* ═══ HERO — full-bleed poster image ═══ */}
+        <section className="relative">
+          <div className="relative w-full" style={{ aspectRatio: "16/9" }}>
+            <img
+              src={caseHeroBg}
+              alt={shell.name}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-background to-transparent" />
+          </div>
+        </section>
 
-          <div className="relative w-full px-5 md:px-10 pb-10 md:pb-16 pt-32">
-            <div className="mx-auto max-w-4xl">
-              <p className="text-[10px] uppercase tracking-[0.5em] text-accent/80 mb-5">Case</p>
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
-                {shell.name}
-              </h1>
-              {caseContent.case_summary && (
-                <p className="mt-5 md:mt-6 text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed">
-                  {caseContent.case_summary}
-                </p>
-              )}
-              <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                <Button asChild className="h-12 px-6 font-semibold">
-                  <Link to="/request-access">Få hjelp til å sette opp ditt event</Link>
-                </Button>
-                <Button asChild variant="ghost" className="h-12 px-6 font-semibold text-muted-foreground hover:text-foreground">
-                  <Link to="/">Tilbake til GIGGEN</Link>
-                </Button>
-              </div>
+        {/* ═══ INTRO — below hero ═══ */}
+        <section className="px-5 md:px-10 pt-8 md:pt-12 pb-10 md:pb-14">
+          <div className="mx-auto max-w-4xl">
+            <p className="text-[10px] uppercase tracking-[0.5em] text-accent/80 mb-4">Case</p>
+            {caseContent.case_summary && (
+              <p className="text-lg md:text-xl text-foreground/90 max-w-2xl leading-relaxed">
+                {caseContent.case_summary}
+              </p>
+            )}
+            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+              <Button asChild className="h-12 px-6 font-semibold">
+                <Link to="/request-access">Få hjelp til å sette opp ditt event</Link>
+              </Button>
+              <Button asChild variant="ghost" className="h-12 px-6 font-semibold text-muted-foreground hover:text-foreground">
+                <Link to="/">Tilbake til GIGGEN</Link>
+              </Button>
             </div>
           </div>
         </section>
