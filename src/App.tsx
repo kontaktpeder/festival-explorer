@@ -86,6 +86,7 @@ import AdminTimelineEventEdit from "./pages/admin/AdminTimelineEventEdit";
 import AdminTicketsDashboard from "./pages/admin/AdminTicketsDashboard";
 import AdminAccessRequests from "./pages/admin/AdminAccessRequests";
 import AdminAccessRequestDetail from "./pages/admin/AdminAccessRequestDetail";
+import { PublicChrome } from "@/components/layout/PublicChrome";
 import { PublicErrorBoundary } from "@/components/layout/PublicErrorBoundary";
 
 const queryClient = new QueryClient();
