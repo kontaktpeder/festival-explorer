@@ -23,7 +23,7 @@ import { LineupPostersSection } from "@/components/festival/LineupPostersSection
 import { LineupWithTimeSection } from "@/components/festival/LineupWithTimeSection";
 import lineupCtaBg from "@/assets/lineup-cta-bg.jpg";
 import lineupCtaBgWarm from "@/assets/lineup-cta-bg-warm.jpg";
-import { FestivalFooter } from "@/components/festival/FestivalFooter";
+
 import { PraktiskSection } from "@/components/festival/PraktiskSection";
 import { UtforskMerSection } from "@/components/festival/UtforskMerSection";
 import { SocialSection } from "@/components/festival/SocialSection";

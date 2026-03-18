@@ -20,7 +20,7 @@ import { ProgramView } from "@/components/program/ProgramView";
 import { mapFestivalToProgramCategories } from "@/lib/program-mappers";
 import { SectionRenderer } from "@/components/festival/SectionRenderer";
 import { LineupPostersSection } from "@/components/festival/LineupPostersSection";
-import { FestivalFooter } from "@/components/festival/FestivalFooter";
+
 import { EventParticipantItem } from "@/components/ui/EventParticipantItem";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
 import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
