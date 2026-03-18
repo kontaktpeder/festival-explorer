@@ -9,7 +9,6 @@ import { StaticLogo } from "@/components/ui/StaticLogo";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { Button } from "@/components/ui/button";
 import caseHeroBg from "@/assets/case-hero-bg.jpeg";
-import { Badge } from "@/components/ui/badge";
 import { VimeoVideo } from "@/components/ui/VimeoVideo";
 
 /* ── helpers ── */
@@ -18,13 +17,18 @@ function splitLines(value?: string | null): string[] {
   return (value || "").split("\n").map((s) => s.trim()).filter(Boolean);
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+/* ── sub-components ── */
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-border/40 bg-card/30 p-5">
-      <p className="text-[10px] uppercase tracking-[0.35em] text-muted-foreground/70">{label}</p>
-      <p className="mt-2 text-2xl font-bold tracking-tight">{value}</p>
-    </div>
+    <p className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground/60 mb-4">
+      {children}
+    </p>
   );
+}
+
+function Divider() {
+  return <div className="mx-auto max-w-5xl border-t border-border/20" />;
 }
 
 /* ── page ── */
@@ -68,7 +72,6 @@ export default function FestivalCasePage() {
 
   const heroImageUrl = useSignedMediaUrl(shell?.theme?.hero_image_url, "public");
 
-  // best-effort attendees count
   const { data: attendeesCount } = useQuery({
     queryKey: ["case-attendees", shell?.slug, caseContent?.case_public_show_attendees],
     queryFn: async () => {
@@ -100,7 +103,6 @@ export default function FestivalCasePage() {
     return (details?.festivalEvents ?? []).filter((fe: any) => fe?.event?.status === "published").length;
   }, [details?.festivalEvents]);
 
-  // SEO
   useMemo(() => {
     const title = shell ? `${shell.name} – Case | GIGGEN` : "Case | GIGGEN";
     document.title = title;
@@ -113,11 +115,9 @@ export default function FestivalCasePage() {
   if (shellLoading || caseLoading) {
     return <PageLayout><LoadingState message="Laster case..." /></PageLayout>;
   }
-
   if (!shell) {
     return <PageLayout><EmptyState title="Festival ikke funnet" description="Festivalen finnes ikke eller er ikke publisert." /></PageLayout>;
   }
-
   if (!caseContent?.case_enabled) {
     return <PageLayout><EmptyState title="Case ikke tilgjengelig" description="Denne case-siden er ikke publisert ennå." /></PageLayout>;
   }
@@ -128,117 +128,156 @@ export default function FestivalCasePage() {
   const worked = splitLines(caseContent.case_what_worked);
   const challenges = splitLines(caseContent.case_challenges);
 
+  /* collect stats into array for clean rendering */
+  const stats: { label: string; value: string }[] = [];
+  if (typeof attendeesCount === "number") stats.push({ label: "Kommet", value: String(attendeesCount) });
+  if (artistCount > 0) stats.push({ label: "Artister", value: String(artistCount) });
+  if (eventCount > 0) stats.push({ label: "Events", value: String(eventCount) });
+  if (venue?.name) stats.push({ label: "Venue", value: venue.name });
+  if (dateText) stats.push({ label: "Dato", value: dateText });
+
   return (
     <PageLayout>
       <div className="min-h-screen bg-background text-foreground">
         <StaticLogo />
-        <div className="pt-20 md:pt-24" />
 
-        {/* HERO */}
-        <section className="relative px-4 md:px-8 pt-10 md:pt-14 pb-10">
-          <div className="mx-auto max-w-5xl">
-            <div className="relative overflow-hidden rounded-3xl border border-border/40">
-              <div className="absolute inset-0">
-                <img src={caseHeroBg} alt="" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/50" />
-              </div>
-              <div className="relative p-7 md:p-10">
-                <Badge variant="secondary" className="text-[10px] tracking-widest uppercase">CASE</Badge>
-                <h1 className="mt-4 text-3xl md:text-5xl font-bold tracking-tight">{shell.name}</h1>
-                {caseContent.case_summary && (
-                  <p className="mt-4 text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed">{caseContent.case_summary}</p>
-                )}
-                <div className="mt-7 flex flex-col sm:flex-row gap-3">
-                  <Button asChild className="h-11 px-5 font-semibold">
-                    <Link to="/request-access">Få hjelp til å sette opp ditt event</Link>
-                  </Button>
-                  <Button asChild variant="outline" className="h-11 px-5 font-semibold">
-                    <Link to="/">Tilbake til GIGGEN</Link>
-                  </Button>
-                </div>
-                {caseContent.case_video_embed_url && (
-                  <div className="mt-8"><VimeoVideo url={caseContent.case_video_embed_url} /></div>
-                )}
+        {/* ═══ HERO — full-bleed poster ═══ */}
+        <section className="relative min-h-[85vh] md:min-h-[90vh] flex items-end overflow-hidden">
+          <img
+            src={caseHeroBg}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+
+          <div className="relative w-full px-5 md:px-10 pb-10 md:pb-16 pt-32">
+            <div className="mx-auto max-w-4xl">
+              <p className="text-[10px] uppercase tracking-[0.5em] text-accent/80 mb-5">Case</p>
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight leading-[1.05]">
+                {shell.name}
+              </h1>
+              {caseContent.case_summary && (
+                <p className="mt-5 md:mt-6 text-base md:text-lg text-muted-foreground max-w-2xl leading-relaxed">
+                  {caseContent.case_summary}
+                </p>
+              )}
+              <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                <Button asChild className="h-12 px-6 font-semibold">
+                  <Link to="/request-access">Få hjelp til å sette opp ditt event</Link>
+                </Button>
+                <Button asChild variant="ghost" className="h-12 px-6 font-semibold text-muted-foreground hover:text-foreground">
+                  <Link to="/">Tilbake til GIGGEN</Link>
+                </Button>
               </div>
             </div>
           </div>
         </section>
 
-        {/* STATS */}
-        <section className="px-4 md:px-8 py-10">
-          <div className="mx-auto max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            {typeof attendeesCount === "number" && <StatCard label="Kommet" value={String(attendeesCount)} />}
-            {artistCount > 0 && <StatCard label="Artister" value={String(artistCount)} />}
-            {eventCount > 0 && <StatCard label="Events" value={String(eventCount)} />}
-            {venue?.name && <StatCard label="Venue" value={venue.name} />}
-            {dateText && <StatCard label="Dato" value={dateText} />}
-          </div>
-        </section>
-
-        {/* WHAT WAS THIS */}
-        {caseContent.case_what_was_this && (
-          <section className="px-4 md:px-8 py-12">
-            <div className="mx-auto max-w-3xl">
-              <h2 className="text-2xl font-bold tracking-tight">Hva var dette?</h2>
-              <p className="mt-4 text-muted-foreground leading-relaxed whitespace-pre-wrap">{caseContent.case_what_was_this}</p>
-            </div>
-          </section>
+        {/* ═══ STATS — inline row ═══ */}
+        {stats.length > 0 && (
+          <>
+            <Divider />
+            <section className="px-5 md:px-10 py-10 md:py-14">
+              <div className="mx-auto max-w-4xl flex flex-wrap gap-x-10 gap-y-6">
+                {stats.map((s) => (
+                  <div key={s.label}>
+                    <p className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground/50">{s.label}</p>
+                    <p className="mt-1.5 text-2xl md:text-3xl font-bold tracking-tight">{s.value}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </>
         )}
 
-        {/* HOW GIGGEN WAS USED */}
-        <section className="px-4 md:px-8 py-12">
-          <div className="mx-auto max-w-5xl">
-            <h2 className="text-2xl font-bold tracking-tight">Hvordan GIGGEN ble brukt</h2>
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3">
+        {/* ═══ VIDEO ═══ */}
+        {caseContent.case_video_embed_url && (
+          <>
+            <Divider />
+            <section className="px-5 md:px-10 py-10 md:py-14">
+              <div className="mx-auto max-w-4xl">
+                <VimeoVideo url={caseContent.case_video_embed_url} />
+              </div>
+            </section>
+          </>
+        )}
+
+        {/* ═══ HVA VAR DETTE ═══ */}
+        {caseContent.case_what_was_this && (
+          <>
+            <Divider />
+            <section className="px-5 md:px-10 py-14 md:py-20">
+              <div className="mx-auto max-w-4xl">
+                <SectionLabel>Om prosjektet</SectionLabel>
+                <p className="text-lg md:text-xl text-foreground/90 leading-relaxed whitespace-pre-wrap max-w-3xl">
+                  {caseContent.case_what_was_this}
+                </p>
+              </div>
+            </section>
+          </>
+        )}
+
+        {/* ═══ HVORDAN GIGGEN BLE BRUKT — numbered steps ═══ */}
+        <Divider />
+        <section className="px-5 md:px-10 py-14 md:py-20">
+          <div className="mx-auto max-w-4xl">
+            <SectionLabel>Prosessen</SectionLabel>
+            <div className="space-y-8 md:space-y-0 md:grid md:grid-cols-3 md:gap-12">
               {[
-                { step: "1", title: "Opprett event", desc: "Sett navn, sted og tidspunkt." },
-                { step: "2", title: "Bygg lineup", desc: "Legg til artister og program." },
-                { step: "3", title: "Publiser og gjennomfør", desc: "Del side, selg billetter, scan i døra." },
+                { n: "01", title: "Opprett event", desc: "Sett navn, sted og tidspunkt." },
+                { n: "02", title: "Bygg lineup", desc: "Legg til artister og program." },
+                { n: "03", title: "Publiser og gjennomfør", desc: "Del side, selg billetter, scan i døra." },
               ].map((s) => (
-                <div key={s.step} className="rounded-2xl border border-border/40 bg-card/30 p-6">
-                  <p className="text-[10px] uppercase tracking-[0.35em] text-muted-foreground/70">Steg {s.step}</p>
-                  <p className="mt-2 text-lg font-semibold">{s.title}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">{s.desc}</p>
+                <div key={s.n}>
+                  <span className="text-3xl md:text-4xl font-bold text-accent/30">{s.n}</span>
+                  <h3 className="mt-2 text-lg font-semibold">{s.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* LINEUP */}
+        {/* ═══ LINEUP ═══ */}
         {artistCount > 0 && (
-          <section className="px-4 md:px-8 py-12">
-            <div className="mx-auto max-w-5xl">
-              <h2 className="text-2xl font-bold tracking-tight">Lineup / medvirkende</h2>
-              <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
-                {(details?.allArtistsWithEventSlug ?? []).map((a: any) => (
-                  <Link
-                    key={a.id ?? a.slug ?? a.name}
-                    to={a.slug ? `/project/${a.slug}` : "#"}
-                    className="rounded-xl border border-border/40 bg-card/20 p-4 hover:bg-card/40 transition-colors"
-                  >
-                    <p className="text-sm font-semibold truncate">{a.name ?? "Artist"}</p>
-                    {a.slug && <p className="text-[11px] text-muted-foreground mt-1">Se profil →</p>}
-                  </Link>
-                ))}
+          <>
+            <Divider />
+            <section className="px-5 md:px-10 py-14 md:py-20">
+              <div className="mx-auto max-w-4xl">
+                <SectionLabel>Lineup</SectionLabel>
+                <div className="flex flex-wrap gap-x-1 gap-y-0">
+                  {(details?.allArtistsWithEventSlug ?? []).map((a: any, i: number, arr: any[]) => (
+                    <span key={a.id ?? a.slug ?? a.name}>
+                      <Link
+                        to={a.slug ? `/project/${a.slug}` : "#"}
+                        className="text-lg md:text-xl font-semibold hover:text-accent transition-colors"
+                      >
+                        {a.name ?? "Artist"}
+                      </Link>
+                      {i < arr.length - 1 && (
+                        <span className="text-muted-foreground/30 mx-1">/</span>
+                      )}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+          </>
         )}
 
-        {/* WORKED / CHALLENGES */}
+        {/* ═══ WORKED / CHALLENGES — two columns ═══ */}
         {(worked.length > 0 || challenges.length > 0) && (
-          <section className="px-4 md:px-8 py-12">
-            <div className="mx-auto max-w-5xl">
-              <h2 className="text-2xl font-bold tracking-tight">Hva fungerte / hva lærte vi</h2>
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3">
+          <>
+            <Divider />
+            <section className="px-5 md:px-10 py-14 md:py-20">
+              <div className="mx-auto max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
                 {worked.length > 0 && (
-                  <div className="rounded-2xl border border-border/40 bg-card/30 p-6">
-                    <h3 className="text-base font-semibold">Fungerte bra</h3>
-                    <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+                  <div>
+                    <SectionLabel>Fungerte bra</SectionLabel>
+                    <ul className="space-y-3">
                       {worked.map((x, i) => (
-                        <li key={i} className="flex gap-2">
-                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500/70" />
+                        <li key={i} className="flex gap-3 text-sm md:text-base text-foreground/80 leading-relaxed">
+                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent/60" />
                           <span>{x}</span>
                         </li>
                       ))}
@@ -246,12 +285,12 @@ export default function FestivalCasePage() {
                   </div>
                 )}
                 {challenges.length > 0 && (
-                  <div className="rounded-2xl border border-border/40 bg-card/30 p-6">
-                    <h3 className="text-base font-semibold">Utfordringer / læring</h3>
-                    <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+                  <div>
+                    <SectionLabel>Utfordringer / læring</SectionLabel>
+                    <ul className="space-y-3">
                       {challenges.map((x, i) => (
-                        <li key={i} className="flex gap-2">
-                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent/70" />
+                        <li key={i} className="flex gap-3 text-sm md:text-base text-foreground/80 leading-relaxed">
+                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
                           <span>{x}</span>
                         </li>
                       ))}
@@ -259,32 +298,41 @@ export default function FestivalCasePage() {
                   </div>
                 )}
               </div>
-            </div>
-          </section>
+            </section>
+          </>
         )}
 
-        {/* QUOTE */}
+        {/* ═══ QUOTE ═══ */}
         {caseContent.case_quote && (
-          <section className="px-4 md:px-8 py-12">
-            <div className="mx-auto max-w-3xl rounded-3xl border border-border/40 bg-card/20 p-7 md:p-10">
-              <p className="text-lg md:text-xl font-semibold leading-relaxed">"{caseContent.case_quote}"</p>
-            </div>
-          </section>
+          <>
+            <Divider />
+            <section className="px-5 md:px-10 py-16 md:py-24">
+              <div className="mx-auto max-w-3xl text-center">
+                <span className="text-5xl md:text-7xl font-serif text-accent/30 leading-none select-none">"</span>
+                <p className="mt-2 text-xl md:text-2xl font-semibold leading-relaxed tracking-tight">
+                  {caseContent.case_quote}
+                </p>
+              </div>
+            </section>
+          </>
         )}
 
-        {/* CTA */}
-        <section className="px-4 md:px-8 py-12 pb-16">
-          <div className="mx-auto max-w-5xl rounded-3xl border border-border/40 bg-gradient-to-br from-accent/10 via-card/20 to-emerald-500/10 p-7 md:p-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.35em] text-muted-foreground/70">Neste steg</p>
-              <h2 className="mt-3 text-2xl md:text-3xl font-bold tracking-tight">Vil du lage noe lignende?</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Vi onboarder deg personlig.</p>
-            </div>
-            <Button asChild className="h-11 px-5 font-semibold">
+        {/* ═══ CTA ═══ */}
+        <Divider />
+        <section className="px-5 md:px-10 py-16 md:py-24">
+          <div className="mx-auto max-w-4xl text-center">
+            <SectionLabel>Neste steg</SectionLabel>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+              Vil du lage noe lignende?
+            </h2>
+            <p className="mt-4 text-muted-foreground">Vi onboarder deg personlig.</p>
+            <Button asChild className="mt-8 h-12 px-8 font-semibold">
               <Link to="/request-access">Få hjelp til å sette opp ditt event</Link>
             </Button>
           </div>
         </section>
+
+        <div className="h-16" />
       </div>
     </PageLayout>
   );
