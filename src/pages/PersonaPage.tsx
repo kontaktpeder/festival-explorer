@@ -14,7 +14,7 @@ import { getCroppedImageStyles } from "@/lib/image-crop-helpers";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { PersonaSocialLinks } from "@/components/ui/PersonaSocialLinks";
-import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
+
 import type { EntityType, Persona } from "@/types/database";
 import type { SocialLink } from "@/types/social";
 import { useQuery } from "@tanstack/react-query";
@@ -407,8 +407,6 @@ export default function PersonaPage() {
           </section>
         )}
 
-        {/* What is GIGGEN footer */}
-        <WhatIsGiggenFooter />
 
         {/* Spacer at bottom */}
         <div className="h-8 md:h-12" />

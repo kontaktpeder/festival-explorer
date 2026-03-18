@@ -32,7 +32,7 @@ import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { UnifiedTimeline } from "@/components/ui/UnifiedTimeline";
 import { EntitySocialLinks } from "@/components/ui/EntitySocialLinks";
-import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
+
 import { ShareImageSection } from "@/components/share/ShareImageSection";
 import { shareModelFromProject } from "@/lib/share-model";
 import { CroppedImage } from "@/components/ui/CroppedImage";
@@ -302,7 +302,6 @@ export default function ProjectPage() {
         </div>
       </div>
 
-      <WhatIsGiggenFooter />
     </PageLayout>
   );
 }

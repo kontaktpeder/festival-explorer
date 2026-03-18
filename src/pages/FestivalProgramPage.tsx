@@ -5,7 +5,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { ProgramTimelineSection } from "@/components/festival/ProgramTimelineSection";
-import { FestivalFooter } from "@/components/festival/FestivalFooter";
+
 import { BackToFestival } from "@/components/ui/BackToFestival";
 import { Calendar } from "lucide-react";
 
@@ -78,7 +78,6 @@ export default function FestivalProgramPage() {
           </div>
         )}
       </div>
-      <FestivalFooter />
     </PageLayout>
   );
 }

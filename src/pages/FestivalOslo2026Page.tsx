@@ -7,7 +7,7 @@ import { useSignedMediaUrl } from "@/hooks/useSignedMediaUrl";
 import { getPublicUrl } from "@/lib/utils";
 import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
 import { Button } from "@/components/ui/button";
-import { FestivalFooter } from "@/components/festival/FestivalFooter";
+
 
 const FESTIVAL_SLUG = "giggen-festival-for-en-kveld";
 const PAGE_PATH = "/festival-oslo-2026";
@@ -315,7 +315,6 @@ export default function FestivalOslo2026Page() {
         </div>
       </div>
 
-      <FestivalFooter />
     </PageLayout>
   );
 }

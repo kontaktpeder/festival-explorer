@@ -86,6 +86,7 @@ import AdminTimelineEventEdit from "./pages/admin/AdminTimelineEventEdit";
 import AdminTicketsDashboard from "./pages/admin/AdminTicketsDashboard";
 import AdminAccessRequests from "./pages/admin/AdminAccessRequests";
 import AdminAccessRequestDetail from "./pages/admin/AdminAccessRequestDetail";
+import { PublicChrome } from "@/components/layout/PublicChrome";
 import { PublicErrorBoundary } from "@/components/layout/PublicErrorBoundary";
 
 const queryClient = new QueryClient();
@@ -100,29 +101,29 @@ const App = () => (
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/festival" element={<Navigate to="/" replace />} />
-          <Route path="/festival/program" element={<FestivalProgramPage />} />
-          <Route path="/festival/:slug" element={<FestivalTemplatePage />} />
-          <Route path="/festival-case/giggen" element={<GiggenFestivalCasePage />} />
-          <Route path="/festival/case/:slug" element={<FestivalCasePage />} />
-          <Route path="/festival-oslo-2026" element={<FestivalOslo2026Page />} />
+          <Route path="/festival/program" element={<PublicChrome footerVariant="festival"><FestivalProgramPage /></PublicChrome>} />
+          <Route path="/festival/:slug" element={<PublicChrome footerVariant="festival"><FestivalTemplatePage /></PublicChrome>} />
+          <Route path="/festival-case/giggen" element={<PublicChrome footerVariant="festival"><GiggenFestivalCasePage /></PublicChrome>} />
+          <Route path="/festival/case/:slug" element={<PublicChrome footerVariant="festival"><FestivalCasePage /></PublicChrome>} />
+          <Route path="/festival-oslo-2026" element={<PublicChrome footerVariant="festival"><FestivalOslo2026Page /></PublicChrome>} />
           <Route path="/event-room/:id" element={<EventRoomPage />} />
-          <Route path="/event/:slug" element={<EventPage />} />
-          <Route path="/project/:slug" element={<ProjectPage />} />
-          <Route path="/venue/:slug" element={<VenuePage />} />
-          <Route path="/om-giggen" element={<OmGiggenPage />} />
-          <Route path="/utforsk" element={<UtforskPage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/tickets" element={<TicketsPage />} />
-          <Route path="/success" element={<SuccessPage />} />
+          <Route path="/event/:slug" element={<PublicChrome footerVariant="giggen"><EventPage /></PublicChrome>} />
+          <Route path="/project/:slug" element={<PublicChrome footerVariant="giggen"><ProjectPage /></PublicChrome>} />
+          <Route path="/venue/:slug" element={<PublicChrome footerVariant="giggen"><VenuePage /></PublicChrome>} />
+          <Route path="/om-giggen" element={<PublicChrome footerVariant="festival"><OmGiggenPage /></PublicChrome>} />
+          <Route path="/utforsk" element={<PublicChrome footerVariant="festival"><UtforskPage /></PublicChrome>} />
+          <Route path="/search" element={<PublicChrome footerVariant="giggen"><SearchPage /></PublicChrome>} />
+          <Route path="/tickets" element={<PublicChrome footerVariant="giggen"><TicketsPage /></PublicChrome>} />
+          <Route path="/success" element={<PublicChrome footerVariant="giggen"><SuccessPage /></PublicChrome>} />
           <Route path="/t/:ticketCode" element={<TicketViewPage />} />
           <Route path="/v/:ticketCode" element={<ValidatorPage />} />
           <Route path="/crew/checkin" element={<CrewCheckInPage />} />
           <Route path="/personvern" element={<PrivacyGuestPage />} />
           <Route path="/vilkar" element={<TermsPage />} />
-          <Route path="/request-access" element={<RequestAccess />} />
-          <Route path="/verify-access-email" element={<VerifyAccessEmail />} />
-          <Route path="/accept-invitation" element={<AcceptInvitation />} />
-          <Route path="/i" element={<AcceptInvitation />} />
+          <Route path="/request-access" element={<PublicChrome footerVariant="giggen"><RequestAccess /></PublicChrome>} />
+          <Route path="/verify-access-email" element={<PublicChrome footerVariant="giggen"><VerifyAccessEmail /></PublicChrome>} />
+          <Route path="/accept-invitation" element={<PublicChrome footerVariant="giggen"><AcceptInvitation /></PublicChrome>} />
+          <Route path="/i" element={<PublicChrome footerVariant="giggen"><AcceptInvitation /></PublicChrome>} />
           <Route path="/onboarding/create-profile" element={<CreateProfileWizard />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/dashboard" element={<Dashboard />} />
@@ -153,7 +154,7 @@ const App = () => (
             <Route path="/dashboard/venue/:id/settings" element={<VenueSettingsRoom />} />
 
 
-          <Route path="/p/:slug" element={<PersonaPage />} />
+          <Route path="/p/:slug" element={<PublicChrome footerVariant="giggen"><PersonaPage /></PublicChrome>} />
           
           {/* Admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />

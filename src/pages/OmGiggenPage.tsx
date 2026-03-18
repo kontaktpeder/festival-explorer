@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { FestivalFooter } from "@/components/festival/FestivalFooter";
+
 import { ArrowLeft, Mail, Instagram, Youtube, Facebook, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import giggenLogo from "@/assets/giggen-logo-outline.png";
@@ -434,8 +434,6 @@ export default function OmGiggenPage() {
         </section>
       )}
 
-      {/* Footer */}
-      <FestivalFooter />
 
       {/* Reveal animation styles */}
       <style>{`

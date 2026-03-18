@@ -9,7 +9,7 @@ import { parseImageSettings } from "@/types/database";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { StaticLogo } from "@/components/ui/StaticLogo";
-import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
+
 import { ShareImageSection } from "@/components/share/ShareImageSection";
 import { shareModelFromVenue } from "@/lib/share-model";
 import { UnifiedTimeline } from "@/components/ui/UnifiedTimeline";
@@ -242,7 +242,6 @@ export default function VenuePage() {
         </div>
       </div>
 
-      <WhatIsGiggenFooter />
     </PageLayout>
   );
 }
