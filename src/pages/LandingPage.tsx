@@ -150,7 +150,7 @@ export default function LandingPage() {
             <img
               src={giggenLogo}
               alt="GIGGEN"
-              className="h-14 md:h-20 mx-auto mb-8 drop-shadow-lg" />
+              className="h-24 md:h-40 lg:h-52 mx-auto mb-8" />
             
 
             <p className="text-xs font-bold uppercase tracking-[0.25em] text-accent mb-4">
