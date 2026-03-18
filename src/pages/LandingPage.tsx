@@ -19,7 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useCreateAccessRequest } from "@/hooks/useAccessRequests";
 import giggenLogo from "@/assets/giggen-logo-final.png";
 
-const FESTIVAL_CASE_SLUG = "giggen-festival-for-en-kveld";
+const FESTIVAL_CASE_URL = "/festival/case/giggen-festival-for-en-kveld";
 
 function Section({
   id,
@@ -106,10 +106,7 @@ export default function LandingPage() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const festivalCaseUrl = useMemo(
-    () => `/festival/${FESTIVAL_CASE_SLUG}`,
-    []
-  );
+  const festivalCaseUrl = FESTIVAL_CASE_URL;
 
   const submitQuickAccess = async (e: React.FormEvent) => {
     e.preventDefault();
