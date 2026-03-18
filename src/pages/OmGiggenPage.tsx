@@ -161,18 +161,24 @@ export default function OmGiggenPage() {
             style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
           >
             <strong className="font-bold text-white">
-              GIGGEN startet med et enkelt ønske om å spille mer musikk live.
+              GIGGEN startet med et enkelt ønske: å spille mer musikk live.
             </strong>{" "}
-            Med tiden oppdaget den beskjedne bassisten at det "enkle" ønsket innebar mer enn bare å spille på scenen. Alt fra å 
-            mestre kaotiske sosiale medier, bygge et sosialt intellekt, og å bli sin 
-            helt egne regnskapsfører, var oppgaver som også måtte gjøres. Overveldende, kort fortalt.
+            Med tiden oppdaget jeg at det «enkle» ønsket innebar langt mer enn å stå på scenen.
+            Sosiale medier. Nettverk. Økonomi. Planlegging. Alt rundt det å faktisk få en konsert til å skje.
           </p>
           
           <p 
             className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-300 text-lg md:text-xl text-white/70 mt-8"
             style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
           >
-            En frustrasjon vokste, modnet, og ble til et større engasjement for alle 
+            Overveldende, kort fortalt.
+          </p>
+
+          <p 
+            className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-[400ms] text-lg md:text-xl text-white/70 mt-8"
+            style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
+          >
+            En frustrasjon vokste – og ble til et engasjement for alle 
             som vil skape sin egen scene, eller løfte fram de som allerede finnes.
           </p>
         </div>
