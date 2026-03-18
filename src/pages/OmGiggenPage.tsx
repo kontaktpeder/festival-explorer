@@ -249,45 +249,45 @@ export default function OmGiggenPage() {
               className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out text-lg md:text-xl text-white/80 leading-relaxed"
               style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
             >
-              I dag er GIGGEN nettsiden du nå er inne på. Her kan du idag bli kjent med alle 
-              i vår fantastiske{" "}
-              <Link 
-                to="/festival#lineup" 
-                className="text-orange-400 hover:text-orange-300 underline underline-offset-4 transition-colors"
-              >
-                PÅ SCENEN
-              </Link>
-              , hvor festivalen skal holdes på{" "}
-              <Link 
-              to="/project/josefines-vertshus" 
-                className="text-orange-400 hover:text-orange-300 underline underline-offset-4 transition-colors"
-              >
-                Josefines Vertshus
-              </Link>
-              {" "}og{" "}
-              <Link 
-                to="/tickets" 
-                className="text-orange-400 hover:text-orange-300 underline underline-offset-4 transition-colors"
-              >
-                kjøpe billett
-              </Link>
-              {" "}til festivalen.
+              I dag er GIGGEN plattformen du er inne på nå.
             </p>
-            
-            <p 
-              className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-100 text-lg md:text-xl text-white/80 leading-relaxed"
-              style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
-            >
-              Alle medvirkende har og fått tilgang til{" "}
-              <Link 
-                to="/dashboard" 
-                className="text-orange-400 hover:text-orange-300 underline underline-offset-4 transition-colors"
+
+            <div className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-100">
+              <p 
+                className="text-lg md:text-xl text-white/80 leading-relaxed mb-4"
+                style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
               >
-                backstage
-              </Link>
-              . Dette er et rom som lar deg kontrollere din egne offentlige visning, 
-              knytte kontakter, starte nye band, selge egne billetter, og mer...
-            </p>
+                Her kan du:
+              </p>
+              <ul className="space-y-2 text-lg md:text-xl text-white/70 leading-relaxed" style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}>
+                <li>bli kjent med hvem som står på scenen</li>
+                <li>se hva som skjer</li>
+                <li>og kjøpe billett til ekte arrangementer</li>
+              </ul>
+            </div>
+
+            <div className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-200">
+              <p 
+                className="text-lg md:text-xl text-white/80 leading-relaxed mb-4"
+                style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
+              >
+                Samtidig har medvirkende tilgang til{" "}
+                <Link 
+                  to="/dashboard" 
+                  className="text-orange-400 hover:text-orange-300 underline underline-offset-4 transition-colors"
+                >
+                  Backstage
+                </Link>
+                {" "}– et rom hvor du kan:
+              </p>
+              <ul className="space-y-2 text-lg md:text-xl text-white/70 leading-relaxed" style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}>
+                <li>styre din egen offentlige visning</li>
+                <li>knytte kontakter</li>
+                <li>starte prosjekter</li>
+                <li>selge billetter</li>
+                <li>og bygge noe eget</li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
