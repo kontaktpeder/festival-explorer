@@ -1124,6 +1124,89 @@ export type Database = {
           },
         ]
       }
+      festival_case_content: {
+        Row: {
+          case_challenges: string | null
+          case_enabled: boolean
+          case_image_1_media_id: string | null
+          case_image_2_media_id: string | null
+          case_image_3_media_id: string | null
+          case_public_show_attendees: boolean
+          case_quote: string | null
+          case_summary: string | null
+          case_video_embed_url: string | null
+          case_what_was_this: string | null
+          case_what_worked: string | null
+          created_at: string
+          festival_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          case_challenges?: string | null
+          case_enabled?: boolean
+          case_image_1_media_id?: string | null
+          case_image_2_media_id?: string | null
+          case_image_3_media_id?: string | null
+          case_public_show_attendees?: boolean
+          case_quote?: string | null
+          case_summary?: string | null
+          case_video_embed_url?: string | null
+          case_what_was_this?: string | null
+          case_what_worked?: string | null
+          created_at?: string
+          festival_id: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          case_challenges?: string | null
+          case_enabled?: boolean
+          case_image_1_media_id?: string | null
+          case_image_2_media_id?: string | null
+          case_image_3_media_id?: string | null
+          case_public_show_attendees?: boolean
+          case_quote?: string | null
+          case_summary?: string | null
+          case_video_embed_url?: string | null
+          case_what_was_this?: string | null
+          case_what_worked?: string | null
+          created_at?: string
+          festival_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "festival_case_content_case_image_1_media_id_fkey"
+            columns: ["case_image_1_media_id"]
+            isOneToOne: false
+            referencedRelation: "festival_media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "festival_case_content_case_image_2_media_id_fkey"
+            columns: ["case_image_2_media_id"]
+            isOneToOne: false
+            referencedRelation: "festival_media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "festival_case_content_case_image_3_media_id_fkey"
+            columns: ["case_image_3_media_id"]
+            isOneToOne: false
+            referencedRelation: "festival_media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "festival_case_content_festival_id_fkey"
+            columns: ["festival_id"]
+            isOneToOne: false
+            referencedRelation: "festivals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       festival_events: {
         Row: {
           event_id: string
