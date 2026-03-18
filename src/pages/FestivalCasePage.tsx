@@ -8,6 +8,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { Button } from "@/components/ui/button";
+import caseHeroBg from "@/assets/case-hero-bg.jpeg";
 import { Badge } from "@/components/ui/badge";
 import { VimeoVideo } from "@/components/ui/VimeoVideo";
 
