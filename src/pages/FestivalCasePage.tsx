@@ -8,6 +8,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { Button } from "@/components/ui/button";
+import caseHeroBg from "@/assets/case-hero-bg.jpeg";
 import { Badge } from "@/components/ui/badge";
 import { VimeoVideo } from "@/components/ui/VimeoVideo";
 
@@ -136,15 +137,11 @@ export default function FestivalCasePage() {
         {/* HERO */}
         <section className="relative px-4 md:px-8 pt-10 md:pt-14 pb-10">
           <div className="mx-auto max-w-5xl">
-            <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-card/20">
-              {heroImageUrl ? (
-                <div className="absolute inset-0">
-                  <img src={heroImageUrl} alt="" className="w-full h-full object-cover opacity-40" />
-                  <div className="absolute inset-0 bg-black/45" />
-                </div>
-              ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-background to-emerald-500/10" />
-              )}
+            <div className="relative overflow-hidden rounded-3xl border border-border/40">
+              <div className="absolute inset-0">
+                <img src={caseHeroBg} alt="" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/50" />
+              </div>
               <div className="relative p-7 md:p-10">
                 <Badge variant="secondary" className="text-[10px] tracking-widest uppercase">CASE</Badge>
                 <h1 className="mt-4 text-3xl md:text-5xl font-bold tracking-tight">{shell.name}</h1>
