@@ -143,7 +143,7 @@ export default function FestivalCasePage() {
 
         {/* ═══ HERO — full-bleed poster image ═══ */}
         <section className="relative">
-          <div className="relative w-full aspect-[3/4] sm:aspect-[16/9]">
+          <div className="relative w-full aspect-[16/9]">
             <img
               src={caseHeroBg}
               alt={shell.name}
