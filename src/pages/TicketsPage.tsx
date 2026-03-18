@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { TICKET_SALES_ENABLED } from "@/lib/ticket-config";
-import { WhatIsGiggenFooter } from "@/components/ui/WhatIsGiggenFooter";
+
 
 interface TicketTypeWithCount {
   id: string;
