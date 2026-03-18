@@ -361,14 +361,28 @@ export default function OmGiggenPage() {
         <div className="absolute inset-0 opacity-20 pointer-events-none bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 256 256%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E')]" />
         
         <div className="relative z-10 max-w-2xl mx-auto text-center">
+          <h3 
+            className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out text-2xl md:text-3xl font-bold tracking-tight mb-8"
+            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          >
+            Er GIGGEN noe for deg?
+          </h3>
+
           <p 
-            className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out text-lg md:text-xl text-white/70 leading-relaxed mb-10"
+            className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out text-lg md:text-xl text-white/70 leading-relaxed mb-4"
             style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
           >
-            Tror du GIGGEN er noe for deg? Vi vil høre fra deg som engasjerer deg i 
-            nyoppstartede prosjekter, jobber på, rundt eller bak en scene, kan noe, 
-            er hyggelig, eller bare har lyst til å slå av en prat.
+            Vi vil høre fra deg som:
           </p>
+          <ul 
+            className="reveal-on-scroll opacity-0 translate-y-8 transition-all duration-1000 ease-out delay-100 space-y-2 text-lg md:text-xl text-white/70 leading-relaxed mb-10"
+            style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
+          >
+            <li>bygger noe eget</li>
+            <li>jobber på, rundt eller bak en scene</li>
+            <li>har noe å bidra med</li>
+            <li>eller bare er nysgjerrig</li>
+          </ul>
           
           <Button 
             asChild
