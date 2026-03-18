@@ -321,7 +321,7 @@ export default function LandingPage() {
               <div className="flex flex-wrap gap-3 mb-4">
                 <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-8">
                   <Link to="/request-access">
-                    Be om tilgang <ArrowRight className="w-4 h-4 ml-1" />
+                    Få hjelp til å sette opp ditt event <ArrowRight className="w-4 h-4 ml-1" />
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="rounded-full px-8">
