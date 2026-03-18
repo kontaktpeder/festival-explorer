@@ -252,13 +252,6 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
 
           {/* Right: Actions - CTA only on desktop, Backstage always */}
           <div className="flex items-center gap-3 md:gap-4">
-            {/* Primary CTA - desktop only */}
-            <Link
-              to="/tickets"
-              className="hidden md:block bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-7 py-3 text-base transition-all"
-            >
-              Kjøp festivalpass
-            </Link>
             
             {/* Secondary: Backstage */}
             <Link
