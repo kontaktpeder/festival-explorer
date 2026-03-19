@@ -441,24 +441,18 @@ export default function LandingPage() {
               {/* Stats */}
               <Reveal delay={150}>
                 <div className="grid grid-cols-3 gap-6 max-w-md mx-auto mb-10">
-                  {showAttendees && (
-                    <div className="text-center">
-                      <p className="text-2xl md:text-3xl font-black text-foreground">{checkedInCount}+</p>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider">gjester</p>
-                    </div>
-                  )}
-                  {artistCount > 0 && (
-                    <div className="text-center">
-                      <p className="text-2xl md:text-3xl font-black text-foreground">{artistCount}+</p>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider">musikere</p>
-                    </div>
-                  )}
-                  {eventCount > 0 && (
-                    <div className="text-center">
-                      <p className="text-2xl md:text-3xl font-black text-foreground">{eventCount}</p>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider">scener</p>
-                    </div>
-                  )}
+                  <div className="text-center">
+                    <p className="text-2xl md:text-3xl font-black text-foreground">120+</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">tilskuere</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl md:text-3xl font-black text-foreground">30+</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">musikere</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl md:text-3xl font-black text-foreground">3</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">scener</p>
+                  </div>
                 </div>
               </Reveal>
 
