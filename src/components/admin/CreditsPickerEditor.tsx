@@ -114,7 +114,7 @@ export function CreditsPickerEditor({ scope, festivalId, title = "Credits" }: Pr
       {query.trim().length >= 2 && (
         <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-1 max-h-64 overflow-y-auto">
           {!canAdd && (
-            <p className="text-xs text-amber-500 py-1 px-2">⚠ Fyll inn «Rolle» først for å aktivere «Legg til».</p>
+            <p className="text-xs text-destructive py-1 px-2">⚠ Fyll inn «Rolle» først for å aktivere «Legg til».</p>
           )}
           {searching ? (
             <p className="text-xs text-muted-foreground py-2">Søker…</p>
