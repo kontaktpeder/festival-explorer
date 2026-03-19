@@ -216,10 +216,19 @@ export default function FestivalCasePage() {
                   <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground/60">
                     {caseCreditMembers.map((m, i) => {
                       const name = m.persona?.name || m.entity?.name || "";
+                      const href = m.persona?.slug
+                        ? `/p/${m.persona.slug}`
+                        : m.entity?.slug && m.entity?.type
+                        ? getEntityPublicRoute(m.entity.type, m.entity.slug)
+                        : null;
                       return (
                         <span key={i}>
                           {m.role_label && <span className="uppercase tracking-wider">{m.role_label}:</span>}{" "}
-                          {name}
+                          {href ? (
+                            <Link to={href} className="hover:text-foreground transition-colors underline underline-offset-2">
+                              {name}
+                            </Link>
+                          ) : name}
                         </span>
                       );
                     })}
