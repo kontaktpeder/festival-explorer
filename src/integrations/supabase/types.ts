@@ -2426,6 +2426,50 @@ export type Database = {
           },
         ]
       }
+      public_page_credits: {
+        Row: {
+          created_at: string
+          festival_id: string | null
+          id: string
+          participant_id: string
+          participant_kind: string
+          role_label: string
+          scope: Database["public"]["Enums"]["credit_scope"]
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          festival_id?: string | null
+          id?: string
+          participant_id: string
+          participant_kind: string
+          role_label: string
+          scope: Database["public"]["Enums"]["credit_scope"]
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          festival_id?: string | null
+          id?: string
+          participant_id?: string
+          participant_kind?: string
+          role_label?: string
+          scope?: Database["public"]["Enums"]["credit_scope"]
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_page_credits_festival_id_fkey"
+            columns: ["festival_id"]
+            isOneToOne: false
+            referencedRelation: "festivals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scan_logs: {
         Row: {
           checked_in_by: string | null
@@ -3236,6 +3280,7 @@ export type Database = {
     Enums: {
       access_level: "owner" | "admin" | "editor" | "viewer"
       app_role: "admin" | "moderator" | "user"
+      credit_scope: "landing" | "festival_case"
       entity_type: "venue" | "solo" | "band"
       entity_visibility: "public" | "unlisted" | "private"
       location_type: "city" | "region" | "country" | "address"
@@ -3374,6 +3419,7 @@ export const Constants = {
     Enums: {
       access_level: ["owner", "admin", "editor", "viewer"],
       app_role: ["admin", "moderator", "user"],
+      credit_scope: ["landing", "festival_case"],
       entity_type: ["venue", "solo", "band"],
       entity_visibility: ["public", "unlisted", "private"],
       location_type: ["city", "region", "country", "address"],
