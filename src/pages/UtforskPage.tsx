@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import {
-  ArrowLeft,
   Search,
   Users,
   Calendar,
