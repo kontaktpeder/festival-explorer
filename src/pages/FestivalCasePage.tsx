@@ -155,17 +155,16 @@ export default function FestivalCasePage() {
       <div className="min-h-screen bg-background text-foreground">
         <StaticLogo />
 
-        {/* ═══ HERO — full-bleed poster image ═══ */}
-        <section className="relative">
-          <div className="relative w-full aspect-[21/9] md:aspect-[3/1]">
+        {/* ═══ HERO — contained poster image ═══ */}
+        <section className="relative px-5 md:px-10 pt-4 md:pt-8">
+          <div className="mx-auto max-w-4xl">
             <img
               src={caseHeroBg}
               alt={shell.name}
-              className="absolute inset-0 w-full h-full object-cover"
+              className="w-full h-auto rounded-lg"
               fetchPriority="high"
               decoding="async"
             />
-            <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-background to-transparent" />
           </div>
         </section>
 
