@@ -373,32 +373,8 @@ export default function LandingPage() {
 
 
 
-        {/* ══════════════ PROOF STATS ══════════════ */}
-        {showProofBlock && (
-          <section className="py-12 px-5">
-            <div className="max-w-3xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
-              {showAttendees && (
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-accent mb-1">Kommet</p>
-                  <p className="text-2xl md:text-3xl font-black text-foreground">{checkedInCount}+</p>
-                  <p className="text-xs text-muted-foreground">gjester</p>
-                </div>
-              )}
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-accent mb-1">Artister</p>
-                <p className="text-2xl md:text-3xl font-black text-foreground">{artistCount}</p>
-              </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-accent mb-1">Scener</p>
-                <p className="text-2xl md:text-3xl font-black text-foreground">{eventCount}</p>
-              </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-accent mb-1">Kveld</p>
-                <p className="text-2xl md:text-3xl font-black text-foreground">1</p>
-              </div>
-            </div>
-          </section>
-        )}
+
+
 
         {/* ══════════════ HOW IT WORKS ══════════════ */}
         <Section id="hvordan" eyebrow="Slik fungerer det" title="Fra idé til konsert">
