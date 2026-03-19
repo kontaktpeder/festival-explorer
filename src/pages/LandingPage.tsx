@@ -29,6 +29,7 @@ import { supabase } from "@/integrations/supabase/client";
 import giggenLogo from "@/assets/giggen-logo-final.png";
 
 const FESTIVAL_CASE_URL = "/festival/case/giggen-festival-for-en-kveld";
+const DEMO_GIGGEN_SLUG = "giggen-festival-for-en-kveld";
 
 function Section({
   id,
