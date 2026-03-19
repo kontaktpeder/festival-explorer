@@ -8,6 +8,9 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { Button } from "@/components/ui/button";
+import { TeamCreditsSection } from "@/components/ui/TeamCreditsSection";
+import { usePublicPageCredits } from "@/hooks/usePublicPageCredits";
+import { useResolvedCredits } from "@/hooks/useResolvedCredits";
 import caseHeroBg from "@/assets/case-hero-bg.png";
 import { VimeoVideo } from "@/components/ui/VimeoVideo";
 
@@ -102,6 +105,16 @@ export default function FestivalCasePage() {
   const eventCount = useMemo(() => {
     return (details?.festivalEvents ?? []).filter((fe: any) => fe?.event?.status === "published").length;
   }, [details?.festivalEvents]);
+
+  // Credits
+  const { data: caseCredits = [] } = usePublicPageCredits("festival_case", shell?.id);
+  const { data: resolvedCaseCredits = [] } = useResolvedCredits(caseCredits);
+  const caseCreditMembers = useMemo(() =>
+    resolvedCaseCredits.map((r) => ({
+      persona: r.persona,
+      entity: r.entity,
+      role_label: r.role_label,
+    })), [resolvedCaseCredits]);
 
   useMemo(() => {
     const title = shell ? `${shell.name} – Case | GIGGEN` : "Case | GIGGEN";
@@ -314,6 +327,14 @@ export default function FestivalCasePage() {
                 </p>
               </div>
             </section>
+          </>
+        )}
+
+        {/* ═══ CREDITS ═══ */}
+        {caseCreditMembers.length > 0 && (
+          <>
+            <Divider />
+            <TeamCreditsSection title="Credits" members={caseCreditMembers} className="py-12 md:py-20" />
           </>
         )}
 

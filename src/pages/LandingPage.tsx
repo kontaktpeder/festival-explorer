@@ -26,6 +26,9 @@ import { useCreateAccessRequest } from "@/hooks/useAccessRequests";
 import { useLandingPageContent } from "@/hooks/useLandingPageContent";
 import { useFestivalShell, useFestivalDetails } from "@/hooks/useFestival";
 import { supabase } from "@/integrations/supabase/client";
+import { usePublicPageCredits } from "@/hooks/usePublicPageCredits";
+import { useResolvedCredits } from "@/hooks/useResolvedCredits";
+import { TeamCreditsSection } from "@/components/ui/TeamCreditsSection";
 import giggenLogo from "@/assets/giggen-logo-final.png";
 
 const FESTIVAL_CASE_URL = "/festival/case/giggen-festival-for-en-kveld";
@@ -150,6 +153,16 @@ export default function LandingPage() {
   const heroCtaText = landing?.hero_cta_text || "Kom i gang med ditt event nå";
   const showProofBlock = landing?.proof_enabled && artistCount > 0 && eventCount > 0;
   const showAttendees = landing?.proof_show_attendees && typeof checkedInCount === "number" && checkedInCount > 0;
+
+  // Credits
+  const { data: landingCredits = [] } = usePublicPageCredits("landing");
+  const { data: resolvedCredits = [] } = useResolvedCredits(landingCredits);
+  const creditMembers = useMemo(() =>
+    resolvedCredits.map((r) => ({
+      persona: r.persona,
+      entity: r.entity,
+      role_label: r.role_label,
+    })), [resolvedCredits]);
 
   const submitQuickAccess = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -490,6 +503,11 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* ══════════════ CREDITS ══════════════ */}
+        {creditMembers.length > 0 && (
+          <TeamCreditsSection title="Credits" members={creditMembers} />
+        )}
 
         {/* ══════════════ FOOTER ══════════════ */}
         <footer className="border-t border-border/40 py-8 px-5">

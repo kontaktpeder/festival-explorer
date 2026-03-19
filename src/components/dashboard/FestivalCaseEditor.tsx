@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Save, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CreditsPickerEditor } from "@/components/admin/CreditsPickerEditor";
 
 interface Props {
   festivalId: string;
@@ -204,6 +205,14 @@ export function FestivalCaseEditor({ festivalId, festivalSlug }: Props) {
         <Save className="h-4 w-4" />
         {upsert.isPending ? "Lagrer…" : "Lagre case-innhold"}
       </Button>
+
+      <div className="pt-6 border-t border-border">
+        <CreditsPickerEditor
+          scope="festival_case"
+          festivalId={festivalId}
+          title="Credits for case-siden"
+        />
+      </div>
     </div>
   );
 }

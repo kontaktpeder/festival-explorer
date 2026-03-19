@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Save } from "lucide-react";
+import { CreditsPickerEditor } from "@/components/admin/CreditsPickerEditor";
 
 const LANDING_CONTENT_ID = 1;
 
@@ -167,6 +168,10 @@ export function LandingPageContentEditor() {
           <Save className="h-4 w-4" />
           {upsert.isPending ? "Lagrer…" : "Lagre landing-innhold"}
         </Button>
+
+        <div className="pt-6 border-t border-border">
+          <CreditsPickerEditor scope="landing" title="Credits for landingssiden" />
+        </div>
       </div>
     </div>
   );
