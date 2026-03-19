@@ -234,13 +234,13 @@ export default function LandingPage() {
               </Button>
             </div>
 
-            <div className="mt-2 text-sm text-muted-foreground/80 text-center">
-              <Link
-                to="/om-giggen"
-                className="inline-flex items-center gap-2 underline underline-offset-4 hover:text-accent transition-colors"
-              >
-                Hva er GIGGEN?
-              </Link>
+            <div className="mt-4 mb-6">
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground/50 mb-2">Utforsk GIGGEN</p>
+              <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-sm">
+                <Link to="/om-giggen" className="text-muted-foreground hover:text-accent transition-colors underline underline-offset-4">Hva er GIGGEN</Link>
+                <Link to={festivalCaseUrl} className="text-muted-foreground hover:text-accent transition-colors underline underline-offset-4">Se case</Link>
+                <Link to="/utforsk" className="text-muted-foreground hover:text-accent transition-colors underline underline-offset-4">Utforsk artister & events</Link>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-xs text-muted-foreground">
