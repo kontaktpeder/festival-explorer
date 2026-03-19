@@ -204,13 +204,11 @@ export default function LandingPage() {
             <h1
               className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              
-              Lag konserter, uten kaos
+              {heroTitle}
             </h1>
 
             <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed">
-              GIGGEN samler booking, program og billetter på ett sted – laget for artister og arrangører i startfasen.
-            
+              {heroSubtitle}
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
