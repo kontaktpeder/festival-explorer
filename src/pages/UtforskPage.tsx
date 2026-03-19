@@ -230,7 +230,7 @@ export default function UtforskPage() {
       <StaticLogo />
 
       {/* ── Toolbar: search + filters ────────── */}
-      <div className="px-4 pb-4 max-w-5xl mx-auto w-full space-y-3">
+      <div className="px-4 pb-4 pt-16 md:pt-20 max-w-5xl mx-auto w-full space-y-3">
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
