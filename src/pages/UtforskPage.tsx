@@ -170,6 +170,7 @@ function FestivalBanner() {
 /* ── Main page ───────────────────────────────────── */
 export default function UtforskPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const autoMode = useAutoMode();
 
   const urlMode = searchParams.get("mode") as UtforskMode | null;
