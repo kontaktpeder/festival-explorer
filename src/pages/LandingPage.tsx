@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   Calendar,
@@ -8,15 +9,23 @@ import {
   Music2,
   Ticket,
   Wand2,
-  FolderOpen } from
+  FolderOpen,
+  Users,
+  Mic2,
+  MapPin,
+  Star } from
 "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { StaticLogo } from "@/components/ui/StaticLogo";
+import { VimeoVideo } from "@/components/ui/VimeoVideo";
 import { useToast } from "@/hooks/use-toast";
 import { useCreateAccessRequest } from "@/hooks/useAccessRequests";
+import { useLandingPageContent } from "@/hooks/useLandingPageContent";
+import { useFestivalShell, useFestivalDetails } from "@/hooks/useFestival";
+import { supabase } from "@/integrations/supabase/client";
 import giggenLogo from "@/assets/giggen-logo-final.png";
 
 const FESTIVAL_CASE_URL = "/festival/case/giggen-festival-for-en-kveld";
