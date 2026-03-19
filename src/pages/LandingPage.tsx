@@ -363,11 +363,11 @@ export default function LandingPage() {
                 <p className="text-muted-foreground text-sm mb-6 italic">Alt oppdatert i sanntid – uten Excel, uten kaos.</p>
                 <ul className="space-y-3">
                   {[
-                    "Innsjekk i døra (live oppdatert)",
+                    "Innsjekk i døra (live)",
                     "Billettsalg + mobil scanning",
                     "Alle på og bak scenen",
-                    "Live kjøreplan for crew og artister",
-                    "Lineup, info og deling – samlet på én side",
+                    "Live kjøreplan",
+                    "Lineup og info samlet",
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-3 text-sm text-foreground/80">
                       <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
