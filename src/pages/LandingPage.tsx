@@ -297,9 +297,12 @@ export default function LandingPage() {
         <section className="py-20 md:py-28 px-5 bg-card/40">
           <div className="max-w-5xl mx-auto">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Løsningen</p>
-            <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-10" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               GIGGEN samler alt på ett sted.
             </h2>
+            <p className="text-muted-foreground text-base mb-10 leading-relaxed max-w-2xl">
+              Du jobber ett sted. Alt annet oppdaterer seg selv.
+            </p>
             <div className="grid md:grid-cols-2 gap-12 items-start">
               <div className="grid sm:grid-cols-2 gap-4">
                 <Card icon={<Calendar className="w-5 h-5" />} title="Event" description="Rammen – sted, tid, publisering." />
