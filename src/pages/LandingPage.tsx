@@ -290,6 +290,43 @@ export default function LandingPage() {
           </div>
         </Section>
 
+        {/* ══════════════ WHAT IS GIGGEN ══════════════ */}
+        <section className="py-20 md:py-28 px-5 bg-card/40">
+          <div className="max-w-5xl mx-auto">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Løsningen</p>
+            <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-10" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              GIGGEN samler alt på ett sted.
+            </h2>
+            <div className="grid md:grid-cols-2 gap-12 items-start">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Card icon={<Calendar className="w-5 h-5" />} title="Event" description="Rammen – sted, tid, publisering." />
+                <Card icon={<Music2 className="w-5 h-5" />} title="Lineup" description="Hvem og når – artister, prosjekter, scene." />
+                <Card icon={<Ticket className="w-5 h-5" />} title="Billetter" description="Tilgang – salg, QR-koder, validator." />
+                <Card icon={<Layers3 className="w-5 h-5" />} title="Program" description="Flyten – kjøreplan for crew og artister." />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground mb-4">Alt henger sammen – og oppdateres i sanntid.</p>
+                <ul className="space-y-3">
+                  {[
+                    "Legger du til en artist → vises i lineup",
+                    "Setter du tid → oppdateres program",
+                    "Selger du billett → vises i innsjekk",
+                    "Endrer du noe → crew, artister og publikum ser det med én gang",
+                  ].map((t) => (
+                    <li key={t} className="flex items-start gap-3 text-sm text-foreground/80">
+                      <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-muted-foreground text-sm mt-6 leading-relaxed">
+                  Det gir færre misforståelser og mer ro i gjennomføring.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ══════════════ INTRO + VIDEO ══════════════ */}
         {landing?.hero_video_url && (
           <section className="px-5 mb-8 relative z-10">
@@ -358,43 +395,6 @@ export default function LandingPage() {
             </div>
           </section>
         )}
-
-        {/* ══════════════ WHAT IS GIGGEN ══════════════ */}
-        <section className="py-20 md:py-28 px-5 bg-card/40">
-          <div className="max-w-5xl mx-auto">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Løsningen</p>
-            <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-10" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              GIGGEN samler alt på ett sted.
-            </h2>
-            <div className="grid md:grid-cols-2 gap-12 items-start">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Card icon={<Calendar className="w-5 h-5" />} title="Event" description="Rammen – sted, tid, publisering." />
-                <Card icon={<Music2 className="w-5 h-5" />} title="Lineup" description="Hvem og når – artister, prosjekter, scene." />
-                <Card icon={<Ticket className="w-5 h-5" />} title="Billetter" description="Tilgang – salg, QR-koder, validator." />
-                <Card icon={<Layers3 className="w-5 h-5" />} title="Program" description="Flyten – kjøreplan for crew og artister." />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground mb-4">Alt henger sammen – og oppdateres i sanntid.</p>
-                <ul className="space-y-3">
-                  {[
-                    "Legger du til en artist → vises i lineup",
-                    "Setter du tid → oppdateres program",
-                    "Selger du billett → vises i innsjekk",
-                    "Endrer du noe → crew, artister og publikum ser det med én gang",
-                  ].map((t) => (
-                    <li key={t} className="flex items-start gap-3 text-sm text-foreground/80">
-                      <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                      {t}
-                    </li>
-                  ))}
-                </ul>
-                <p className="text-muted-foreground text-sm mt-6 leading-relaxed">
-                  Det gir færre misforståelser og mer ro i gjennomføring.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* ══════════════ HOW IT WORKS ══════════════ */}
         <Section id="hvordan" eyebrow="Slik fungerer det" title="Fra idé til konsert">
