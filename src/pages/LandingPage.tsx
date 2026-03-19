@@ -450,10 +450,10 @@ export default function LandingPage() {
             <div>
               <ul className="space-y-3">
                 {[
-                  "Mindre koordinering i chat og regneark",
-                  "Mindre dobbeltjobb",
-                  "Raskere endringer uten stress",
-                  "Bedre flyt på selve dagen",
+                  "Mindre kaos i chat og regneark",
+                  "Slutt på dobbeltjobbing",
+                  "Endringer skjer uten stress",
+                  "Alle vet hva som skjer – når det skjer",
                 ].map((t) => (
                   <li key={t} className="flex items-center gap-3 text-sm text-foreground/80">
                     <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
