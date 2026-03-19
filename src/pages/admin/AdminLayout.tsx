@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
-import { LayoutDashboard, Calendar, MapPin, Music, Users, FolderOpen, Menu, X, Clock, Layers, UserPlus, Home, Trash2, QrCode, Ticket, Inbox } from "lucide-react";
+import { LayoutDashboard, Menu, Layers, UserPlus, Home, Trash2, Inbox, LayoutTemplate } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingState } from "@/components/ui/LoadingState";
