@@ -210,6 +210,20 @@ export default function FestivalCasePage() {
             <section className="px-5 md:px-10 py-8 md:py-14">
               <div className="mx-auto max-w-4xl">
                 <VimeoVideo url={caseContent.case_video_embed_url} />
+                {/* Subtle credits under video */}
+                {caseCreditMembers.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground/60">
+                    {caseCreditMembers.map((m, i) => {
+                      const name = m.persona?.name || m.entity?.name || "";
+                      return (
+                        <span key={i}>
+                          {m.role_label && <span className="uppercase tracking-wider">{m.role_label}:</span>}{" "}
+                          {name}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </section>
           </>
@@ -330,13 +344,6 @@ export default function FestivalCasePage() {
           </>
         )}
 
-        {/* ═══ CREDITS ═══ */}
-        {caseCreditMembers.length > 0 && (
-          <>
-            <Divider />
-            <TeamCreditsSection title="Credits" members={caseCreditMembers} className="py-12 md:py-20" />
-          </>
-        )}
 
         {/* ═══ CTA ═══ */}
         <Divider />
