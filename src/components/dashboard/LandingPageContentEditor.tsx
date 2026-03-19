@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Save } from "lucide-react";
+import { CreditsPickerEditor } from "@/components/admin/CreditsPickerEditor";
 
 const LANDING_CONTENT_ID = 1;
 
