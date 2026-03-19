@@ -424,8 +424,11 @@ export default function LandingPage() {
             <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               {landing?.section_case_title || "GIGGEN Festival"}
             </h2>
-            <p className="text-muted-foreground leading-relaxed mb-8 max-w-xl mx-auto">
-              {landing?.section_case_subtitle || "GIGGEN Festival er vårt første proof of concept – en ekte festival bygget og drevet gjennom plattformen."}
+            <p className="text-muted-foreground leading-relaxed mb-2 max-w-xl mx-auto">
+              {landing?.section_case_subtitle || "Dette er et ekte event – bygget og drevet med GIGGEN."}
+            </p>
+            <p className="text-sm text-accent mb-8">
+              Se hvordan alt henger sammen i praksis →
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button asChild variant="outline" size="lg" className="rounded-full px-8">
