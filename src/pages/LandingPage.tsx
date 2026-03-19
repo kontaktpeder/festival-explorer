@@ -154,6 +154,16 @@ export default function LandingPage() {
   const showProofBlock = landing?.proof_enabled && artistCount > 0 && eventCount > 0;
   const showAttendees = landing?.proof_show_attendees && typeof checkedInCount === "number" && checkedInCount > 0;
 
+  // Credits
+  const { data: landingCredits = [] } = usePublicPageCredits("landing");
+  const { data: resolvedCredits = [] } = useResolvedCredits(landingCredits);
+  const creditMembers = useMemo(() =>
+    resolvedCredits.map((r) => ({
+      persona: r.persona,
+      entity: r.entity,
+      role_label: r.role_label,
+    })), [resolvedCredits]);
+
   const submitQuickAccess = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) {
