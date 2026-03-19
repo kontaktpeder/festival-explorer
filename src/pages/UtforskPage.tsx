@@ -224,9 +224,18 @@ export default function UtforskPage() {
     <div className="min-h-screen flex flex-col bg-background">
       {/* ── Mode picker modal ────────────────── */}
       {showModePicker && <ModePickerModal onSelect={handleModalSelect} />}
-      {/* ── Header ─────────────────────────────── */}
-      <header className="px-4 pt-12 pb-3 max-w-5xl mx-auto w-full">
-        <h1 className="text-display text-3xl sm:text-4xl tracking-tight">Utforsk</h1>
+
+      {/* ── Sticky top bar ───────────────────── */}
+      <header
+        className="sticky top-0 z-40 bg-background/60 backdrop-blur-xl border-b border-border/20"
+        style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
+      >
+        <div className="max-w-5xl mx-auto w-full px-4 py-3 flex items-center justify-between">
+          <h1 className="text-display text-lg tracking-tight">Utforsk</h1>
+          <Link to="/">
+            <img src={gIcon} alt="GIGGEN" className="h-8 w-8 object-contain" />
+          </Link>
+        </div>
       </header>
 
       {/* ── Toolbar: search + filters ────────── */}
