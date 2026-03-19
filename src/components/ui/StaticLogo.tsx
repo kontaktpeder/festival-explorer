@@ -48,15 +48,12 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
   }, []);
 
   const handleClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    
     if (location.pathname === "/") {
+      e.preventDefault();
       window.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-      navigate("/");
-      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
     }
-  }, [location.pathname, navigate]);
+    // For all other pages, let the <Link to="/"> navigate naturally
+  }, [location.pathname]);
 
   // Calculate logo offset based on scroll (desktop only)
   const [logoOffset, setLogoOffset] = useState(0);
