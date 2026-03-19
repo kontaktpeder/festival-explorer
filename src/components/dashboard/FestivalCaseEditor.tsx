@@ -205,6 +205,14 @@ export function FestivalCaseEditor({ festivalId, festivalSlug }: Props) {
         <Save className="h-4 w-4" />
         {upsert.isPending ? "Lagrer…" : "Lagre case-innhold"}
       </Button>
+
+      <div className="pt-6 border-t border-border">
+        <CreditsPickerEditor
+          scope="festival_case"
+          festivalId={festivalId}
+          title="Credits for case-siden"
+        />
+      </div>
     </div>
   );
 }

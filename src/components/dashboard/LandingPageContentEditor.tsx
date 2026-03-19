@@ -168,6 +168,10 @@ export function LandingPageContentEditor() {
           <Save className="h-4 w-4" />
           {upsert.isPending ? "Lagrer…" : "Lagre landing-innhold"}
         </Button>
+
+        <div className="pt-6 border-t border-border">
+          <CreditsPickerEditor scope="landing" title="Credits for landingssiden" />
+        </div>
       </div>
     </div>
   );
