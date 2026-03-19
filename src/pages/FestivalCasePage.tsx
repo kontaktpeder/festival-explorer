@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { TeamCreditsSection } from "@/components/ui/TeamCreditsSection";
 import { usePublicPageCredits } from "@/hooks/usePublicPageCredits";
 import { useResolvedCredits } from "@/hooks/useResolvedCredits";
+import { getEntityPublicRoute } from "@/lib/entity-types";
 import caseHeroBg from "@/assets/case-hero-bg.png";
 import { VimeoVideo } from "@/components/ui/VimeoVideo";
 
