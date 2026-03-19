@@ -260,6 +260,12 @@ export default function LandingPage() {
         {landing?.hero_video_url && (
           <section className="px-5 -mt-8 mb-8 relative z-10">
             <div className="max-w-4xl mx-auto">
+              <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground/60 mb-3">
+                Slik brukte vi{" "}
+                <Link to="/festival/case/giggen-festival-for-en-kveld" className="text-accent hover:text-accent/80 transition-colors">
+                  GIGGEN →
+                </Link>
+              </p>
               <VimeoVideo url={landing.hero_video_url} background className="shadow-2xl" />
             </div>
           </section>
