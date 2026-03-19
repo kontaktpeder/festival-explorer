@@ -12,7 +12,7 @@ import { TeamCreditsSection } from "@/components/ui/TeamCreditsSection";
 import { usePublicPageCredits } from "@/hooks/usePublicPageCredits";
 import { useResolvedCredits } from "@/hooks/useResolvedCredits";
 import { getEntityPublicRoute } from "@/lib/entity-types";
-import caseHeroBg from "@/assets/case-hero-bg.jpeg";
+import caseHeroBg from "@/assets/case-hero-bg-new.png";
 import { VimeoVideo } from "@/components/ui/VimeoVideo";
 
 /* ── helpers ── */
