@@ -118,6 +118,40 @@ export default function LandingPage() {
 
   const festivalCaseUrl = FESTIVAL_CASE_URL;
 
+  // CMS content
+  const { data: landing } = useLandingPageContent();
+
+  // Proof stats from demo festival
+  const { data: giggenShell } = useFestivalShell(DEMO_GIGGEN_SLUG);
+  const { data: giggenDetails } = useFestivalDetails(giggenShell?.id);
+
+  const artistCount = giggenDetails?.allArtistsWithEventSlug?.length ?? 0;
+
+  const eventCount = useMemo(() => {
+    return (giggenDetails?.festivalEvents ?? []).filter((fe: any) => fe?.event?.status === "published").length;
+  }, [giggenDetails]);
+
+  const { data: checkedInCount } = useQuery({
+    queryKey: ["landing-proof-checked-in", landing?.proof_enabled, landing?.proof_show_attendees, giggenShell?.slug],
+    enabled: !!landing?.proof_enabled && !!landing?.proof_show_attendees && !!giggenShell?.slug,
+    queryFn: async () => {
+      const { data: te, error } = await supabase
+        .from("ticket_events")
+        .select("attendance_count, boilerroom_attendance_count")
+        .eq("slug", DEMO_GIGGEN_SLUG)
+        .maybeSingle();
+      if (error) throw error;
+      if (!te) return null;
+      return (te.attendance_count ?? 0) + (te.boilerroom_attendance_count ?? 0);
+    },
+  });
+
+  const heroTitle = landing?.hero_title || "Lag konserter, uten kaos";
+  const heroSubtitle = landing?.hero_subtitle || "GIGGEN samler booking, program og billetter på ett sted – laget for artister og arrangører i startfasen.";
+  const heroCtaText = landing?.hero_cta_text || "Få hjelp til å sette opp ditt event";
+  const showProofBlock = landing?.proof_enabled && artistCount > 0 && eventCount > 0;
+  const showAttendees = landing?.proof_show_attendees && typeof checkedInCount === "number" && checkedInCount > 0;
+
   const submitQuickAccess = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) {
