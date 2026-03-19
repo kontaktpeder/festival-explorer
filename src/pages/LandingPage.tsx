@@ -256,9 +256,43 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* ══════════════ WHAT IS AN EVENT ══════════════ */}
+        <Section id="hva" eyebrow="Problemet" title="Et event er ikke én oppgave – det er 20 små systemer samtidig.">
+          <div className="grid md:grid-cols-2 gap-12 items-start">
+            <div>
+              <ul className="space-y-3 mb-6">
+                {["Artister og lineup", "Tider og kjøreplan", "Billetter og innsjekk", "Info til publikum", "Oversikt for crew"].map((t) => (
+                  <li key={t} className="flex items-center gap-3 text-sm text-foreground/80">
+                    <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
+                    {t}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Når dette ligger i ulike verktøy, må alt oppdateres manuelt.
+              </p>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-card/60 p-6">
+              <h3 className="font-bold text-foreground text-lg mb-4">Hvorfor blir det fort kaos?</h3>
+              <ul className="space-y-3">
+                {[
+                  "Du oppdaterer lineup flere steder",
+                  "Endringer når ikke alle",
+                  "Folk vet ikke når de skal på",
+                  "Billett og innsjekk lever sitt eget liv",
+                  "Oversikten forsvinner når tempoet øker",
+                ].map((t) => (
+                  <li key={t} className="text-sm text-muted-foreground leading-relaxed">{t}</li>
+                ))}
+              </ul>
+              <p className="text-sm font-semibold text-foreground mt-4">Det er her kaoset oppstår.</p>
+            </div>
+          </div>
+        </Section>
+
         {/* ══════════════ INTRO + VIDEO ══════════════ */}
         {landing?.hero_video_url && (
-          <section className="px-5 -mt-8 mb-8 relative z-10">
+          <section className="px-5 mb-8 relative z-10">
             <div className="max-w-4xl mx-auto">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-2">
                 Se hvordan vi gjorde det
@@ -324,40 +358,6 @@ export default function LandingPage() {
             </div>
           </section>
         )}
-
-        {/* ══════════════ WHAT IS AN EVENT ══════════════ */}
-        <Section id="hva" eyebrow="Problemet" title="Et event er ikke én oppgave – det er 20 små systemer samtidig.">
-          <div className="grid md:grid-cols-2 gap-12 items-start">
-            <div>
-              <ul className="space-y-3 mb-6">
-                {["Artister og lineup", "Tider og kjøreplan", "Billetter og innsjekk", "Info til publikum", "Oversikt for crew"].map((t) => (
-                  <li key={t} className="flex items-center gap-3 text-sm text-foreground/80">
-                    <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
-                    {t}
-                  </li>
-                ))}
-              </ul>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Når dette ligger i ulike verktøy, må alt oppdateres manuelt.
-              </p>
-            </div>
-            <div className="rounded-xl border border-border/60 bg-card/60 p-6">
-              <h3 className="font-bold text-foreground text-lg mb-4">Hvorfor blir det fort kaos?</h3>
-              <ul className="space-y-3">
-                {[
-                  "Du oppdaterer lineup flere steder",
-                  "Endringer når ikke alle",
-                  "Folk vet ikke når de skal på",
-                  "Billett og innsjekk lever sitt eget liv",
-                  "Oversikten forsvinner når tempoet øker",
-                ].map((t) => (
-                  <li key={t} className="text-sm text-muted-foreground leading-relaxed">{t}</li>
-                ))}
-              </ul>
-              <p className="text-sm font-semibold text-foreground mt-4">Det er her kaoset oppstår.</p>
-            </div>
-          </div>
-        </Section>
 
         {/* ══════════════ WHAT IS GIGGEN ══════════════ */}
         <section className="py-20 md:py-28 px-5 bg-card/40">
