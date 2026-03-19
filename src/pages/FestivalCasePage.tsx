@@ -12,7 +12,7 @@ import { TeamCreditsSection } from "@/components/ui/TeamCreditsSection";
 import { usePublicPageCredits } from "@/hooks/usePublicPageCredits";
 import { useResolvedCredits } from "@/hooks/useResolvedCredits";
 import { getEntityPublicRoute } from "@/lib/entity-types";
-import caseHeroBg from "@/assets/case-hero-bg.png";
+import caseHeroBg from "@/assets/case-hero-bg.jpeg";
 import { VimeoVideo } from "@/components/ui/VimeoVideo";
 
 /* ── helpers ── */
@@ -157,11 +157,13 @@ export default function FestivalCasePage() {
 
         {/* ═══ HERO — full-bleed poster image ═══ */}
         <section className="relative">
-          <div className="relative w-full aspect-[16/9]">
+          <div className="relative w-full aspect-[21/9] md:aspect-[3/1]">
             <img
               src={caseHeroBg}
               alt={shell.name}
               className="absolute inset-0 w-full h-full object-cover"
+              fetchPriority="high"
+              decoding="async"
             />
             <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-background to-transparent" />
           </div>
