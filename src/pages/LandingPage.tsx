@@ -214,7 +214,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
               <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-8">
                 <a href="#tilgang">
-                  Få hjelp til å sette opp ditt event <ArrowRight className="w-4 h-4 ml-1" />
+                  {heroCtaText} <ArrowRight className="w-4 h-4 ml-1" />
                 </a>
               </Button>
               <Button asChild variant="outline" size="lg" className="rounded-full px-8">
