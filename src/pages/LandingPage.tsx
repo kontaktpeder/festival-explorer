@@ -323,16 +323,17 @@ export default function LandingPage() {
         </Section>
 
         {/* ══════════════ REAL CASE ══════════════ */}
+        {(landing?.section_case_enabled !== false) && (
         <section className="py-20 md:py-28 px-5 bg-card/40">
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">
               Case
             </p>
             <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              GIGGEN Festival
+              {landing?.section_case_title || "GIGGEN Festival"}
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-8 max-w-xl mx-auto">
-              GIGGEN Festival er vårt første proof of concept – en ekte festival bygget og drevet gjennom plattformen.
+              {landing?.section_case_subtitle || "GIGGEN Festival er vårt første proof of concept – en ekte festival bygget og drevet gjennom plattformen."}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button asChild variant="outline" size="lg" className="rounded-full px-8">
@@ -340,12 +341,13 @@ export default function LandingPage() {
               </Button>
               <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-8">
                 <a href="#tilgang">
-                  Få hjelp til å sette opp ditt event <ArrowRight className="w-4 h-4 ml-1" />
+                  {heroCtaText} <ArrowRight className="w-4 h-4 ml-1" />
                 </a>
               </Button>
             </div>
           </div>
         </section>
+        )}
 
         {/* ══════════════ FOR WHO ══════════════ */}
         <Section id="for-hvem" eyebrow="Hvem er det for?" title="Artister og arrangører">
