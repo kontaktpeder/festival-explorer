@@ -317,7 +317,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-10">
             <StepCard step="1" title="Opprett event" description="Legg inn sted, tid og beskrivelse." />
             <StepCard step="2" title="Bygg lineup" description="Legg til artister, set times og program." />
-            <StepCard step="3" title="Publiser og selg" description="Del siden, selg billetter, scan i døra." />
+            <StepCard step="3" title="Publiser og selg" description="Del siden, selg billetter, scan i døra." isLast />
           </div>
         </Section>
 
