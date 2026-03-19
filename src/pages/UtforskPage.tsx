@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import gIcon from "@/assets/giggen-g-icon-red.png";
 import {
+  ArrowLeft,
   Search,
   Users,
   Calendar,
