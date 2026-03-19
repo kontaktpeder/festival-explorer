@@ -282,7 +282,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 gap-12 items-start">
             <div>
               <ul className="space-y-3 mb-6">
-                {["Artister og lineup", "Tider og kjøreplan", "Billetter og innsjekk", "Info til publikum", "Oversikt for crew"].map((t) => (
+                {["Artister og lineup", "Tider og kjøreplan", "Billetter og innsjekk", "Oversikt for crew"].map((t) => (
                   <li key={t} className="flex items-center gap-3 text-sm text-foreground/80">
                     <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
                     {t}
@@ -290,28 +290,31 @@ export default function LandingPage() {
                 ))}
               </ul>
               <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-                Når dette ligger i ulike verktøy, må alt oppdateres manuelt.
+                Alt ligger ofte i ulike verktøy – og må holdes oppdatert manuelt.
               </p>
               <p className="text-sm font-semibold text-foreground">
                 Du jobber i flere systemer – samtidig som alt egentlig er ett show.
               </p>
             </div>
-            <div className="rounded-xl border border-border/60 bg-card/60 p-6">
-              <h3 className="font-bold text-foreground text-lg mb-4">Hvorfor blir det fort kaos?</h3>
+            <div className="rounded-xl border border-border/60 bg-card/80 p-7">
+              <h3 className="font-bold text-foreground text-xl mb-5">Hvorfor blir det fort kaos?</h3>
               <ul className="space-y-3">
                 {[
                   "Du oppdaterer lineup flere steder",
                   "Endringer når ikke alle",
                   "Folk vet ikke når de skal på",
-                  "Billett og innsjekk lever sitt eget liv",
+                  "Billetter og innsjekk lever sitt eget liv",
                   "Oversikten forsvinner når tempoet øker",
                 ].map((t) => (
                   <li key={t} className="text-sm text-muted-foreground leading-relaxed">{t}</li>
                 ))}
               </ul>
-              <p className="text-sm font-semibold text-foreground mt-4">Det er her kaoset oppstår.</p>
+              <p className="text-sm font-bold text-foreground mt-5">Det er her kaoset skjer.</p>
             </div>
           </div>
+          <p className="text-sm text-muted-foreground mt-10 text-center italic">
+            Dette er ikke ett problem – det er 10 små som skjer samtidig.
+          </p>
         </Section>
 
         {/* ══════════════ WHAT IS GIGGEN ══════════════ */}
