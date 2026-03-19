@@ -256,6 +256,27 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* ══════════════ VIDEO CASE (under hero) ══════════════ */}
+        {landing?.hero_video_url && (
+          <section className="py-20 md:py-28 px-5">
+            <div className="max-w-3xl mx-auto">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-2">
+                Se hvordan vi gjorde det
+              </p>
+              <h2
+                className="text-xl md:text-2xl font-bold text-foreground mb-2"
+                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              >
+                Fra planlegging til gjennomført kveld
+              </h2>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+                Dette er et ekte case bygget i GIGGEN. Se hvordan alt henger sammen når event, lineup, billetter og innsjekk ligger i samme system.
+              </p>
+              <VimeoVideo url={landing.hero_video_url} background className="shadow-2xl" />
+            </div>
+          </section>
+        )}
+
         {/* ══════════════ WHAT IS AN EVENT ══════════════ */}
         <Section id="hva" eyebrow="Problemet" title="Et event er ikke én oppgave – det er 20 små systemer samtidig.">
           <div className="grid md:grid-cols-2 gap-12 items-start">
