@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import gIcon from "@/assets/giggen-g-icon-red.png";
 import {
+  ArrowLeft,
   Search,
   Users,
   Calendar,
@@ -169,6 +170,7 @@ function FestivalBanner() {
 /* ── Main page ───────────────────────────────────── */
 export default function UtforskPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const autoMode = useAutoMode();
 
   const urlMode = searchParams.get("mode") as UtforskMode | null;
@@ -227,14 +229,22 @@ export default function UtforskPage() {
 
       {/* ── Sticky top bar ───────────────────── */}
       <header
-        className="sticky top-0 z-40 bg-background/60 backdrop-blur-xl border-b border-border/20"
+        className="sticky top-0 z-50 bg-background/60 backdrop-blur-xl border-b border-border/20"
         style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
       >
-        <div className="max-w-5xl mx-auto w-full px-4 py-3 flex items-center justify-between">
-          <h1 className="text-display text-lg tracking-tight">Utforsk</h1>
-          <Link to="/">
-            <img src={gIcon} alt="GIGGEN" className="h-8 w-8 object-contain" />
-          </Link>
+        <div className="w-full px-4 sm:px-8 lg:px-12 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={() => navigate(-1)}
+              className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <span className="text-sm font-semibold tracking-tight text-foreground truncate">
+              Utforsk
+            </span>
+          </div>
+          <img src={gIcon} alt="GIGGEN" className="h-8 w-8 object-contain shrink-0" />
         </div>
       </header>
 
