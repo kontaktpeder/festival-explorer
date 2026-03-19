@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, Link } from "react-router-dom";
+import gIcon from "@/assets/giggen-g-icon-red.png";
 import {
   Search,
   Users,
