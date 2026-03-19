@@ -88,11 +88,8 @@ function Card({
 function StepCard({
   step,
   title,
-  description
-
-
-
-
+  description,
+  isLast
 }: {step: string;title: string;description: string;isLast?: boolean;}) {
   return (
     <div className="text-center relative">
