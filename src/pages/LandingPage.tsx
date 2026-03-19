@@ -452,6 +452,7 @@ export default function LandingPage() {
                   <div className="text-center">
                     <p className="text-2xl md:text-3xl font-black text-foreground">3</p>
                     <p className="text-xs text-muted-foreground uppercase tracking-wider">scener</p>
+                  </div>
                 </div>
               </Reveal>
 
