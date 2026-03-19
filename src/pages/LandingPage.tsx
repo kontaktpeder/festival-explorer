@@ -268,8 +268,11 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <p className="text-muted-foreground text-sm leading-relaxed">
+              <p className="text-muted-foreground text-sm leading-relaxed mb-4">
                 Når dette ligger i ulike verktøy, må alt oppdateres manuelt.
+              </p>
+              <p className="text-sm font-semibold text-foreground">
+                Du jobber i flere systemer – samtidig som alt egentlig er ett show.
               </p>
             </div>
             <div className="rounded-xl border border-border/60 bg-card/60 p-6">
