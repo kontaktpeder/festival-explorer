@@ -178,6 +178,7 @@ const App = () => (
             <Route path="entities" element={<AdminEntities />} />
             <Route path="entities/:id" element={<AdminEntityEdit />} />
             <Route path="access-generator" element={<AdminAccessGenerator />} />
+            <Route path="landing" element={<Navigate to="/dashboard/landing" replace />} />
             <Route path="deletion-requests" element={<AdminDeletionRequests />} />
             <Route path="inbox" element={<AdminInbox />} />
             <Route path="inbox/:id" element={<AdminInboxDetail />} />

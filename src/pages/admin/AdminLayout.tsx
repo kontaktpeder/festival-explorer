@@ -94,6 +94,7 @@ export default function AdminLayout() {
   const allNavItems: NavItem[] = [
     { to: "/admin", icon: LayoutDashboard, label: "Dashboard", exact: true },
     { to: "/admin/entities", icon: Layers, label: "Prosjekter & venues", adminOnly: true },
+    { to: "/admin/landing", icon: LayoutTemplate, label: "Landingsside", adminOnly: true },
     { to: "/admin/access-generator", icon: UserPlus, label: "Tilgang", adminOnly: true },
     { to: "/admin/deletion-requests", icon: Trash2, label: "Sletting", adminOnly: true },
     { to: "/admin/inbox", icon: Inbox, label: "Inbox", adminOnly: true },
