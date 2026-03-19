@@ -330,6 +330,14 @@ export default function FestivalCasePage() {
           </>
         )}
 
+        {/* ═══ CREDITS ═══ */}
+        {caseCreditMembers.length > 0 && (
+          <>
+            <Divider />
+            <TeamCreditsSection title="Credits" members={caseCreditMembers} className="py-12 md:py-20" />
+          </>
+        )}
+
         {/* ═══ CTA ═══ */}
         <Divider />
         <section className="px-5 md:px-10 py-14 md:py-24">
