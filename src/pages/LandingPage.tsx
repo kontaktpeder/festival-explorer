@@ -244,6 +244,42 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* ══════════════ HERO VIDEO ══════════════ */}
+        {landing?.hero_video_url && (
+          <section className="px-5 -mt-8 mb-8 relative z-10">
+            <div className="max-w-4xl mx-auto">
+              <VimeoVideo url={landing.hero_video_url} background className="shadow-2xl" />
+            </div>
+          </section>
+        )}
+
+        {/* ══════════════ PROOF STATS ══════════════ */}
+        {showProofBlock && (
+          <section className="py-12 px-5">
+            <div className="max-w-3xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+              {showAttendees && (
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-accent mb-1">Kommet</p>
+                  <p className="text-2xl md:text-3xl font-black text-foreground">{checkedInCount}+</p>
+                  <p className="text-xs text-muted-foreground">gjester</p>
+                </div>
+              )}
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-accent mb-1">Artister</p>
+                <p className="text-2xl md:text-3xl font-black text-foreground">{artistCount}</p>
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-accent mb-1">Scener</p>
+                <p className="text-2xl md:text-3xl font-black text-foreground">{eventCount}</p>
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-accent mb-1">Kveld</p>
+                <p className="text-2xl md:text-3xl font-black text-foreground">1</p>
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* ══════════════ WHAT IS ══════════════ */}
         <Section id="hva" eyebrow="Hva er GIGGEN?" title="Én plattform for hele showet">
           <div className="grid md:grid-cols-2 gap-12 items-start">
