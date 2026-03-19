@@ -26,6 +26,9 @@ import { useCreateAccessRequest } from "@/hooks/useAccessRequests";
 import { useLandingPageContent } from "@/hooks/useLandingPageContent";
 import { useFestivalShell, useFestivalDetails } from "@/hooks/useFestival";
 import { supabase } from "@/integrations/supabase/client";
+import { usePublicPageCredits } from "@/hooks/usePublicPageCredits";
+import { useResolvedCredits } from "@/hooks/useResolvedCredits";
+import { TeamCreditsSection } from "@/components/ui/TeamCreditsSection";
 import giggenLogo from "@/assets/giggen-logo-final.png";
 
 const FESTIVAL_CASE_URL = "/festival/case/giggen-festival-for-en-kveld";
