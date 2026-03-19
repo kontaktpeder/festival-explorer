@@ -227,26 +227,8 @@ export default function UtforskPage() {
       {/* ── Mode picker modal ────────────────── */}
       {showModePicker && <ModePickerModal onSelect={handleModalSelect} />}
 
-      {/* ── Sticky top bar ───────────────────── */}
-      <header
-        className="sticky top-0 z-50 bg-background/60 backdrop-blur-xl border-b border-border/20"
-        style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
-      >
-        <div className="w-full px-4 sm:px-8 lg:px-12 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <button
-              onClick={() => navigate(-1)}
-              className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </button>
-            <span className="text-sm font-semibold tracking-tight text-foreground truncate">
-              Utforsk
-            </span>
-          </div>
-          <img src={gIcon} alt="GIGGEN" className="h-8 w-8 object-contain shrink-0" />
-        </div>
-      </header>
+      {/* ── Header (same as landing/public pages) ── */}
+      <StaticLogo />
 
       {/* ── Toolbar: search + filters ────────── */}
       <div className="px-4 pb-4 max-w-5xl mx-auto w-full space-y-3">
