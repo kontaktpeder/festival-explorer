@@ -1828,6 +1828,48 @@ export type Database = {
           },
         ]
       }
+      landing_page_content: {
+        Row: {
+          hero_cta_text: string | null
+          hero_subtitle: string | null
+          hero_title: string | null
+          hero_video_url: string | null
+          id: number
+          proof_enabled: boolean
+          proof_show_attendees: boolean
+          section_case_enabled: boolean
+          section_case_subtitle: string | null
+          section_case_title: string | null
+          updated_at: string
+        }
+        Insert: {
+          hero_cta_text?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
+          hero_video_url?: string | null
+          id?: number
+          proof_enabled?: boolean
+          proof_show_attendees?: boolean
+          section_case_enabled?: boolean
+          section_case_subtitle?: string | null
+          section_case_title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          hero_cta_text?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
+          hero_video_url?: string | null
+          id?: number
+          proof_enabled?: boolean
+          proof_show_attendees?: boolean
+          section_case_enabled?: boolean
+          section_case_subtitle?: string | null
+          section_case_title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       media: {
         Row: {
           alt_text: string | null

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   Calendar,
@@ -8,18 +9,27 @@ import {
   Music2,
   Ticket,
   Wand2,
-  FolderOpen } from
+  FolderOpen,
+  Users,
+  Mic2,
+  MapPin,
+  Star } from
 "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { StaticLogo } from "@/components/ui/StaticLogo";
+import { VimeoVideo } from "@/components/ui/VimeoVideo";
 import { useToast } from "@/hooks/use-toast";
 import { useCreateAccessRequest } from "@/hooks/useAccessRequests";
+import { useLandingPageContent } from "@/hooks/useLandingPageContent";
+import { useFestivalShell, useFestivalDetails } from "@/hooks/useFestival";
+import { supabase } from "@/integrations/supabase/client";
 import giggenLogo from "@/assets/giggen-logo-final.png";
 
 const FESTIVAL_CASE_URL = "/festival/case/giggen-festival-for-en-kveld";
+const DEMO_GIGGEN_SLUG = "giggen-festival-for-en-kveld";
 
 function Section({
   id,
@@ -108,6 +118,40 @@ export default function LandingPage() {
 
   const festivalCaseUrl = FESTIVAL_CASE_URL;
 
+  // CMS content
+  const { data: landing } = useLandingPageContent();
+
+  // Proof stats from demo festival
+  const { data: giggenShell } = useFestivalShell(DEMO_GIGGEN_SLUG);
+  const { data: giggenDetails } = useFestivalDetails(giggenShell?.id);
+
+  const artistCount = giggenDetails?.allArtistsWithEventSlug?.length ?? 0;
+
+  const eventCount = useMemo(() => {
+    return (giggenDetails?.festivalEvents ?? []).filter((fe: any) => fe?.event?.status === "published").length;
+  }, [giggenDetails]);
+
+  const { data: checkedInCount } = useQuery({
+    queryKey: ["landing-proof-checked-in", landing?.proof_enabled, landing?.proof_show_attendees, giggenShell?.slug],
+    enabled: !!landing?.proof_enabled && !!landing?.proof_show_attendees && !!giggenShell?.slug,
+    queryFn: async () => {
+      const { data: te, error } = await supabase
+        .from("ticket_events")
+        .select("attendance_count, boilerroom_attendance_count")
+        .eq("slug", DEMO_GIGGEN_SLUG)
+        .maybeSingle();
+      if (error) throw error;
+      if (!te) return null;
+      return (te.attendance_count ?? 0) + (te.boilerroom_attendance_count ?? 0);
+    },
+  });
+
+  const heroTitle = landing?.hero_title || "Lag konserter, uten kaos";
+  const heroSubtitle = landing?.hero_subtitle || "GIGGEN samler booking, program og billetter på ett sted – laget for artister og arrangører i startfasen.";
+  const heroCtaText = landing?.hero_cta_text || "Få hjelp til å sette opp ditt event";
+  const showProofBlock = landing?.proof_enabled && artistCount > 0 && eventCount > 0;
+  const showAttendees = landing?.proof_show_attendees && typeof checkedInCount === "number" && checkedInCount > 0;
+
   const submitQuickAccess = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) {
@@ -160,19 +204,17 @@ export default function LandingPage() {
             <h1
               className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              
-              Lag konserter, uten kaos
+              {heroTitle}
             </h1>
 
             <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed">
-              GIGGEN samler booking, program og billetter på ett sted – laget for artister og arrangører i startfasen.
-            
+              {heroSubtitle}
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
               <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-8">
                 <a href="#tilgang">
-                  Få hjelp til å sette opp ditt event <ArrowRight className="w-4 h-4 ml-1" />
+                  {heroCtaText} <ArrowRight className="w-4 h-4 ml-1" />
                 </a>
               </Button>
               <Button asChild variant="outline" size="lg" className="rounded-full px-8">
@@ -201,6 +243,42 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* ══════════════ HERO VIDEO ══════════════ */}
+        {landing?.hero_video_url && (
+          <section className="px-5 -mt-8 mb-8 relative z-10">
+            <div className="max-w-4xl mx-auto">
+              <VimeoVideo url={landing.hero_video_url} background className="shadow-2xl" />
+            </div>
+          </section>
+        )}
+
+        {/* ══════════════ PROOF STATS ══════════════ */}
+        {showProofBlock && (
+          <section className="py-12 px-5">
+            <div className="max-w-3xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+              {showAttendees && (
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-accent mb-1">Kommet</p>
+                  <p className="text-2xl md:text-3xl font-black text-foreground">{checkedInCount}+</p>
+                  <p className="text-xs text-muted-foreground">gjester</p>
+                </div>
+              )}
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-accent mb-1">Artister</p>
+                <p className="text-2xl md:text-3xl font-black text-foreground">{artistCount}</p>
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-accent mb-1">Scener</p>
+                <p className="text-2xl md:text-3xl font-black text-foreground">{eventCount}</p>
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-accent mb-1">Kveld</p>
+                <p className="text-2xl md:text-3xl font-black text-foreground">1</p>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* ══════════════ WHAT IS ══════════════ */}
         <Section id="hva" eyebrow="Hva er GIGGEN?" title="Én plattform for hele showet">
@@ -245,16 +323,17 @@ export default function LandingPage() {
         </Section>
 
         {/* ══════════════ REAL CASE ══════════════ */}
+        {(landing?.section_case_enabled !== false) && (
         <section className="py-20 md:py-28 px-5 bg-card/40">
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">
               Case
             </p>
             <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              GIGGEN Festival
+              {landing?.section_case_title || "GIGGEN Festival"}
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-8 max-w-xl mx-auto">
-              GIGGEN Festival er vårt første proof of concept – en ekte festival bygget og drevet gjennom plattformen.
+              {landing?.section_case_subtitle || "GIGGEN Festival er vårt første proof of concept – en ekte festival bygget og drevet gjennom plattformen."}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button asChild variant="outline" size="lg" className="rounded-full px-8">
@@ -262,12 +341,13 @@ export default function LandingPage() {
               </Button>
               <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-8">
                 <a href="#tilgang">
-                  Få hjelp til å sette opp ditt event <ArrowRight className="w-4 h-4 ml-1" />
+                  {heroCtaText} <ArrowRight className="w-4 h-4 ml-1" />
                 </a>
               </Button>
             </div>
           </div>
         </section>
+        )}
 
         {/* ══════════════ FOR WHO ══════════════ */}
         <Section id="for-hvem" eyebrow="Hvem er det for?" title="Artister og arrangører">
@@ -326,9 +406,9 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-wrap gap-3 mb-4">
                 <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-8">
-                  <Link to="/request-access">
-                    Få hjelp til å sette opp ditt event <ArrowRight className="w-4 h-4 ml-1" />
-                  </Link>
+                   <Link to="/request-access">
+                     {heroCtaText} <ArrowRight className="w-4 h-4 ml-1" />
+                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="rounded-full px-8">
                   <Link to={festivalCaseUrl}>Se festivalen</Link>
@@ -381,7 +461,7 @@ export default function LandingPage() {
                   disabled={createRequest.isPending}
                   className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold">
                   
-                    {createRequest.isPending ? "Sender…" : "Få hjelp til å sette opp ditt event"}
+                    {createRequest.isPending ? "Sender…" : heroCtaText}
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </form>
@@ -402,7 +482,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-black rounded-full px-8">
                 <a href="#tilgang">
-                  Få hjelp til å sette opp ditt event <ArrowRight className="w-4 h-4 ml-1" />
+                  {heroCtaText} <ArrowRight className="w-4 h-4 ml-1" />
                 </a>
               </Button>
               <Button asChild variant="outline" size="lg" className="rounded-full px-8">
