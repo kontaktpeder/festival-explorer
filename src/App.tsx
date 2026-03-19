@@ -99,6 +99,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <ScrollRestorationManager />
         <PublicErrorBoundary>
         <Routes>
           <Route path="/" element={<LandingPage />} />
