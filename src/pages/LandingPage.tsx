@@ -461,7 +461,7 @@ export default function LandingPage() {
                   disabled={createRequest.isPending}
                   className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold">
                   
-                    {createRequest.isPending ? "Sender…" : "Få hjelp til å sette opp ditt event"}
+                    {createRequest.isPending ? "Sender…" : heroCtaText}
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </form>
