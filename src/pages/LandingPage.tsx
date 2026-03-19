@@ -149,7 +149,7 @@ export default function LandingPage() {
   });
 
   const heroTitle = landing?.hero_title || "Lag konserter, uten kaos";
-  const heroSubtitle = landing?.hero_subtitle || "GIGGEN samler booking, program og billetter på ett sted – laget for artister og arrangører i startfasen.";
+  const heroSubtitle = landing?.hero_subtitle || "GIGGEN samler booking, program og billetter på ett sted – laget for artister og arrangører som vil få ting til å skje.";
   const heroCtaText = landing?.hero_cta_text || "Kom i gang med ditt event nå";
   const showProofBlock = landing?.proof_enabled && artistCount > 0 && eventCount > 0;
   const showAttendees = landing?.proof_show_attendees && typeof checkedInCount === "number" && checkedInCount > 0;
