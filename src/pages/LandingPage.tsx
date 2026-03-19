@@ -256,6 +256,27 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* ══════════════ VIDEO CASE (under hero) ══════════════ */}
+        {landing?.hero_video_url && (
+          <section className="py-20 md:py-28 px-5">
+            <div className="max-w-3xl mx-auto">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-2">
+                Se hvordan vi gjorde det
+              </p>
+              <h2
+                className="text-xl md:text-2xl font-bold text-foreground mb-2"
+                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              >
+                Fra planlegging til gjennomført kveld
+              </h2>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+                Dette er et ekte case bygget i GIGGEN. Se hvordan alt henger sammen når event, lineup, billetter og innsjekk ligger i samme system.
+              </p>
+              <VimeoVideo url={landing.hero_video_url} background className="shadow-2xl" />
+            </div>
+          </section>
+        )}
+
         {/* ══════════════ WHAT IS AN EVENT ══════════════ */}
         <Section id="hva" eyebrow="Problemet" title="Et event er ikke én oppgave – det er 20 små systemer samtidig.">
           <div className="grid md:grid-cols-2 gap-12 items-start">
@@ -346,52 +367,8 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ══════════════ VIDEO + CONTROL SIDE BY SIDE ══════════════ */}
-        {landing?.hero_video_url && (
-          <section className="py-20 md:py-28 px-5">
-            <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-start">
-              {/* Left: Video */}
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-2">
-                  Se hvordan vi gjorde det
-                </p>
-                <h2
-                  className="text-xl md:text-2xl font-bold text-foreground mb-2"
-                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                >
-                  Fra planlegging til gjennomført kveld
-                </h2>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-5">
-                  Dette er et ekte case bygget i GIGGEN. Se hvordan alt henger sammen når event, lineup, billetter og innsjekk ligger i samme system.
-                </p>
-                <VimeoVideo url={landing.hero_video_url} background className="shadow-2xl" />
-              </div>
 
-              {/* Right: Alt i ett */}
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Alt i ett</p>
-                <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                  Dette hadde vi full kontroll på – i én løsning
-                </h2>
-                <p className="text-muted-foreground text-sm mb-6 italic">Alt oppdatert i sanntid – uten Excel, uten kaos.</p>
-                <ul className="space-y-3">
-                  {[
-                    "Innsjekk i døra (live)",
-                    "Billettsalg + mobil scanning",
-                    "Alle på og bak scenen",
-                    "Live kjøreplan",
-                    "Lineup og info samlet",
-                  ].map((item) => (
-                    <li key={item} className="flex items-center gap-3 text-sm text-foreground/80">
-                      <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </section>
-        )}
+
 
         {/* ══════════════ PROOF STATS ══════════════ */}
         {showProofBlock && (
