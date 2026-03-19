@@ -256,19 +256,46 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ══════════════ HERO VIDEO ══════════════ */}
+        {/* ══════════════ INTRO + VIDEO ══════════════ */}
         {landing?.hero_video_url && (
           <section className="px-5 -mt-8 mb-8 relative z-10">
             <div className="max-w-4xl mx-auto">
-              <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground/60 mb-3">
-                Slik brukte vi{" "}
-                <Link to="/festival/case/giggen-festival-for-en-kveld" className="text-accent hover:text-accent/80 transition-colors">
-                  GIGGEN →
-                </Link>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-2">
+                Se hvordan vi gjorde det
+              </p>
+              <h2
+                className="text-xl md:text-2xl font-bold text-foreground mb-2"
+                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+              >
+                Fra planlegging til gjennomført kveld
+              </h2>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-5 max-w-2xl">
+                Dette er et ekte case bygget i GIGGEN. Se hvordan alt henger sammen når event, lineup, billetter og innsjekk ligger i samme system.
               </p>
               <VimeoVideo url={landing.hero_video_url} background className="shadow-2xl" />
             </div>
           </section>
+        )}
+
+        {/* ══════════════ CONTROL SECTION ══════════════ */}
+        {landing?.hero_video_url && (
+          <Section eyebrow="Alt i ett" title="Dette hadde vi full kontroll på – i én løsning">
+            <p className="text-muted-foreground text-sm mb-6 italic">Alt oppdatert i sanntid – uten Excel, uten kaos.</p>
+            <ul className="grid sm:grid-cols-2 gap-3">
+              {[
+                "Innsjekk i døra (live oppdatert)",
+                "Billettsalg + mobil scanning",
+                "Alle på og bak scenen",
+                "Live kjøreplan for crew og artister",
+                "Lineup, info og deling – samlet på én side",
+              ].map((item) => (
+                <li key={item} className="flex items-center gap-3 text-sm text-foreground/80">
+                  <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </Section>
         )}
 
         {/* ══════════════ PROOF STATS ══════════════ */}
