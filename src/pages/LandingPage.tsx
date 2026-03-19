@@ -88,19 +88,18 @@ function Card({
 function StepCard({
   step,
   title,
-  description
-
-
-
-
-}: {step: string;title: string;description: string;}) {
+  description,
+  isLast
+}: {step: string;title: string;description: string;isLast?: boolean;}) {
   return (
-    <div className="text-center">
-      <div className="flex flex-col items-center gap-3 mb-3">
-        <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-accent text-accent-foreground font-black text-sm">
+    <div className="text-center relative">
+      <div className="flex items-center justify-center mb-3">
+        <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-accent text-accent-foreground font-black text-sm relative z-10">
           {step}
         </span>
-        <div className="hidden md:block w-px h-4 bg-border" />
+        {!isLast && (
+          <div className="hidden md:block absolute left-[calc(50%+1.25rem)] top-5 -translate-y-1/2 h-px bg-border" style={{ width: 'calc(100% - 1.25rem)' }} />
+        )}
       </div>
       <h3 className="font-semibold text-foreground mb-1">{title}</h3>
       <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">{description}</p>
@@ -318,7 +317,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-10">
             <StepCard step="1" title="Opprett event" description="Legg inn sted, tid og beskrivelse." />
             <StepCard step="2" title="Bygg lineup" description="Legg til artister, set times og program." />
-            <StepCard step="3" title="Publiser og selg" description="Del siden, selg billetter, scan i døra." />
+            <StepCard step="3" title="Publiser og selg" description="Del siden, selg billetter, scan i døra." isLast />
           </div>
         </Section>
 
