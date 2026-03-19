@@ -50,7 +50,7 @@ export function StaticLogo({ heroMode = false }: StaticLogoProps) {
   const handleClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     
-    if (location.pathname === "/" || location.pathname.startsWith("/festival/")) {
+    if (location.pathname === "/") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       navigate("/");
