@@ -8,6 +8,9 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { StaticLogo } from "@/components/ui/StaticLogo";
 import { LoadingState, EmptyState } from "@/components/ui/LoadingState";
 import { Button } from "@/components/ui/button";
+import { TeamCreditsSection } from "@/components/ui/TeamCreditsSection";
+import { usePublicPageCredits } from "@/hooks/usePublicPageCredits";
+import { useResolvedCredits } from "@/hooks/useResolvedCredits";
 import caseHeroBg from "@/assets/case-hero-bg.png";
 import { VimeoVideo } from "@/components/ui/VimeoVideo";
 

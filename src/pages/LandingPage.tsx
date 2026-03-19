@@ -504,6 +504,11 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* ══════════════ CREDITS ══════════════ */}
+        {creditMembers.length > 0 && (
+          <TeamCreditsSection title="Credits" members={creditMembers} />
+        )}
+
         {/* ══════════════ FOOTER ══════════════ */}
         <footer className="border-t border-border/40 py-8 px-5">
           <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
