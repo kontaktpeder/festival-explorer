@@ -268,8 +268,11 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <p className="text-muted-foreground text-sm leading-relaxed">
+              <p className="text-muted-foreground text-sm leading-relaxed mb-4">
                 Når dette ligger i ulike verktøy, må alt oppdateres manuelt.
+              </p>
+              <p className="text-sm font-semibold text-foreground">
+                Du jobber i flere systemer – samtidig som alt egentlig er ett show.
               </p>
             </div>
             <div className="rounded-xl border border-border/60 bg-card/60 p-6">
@@ -294,9 +297,12 @@ export default function LandingPage() {
         <section className="py-20 md:py-28 px-5 bg-card/40">
           <div className="max-w-5xl mx-auto">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-3">Løsningen</p>
-            <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-10" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               GIGGEN samler alt på ett sted.
             </h2>
+            <p className="text-muted-foreground text-base mb-10 leading-relaxed max-w-2xl">
+              Du jobber ett sted. Alt annet oppdaterer seg selv.
+            </p>
             <div className="grid md:grid-cols-2 gap-12 items-start">
               <div className="grid sm:grid-cols-2 gap-4">
                 <Card icon={<Calendar className="w-5 h-5" />} title="Event" description="Rammen – sted, tid, publisering." />
@@ -357,11 +363,11 @@ export default function LandingPage() {
                 <p className="text-muted-foreground text-sm mb-6 italic">Alt oppdatert i sanntid – uten Excel, uten kaos.</p>
                 <ul className="space-y-3">
                   {[
-                    "Innsjekk i døra (live oppdatert)",
+                    "Innsjekk i døra (live)",
                     "Billettsalg + mobil scanning",
                     "Alle på og bak scenen",
-                    "Live kjøreplan for crew og artister",
-                    "Lineup, info og deling – samlet på én side",
+                    "Live kjøreplan",
+                    "Lineup og info samlet",
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-3 text-sm text-foreground/80">
                       <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
@@ -418,8 +424,11 @@ export default function LandingPage() {
             <h2 className="text-2xl md:text-4xl font-bold text-foreground mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               {landing?.section_case_title || "GIGGEN Festival"}
             </h2>
-            <p className="text-muted-foreground leading-relaxed mb-8 max-w-xl mx-auto">
-              {landing?.section_case_subtitle || "GIGGEN Festival er vårt første proof of concept – en ekte festival bygget og drevet gjennom plattformen."}
+            <p className="text-muted-foreground leading-relaxed mb-2 max-w-xl mx-auto">
+              {landing?.section_case_subtitle || "Dette er et ekte event – bygget og drevet med GIGGEN."}
+            </p>
+            <p className="text-sm text-accent mb-8">
+              Se hvordan alt henger sammen i praksis →
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button asChild variant="outline" size="lg" className="rounded-full px-8">
@@ -441,10 +450,10 @@ export default function LandingPage() {
             <div>
               <ul className="space-y-3">
                 {[
-                  "Mindre koordinering i chat og regneark",
-                  "Mindre dobbeltjobb",
-                  "Raskere endringer uten stress",
-                  "Bedre flyt på selve dagen",
+                  "Mindre kaos i chat og regneark",
+                  "Slutt på dobbeltjobbing",
+                  "Endringer skjer uten stress",
+                  "Alle vet hva som skjer – når det skjer",
                 ].map((t) => (
                   <li key={t} className="flex items-center gap-3 text-sm text-foreground/80">
                     <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
