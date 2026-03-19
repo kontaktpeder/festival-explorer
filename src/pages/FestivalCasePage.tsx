@@ -106,6 +106,16 @@ export default function FestivalCasePage() {
     return (details?.festivalEvents ?? []).filter((fe: any) => fe?.event?.status === "published").length;
   }, [details?.festivalEvents]);
 
+  // Credits
+  const { data: caseCredits = [] } = usePublicPageCredits("festival_case", shell?.id);
+  const { data: resolvedCaseCredits = [] } = useResolvedCredits(caseCredits);
+  const caseCreditMembers = useMemo(() =>
+    resolvedCaseCredits.map((r) => ({
+      persona: r.persona,
+      entity: r.entity,
+      role_label: r.role_label,
+    })), [resolvedCaseCredits]);
+
   useMemo(() => {
     const title = shell ? `${shell.name} – Case | GIGGEN` : "Case | GIGGEN";
     document.title = title;
