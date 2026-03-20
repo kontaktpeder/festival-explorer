@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, Fragment } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -146,6 +146,14 @@ export default function FestivalFinanceRoom() {
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
   const [showOnlyMissingAttachments, setShowOnlyMissingAttachments] = useState(false);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const toggleRow = (id: string) => {
+    setExpandedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
 
   const toggleCategory = (key: string) => {
     setOpenCategories((prev) => {
@@ -485,45 +493,95 @@ export default function FestivalFinanceRoom() {
     </div>
   );
 
+
   const renderExpenseTable = (items: FestivalFinanceEntry[]) => (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[80px]">Bilagsnr</TableHead>
-          <TableHead className="w-[105px]">Dato</TableHead>
-          <TableHead className="min-w-[180px]">Beskrivelse</TableHead>
-          <TableHead className="min-w-[140px]">Mottaker</TableHead>
-          <TableHead className="w-[130px]">Betalt av</TableHead>
-          <TableHead className="w-[90px] text-right">Beløp (kr)</TableHead>
-          <TableHead className="w-[110px]">Betaling</TableHead>
-          <TableHead className="w-[150px]">Vedlegg</TableHead>
-          <TableHead className="w-14 text-right" />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {items.map((e) => (
-          <TableRow key={e.id} className="group">
-            <TableCell className="text-xs text-muted-foreground tabular-nums whitespace-nowrap py-1.5">{e.voucher_number ?? ""}</TableCell>
-            <TableCell className="py-1.5">
-              <EditableText type="date" value={e.date_incurred} onSave={(v) => onExpenseFieldChange(e, "date_incurred", v)} />
-            </TableCell>
-            <TableCell className="py-1.5">
-              <EditableText value={e.description} placeholder="Beskrivelse…" onSave={(v) => onExpenseFieldChange(e, "description", v)} />
-            </TableCell>
-            <TableCell className="py-1.5">
-              <RecipientPicker festivalId={festivalId!} value={e.counterparty} onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} />
-            </TableCell>
-            <TableCell className="py-1.5"><PaidBySelect entry={e} /></TableCell>
-            <TableCell className="py-1.5">
-              <EditableText type="number" value={e.net_amount ? (e.net_amount / 100).toString() : "0"} align="right" onSave={(v) => onExpenseFieldChange(e, "net_amount", v)} />
-            </TableCell>
-            <TableCell className="py-1.5"><PaymentStatusSelect entry={e} onFieldChange={onExpenseFieldChange} /></TableCell>
-            <TableCell className="py-1.5"><AttachmentCell entry={e} onFieldChange={onExpenseFieldChange} /></TableCell>
-            <TableCell className="text-right py-1.5"><div className="flex items-center justify-end gap-0 opacity-0 group-hover:opacity-100 transition-opacity">{expenseActions(e)}</div></TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <div className="w-full">
+      <table className="w-full table-fixed text-sm">
+        <thead>
+          <tr className="border-b text-left text-xs text-muted-foreground">
+            <th className="w-[72px] py-2 px-2 font-medium">Bilag</th>
+            <th className="w-[90px] py-2 px-1 font-medium">Dato</th>
+            <th className="py-2 px-1 font-medium">Motpart</th>
+            <th className="py-2 px-1 font-medium">Beskrivelse</th>
+            <th className="w-[100px] py-2 px-1 font-medium text-right">Beløp</th>
+            <th className="w-[90px] py-2 px-1 font-medium">Status</th>
+            <th className="w-[36px] py-2 px-0" />
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((e) => {
+            const isExpanded = expandedRows.has(e.id);
+            return (
+              <Fragment key={e.id}>
+                <tr className="group border-b border-border/40 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => toggleRow(e.id)}>
+                  <td className="py-1.5 px-2 text-xs text-muted-foreground tabular-nums whitespace-nowrap">{e.voucher_number ?? ""}</td>
+                  <td className="py-1.5 px-1">
+                    <EditableText type="date" value={e.date_incurred} onSave={(v) => onExpenseFieldChange(e, "date_incurred", v)} />
+                  </td>
+                  <td className="py-1.5 px-1 truncate" title={e.counterparty || undefined}>
+                    <span className="text-xs font-medium">{e.counterparty || <span className="text-muted-foreground/50 italic">—</span>}</span>
+                  </td>
+                  <td className="py-1.5 px-1 truncate text-xs text-muted-foreground" title={e.description || undefined}>{e.description || "—"}</td>
+                  <td className="py-1.5 px-1 text-right text-xs tabular-nums font-medium">{formatNok(e.net_amount)}</td>
+                  <td className="py-1.5 px-1">
+                    <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded ${
+                      e.payment_status === "paid" ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                        : e.payment_status === "partial" ? "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                        : e.payment_status === "cancelled" ? "bg-muted text-muted-foreground line-through"
+                        : "text-muted-foreground"
+                    }`}>
+                      {e.payment_status === "paid" ? "Betalt" : e.payment_status === "partial" ? "Delvis" : e.payment_status === "cancelled" ? "Kansellert" : "Ubetalt"}
+                    </span>
+                  </td>
+                  <td className="py-1.5 px-0 text-right">
+                    <ChevronRight className={`h-3.5 w-3.5 text-muted-foreground/50 transition-transform inline-block ${isExpanded ? "rotate-90" : ""}`} />
+                  </td>
+                </tr>
+                {isExpanded && (
+                  <tr className="bg-muted/20">
+                    <td colSpan={7} className="px-3 py-3">
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Motpart</span>
+                          <RecipientPicker festivalId={festivalId!} value={e.counterparty} onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} />
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Beskrivelse</span>
+                          <EditableText value={e.description} placeholder="Beskrivelse…" onSave={(v) => onExpenseFieldChange(e, "description", v)} />
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Betalt av</span>
+                          <PaidBySelect entry={e} />
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Beløp (kr)</span>
+                          <EditableText type="number" value={e.net_amount ? (e.net_amount / 100).toString() : "0"} align="right" onSave={(v) => onExpenseFieldChange(e, "net_amount", v)} />
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Betalingsstatus</span>
+                          <PaymentStatusSelect entry={e} onFieldChange={onExpenseFieldChange} />
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Vedlegg</span>
+                          <AttachmentCell entry={e} onFieldChange={onExpenseFieldChange} />
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Kategori</span>
+                          <EditableText value={e.category || ""} placeholder="Kategori" onSave={(v) => onExpenseFieldChange(e, "category" as any, v)} />
+                        </div>
+                        <div className="flex items-end justify-end gap-1">
+                          {expenseActions(e)}
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 
   const renderExpenseMobileCards = (items: FestivalFinanceEntry[]) => (
@@ -579,42 +637,81 @@ export default function FestivalFinanceRoom() {
   );
 
   const renderIncomeTable = (items: FestivalFinanceEntry[]) => (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[105px]">Dato</TableHead>
-          <TableHead className="min-w-[180px]">Beskrivelse</TableHead>
-          <TableHead className="w-[130px]">Underkategori</TableHead>
-          <TableHead className="min-w-[140px]">Fra</TableHead>
-          <TableHead className="w-[100px] text-right">Beløp (kr)</TableHead>
-          <TableHead className="w-[110px]">Betaling</TableHead>
-          <TableHead className="w-14 text-right" />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {items.map((e) => (
-          <TableRow key={e.id} className="group">
-            <TableCell className="py-1.5">
-              <EditableText type="date" value={e.date_incurred} onSave={(v) => onIncomeFieldChange(e, "date_incurred", v)} />
-            </TableCell>
-            <TableCell className="py-1.5">
-              <EditableText value={e.description} placeholder="Beskrivelse…" onSave={(v) => onIncomeFieldChange(e, "description", v)} />
-            </TableCell>
-            <TableCell className="py-1.5">
-              <EditableText value={e.subcategory || ""} placeholder="Underkategori" onSave={(v) => onIncomeFieldChange(e, "subcategory", v)} />
-            </TableCell>
-            <TableCell className="py-1.5">
-              <EditableText value={e.counterparty || ""} placeholder="Fra (sponsor, ordning)" onSave={(v) => onIncomeFieldChange(e, "counterparty", v)} />
-            </TableCell>
-            <TableCell className="py-1.5">
-              <EditableText type="number" value={e.net_amount ? (e.net_amount / 100).toString() : "0"} align="right" onSave={(v) => onIncomeFieldChange(e, "net_amount", v)} />
-            </TableCell>
-            <TableCell className="py-1.5"><PaymentStatusSelect entry={e} onFieldChange={onIncomeFieldChange} /></TableCell>
-            <TableCell className="text-right py-1.5"><div className="flex items-center justify-end gap-0 opacity-0 group-hover:opacity-100 transition-opacity">{incomeActions(e)}</div></TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <div className="w-full">
+      <table className="w-full table-fixed text-sm">
+        <thead>
+          <tr className="border-b text-left text-xs text-muted-foreground">
+            <th className="w-[90px] py-2 px-2 font-medium">Dato</th>
+            <th className="py-2 px-1 font-medium">Fra</th>
+            <th className="py-2 px-1 font-medium">Beskrivelse</th>
+            <th className="w-[100px] py-2 px-1 font-medium text-right">Beløp</th>
+            <th className="w-[90px] py-2 px-1 font-medium">Status</th>
+            <th className="w-[36px] py-2 px-0" />
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((e) => {
+            const isExpanded = expandedRows.has(e.id);
+            return (
+              <Fragment key={e.id}>
+                <tr className="group border-b border-border/40 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => toggleRow(e.id)}>
+                  <td className="py-1.5 px-2">
+                    <EditableText type="date" value={e.date_incurred} onSave={(v) => onIncomeFieldChange(e, "date_incurred", v)} />
+                  </td>
+                  <td className="py-1.5 px-1 truncate text-xs font-medium" title={e.counterparty || undefined}>{e.counterparty || <span className="text-muted-foreground/50 italic">—</span>}</td>
+                  <td className="py-1.5 px-1 truncate text-xs text-muted-foreground" title={e.description || undefined}>{e.description || "—"}</td>
+                  <td className="py-1.5 px-1 text-right text-xs tabular-nums font-medium">{formatNok(e.net_amount)}</td>
+                  <td className="py-1.5 px-1">
+                    <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded ${
+                      e.payment_status === "paid" ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                        : e.payment_status === "partial" ? "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                        : e.payment_status === "cancelled" ? "bg-muted text-muted-foreground line-through"
+                        : "text-muted-foreground"
+                    }`}>
+                      {e.payment_status === "paid" ? "Betalt" : e.payment_status === "partial" ? "Delvis" : e.payment_status === "cancelled" ? "Kansellert" : "Ubetalt"}
+                    </span>
+                  </td>
+                  <td className="py-1.5 px-0 text-right">
+                    <ChevronRight className={`h-3.5 w-3.5 text-muted-foreground/50 transition-transform inline-block ${isExpanded ? "rotate-90" : ""}`} />
+                  </td>
+                </tr>
+                {isExpanded && (
+                  <tr className="bg-muted/20">
+                    <td colSpan={6} className="px-3 py-3">
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Fra (motpart)</span>
+                          <EditableText value={e.counterparty || ""} placeholder="Sponsor, ordning…" onSave={(v) => onIncomeFieldChange(e, "counterparty", v)} />
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Beskrivelse</span>
+                          <EditableText value={e.description} placeholder="Beskrivelse…" onSave={(v) => onIncomeFieldChange(e, "description", v)} />
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Underkategori</span>
+                          <EditableText value={e.subcategory || ""} placeholder="Underkategori" onSave={(v) => onIncomeFieldChange(e, "subcategory", v)} />
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Beløp (kr)</span>
+                          <EditableText type="number" value={e.net_amount ? (e.net_amount / 100).toString() : "0"} align="right" onSave={(v) => onIncomeFieldChange(e, "net_amount", v)} />
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Betalingsstatus</span>
+                          <PaymentStatusSelect entry={e} onFieldChange={onIncomeFieldChange} />
+                        </div>
+                        <div className="flex items-end justify-end gap-1">
+                          {incomeActions(e)}
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 
   const renderIncomeMobileCards = (items: FestivalFinanceEntry[]) => (
@@ -707,7 +804,7 @@ export default function FestivalFinanceRoom() {
 
   return (
     <div className="finance-theme min-h-[100svh]">
-      <div className="max-w-6xl mx-auto px-3 py-4 md:px-8 md:py-8 space-y-6">
+      <div className="max-w-[1400px] mx-auto px-3 py-4 md:px-6 md:py-8 space-y-6">
         <Link to={`/dashboard/festival/${festivalId}`} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2">
           <ArrowLeft className="w-4 h-4" /><span>Tilbake til festivalrommet</span>
         </Link>
