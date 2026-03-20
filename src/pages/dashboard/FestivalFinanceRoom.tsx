@@ -513,11 +513,7 @@ export default function FestivalFinanceRoom() {
             <TableCell className="py-1.5">
               <RecipientPicker festivalId={festivalId!} value={e.counterparty} onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} />
             </TableCell>
-            <TableCell className="py-1.5">
-              <span className="text-xs truncate block" title={e.paid_by_label || undefined}>
-                {e.paid_by_label || <span className="text-muted-foreground/50 italic">—</span>}
-              </span>
-            </TableCell>
+            <TableCell className="py-1.5"><PaidBySelect entry={e} /></TableCell>
             <TableCell className="py-1.5">
               <EditableText type="number" value={e.net_amount ? (e.net_amount / 100).toString() : "0"} align="right" onSave={(v) => onExpenseFieldChange(e, "net_amount", v)} />
             </TableCell>
