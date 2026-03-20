@@ -519,6 +519,7 @@ export default function FestivalFinanceRoom() {
           <TableHead className="w-[130px]">Underkategori</TableHead>
           <TableHead>Fra</TableHead>
           <TableHead className="w-[130px] text-right">Beløp (kr)</TableHead>
+          <TableHead className="w-[140px]">Betaling</TableHead>
           <TableHead className="w-20 text-right" />
         </TableRow>
       </TableHeader>
@@ -530,6 +531,7 @@ export default function FestivalFinanceRoom() {
             <TableCell><Input list="finance-subcategory-suggestions" className="h-8 text-xs" defaultValue={e.subcategory || ""} placeholder="Underkategori" onBlur={(ev) => onIncomeFieldChange(e, "subcategory", ev.target.value)} /></TableCell>
             <TableCell><Input className="h-8 text-xs" defaultValue={e.counterparty || ""} placeholder="Fra (sponsor, ordning)" onBlur={(ev) => onIncomeFieldChange(e, "counterparty", ev.target.value)} /></TableCell>
             <TableCell><Input type="number" className="h-8 text-xs text-right tabular-nums" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onIncomeFieldChange(e, "net_amount", ev.target.value)} /></TableCell>
+            <TableCell><PaymentStatusSelect entry={e} onFieldChange={onIncomeFieldChange} /></TableCell>
             <TableCell className="text-right">{incomeActions(e)}</TableCell>
           </TableRow>
         ))}
