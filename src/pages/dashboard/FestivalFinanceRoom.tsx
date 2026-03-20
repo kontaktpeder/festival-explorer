@@ -617,7 +617,10 @@ export default function FestivalFinanceRoom() {
               </Select>
             )}
             <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={!entries || entries.length === 0}>
-              <Download className="h-4 w-4 mr-1" /> CSV
+              <Download className="h-4 w-4 mr-1" /> CSV (Intern)
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExportEnkCSV} disabled={!entries || entries.length === 0}>
+              <Download className="h-4 w-4 mr-1" /> CSV (ENK)
             </Button>
             <Button variant="outline" size="sm" onClick={handleCreateBook} disabled={createBook.isPending}>
               <Plus className="h-4 w-4 mr-1" /> Ny bok
