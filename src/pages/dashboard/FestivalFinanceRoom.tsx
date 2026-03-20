@@ -210,22 +210,6 @@ export default function FestivalFinanceRoom() {
 
   const isLoading = booksLoading || (!!activeBookId && entriesLoading) || accessLoading;
 
-  // Block access if no finance permission
-  if (!accessLoading && financeAccess === "none") {
-    return (
-      <div className="finance-theme min-h-[100svh] flex items-center justify-center">
-        <Card className="max-w-md w-full shadow-sm">
-          <CardContent className="p-8 text-center space-y-4">
-            <p className="text-lg font-semibold">Ingen tilgang til økonomi</p>
-            <p className="text-sm text-muted-foreground">Du har ikke økonomi-tilgang for denne festivalen. Kontakt festivaladministrator.</p>
-            <Link to={`/dashboard/festival/${festivalId}`} className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
-              <ArrowLeft className="h-4 w-4" /> Tilbake til festival
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   const { incomeTotal, feeTotal, expenseTotal, reimbursementTotal } = useMemo(() => {
     let income = 0, fee = 0, expense = 0, reimbursements = 0;
