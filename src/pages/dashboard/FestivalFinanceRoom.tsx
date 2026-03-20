@@ -304,7 +304,7 @@ export default function FestivalFinanceRoom() {
       .reduce((sum, e) => sum + (e.net_amount || 0), 0);
 
     const pending = all
-      .filter((e) => !e.internal_only && (e as any).invoice_status === "pending")
+      .filter((e) => !e.internal_only && e.source_type !== "ticket" && (e as any).invoice_status === "pending")
       .reduce((sum, e) => sum + (e.net_amount || 0), 0);
 
     const missingAtt = all
