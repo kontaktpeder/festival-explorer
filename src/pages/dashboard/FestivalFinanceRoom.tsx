@@ -267,6 +267,16 @@ export default function FestivalFinanceRoom() {
   const netExpense = expenseTotal + reimbursementTotal;
   const result = netIncome - netExpense;
 
+  // Helper: outstanding amount per entry
+  const getOutstandingAmount = (e: FestivalFinanceEntry): number => {
+    if (e.payment_status === "cancelled" || e.payment_status === "paid") return 0;
+    if (e.payment_status === "partial") {
+      const paid = e.paid_amount || 0;
+      return Math.max((e.net_amount || 0) - paid, 0);
+    }
+    return e.net_amount || 0; // unpaid or any other
+  };
+
   // Extended KPIs
   const {
     unpaidOrPartialTotal,
@@ -280,8 +290,8 @@ export default function FestivalFinanceRoom() {
     const all = entries || [];
 
     const unpaidOrPartial = all
-      .filter((e) => !e.internal_only && (e.payment_status === "unpaid" || e.payment_status === "partial"))
-      .reduce((sum, e) => sum + (e.net_amount || 0), 0);
+      .filter((e) => !e.internal_only)
+      .reduce((sum, e) => sum + getOutstandingAmount(e), 0);
 
     const blocked = all
       .filter((e) => !e.internal_only && e.payment_status !== "cancelled")
