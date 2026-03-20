@@ -55,7 +55,7 @@ export default function EventRoomPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const isNew = id === "new";
+  const isNew = !id || id === "new";
 
   const [formData, setFormData] = useState({
     title: "",
@@ -279,10 +279,11 @@ export default function EventRoomPage() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["admin-events"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-events-list"] });
       queryClient.invalidateQueries({ queryKey: ["admin-event", id] });
       toast({ title: isNew ? "Event opprettet" : "Event oppdatert" });
       if (isNew && data) {
-        navigate(`/event-room/${data.id}`);
+        navigate(`/dashboard/events/${data.id}`, { replace: true });
       } else if (event?.venue_id) {
         navigate(`/dashboard/venue/${event.venue_id}`);
       } else if (festivalContext?.festival_id) {
