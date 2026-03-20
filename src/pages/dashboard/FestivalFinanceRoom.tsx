@@ -439,10 +439,10 @@ export default function FestivalFinanceRoom() {
 
   /* ── Render entries in a table (desktop) ── */
   const AttachmentCell = ({ entry, onFieldChange }: { entry: FestivalFinanceEntry; onFieldChange: typeof onExpenseFieldChange }) => (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-1.5 min-w-0">
       {entry.attachment_url ? (
         <a href={entry.attachment_url} target="_blank" rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-accent hover:underline truncate max-w-[120px]" title={entry.attachment_name || "Åpne vedlegg"}>
+          className="inline-flex items-center gap-1 text-xs text-accent hover:underline min-w-0" title={entry.attachment_name || "Åpne vedlegg"}>
           <Paperclip className="h-3 w-3 shrink-0" />
           <span className="truncate">{entry.attachment_name || "Vedlegg"}</span>
         </a>
