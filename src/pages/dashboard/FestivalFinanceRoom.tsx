@@ -740,6 +740,14 @@ export default function FestivalFinanceRoom() {
                           <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Betalingsstatus</span>
                           <PaymentStatusSelect entry={e} onFieldChange={onIncomeFieldChange} />
                         </div>
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Faktura</span>
+                          <InvoiceStatusSelect entry={e} onFieldChange={onIncomeFieldChange} />
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Vedlegg</span>
+                          <AttachmentCell entry={e} onFieldChange={onIncomeFieldChange} />
+                        </div>
                         <div className="flex items-end justify-end gap-1">
                           {incomeActions(e)}
                         </div>
