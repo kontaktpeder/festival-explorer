@@ -566,26 +566,34 @@ export default function FestivalFinanceRoom() {
     <div className="space-y-2">
       {items.map((e) => (
         <EntryCard key={e.id} actions={incomeActions(e)} fields={
-          <div className="grid grid-cols-2 gap-2">
-            <div className="col-span-2">
+          <div className="space-y-2">
+            <div>
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beskrivelse</label>
               <Input className="h-8 text-sm" defaultValue={e.description} placeholder="Beskrivelse" onBlur={(ev) => onIncomeFieldChange(e, "description", ev.target.value)} />
             </div>
-            <div>
-              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Dato</label>
-              <Input type="date" className="h-8 text-sm" defaultValue={e.date_incurred} onBlur={(ev) => onIncomeFieldChange(e, "date_incurred", ev.target.value)} />
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Dato</label>
+                <Input type="date" className="h-8 text-sm" defaultValue={e.date_incurred} onBlur={(ev) => onIncomeFieldChange(e, "date_incurred", ev.target.value)} />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beløp (kr)</label>
+                <Input type="number" className="h-8 text-sm text-right tabular-nums" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onIncomeFieldChange(e, "net_amount", ev.target.value)} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Underkategori</label>
+                <Input list="finance-subcategory-suggestions" className="h-8 text-sm" defaultValue={e.subcategory || ""} placeholder="Underkategori" onBlur={(ev) => onIncomeFieldChange(e, "subcategory", ev.target.value)} />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Fra</label>
+                <Input className="h-8 text-sm" defaultValue={e.counterparty || ""} placeholder="Sponsor" onBlur={(ev) => onIncomeFieldChange(e, "counterparty", ev.target.value)} />
+              </div>
             </div>
             <div>
-              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beløp (kr)</label>
-              <Input type="number" className="h-8 text-sm text-right tabular-nums" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onIncomeFieldChange(e, "net_amount", ev.target.value)} />
-            </div>
-            <div>
-              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Underkategori</label>
-              <Input list="finance-subcategory-suggestions" className="h-8 text-sm" defaultValue={e.subcategory || ""} placeholder="Underkategori" onBlur={(ev) => onIncomeFieldChange(e, "subcategory", ev.target.value)} />
-            </div>
-            <div>
-              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Fra</label>
-              <Input className="h-8 text-sm" defaultValue={e.counterparty || ""} placeholder="Sponsor" onBlur={(ev) => onIncomeFieldChange(e, "counterparty", ev.target.value)} />
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Betalingsstatus</label>
+              <PaymentStatusSelect entry={e} onFieldChange={onIncomeFieldChange} />
             </div>
           </div>
         } />
