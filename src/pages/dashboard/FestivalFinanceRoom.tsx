@@ -92,6 +92,55 @@ function EntryCard({ fields, actions }: { fields: React.ReactNode; actions: Reac
   );
 }
 
+/* ── Inline editable cell: read-first, click to edit ── */
+function EditableText({ value, onSave, placeholder, type = "text", className = "", align = "left" }: {
+  value: string;
+  onSave: (v: string) => void;
+  placeholder?: string;
+  type?: "text" | "number" | "date";
+  className?: string;
+  align?: "left" | "right";
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { setDraft(value); }, [value]);
+  useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
+
+  const commit = () => {
+    setEditing(false);
+    if (draft !== value) onSave(draft);
+  };
+
+  if (editing) {
+    return (
+      <Input
+        ref={inputRef}
+        type={type}
+        className={`h-7 text-xs px-1.5 ${align === "right" ? "text-right tabular-nums" : ""} ${className}`}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setDraft(value); setEditing(false); } }}
+      />
+    );
+  }
+
+  const displayValue = value || placeholder || "—";
+  const isEmpty = !value;
+
+  return (
+    <span
+      className={`block cursor-pointer rounded px-1.5 py-1 text-xs transition-colors hover:bg-muted/60 ${align === "right" ? "text-right tabular-nums" : ""} ${isEmpty ? "text-muted-foreground/50 italic" : ""} ${className}`}
+      onClick={() => setEditing(true)}
+      title={value || undefined}
+    >
+      {displayValue}
+    </span>
+  );
+}
+
 export default function FestivalFinanceRoom() {
   const { id: festivalId } = useParams<{ id: string }>();
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
