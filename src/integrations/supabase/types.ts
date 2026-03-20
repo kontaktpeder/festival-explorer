@@ -1390,6 +1390,7 @@ export type Database = {
           gross_amount: number
           id: string
           internal_only: boolean
+          invoice_status: string
           linked_entry_id: string | null
           net_amount: number
           notes: string | null
@@ -1427,6 +1428,7 @@ export type Database = {
           gross_amount: number
           id?: string
           internal_only?: boolean
+          invoice_status?: string
           linked_entry_id?: string | null
           net_amount: number
           notes?: string | null
@@ -1464,6 +1466,7 @@ export type Database = {
           gross_amount?: number
           id?: string
           internal_only?: boolean
+          invoice_status?: string
           linked_entry_id?: string | null
           net_amount?: number
           notes?: string | null
