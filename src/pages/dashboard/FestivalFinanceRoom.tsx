@@ -220,11 +220,10 @@ export default function FestivalFinanceRoom() {
   const handleAddExpense = () => {
     if (!activeBookId || !user) return;
     const today = new Date().toISOString().slice(0, 10);
-    const voucher = generateYearlyVoucherNumber(entries || [], today);
     expenseMutation.mutate({
       description: "", category: null, counterparty: null,
       gross_amount: 0, net_amount: 0, date_incurred: today,
-      voucher_number: voucher, created_by: user.id,
+      created_by: user.id,
     });
   };
 
