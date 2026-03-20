@@ -335,7 +335,8 @@ export default function FestivalFinanceRoom() {
 
     const headers = ["Dato", "Bilagsnr", "Type", "Motpart", "Betalt av", "Beløp (kr)", "Payment status", "Betalt beløp (kr)", "Vedlegg"];
     const rows = included.map((e) => {
-      const motpart = e.counterparty || (e.source_type === "ticket" ? "Billetthandel" : "");
+      const cp = (e.counterparty ?? "").trim();
+      const motpart = cp || (e.source_type === "ticket" ? "Billetthandel" : "");
       const amount = ((e.net_amount ?? 0) / 100).toString().replace(".", ",");
       const paidAmt = e.payment_status === "partial" && e.paid_amount != null ? (e.paid_amount / 100).toString().replace(".", ",") : "";
       return [e.date_incurred ?? "", e.voucher_number ?? "", e.entry_type ?? "", motpart, financeOwnerName, amount, e.payment_status ?? "", paidAmt, e.attachment_url ?? ""];
