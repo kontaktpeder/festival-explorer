@@ -999,18 +999,44 @@ export default function FestivalFinanceRoom() {
 
         {activeBookId && !isLoading && (
           <>
-            {/* ── Summary cards ── */}
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-              <SummaryCard label="Brutto inntekter" value={formatNok(incomeTotal)} variant="neutral" />
-              <SummaryCard label="Gebyrer" value={formatNok(feeTotal)} variant="neutral" />
-              <SummaryCard label="Netto inntekter" value={formatNok(netIncome)} variant="neutral" />
-              <SummaryCard label="Totale utgifter" value={formatNok(expenseTotal)} variant="neutral" />
-              {reimbursementTotal !== 0 && (
-                <SummaryCard label="Refusjoner" value={formatNok(-reimbursementTotal)} variant="positive" />
-              )}
-              <SummaryCard label="Resultat" value={formatNok(result)}
-                variant={result >= 0 ? "positive" : "negative"}
-                className="col-span-2 md:col-span-1" />
+            {/* ── KPI groups ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+              {/* Drift nå */}
+              <Card className="shadow-sm border-border/60">
+                <CardHeader className="pb-2 pt-3 px-4">
+                  <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">Drift nå</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-1.5 text-sm px-4 pb-3">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Utestående internt</span><span className="font-medium tabular-nums">{formatNok(internalOutstandingTotal)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Personer involvert</span><span className="font-medium tabular-nums">{peopleInvolvedCount}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Ubetalt / delbetalt</span><span className="font-medium tabular-nums">{formatNok(unpaidOrPartialTotal)}</span></div>
+                </CardContent>
+              </Card>
+
+              {/* Regnskap */}
+              <Card className="shadow-sm border-border/60">
+                <CardHeader className="pb-2 pt-3 px-4">
+                  <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">Regnskap</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-1.5 text-sm px-4 pb-3">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Netto inntekter</span><span className="font-medium tabular-nums">{formatNok(netIncome)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Totale kostnader</span><span className="font-medium tabular-nums">{formatNok(expenseTotal)}</span></div>
+                  <div className="flex justify-between border-t border-border/40 pt-1.5 mt-1"><span className="font-medium">Resultat</span><span className={`font-semibold tabular-nums ${result >= 0 ? "finance-positive" : "finance-negative"}`}>{formatNok(result)}</span></div>
+                </CardContent>
+              </Card>
+
+              {/* Dokumentasjon */}
+              <Card className="shadow-sm border-border/60">
+                <CardHeader className="pb-2 pt-3 px-4">
+                  <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">Dokumentasjon</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-1.5 text-sm px-4 pb-3">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Klar for ENK-eksport</span><span className="font-medium tabular-nums">{formatNok(readyForEnkExportTotal)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Blokkert fra ENK</span><span className="font-medium tabular-nums">{formatNok(blockedForEnkExportTotal)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Mangler vedlegg</span><span className="font-medium tabular-nums">{formatNok(missingAttachmentTotal)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Avventer faktura</span><span className="font-medium tabular-nums">{formatNok(pendingInvoiceTotal)}</span></div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* ── Action inbox ── */}
