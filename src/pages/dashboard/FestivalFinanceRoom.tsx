@@ -214,8 +214,8 @@ export default function FestivalFinanceRoom() {
 
   const { uploadAttachment, isUploading: isUploadingAttachment } = useFinanceAttachmentUpload();
 
-  const generateYearlyVoucherNumber = (allEntries: FestivalFinanceEntry[]) => {
-    const year = new Date().getFullYear().toString();
+  const generateYearlyVoucherNumber = (allEntries: FestivalFinanceEntry[], dateIncurred?: string) => {
+    const year = dateIncurred ? dateIncurred.slice(0, 4) : new Date().getFullYear().toString();
     const thisYears = (allEntries || [])
       .map((e) => e.voucher_number)
       .filter((v): v is string => Boolean(v && v.startsWith(year + "-")));
@@ -229,10 +229,11 @@ export default function FestivalFinanceRoom() {
 
   const handleAddExpense = () => {
     if (!activeBookId || !user) return;
-    const voucher = generateYearlyVoucherNumber(entries || []);
+    const today = new Date().toISOString().slice(0, 10);
+    const voucher = generateYearlyVoucherNumber(entries || [], today);
     expenseMutation.mutate({
       description: "", category: null, counterparty: null,
-      gross_amount: 0, net_amount: 0, date_incurred: new Date().toISOString().slice(0, 10),
+      gross_amount: 0, net_amount: 0, date_incurred: today,
       voucher_number: voucher, created_by: user.id,
     });
   };
@@ -242,17 +243,24 @@ export default function FestivalFinanceRoom() {
     if (field === "gross_amount" || field === "net_amount" || field === "paid_amount") {
       const n = parseInt(value.replace(/\s/g, ""), 10);
       patch[field] = isNaN(n) ? 0 : (field === "paid_amount" ? n : n * 100);
-    } else if (field === "date_incurred") { patch.date_incurred = value; }
+    } else if (field === "date_incurred") {
+      patch.date_incurred = value;
+      // Regenerate voucher if year changed
+      if (entry.voucher_number && value.slice(0, 4) !== entry.voucher_number.slice(0, 4)) {
+        patch.voucher_number = generateYearlyVoucherNumber(entries || [], value);
+      }
+    }
     else { patch[field] = value; }
     expenseMutation.mutate(patch);
   };
 
   const handleAddIncome = () => {
     if (!activeBookId || !user) return;
-    const voucher = generateYearlyVoucherNumber(entries || []);
+    const today = new Date().toISOString().slice(0, 10);
+    const voucher = generateYearlyVoucherNumber(entries || [], today);
     incomeMutation.mutate({
       description: "", category: null, counterparty: null,
-      gross_amount: 0, net_amount: 0, date_incurred: new Date().toISOString().slice(0, 10),
+      gross_amount: 0, net_amount: 0, date_incurred: today,
       voucher_number: voucher, created_by: user.id,
     });
   };
@@ -262,7 +270,12 @@ export default function FestivalFinanceRoom() {
     if (field === "gross_amount" || field === "net_amount" || field === "paid_amount") {
       const n = parseInt(value.replace(/\s/g, ""), 10);
       patch[field] = isNaN(n) ? 0 : (field === "paid_amount" ? n : n * 100);
-    } else if (field === "date_incurred") { patch.date_incurred = value; }
+    } else if (field === "date_incurred") {
+      patch.date_incurred = value;
+      if (entry.voucher_number && value.slice(0, 4) !== entry.voucher_number.slice(0, 4)) {
+        patch.voucher_number = generateYearlyVoucherNumber(entries || [], value);
+      }
+    }
     else { patch[field] = value; }
     incomeMutation.mutate(patch);
   };
@@ -308,16 +321,22 @@ export default function FestivalFinanceRoom() {
 
     // Validate
     for (const e of included) {
-      if (!e.voucher_number) { toast.error(`Bilagsnr mangler for rad: ${e.description || e.id}`); return; }
-      const motpart = e.counterparty || (e.source_type === "ticket" ? "Billetthandel" : "");
-      if (!motpart && e.source_type !== "ticket") { toast.error(`Motpart mangler for manuell rad: ${e.description || e.id}`); return; }
-      if (e.source_type !== "ticket" && (!e.attachment_url || !e.attachment_url.trim())) { toast.error(`Vedlegg mangler for manuell rad: ${e.description || e.id}`); return; }
-      if (e.payment_status === "partial" && (e.paid_amount === null || e.paid_amount === undefined)) { toast.error(`Betalt beløp mangler for partial-rad: ${e.description || e.id}`); return; }
+      const label = e.description?.trim() || e.voucher_number || e.id;
+      if (!e.voucher_number || !e.voucher_number.trim()) { toast.error(`Bilagsnr mangler for rad: ${label}`); return; }
+      const cp = (e.counterparty ?? "").trim();
+      const motpart = cp || (e.source_type === "ticket" ? "Billetthandel" : "");
+      if (!motpart && e.source_type !== "ticket") { toast.error(`Motpart mangler for manuell rad: ${label}`); return; }
+      if (e.source_type !== "ticket" && (!e.attachment_url || !e.attachment_url.trim())) { toast.error(`Vedlegg mangler for manuell rad: ${label}`); return; }
+      if (e.payment_status === "partial") {
+        if (e.paid_amount == null || e.paid_amount <= 0) { toast.error(`Betalt beløp må være > 0 for delvis betalt rad: ${label}`); return; }
+        if (e.paid_amount > e.net_amount) { toast.error(`Betalt beløp (${e.paid_amount / 100} kr) kan ikke overstige netto (${e.net_amount / 100} kr): ${label}`); return; }
+      }
     }
 
     const headers = ["Dato", "Bilagsnr", "Type", "Motpart", "Betalt av", "Beløp (kr)", "Payment status", "Betalt beløp (kr)", "Vedlegg"];
     const rows = included.map((e) => {
-      const motpart = e.counterparty || (e.source_type === "ticket" ? "Billetthandel" : "");
+      const cp = (e.counterparty ?? "").trim();
+      const motpart = cp || (e.source_type === "ticket" ? "Billetthandel" : "");
       const amount = ((e.net_amount ?? 0) / 100).toString().replace(".", ",");
       const paidAmt = e.payment_status === "partial" && e.paid_amount != null ? (e.paid_amount / 100).toString().replace(".", ",") : "";
       return [e.date_incurred ?? "", e.voucher_number ?? "", e.entry_type ?? "", motpart, financeOwnerName, amount, e.payment_status ?? "", paidAmt, e.attachment_url ?? ""];
@@ -439,7 +458,7 @@ export default function FestivalFinanceRoom() {
           <TableHead className="w-[120px]">Mottaker</TableHead>
           <TableHead className="w-[120px]">Betalt av</TableHead>
           <TableHead className="w-[100px] text-right">Beløp (kr)</TableHead>
-          <TableHead className="w-[140px]">Betaling</TableHead>
+          <TableHead className="w-[140px]">Betalingsstatus</TableHead>
           <TableHead className="w-[130px]">Vedlegg</TableHead>
           <TableHead className="w-16 text-right" />
         </TableRow>
@@ -499,6 +518,10 @@ export default function FestivalFinanceRoom() {
               <PaidBySelect entry={e} />
             </div>
             <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Betalingsstatus</label>
+              <PaymentStatusSelect entry={e} onFieldChange={onExpenseFieldChange} />
+            </div>
+            <div>
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Paperclip className="h-3 w-3" /> Vedlegg</label>
               <div className="mt-1">
                 <AttachmentCell entry={e} onFieldChange={onExpenseFieldChange} />
@@ -519,7 +542,7 @@ export default function FestivalFinanceRoom() {
           <TableHead className="w-[130px]">Underkategori</TableHead>
           <TableHead>Fra</TableHead>
           <TableHead className="w-[130px] text-right">Beløp (kr)</TableHead>
-          <TableHead className="w-[140px]">Betaling</TableHead>
+          <TableHead className="w-[140px]">Betalingsstatus</TableHead>
           <TableHead className="w-20 text-right" />
         </TableRow>
       </TableHeader>
@@ -543,26 +566,34 @@ export default function FestivalFinanceRoom() {
     <div className="space-y-2">
       {items.map((e) => (
         <EntryCard key={e.id} actions={incomeActions(e)} fields={
-          <div className="grid grid-cols-2 gap-2">
-            <div className="col-span-2">
+          <div className="space-y-2">
+            <div>
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beskrivelse</label>
               <Input className="h-8 text-sm" defaultValue={e.description} placeholder="Beskrivelse" onBlur={(ev) => onIncomeFieldChange(e, "description", ev.target.value)} />
             </div>
-            <div>
-              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Dato</label>
-              <Input type="date" className="h-8 text-sm" defaultValue={e.date_incurred} onBlur={(ev) => onIncomeFieldChange(e, "date_incurred", ev.target.value)} />
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Dato</label>
+                <Input type="date" className="h-8 text-sm" defaultValue={e.date_incurred} onBlur={(ev) => onIncomeFieldChange(e, "date_incurred", ev.target.value)} />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beløp (kr)</label>
+                <Input type="number" className="h-8 text-sm text-right tabular-nums" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onIncomeFieldChange(e, "net_amount", ev.target.value)} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Underkategori</label>
+                <Input list="finance-subcategory-suggestions" className="h-8 text-sm" defaultValue={e.subcategory || ""} placeholder="Underkategori" onBlur={(ev) => onIncomeFieldChange(e, "subcategory", ev.target.value)} />
+              </div>
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Fra</label>
+                <Input className="h-8 text-sm" defaultValue={e.counterparty || ""} placeholder="Sponsor" onBlur={(ev) => onIncomeFieldChange(e, "counterparty", ev.target.value)} />
+              </div>
             </div>
             <div>
-              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Beløp (kr)</label>
-              <Input type="number" className="h-8 text-sm text-right tabular-nums" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onIncomeFieldChange(e, "net_amount", ev.target.value)} />
-            </div>
-            <div>
-              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Underkategori</label>
-              <Input list="finance-subcategory-suggestions" className="h-8 text-sm" defaultValue={e.subcategory || ""} placeholder="Underkategori" onBlur={(ev) => onIncomeFieldChange(e, "subcategory", ev.target.value)} />
-            </div>
-            <div>
-              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Fra</label>
-              <Input className="h-8 text-sm" defaultValue={e.counterparty || ""} placeholder="Sponsor" onBlur={(ev) => onIncomeFieldChange(e, "counterparty", ev.target.value)} />
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Betalingsstatus</label>
+              <PaymentStatusSelect entry={e} onFieldChange={onIncomeFieldChange} />
             </div>
           </div>
         } />
