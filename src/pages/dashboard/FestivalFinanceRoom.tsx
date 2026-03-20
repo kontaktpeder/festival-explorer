@@ -813,7 +813,7 @@ export default function FestivalFinanceRoom() {
     renderMobile: (items: FestivalFinanceEntry[]) => React.ReactNode,
   ) => {
     const groupKey = `${keyPrefix}-${group.category}`;
-    const isOpen = openCategories.has(groupKey);
+    const isOpen = openCategory === groupKey;
     const hasSubGroups = group.subGroups.length > 1 || (group.subGroups.length === 1 && group.subGroups[0].subcategory !== "");
 
     return (
