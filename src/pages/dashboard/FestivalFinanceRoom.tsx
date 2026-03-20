@@ -948,7 +948,15 @@ export default function FestivalFinanceRoom() {
               <span className="text-sm font-semibold">{group.category}</span>
               <span className="text-xs text-muted-foreground">{group.items.length} linje{group.items.length === 1 ? "" : "r"}</span>
             </div>
-            <span className="text-sm font-semibold tabular-nums">{formatNok(group.totalNet)}</span>
+            <div className="flex items-center gap-2 tabular-nums text-sm">
+              {(() => {
+                const outstanding = group.items.reduce((s, e) => s + getOutstandingAmount(e), 0);
+                return outstanding > 0 && outstanding < group.totalNet ? (
+                  <span className="text-xs text-muted-foreground">({formatNok(outstanding)} ubetalt)</span>
+                ) : null;
+              })()}
+              <span className="font-semibold">{formatNok(group.totalNet)}</span>
+            </div>
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent className="pl-2 md:pl-4 space-y-3 pt-1">
