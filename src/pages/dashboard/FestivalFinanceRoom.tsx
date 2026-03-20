@@ -300,6 +300,40 @@ export default function FestivalFinanceRoom() {
     URL.revokeObjectURL(url);
   };
 
+  const handleExportEnkCSV = () => {
+    if (!entries || entries.length === 0) { toast.info("Ingen transaksjoner å eksportere."); return; }
+    if (!financeOwnerName) { toast.error("Økonomiansvarlig (ENK) er ikke satt. Gå til Innstillinger."); return; }
+
+    const included = entries.filter((e) => !e.internal_only && e.payment_status !== "cancelled");
+
+    // Validate
+    for (const e of included) {
+      if (!e.voucher_number) { toast.error(`Bilagsnr mangler for rad: ${e.description || e.id}`); return; }
+      const motpart = e.counterparty || (e.source_type === "ticket" ? "Billetthandel" : "");
+      if (!motpart && e.source_type !== "ticket") { toast.error(`Motpart mangler for manuell rad: ${e.description || e.id}`); return; }
+      if (e.source_type !== "ticket" && (!e.attachment_url || !e.attachment_url.trim())) { toast.error(`Vedlegg mangler for manuell rad: ${e.description || e.id}`); return; }
+      if (e.payment_status === "partial" && (e.paid_amount === null || e.paid_amount === undefined)) { toast.error(`Betalt beløp mangler for partial-rad: ${e.description || e.id}`); return; }
+    }
+
+    const headers = ["Dato", "Bilagsnr", "Type", "Motpart", "Betalt av", "Beløp (kr)", "Payment status", "Betalt beløp (kr)", "Vedlegg"];
+    const rows = included.map((e) => {
+      const motpart = e.counterparty || (e.source_type === "ticket" ? "Billetthandel" : "");
+      const amount = ((e.net_amount ?? 0) / 100).toString().replace(".", ",");
+      const paidAmt = e.payment_status === "partial" && e.paid_amount != null ? (e.paid_amount / 100).toString().replace(".", ",") : "";
+      return [e.date_incurred ?? "", e.voucher_number ?? "", e.entry_type ?? "", motpart, financeOwnerName, amount, e.payment_status ?? "", paidAmt, e.attachment_url ?? ""];
+    });
+
+    const csvContent = [headers, ...rows].map((r) => r.map((field) => `"${String(field).replace(/"/g, '""')}"`).join(";")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `festival-enk-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
   if (!festivalId) return <p className="p-6 text-muted-foreground">Mangler festival-ID.</p>;
 
   /* ── Shared action buttons ── */
