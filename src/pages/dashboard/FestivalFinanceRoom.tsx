@@ -362,7 +362,7 @@ export default function FestivalFinanceRoom() {
     if (!entries || entries.length === 0) { toast.info("Ingen transaksjoner å eksportere."); return; }
     if (!financeOwnerName) { toast.error("Økonomiansvarlig (ENK) er ikke satt. Gå til Innstillinger."); return; }
 
-    const included = entries.filter((e) => !e.internal_only && e.payment_status !== "cancelled");
+    const included = entries.filter((e) => !e.internal_only && e.payment_status !== "cancelled" && ((e as any).invoice_status === "received" || (e as any).invoice_status === "not_required"));
 
     // Validate
     for (const e of included) {
@@ -371,7 +371,8 @@ export default function FestivalFinanceRoom() {
       const cp = (e.counterparty ?? "").trim();
       const motpart = cp || (e.source_type === "ticket" ? "Billetthandel" : "");
       if (!motpart && e.source_type !== "ticket") { toast.error(`Motpart mangler for manuell rad: ${label}`); return; }
-      if (e.source_type !== "ticket" && (!e.attachment_url || !e.attachment_url.trim())) { toast.error(`Vedlegg mangler for manuell rad: ${label}`); return; }
+      if ((e as any).invoice_status === "received" && (!e.attachment_url || !e.attachment_url.trim())) { toast.error(`Fakturastatus er "Mottatt" men vedlegg mangler: ${label}`); return; }
+      if (e.source_type !== "ticket" && (e as any).invoice_status !== "not_required" && (!e.attachment_url || !e.attachment_url.trim())) { toast.error(`Vedlegg mangler for manuell rad: ${label}`); return; }
       if (e.payment_status === "partial") {
         if (e.paid_amount == null || e.paid_amount <= 0) { toast.error(`Betalt beløp må være > 0 for delvis betalt rad: ${label}`); return; }
         if (e.paid_amount > e.net_amount) { toast.error(`Betalt beløp (${e.paid_amount / 100} kr) kan ikke overstige netto (${e.net_amount / 100} kr): ${label}`); return; }
