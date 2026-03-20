@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, ArrowUp, ArrowDown, Trash2, ChevronDown, ChevronUp, FolderPlus } from "lucide-react";
 import { toast } from "sonner";
 import { PersonaSearchPicker } from "@/components/persona/PersonaSearchPicker";
