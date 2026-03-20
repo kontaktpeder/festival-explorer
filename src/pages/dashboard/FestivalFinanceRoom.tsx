@@ -214,27 +214,16 @@ export default function FestivalFinanceRoom() {
 
   const { uploadAttachment, isUploading: isUploadingAttachment } = useFinanceAttachmentUpload();
 
-  const generateYearlyVoucherNumber = (allEntries: FestivalFinanceEntry[], dateIncurred?: string) => {
-    const year = dateIncurred ? dateIncurred.slice(0, 4) : new Date().getFullYear().toString();
-    const thisYears = (allEntries || [])
-      .map((e) => e.voucher_number)
-      .filter((v): v is string => Boolean(v && v.startsWith(year + "-")));
-    if (!thisYears.length) return `${year}-0001`;
-    const last = thisYears
-      .map((s) => parseInt(s.replace(`${year}-`, ""), 10))
-      .filter((n) => !isNaN(n))
-      .sort((a, b) => b - a)[0];
-    return `${year}-${((last || 0) + 1).toString().padStart(4, "0")}`;
-  };
+  // Voucher numbers are allocated atomically by the DB trigger (allocate_voucher_number).
+  // Frontend never generates or overwrites voucher_number.
 
   const handleAddExpense = () => {
     if (!activeBookId || !user) return;
     const today = new Date().toISOString().slice(0, 10);
-    const voucher = generateYearlyVoucherNumber(entries || [], today);
     expenseMutation.mutate({
       description: "", category: null, counterparty: null,
       gross_amount: 0, net_amount: 0, date_incurred: today,
-      voucher_number: voucher, created_by: user.id,
+      created_by: user.id,
     });
   };
 
@@ -245,9 +234,9 @@ export default function FestivalFinanceRoom() {
       patch[field] = isNaN(n) ? 0 : (field === "paid_amount" ? n : n * 100);
     } else if (field === "date_incurred") {
       patch.date_incurred = value;
-      // Regenerate voucher if year changed
+      // Voucher is locked by DB trigger — warn if year mismatch
       if (entry.voucher_number && value.slice(0, 4) !== entry.voucher_number.slice(0, 4)) {
-        patch.voucher_number = generateYearlyVoucherNumber(entries || [], value);
+        toast.warning(`Bilagsnr ${entry.voucher_number} ble opprettet for et annet år. Vurder å opprette ny rad i stedet.`);
       }
     }
     else { patch[field] = value; }
@@ -257,11 +246,10 @@ export default function FestivalFinanceRoom() {
   const handleAddIncome = () => {
     if (!activeBookId || !user) return;
     const today = new Date().toISOString().slice(0, 10);
-    const voucher = generateYearlyVoucherNumber(entries || [], today);
     incomeMutation.mutate({
       description: "", category: null, counterparty: null,
       gross_amount: 0, net_amount: 0, date_incurred: today,
-      voucher_number: voucher, created_by: user.id,
+      created_by: user.id,
     });
   };
 
@@ -273,7 +261,7 @@ export default function FestivalFinanceRoom() {
     } else if (field === "date_incurred") {
       patch.date_incurred = value;
       if (entry.voucher_number && value.slice(0, 4) !== entry.voucher_number.slice(0, 4)) {
-        patch.voucher_number = generateYearlyVoucherNumber(entries || [], value);
+        toast.warning(`Bilagsnr ${entry.voucher_number} ble opprettet for et annet år. Vurder å opprette ny rad i stedet.`);
       }
     }
     else { patch[field] = value; }
