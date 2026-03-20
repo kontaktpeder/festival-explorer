@@ -321,11 +321,16 @@ export default function FestivalFinanceRoom() {
 
     // Validate
     for (const e of included) {
-      if (!e.voucher_number) { toast.error(`Bilagsnr mangler for rad: ${e.description || e.id}`); return; }
-      const motpart = e.counterparty || (e.source_type === "ticket" ? "Billetthandel" : "");
-      if (!motpart && e.source_type !== "ticket") { toast.error(`Motpart mangler for manuell rad: ${e.description || e.id}`); return; }
-      if (e.source_type !== "ticket" && (!e.attachment_url || !e.attachment_url.trim())) { toast.error(`Vedlegg mangler for manuell rad: ${e.description || e.id}`); return; }
-      if (e.payment_status === "partial" && (e.paid_amount === null || e.paid_amount === undefined)) { toast.error(`Betalt beløp mangler for partial-rad: ${e.description || e.id}`); return; }
+      const label = e.description?.trim() || e.voucher_number || e.id;
+      if (!e.voucher_number || !e.voucher_number.trim()) { toast.error(`Bilagsnr mangler for rad: ${label}`); return; }
+      const cp = (e.counterparty ?? "").trim();
+      const motpart = cp || (e.source_type === "ticket" ? "Billetthandel" : "");
+      if (!motpart && e.source_type !== "ticket") { toast.error(`Motpart mangler for manuell rad: ${label}`); return; }
+      if (e.source_type !== "ticket" && (!e.attachment_url || !e.attachment_url.trim())) { toast.error(`Vedlegg mangler for manuell rad: ${label}`); return; }
+      if (e.payment_status === "partial") {
+        if (e.paid_amount == null || e.paid_amount <= 0) { toast.error(`Betalt beløp må være > 0 for delvis betalt rad: ${label}`); return; }
+        if (e.paid_amount > e.net_amount) { toast.error(`Betalt beløp (${e.paid_amount / 100} kr) kan ikke overstige netto (${e.net_amount / 100} kr): ${label}`); return; }
+      }
     }
 
     const headers = ["Dato", "Bilagsnr", "Type", "Motpart", "Betalt av", "Beløp (kr)", "Payment status", "Betalt beløp (kr)", "Vedlegg"];
