@@ -493,14 +493,6 @@ export default function FestivalFinanceRoom() {
     </div>
   );
 
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const toggleRow = (id: string) => {
-    setExpandedRows((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  };
 
   const renderExpenseTable = (items: FestivalFinanceEntry[]) => (
     <div className="w-full">
