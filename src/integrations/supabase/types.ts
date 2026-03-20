@@ -1389,12 +1389,15 @@ export type Database = {
           fee_amount: number | null
           gross_amount: number
           id: string
+          internal_only: boolean
           linked_entry_id: string | null
           net_amount: number
           notes: string | null
+          paid_amount: number | null
           paid_by_id: string | null
           paid_by_kind: string | null
           paid_by_label: string | null
+          payment_status: string
           quantity: number | null
           sort_order: number | null
           source_ref_id: string | null
@@ -1423,12 +1426,15 @@ export type Database = {
           fee_amount?: number | null
           gross_amount: number
           id?: string
+          internal_only?: boolean
           linked_entry_id?: string | null
           net_amount: number
           notes?: string | null
+          paid_amount?: number | null
           paid_by_id?: string | null
           paid_by_kind?: string | null
           paid_by_label?: string | null
+          payment_status?: string
           quantity?: number | null
           sort_order?: number | null
           source_ref_id?: string | null
@@ -1457,12 +1463,15 @@ export type Database = {
           fee_amount?: number | null
           gross_amount?: number
           id?: string
+          internal_only?: boolean
           linked_entry_id?: string | null
           net_amount?: number
           notes?: string | null
+          paid_amount?: number | null
           paid_by_id?: string | null
           paid_by_kind?: string | null
           paid_by_label?: string | null
+          payment_status?: string
           quantity?: number | null
           sort_order?: number | null
           source_ref_id?: string | null
@@ -1710,6 +1719,7 @@ export type Database = {
           description: string | null
           description_section_id: string | null
           end_at: string | null
+          finance_owner_persona_id: string | null
           hosp_rider_media_id: string | null
           id: string
           name: string
@@ -1730,6 +1740,7 @@ export type Database = {
           description?: string | null
           description_section_id?: string | null
           end_at?: string | null
+          finance_owner_persona_id?: string | null
           hosp_rider_media_id?: string | null
           id?: string
           name: string
@@ -1750,6 +1761,7 @@ export type Database = {
           description?: string | null
           description_section_id?: string | null
           end_at?: string | null
+          finance_owner_persona_id?: string | null
           hosp_rider_media_id?: string | null
           id?: string
           name?: string
@@ -1789,6 +1801,13 @@ export type Database = {
             columns: ["description_section_id"]
             isOneToOne: false
             referencedRelation: "festival_sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "festivals_finance_owner_persona_id_fkey"
+            columns: ["finance_owner_persona_id"]
+            isOneToOne: false
+            referencedRelation: "personas"
             referencedColumns: ["id"]
           },
           {
@@ -3148,6 +3167,7 @@ export type Database = {
           description: string | null
           description_section_id: string | null
           end_at: string | null
+          finance_owner_persona_id: string | null
           hosp_rider_media_id: string | null
           id: string
           name: string

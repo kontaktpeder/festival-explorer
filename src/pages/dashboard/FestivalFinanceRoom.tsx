@@ -114,11 +114,22 @@ export default function FestivalFinanceRoom() {
   const { data: festival } = useQuery({
     queryKey: ["festival-for-finance", festivalId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("festivals").select("id, name").eq("id", festivalId!).single();
+      const { data, error } = await supabase.from("festivals").select("id, name, finance_owner_persona_id").eq("id", festivalId!).single();
       if (error) throw error;
       return data;
     },
     enabled: !!festivalId,
+  });
+
+  const { data: financeOwnerName } = useQuery({
+    queryKey: ["finance-owner-name", (festival as any)?.finance_owner_persona_id],
+    queryFn: async () => {
+      const pid = (festival as any)?.finance_owner_persona_id;
+      if (!pid) return null;
+      const { data } = await supabase.from("personas").select("name").eq("id", pid).single();
+      return data?.name ?? null;
+    },
+    enabled: !!(festival as any)?.finance_owner_persona_id,
   });
 
   const { data: books, isLoading: booksLoading } = useFinanceBooks(festivalId || undefined);
@@ -228,9 +239,9 @@ export default function FestivalFinanceRoom() {
 
   const onExpenseFieldChange = (entry: FestivalFinanceEntry, field: keyof FestivalFinanceEntry, value: string) => {
     const patch: any = { id: entry.id };
-    if (field === "gross_amount" || field === "net_amount") {
+    if (field === "gross_amount" || field === "net_amount" || field === "paid_amount") {
       const n = parseInt(value.replace(/\s/g, ""), 10);
-      patch[field] = isNaN(n) ? 0 : n * 100;
+      patch[field] = isNaN(n) ? 0 : (field === "paid_amount" ? n : n * 100);
     } else if (field === "date_incurred") { patch.date_incurred = value; }
     else { patch[field] = value; }
     expenseMutation.mutate(patch);
@@ -248,9 +259,9 @@ export default function FestivalFinanceRoom() {
 
   const onIncomeFieldChange = (entry: FestivalFinanceEntry, field: keyof FestivalFinanceEntry, value: string) => {
     const patch: any = { id: entry.id };
-    if (field === "gross_amount" || field === "net_amount") {
+    if (field === "gross_amount" || field === "net_amount" || field === "paid_amount") {
       const n = parseInt(value.replace(/\s/g, ""), 10);
-      patch[field] = isNaN(n) ? 0 : n * 100;
+      patch[field] = isNaN(n) ? 0 : (field === "paid_amount" ? n : n * 100);
     } else if (field === "date_incurred") { patch.date_incurred = value; }
     else { patch[field] = value; }
     incomeMutation.mutate(patch);
@@ -289,6 +300,40 @@ export default function FestivalFinanceRoom() {
     URL.revokeObjectURL(url);
   };
 
+  const handleExportEnkCSV = () => {
+    if (!entries || entries.length === 0) { toast.info("Ingen transaksjoner å eksportere."); return; }
+    if (!financeOwnerName) { toast.error("Økonomiansvarlig (ENK) er ikke satt. Gå til Innstillinger."); return; }
+
+    const included = entries.filter((e) => !e.internal_only && e.payment_status !== "cancelled");
+
+    // Validate
+    for (const e of included) {
+      if (!e.voucher_number) { toast.error(`Bilagsnr mangler for rad: ${e.description || e.id}`); return; }
+      const motpart = e.counterparty || (e.source_type === "ticket" ? "Billetthandel" : "");
+      if (!motpart && e.source_type !== "ticket") { toast.error(`Motpart mangler for manuell rad: ${e.description || e.id}`); return; }
+      if (e.source_type !== "ticket" && (!e.attachment_url || !e.attachment_url.trim())) { toast.error(`Vedlegg mangler for manuell rad: ${e.description || e.id}`); return; }
+      if (e.payment_status === "partial" && (e.paid_amount === null || e.paid_amount === undefined)) { toast.error(`Betalt beløp mangler for partial-rad: ${e.description || e.id}`); return; }
+    }
+
+    const headers = ["Dato", "Bilagsnr", "Type", "Motpart", "Betalt av", "Beløp (kr)", "Payment status", "Betalt beløp (kr)", "Vedlegg"];
+    const rows = included.map((e) => {
+      const motpart = e.counterparty || (e.source_type === "ticket" ? "Billetthandel" : "");
+      const amount = ((e.net_amount ?? 0) / 100).toString().replace(".", ",");
+      const paidAmt = e.payment_status === "partial" && e.paid_amount != null ? (e.paid_amount / 100).toString().replace(".", ",") : "";
+      return [e.date_incurred ?? "", e.voucher_number ?? "", e.entry_type ?? "", motpart, financeOwnerName, amount, e.payment_status ?? "", paidAmt, e.attachment_url ?? ""];
+    });
+
+    const csvContent = [headers, ...rows].map((r) => r.map((field) => `"${String(field).replace(/"/g, '""')}"`).join(";")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `festival-enk-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
   if (!festivalId) return <p className="p-6 text-muted-foreground">Mangler festival-ID.</p>;
 
   /* ── Shared action buttons ── */
@@ -299,7 +344,7 @@ export default function FestivalFinanceRoom() {
         <Plus className="h-4 w-4" />
       </Button>
       <Button variant="ghost" size="icon" className="h-8 w-8" title="Refusjon"
-        onClick={() => { if (!user) return; expenseMutation.mutate({ description: `Refusjon: ${e.description}`, category: e.category || "Refusjon / kostnadsdeling", counterparty: null, gross_amount: -(e.net_amount ?? 0), net_amount: -(e.net_amount ?? 0), date_incurred: e.date_incurred, source_type: "reimbursement", linked_entry_id: e.id, created_by: user.id }); }}>
+        onClick={() => { if (!user) return; expenseMutation.mutate({ description: `Refusjon: ${e.description}`, category: e.category || "Refusjon / kostnadsdeling", counterparty: null, gross_amount: -(e.net_amount ?? 0), net_amount: -(e.net_amount ?? 0), date_incurred: e.date_incurred, source_type: "reimbursement", linked_entry_id: e.id, created_by: user.id, internal_only: true, payment_status: "cancelled" as any }); }}>
         <Undo2 className="h-4 w-4" />
       </Button>
       <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" title="Slett"
@@ -364,6 +409,26 @@ export default function FestivalFinanceRoom() {
     </div>
   );
 
+  const PaymentStatusSelect = ({ entry, onFieldChange }: { entry: FestivalFinanceEntry; onFieldChange: typeof onExpenseFieldChange }) => (
+    <div className="flex items-center gap-1">
+      <Select value={entry.payment_status ?? "unpaid"} onValueChange={(v) => onFieldChange(entry, "payment_status" as any, v)}>
+        <SelectTrigger className="h-7 text-xs w-[90px]"><SelectValue /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="unpaid">Ubetalt</SelectItem>
+          <SelectItem value="paid">Betalt</SelectItem>
+          <SelectItem value="partial">Delvis</SelectItem>
+          <SelectItem value="cancelled">Kansellert</SelectItem>
+        </SelectContent>
+      </Select>
+      {entry.payment_status === "partial" && (
+        <Input type="number" className="h-7 text-xs w-[80px] tabular-nums" placeholder="Øre"
+          defaultValue={entry.paid_amount != null ? (entry.paid_amount / 100).toString() : ""}
+          onBlur={(ev) => { const n = parseInt(ev.target.value.replace(/\s/g, ""), 10); onFieldChange(entry, "paid_amount" as any, isNaN(n) ? "0" : (n * 100).toString()); }}
+        />
+      )}
+    </div>
+  );
+
   const renderExpenseTable = (items: FestivalFinanceEntry[]) => (
     <Table>
       <TableHeader>
@@ -374,6 +439,7 @@ export default function FestivalFinanceRoom() {
           <TableHead className="w-[120px]">Mottaker</TableHead>
           <TableHead className="w-[120px]">Betalt av</TableHead>
           <TableHead className="w-[100px] text-right">Beløp (kr)</TableHead>
+          <TableHead className="w-[140px]">Betaling</TableHead>
           <TableHead className="w-[130px]">Vedlegg</TableHead>
           <TableHead className="w-16 text-right" />
         </TableRow>
@@ -387,6 +453,7 @@ export default function FestivalFinanceRoom() {
             <TableCell><RecipientPicker festivalId={festivalId!} value={e.counterparty} onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} /></TableCell>
             <TableCell><PaidBySelect entry={e} /></TableCell>
             <TableCell><Input type="number" className="h-7 text-xs text-right tabular-nums px-1.5" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} /></TableCell>
+            <TableCell><PaymentStatusSelect entry={e} onFieldChange={onExpenseFieldChange} /></TableCell>
             <TableCell><AttachmentCell entry={e} onFieldChange={onExpenseFieldChange} /></TableCell>
             <TableCell className="text-right"><div className="flex items-center justify-end gap-0">{expenseActions(e)}</div></TableCell>
           </TableRow>
@@ -452,6 +519,7 @@ export default function FestivalFinanceRoom() {
           <TableHead className="w-[130px]">Underkategori</TableHead>
           <TableHead>Fra</TableHead>
           <TableHead className="w-[130px] text-right">Beløp (kr)</TableHead>
+          <TableHead className="w-[140px]">Betaling</TableHead>
           <TableHead className="w-20 text-right" />
         </TableRow>
       </TableHeader>
@@ -463,6 +531,7 @@ export default function FestivalFinanceRoom() {
             <TableCell><Input list="finance-subcategory-suggestions" className="h-8 text-xs" defaultValue={e.subcategory || ""} placeholder="Underkategori" onBlur={(ev) => onIncomeFieldChange(e, "subcategory", ev.target.value)} /></TableCell>
             <TableCell><Input className="h-8 text-xs" defaultValue={e.counterparty || ""} placeholder="Fra (sponsor, ordning)" onBlur={(ev) => onIncomeFieldChange(e, "counterparty", ev.target.value)} /></TableCell>
             <TableCell><Input type="number" className="h-8 text-xs text-right tabular-nums" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onIncomeFieldChange(e, "net_amount", ev.target.value)} /></TableCell>
+            <TableCell><PaymentStatusSelect entry={e} onFieldChange={onIncomeFieldChange} /></TableCell>
             <TableCell className="text-right">{incomeActions(e)}</TableCell>
           </TableRow>
         ))}
@@ -572,7 +641,10 @@ export default function FestivalFinanceRoom() {
               </Select>
             )}
             <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={!entries || entries.length === 0}>
-              <Download className="h-4 w-4 mr-1" /> CSV
+              <Download className="h-4 w-4 mr-1" /> CSV (Intern)
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExportEnkCSV} disabled={!entries || entries.length === 0}>
+              <Download className="h-4 w-4 mr-1" /> CSV (ENK)
             </Button>
             <Button variant="outline" size="sm" onClick={handleCreateBook} disabled={createBook.isPending}>
               <Plus className="h-4 w-4 mr-1" /> Ny bok
