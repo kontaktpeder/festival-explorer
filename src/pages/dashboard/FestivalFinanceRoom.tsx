@@ -671,12 +671,13 @@ export default function FestivalFinanceRoom() {
     <div className="w-full">
       <table className="w-full table-fixed text-sm">
         <thead>
-          <tr className="border-b text-left text-xs text-muted-foreground">
+           <tr className="border-b text-left text-xs text-muted-foreground">
             <th className="w-[90px] py-2 px-2 font-medium">Dato</th>
             <th className="py-2 px-1 font-medium">Fra</th>
             <th className="py-2 px-1 font-medium">Beskrivelse</th>
             <th className="w-[100px] py-2 px-1 font-medium text-right">Beløp</th>
             <th className="w-[90px] py-2 px-1 font-medium">Status</th>
+            <th className="w-[90px] py-2 px-1 font-medium">Faktura</th>
             <th className="w-[36px] py-2 px-0" />
           </tr>
         </thead>
