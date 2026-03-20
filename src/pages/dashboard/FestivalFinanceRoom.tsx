@@ -589,6 +589,10 @@ export default function FestivalFinanceRoom() {
                           <AttachmentCell entry={e} onFieldChange={onExpenseFieldChange} />
                         </div>
                         <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Faktura</span>
+                          <InvoiceStatusSelect entry={e} onFieldChange={onExpenseFieldChange} />
+                        </div>
+                        <div>
                           <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Kategori</span>
                           <EditableText value={e.category || ""} placeholder="Kategori" onSave={(v) => onExpenseFieldChange(e, "category" as any, v)} />
                         </div>
