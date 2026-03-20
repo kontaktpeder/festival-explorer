@@ -489,29 +489,41 @@ export default function FestivalFinanceRoom() {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[90px]">Bilagsnr</TableHead>
-          <TableHead className="w-[100px]">Dato</TableHead>
-          <TableHead className="min-w-[120px]">Beskrivelse</TableHead>
-          <TableHead className="w-[120px]">Mottaker</TableHead>
-          <TableHead className="w-[120px]">Betalt av</TableHead>
-          <TableHead className="w-[100px] text-right">Beløp (kr)</TableHead>
-          <TableHead className="w-[140px]">Betalingsstatus</TableHead>
-          <TableHead className="w-[130px]">Vedlegg</TableHead>
-          <TableHead className="w-16 text-right" />
+          <TableHead className="w-[80px]">Bilagsnr</TableHead>
+          <TableHead className="w-[105px]">Dato</TableHead>
+          <TableHead className="min-w-[180px]">Beskrivelse</TableHead>
+          <TableHead className="min-w-[140px]">Mottaker</TableHead>
+          <TableHead className="w-[130px]">Betalt av</TableHead>
+          <TableHead className="w-[90px] text-right">Beløp (kr)</TableHead>
+          <TableHead className="w-[110px]">Betaling</TableHead>
+          <TableHead className="w-[150px]">Vedlegg</TableHead>
+          <TableHead className="w-14 text-right" />
         </TableRow>
       </TableHeader>
       <TableBody>
         {items.map((e) => (
-          <TableRow key={e.id}>
-            <TableCell className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">{e.voucher_number ?? ""}</TableCell>
-            <TableCell><Input type="date" className="h-7 text-xs px-1.5" defaultValue={e.date_incurred} onBlur={(ev) => onExpenseFieldChange(e, "date_incurred", ev.target.value)} /></TableCell>
-            <TableCell><Input className="h-7 text-xs" defaultValue={e.description} onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} /></TableCell>
-            <TableCell><RecipientPicker festivalId={festivalId!} value={e.counterparty} onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} /></TableCell>
-            <TableCell><PaidBySelect entry={e} /></TableCell>
-            <TableCell><Input type="number" className="h-7 text-xs text-right tabular-nums px-1.5" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} /></TableCell>
-            <TableCell><PaymentStatusSelect entry={e} onFieldChange={onExpenseFieldChange} /></TableCell>
-            <TableCell><AttachmentCell entry={e} onFieldChange={onExpenseFieldChange} /></TableCell>
-            <TableCell className="text-right"><div className="flex items-center justify-end gap-0">{expenseActions(e)}</div></TableCell>
+          <TableRow key={e.id} className="group">
+            <TableCell className="text-xs text-muted-foreground tabular-nums whitespace-nowrap py-1.5">{e.voucher_number ?? ""}</TableCell>
+            <TableCell className="py-1.5">
+              <EditableText type="date" value={e.date_incurred} onSave={(v) => onExpenseFieldChange(e, "date_incurred", v)} />
+            </TableCell>
+            <TableCell className="py-1.5">
+              <EditableText value={e.description} placeholder="Beskrivelse…" onSave={(v) => onExpenseFieldChange(e, "description", v)} />
+            </TableCell>
+            <TableCell className="py-1.5">
+              <RecipientPicker festivalId={festivalId!} value={e.counterparty} onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} />
+            </TableCell>
+            <TableCell className="py-1.5">
+              <span className="text-xs truncate block" title={e.paid_by_label || undefined}>
+                {e.paid_by_label || <span className="text-muted-foreground/50 italic">—</span>}
+              </span>
+            </TableCell>
+            <TableCell className="py-1.5">
+              <EditableText type="number" value={e.net_amount ? (e.net_amount / 100).toString() : "0"} align="right" onSave={(v) => onExpenseFieldChange(e, "net_amount", v)} />
+            </TableCell>
+            <TableCell className="py-1.5"><PaymentStatusSelect entry={e} onFieldChange={onExpenseFieldChange} /></TableCell>
+            <TableCell className="py-1.5"><AttachmentCell entry={e} onFieldChange={onExpenseFieldChange} /></TableCell>
+            <TableCell className="text-right py-1.5"><div className="flex items-center justify-end gap-0 opacity-0 group-hover:opacity-100 transition-opacity">{expenseActions(e)}</div></TableCell>
           </TableRow>
         ))}
       </TableBody>
