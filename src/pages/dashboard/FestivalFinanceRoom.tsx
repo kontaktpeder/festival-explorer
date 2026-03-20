@@ -493,7 +493,16 @@ export default function FestivalFinanceRoom() {
     </div>
   );
 
-
+  const InvoiceStatusSelect = ({ entry, onFieldChange }: { entry: FestivalFinanceEntry; onFieldChange: typeof onExpenseFieldChange }) => (
+    <Select value={(entry as any).invoice_status ?? "pending"} onValueChange={(v) => onFieldChange(entry, "invoice_status" as any, v)}>
+      <SelectTrigger className="h-7 text-xs w-[110px]"><SelectValue /></SelectTrigger>
+      <SelectContent>
+        <SelectItem value="pending">Avventer</SelectItem>
+        <SelectItem value="received">Mottatt</SelectItem>
+        <SelectItem value="not_required">Ikke relevant</SelectItem>
+      </SelectContent>
+    </Select>
+  );
   const renderExpenseTable = (items: FestivalFinanceEntry[]) => (
     <div className="w-full">
       <table className="w-full table-fixed text-sm">
