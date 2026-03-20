@@ -744,7 +744,7 @@ export default function FestivalFinanceRoom() {
                       </div>
                       <div className="md:hidden space-y-2">
                         {ticketEntries.map((e) => (
-                          <div key={e.id} className="rounded-md border border-border/60 bg-card/60 p-3">
+                          <div key={e.id} className="rounded-md border border-border bg-card p-3 shadow-sm">
                             <p className="font-medium text-sm">{e.description}</p>
                             <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
                               <span>Antall</span><span className="text-right text-foreground tabular-nums">{e.quantity ?? "-"}</span>
