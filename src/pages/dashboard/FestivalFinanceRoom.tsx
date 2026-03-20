@@ -610,9 +610,9 @@ export default function FestivalFinanceRoom() {
         </SelectContent>
       </Select>
       {entry.payment_status === "partial" && (
-        <Input type="number" className="h-7 text-xs w-[80px] tabular-nums" placeholder="Øre"
+        <Input type="text" inputMode="decimal" className="h-7 text-xs w-[80px] tabular-nums" placeholder="kr"
           defaultValue={entry.paid_amount != null ? (entry.paid_amount / 100).toString() : ""}
-          onBlur={(ev) => { const n = parseInt(ev.target.value.replace(/\s/g, ""), 10); onFieldChange(entry, "paid_amount" as any, isNaN(n) ? "0" : (n * 100).toString()); }}
+          onBlur={(ev) => { const ore = parseKrToOre(ev.target.value); onFieldChange(entry, "paid_amount" as any, ore.toString()); }}
         />
       )}
     </div>
