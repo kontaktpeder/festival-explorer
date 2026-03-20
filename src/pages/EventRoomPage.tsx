@@ -599,10 +599,11 @@ export default function EventRoomPage() {
               <EventInvitationsEditor eventId={id} canEdit={canEdit} />
             )}
 
-            {/* Program slots */}
+            {/* Kjøreplan (full run sheet) */}
             {!isNew && id && (
-              <EventProgramSlotsEditor eventId={id} canEdit={canEdit} eventStartAt={event?.start_at} festivalId={festivalContext?.festival_id ?? undefined} />
+              <FestivalRunSheet eventId={id} readOnly={!canEdit} />
             )}
+            {/* TODO: Remove EventProgramSlotsEditor after verifying full run sheet works for event-first */}
 
             {/* Medvirkende */}
             {!isNew && id && (
