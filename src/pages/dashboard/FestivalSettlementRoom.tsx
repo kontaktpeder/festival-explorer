@@ -138,7 +138,7 @@ export default function FestivalSettlementRoom() {
   if (!festivalId) return null;
 
   return (
-    <BackstageShell festivalId={festivalId} festivalName={festival?.name}>
+    <BackstageShell title="Internt oppgjør" subtitle={festival?.name} backTo={`/dashboard/festival/${festivalId}/finance`}>
       <div className="max-w-[1400px] mx-auto space-y-6 px-4 py-6">
         <Link to={`/dashboard/festival/${festivalId}/finance`} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="h-4 w-4" /> Tilbake til økonomi
