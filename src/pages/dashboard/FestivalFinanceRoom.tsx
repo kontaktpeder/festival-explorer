@@ -463,6 +463,10 @@ export default function FestivalFinanceRoom() {
               const result = await uploadAttachment(file, festivalId, entry.voucher_number);
               onFieldChange(entry, "attachment_url", result.url);
               onFieldChange(entry, "attachment_name", result.name);
+              // Auto-set invoice_status to received if currently pending
+              if ((entry as any).invoice_status === "pending" || !(entry as any).invoice_status) {
+                onFieldChange(entry, "invoice_status" as any, "received");
+              }
             } catch (err: any) { toast.error(err.message || "Kunne ikke laste opp bilag"); }
             finally { ev.target.value = ""; }
           }} />
