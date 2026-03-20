@@ -290,7 +290,7 @@ export default function FestivalFinanceRoom() {
     const all = entries || [];
 
     const unpaidOrPartial = all
-      .filter((e) => !e.internal_only)
+      .filter((e) => !e.internal_only && e.entry_type === "expense")
       .reduce((sum, e) => sum + getOutstandingAmount(e), 0);
 
     const blocked = all
