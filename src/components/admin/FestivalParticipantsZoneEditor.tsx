@@ -486,7 +486,7 @@ export function FestivalParticipantsZoneEditor({
 
                 {/* Permissions panel */}
                 {isAdmin && isExpanded && (
-                  <div className="px-3 pb-3 pt-1 border-t border-border/50">
+                  <div className="px-3 pb-3 pt-1 border-t border-border/50 space-y-3">
                     <p className="text-xs font-medium text-muted-foreground mb-2">Tillatelser</p>
                     <div className="grid grid-cols-2 gap-2">
                        {([
@@ -523,6 +523,32 @@ export function FestivalParticipantsZoneEditor({
                           {label}
                         </Label>
                       ))}
+                    </div>
+
+                    {/* Finance access */}
+                    <div className="pt-2 border-t border-border/30">
+                      <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Økonomi-tilgang</Label>
+                      <Select
+                        value={row.finance_access || "none"}
+                        onValueChange={async (val) => {
+                          const { error } = await supabase
+                            .from("festival_participants")
+                            .update({ finance_access: val })
+                            .eq("id", row.id);
+                          if (error) { toast.error("Kunne ikke oppdatere økonomi-tilgang"); return; }
+                          setRows((prev) => prev.map((r) => r.id === row.id ? { ...r, finance_access: val as FinanceAccessLevel } : r));
+                        }}
+                      >
+                        <SelectTrigger className="h-8 text-xs w-48">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Ingen</SelectItem>
+                          <SelectItem value="reader">Leser</SelectItem>
+                          <SelectItem value="editor">Editor</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 )}
