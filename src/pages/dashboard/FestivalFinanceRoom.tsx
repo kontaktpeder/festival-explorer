@@ -267,6 +267,74 @@ export default function FestivalFinanceRoom() {
   const netExpense = expenseTotal + reimbursementTotal;
   const result = netIncome - netExpense;
 
+  // Extended KPIs
+  const {
+    unpaidOrPartialTotal,
+    blockedForEnkExportTotal,
+    pendingInvoiceTotal,
+    missingAttachmentTotal,
+    readyForEnkExportTotal,
+    internalOutstandingTotal,
+    peopleInvolvedCount,
+  } = useMemo(() => {
+    const all = entries || [];
+
+    const unpaidOrPartial = all
+      .filter((e) => !e.internal_only && (e.payment_status === "unpaid" || e.payment_status === "partial"))
+      .reduce((sum, e) => sum + (e.net_amount || 0), 0);
+
+    const blocked = all
+      .filter((e) => !e.internal_only && e.payment_status !== "cancelled")
+      .filter((e) => {
+        const invoicePending = (e as any).invoice_status === "pending";
+        const needsAttachment = e.source_type !== "ticket";
+        const missing = needsAttachment && (!e.attachment_url || !e.attachment_url.trim());
+        return invoicePending || missing;
+      })
+      .reduce((sum, e) => sum + (e.net_amount || 0), 0);
+
+    const pending = all
+      .filter((e) => !e.internal_only && (e as any).invoice_status === "pending")
+      .reduce((sum, e) => sum + (e.net_amount || 0), 0);
+
+    const missingAtt = all
+      .filter((e) => !e.internal_only && e.source_type !== "ticket" && (!e.attachment_url || !e.attachment_url.trim()))
+      .reduce((sum, e) => sum + (e.net_amount || 0), 0);
+
+    const ready = all
+      .filter((e) => !e.internal_only && e.payment_status !== "cancelled")
+      .filter((e) => {
+        const inv = (e as any).invoice_status;
+        const invoiceOk = inv === "received" || inv === "not_required";
+        const attachmentOk = e.source_type === "ticket" || !!(e.attachment_url && e.attachment_url.trim());
+        return invoiceOk && attachmentOk;
+      })
+      .reduce((sum, e) => sum + (e.net_amount || 0), 0);
+
+    const byPerson = new Map<string, { outlay: number; reimbursed: number }>();
+    all.filter((e) => e.payment_status !== "cancelled").forEach((e) => {
+      if (!e.paid_by_id) return;
+      const cur = byPerson.get(e.paid_by_id) || { outlay: 0, reimbursed: 0 };
+      if (e.entry_type === "expense" && e.source_type !== "reimbursement") cur.outlay += e.net_amount || 0;
+      if (e.source_type === "reimbursement") cur.reimbursed += Math.abs(e.net_amount || 0);
+      byPerson.set(e.paid_by_id, cur);
+    });
+    const outstanding = Array.from(byPerson.values())
+      .map((p) => p.outlay - p.reimbursed)
+      .filter((n) => n > 0)
+      .reduce((s, n) => s + n, 0);
+
+    return {
+      unpaidOrPartialTotal: unpaidOrPartial,
+      blockedForEnkExportTotal: blocked,
+      pendingInvoiceTotal: pending,
+      missingAttachmentTotal: missingAtt,
+      readyForEnkExportTotal: ready,
+      internalOutstandingTotal: outstanding,
+      peopleInvolvedCount: byPerson.size,
+    };
+  }, [entries]);
+
   // Unique subcategory suggestions per category
   const subcategorySuggestions = useMemo(() => {
     const subs = new Set<string>();
