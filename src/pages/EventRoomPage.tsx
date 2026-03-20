@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { EventParticipantsZoneEditor } from "@/components/admin/EventParticipantsZoneEditor";
 import { EventProgramSlotsEditor } from "@/components/dashboard/EventProgramSlotsEditor";
+import { FestivalRunSheet } from "@/components/dashboard/FestivalRunSheet";
 import { EventInvitationsEditor } from "@/components/dashboard/EventInvitationsEditor";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";

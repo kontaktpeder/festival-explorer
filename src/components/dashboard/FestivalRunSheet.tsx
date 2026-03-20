@@ -50,12 +50,24 @@ import { RunSheetPrintView } from "./runsheet/RunSheetPrintView";
 import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
 import { useEventRunSheetDefault, useEventSceneOptions } from "@/hooks/useEventRunSheetDefault";
 
-interface FestivalRunSheetProps {
-  festivalId: string;
-  readOnly?: boolean;
-}
+/* ── Scope-based props ── */
+type FestivalRunSheetProps =
+  | { festivalId: string; eventId?: undefined; readOnly?: boolean }
+  | { festivalId?: undefined; eventId: string; readOnly?: boolean }
+  | { scope: "festival"; festivalId: string; eventId?: undefined; readOnly?: boolean }
+  | { scope: "event"; eventId: string; festivalId?: undefined; readOnly?: boolean };
 
-export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSheetProps) {
+export function FestivalRunSheet(props: FestivalRunSheetProps) {
+  const readOnly = props.readOnly ?? false;
+  const festivalId = props.festivalId ?? null;
+  const eventId = props.eventId ?? null;
+  const isFestivalScope = !!festivalId;
+
+  // Unified query key used throughout
+  const queryKey = isFestivalScope
+    ? ["festival-run-sheet", festivalId]
+    : ["event-run-sheet", eventId];
+
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [editingSlot, setEditingSlot] = useState<ExtendedEventProgramSlot | null>(null);
@@ -68,24 +80,31 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
 
   /* ── Data ── */
   const { data, isLoading } = useQuery({
-    queryKey: ["festival-run-sheet", festivalId],
+    queryKey,
     queryFn: async () => {
+      const baseSlotsQuery = supabase
+        .from("event_program_slots" as any)
+        .select(`
+          *,
+          entity:entities!event_program_slots_entity_id_fkey(id, name, slug),
+          performer_entity:entities!event_program_slots_performer_entity_id_fkey(id, name, slug, is_published),
+          performer_persona:personas!event_program_slots_performer_persona_id_fkey(id, name, slug, is_public)
+        `)
+        .order("starts_at", { ascending: true });
+
+      const scopedSlotsQuery = isFestivalScope
+        ? baseSlotsQuery.eq("festival_id", festivalId)
+        : baseSlotsQuery.eq("event_id", eventId);
+
       const [slotsRes, typesRes] = await Promise.all([
-        supabase
-          .from("event_program_slots" as any)
-          .select(`
-            *,
-            entity:entities!event_program_slots_entity_id_fkey(id, name, slug),
-            performer_entity:entities!event_program_slots_performer_entity_id_fkey(id, name, slug, is_published),
-            performer_persona:personas!event_program_slots_performer_persona_id_fkey(id, name, slug, is_public)
-          `)
-          .eq("festival_id", festivalId)
-          .order("starts_at", { ascending: true }),
-        supabase
-          .from("program_slot_types" as any)
-          .select("*")
-          .eq("festival_id", festivalId)
-          .order("sort_order", { ascending: true }),
+        scopedSlotsQuery,
+        isFestivalScope
+          ? supabase
+              .from("program_slot_types" as any)
+              .select("*")
+              .eq("festival_id", festivalId)
+              .order("sort_order", { ascending: true })
+          : Promise.resolve({ data: [] as any[], error: null } as any),
       ]);
       if (slotsRes.error) throw slotsRes.error;
       if (typesRes.error) throw typesRes.error;
@@ -96,25 +115,78 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
     },
   });
 
-  // Fetch festival info for venue + print header
+  // Fetch festival/event info for venue + print header
   const { data: festivalInfo } = useQuery({
     queryKey: ["festival-info-runsheet", festivalId],
+    enabled: isFestivalScope,
     queryFn: async () => {
       const { data } = await supabase
         .from("festivals")
         .select("venue_id, name, start_at, venue:venues!festivals_venue_id_fkey(name)")
-        .eq("id", festivalId)
+        .eq("id", festivalId!)
         .single();
       return data;
     },
   });
-  const festivalVenueId = festivalInfo?.venue_id ?? null;
+
+  const { data: eventInfo } = useQuery({
+    queryKey: ["event-info-runsheet", eventId],
+    enabled: !isFestivalScope && !!eventId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("events")
+        .select("id, title, start_at, venue_id, venue:venues(name)")
+        .eq("id", eventId!)
+        .single();
+      return data;
+    },
+  });
+
+  const scopeVenueId = isFestivalScope ? (festivalInfo?.venue_id ?? null) : ((eventInfo as any)?.venue_id ?? null);
+  const scopeName = isFestivalScope ? festivalInfo?.name : (eventInfo as any)?.title;
+  const scopeStartAt = isFestivalScope ? festivalInfo?.start_at : (eventInfo as any)?.start_at;
+  const scopeVenueName = isFestivalScope ? (festivalInfo as any)?.venue?.name : (eventInfo as any)?.venue?.name;
+
   const [printFilter, setPrintFilter] = useState<"all" | "lydprover" | "event" | string>("all");
 
-  // Prosjekter + personas fra alle kilder via felles hook
-  const { data: allSubjects = [] } = useFestivalSubjects(festivalId);
+  // Subjects: festival uses shared hook, event uses local query
+  const { data: festivalSubjects = [] } = useFestivalSubjects(isFestivalScope ? festivalId : null);
+
+  const { data: eventSubjects = [] } = useQuery({
+    queryKey: ["event-subjects-runsheet", eventId],
+    enabled: !isFestivalScope && !!eventId,
+    queryFn: async () => {
+      const [participantsRes, legacyRes, slotsRes] = await Promise.all([
+        supabase.from("event_participants").select("participant_kind, participant_id").eq("event_id", eventId!),
+        supabase.from("event_entities").select("entity_id").eq("event_id", eventId!),
+        supabase.from("event_program_slots").select("performer_entity_id, performer_persona_id, entity_id").eq("event_id", eventId!),
+      ]);
+      const entityIds = new Set<string>();
+      const personaIds = new Set<string>();
+      (participantsRes.data ?? []).forEach((p: any) => {
+        if (p.participant_kind === "persona") personaIds.add(p.participant_id);
+        else entityIds.add(p.participant_id);
+      });
+      (legacyRes.data ?? []).forEach((r: any) => r.entity_id && entityIds.add(r.entity_id));
+      (slotsRes.data ?? []).forEach((s: any) => {
+        if (s.entity_id) entityIds.add(s.entity_id);
+        if (s.performer_entity_id) entityIds.add(s.performer_entity_id);
+        if (s.performer_persona_id) personaIds.add(s.performer_persona_id);
+      });
+      const [entitiesRes, personasRes] = await Promise.all([
+        entityIds.size ? supabase.from("entities").select("id,name,slug").in("id", [...entityIds]) : Promise.resolve({ data: [] } as any),
+        personaIds.size ? supabase.from("personas").select("id,name,slug").in("id", [...personaIds]) : Promise.resolve({ data: [] } as any),
+      ]);
+      return [
+        ...(entitiesRes.data ?? []).map((e: any) => ({ id: e.id, kind: "entity" as const, name: e.name, slug: e.slug })),
+        ...(personasRes.data ?? []).map((p: any) => ({ id: p.id, kind: "persona" as const, name: p.name, slug: p.slug })),
+      ];
+    },
+  });
+
+  const allSubjects = isFestivalScope ? festivalSubjects : eventSubjects;
   const festivalEntities = useMemo(
-    () => allSubjects.filter((s) => s.kind === "entity"),
+    () => allSubjects.filter((s: any) => s.kind === "entity"),
     [allSubjects]
   );
 
@@ -122,14 +194,12 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
   const renumberSlots = async () => {
     const allSlots = data?.slots ?? [];
     if (!allSlots.length) return;
-    // Sort by current sequence_number, then starts_at
     const sorted = [...allSlots].sort((a, b) => {
       const sa = a.sequence_number ?? Infinity;
       const sb = b.sequence_number ?? Infinity;
       if (sa !== sb) return sa - sb;
       return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
     });
-    // Build updates only for slots whose sequence_number needs to change
     const updates: { id: string; seq: number }[] = [];
     sorted.forEach((s, i) => {
       const desired = i + 1;
@@ -138,7 +208,6 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
       }
     });
     if (!updates.length) return;
-    // Batch update
     await Promise.all(
       updates.map(({ id, seq }) =>
         supabase
@@ -160,7 +229,7 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
       if (error) throw error;
     },
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] }),
+      queryClient.invalidateQueries({ queryKey }),
     onError: (e: Error) =>
       toast({ title: "Feil", description: e.message, variant: "destructive" }),
   });
@@ -184,8 +253,8 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
       const { error } = await supabase
         .from("event_program_slots" as any)
         .insert({
-          festival_id: festivalId,
-          event_id: null,
+          festival_id: isFestivalScope ? festivalId : null,
+          event_id: isFestivalScope ? null : eventId,
           entity_id: null,
           starts_at: now.toISOString(),
           ends_at: null,
@@ -204,9 +273,9 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
       if (error) throw error;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
+      await queryClient.invalidateQueries({ queryKey });
       await renumberSlots();
-      queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
+      queryClient.invalidateQueries({ queryKey });
       toast({ title: "Ny rad opprettet" });
     },
     onError: (e: Error) =>
@@ -244,7 +313,7 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
+      queryClient.invalidateQueries({ queryKey });
       toast({ title: "Seksjon slettet" });
     },
     onError: (e: Error) =>
@@ -270,9 +339,8 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
       if (error) throw error;
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
-      // Refetch to get fresh data, then renumber
-      const fresh = queryClient.getQueryData<{ slots: ExtendedEventProgramSlot[] }>(["festival-run-sheet", festivalId]);
+      await queryClient.invalidateQueries({ queryKey });
+      const fresh = queryClient.getQueryData<{ slots: ExtendedEventProgramSlot[] }>(queryKey);
       if (fresh?.slots) {
         const sorted = [...fresh.slots].sort((a, b) => {
           const sa = a.sequence_number ?? Infinity;
@@ -290,7 +358,7 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
               supabase.from("event_program_slots" as any).update({ sequence_number: seq }).eq("id", id)
             )
           );
-          queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
+          queryClient.invalidateQueries({ queryKey });
         }
       }
       toast({ title: "Rad slettet" });
@@ -384,7 +452,6 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
   const handleDownloadPdf = async () => {
     const el = document.querySelector(".runsheet-print-doc") as HTMLElement | null;
     if (!el) return;
-    // Temporarily show the print view for capture
     el.style.display = "block";
     toast({ title: "Genererer PDF..." });
     try {
@@ -396,7 +463,7 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
         backgroundColor: "#ffffff",
       });
       const imgData = canvas.toDataURL("image/png");
-      const pdfW = 210; // A4 mm
+      const pdfW = 210;
       const pdfH = (canvas.height * pdfW) / canvas.width;
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
       const pageH = 297;
@@ -406,7 +473,7 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
         pdf.addImage(imgData, "PNG", 0, -yOffset, pdfW, pdfH);
         yOffset += pageH;
       }
-      const name = festivalInfo?.name ? `Kjøreplan – ${festivalInfo.name}.pdf` : "Kjøreplan.pdf";
+      const name = scopeName ? `Kjøreplan – ${scopeName}.pdf` : "Kjøreplan.pdf";
       pdf.save(name);
     } catch (e: any) {
       toast({ title: "Feil", description: e.message, variant: "destructive" });
@@ -419,8 +486,6 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
     setPrintFilter(filter);
     setTimeout(() => window.print(), 100);
   };
-
-  const venueName = (festivalInfo as any)?.venue?.name ?? null;
 
   /* ── Render ── */
   return (
@@ -653,7 +718,7 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
           <ClipboardList className="h-8 w-8 mx-auto text-muted-foreground/20 mb-4" />
           <p className="text-sm font-medium text-muted-foreground">Ingen programrader ennå.</p>
           <p className="text-xs text-muted-foreground/60 mt-1">
-            Legg til rader via «Ny intern rad» eller via event‑program.
+            Legg til rader via «Ny rad» eller via event‑program.
           </p>
         </div>
       ) : (
@@ -692,7 +757,9 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
       {!readOnly && editingSlot && (
         <RunSheetEditDialog
           festivalId={festivalId}
-          festivalVenueId={festivalVenueId ?? null}
+          eventId={eventId}
+          isFestivalScope={isFestivalScope}
+          festivalVenueId={scopeVenueId ?? null}
           slot={editingSlot}
           suggestedSequenceNumber={nextSequenceNumber}
           open={dialogOpen}
@@ -702,7 +769,7 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
           }}
           onSave={handleSave}
           onParallelCreated={() => {
-            queryClient.invalidateQueries({ queryKey: ["festival-run-sheet", festivalId] });
+            queryClient.invalidateQueries({ queryKey });
             setEditingSlot(null);
           }}
           types={types}
@@ -710,10 +777,10 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
         />
       )}
 
-      {/* Media picker for documents */}
-      {attachTarget && (
+      {/* Media picker for documents – only for festival scope */}
+      {isFestivalScope && attachTarget && (
         <FestivalMediaPickerDialog
-          festivalId={festivalId}
+          festivalId={festivalId!}
           open={!!attachTarget}
           onOpenChange={(open) => !open && setAttachTarget(null)}
           onSelect={async (mediaId) => {
@@ -728,9 +795,9 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
 
       {/* ── Clean print view (hidden on screen, shown on print) ── */}
       <RunSheetPrintView
-        festivalName={festivalInfo?.name}
-        festivalDate={festivalInfo?.start_at ? format(new Date(festivalInfo.start_at), "d. MMMM yyyy", { locale: nb }) : undefined}
-        venueName={venueName}
+        festivalName={scopeName}
+        festivalDate={scopeStartAt ? format(new Date(scopeStartAt), "d. MMMM yyyy", { locale: nb }) : undefined}
+        venueName={scopeVenueName}
         slots={printSlots}
         sectionNames={sectionNames}
       />
@@ -741,7 +808,9 @@ export function FestivalRunSheet({ festivalId, readOnly = false }: FestivalRunSh
 /* ── Edit Dialog ── */
 interface RunSheetEditDialogProps {
   slot: ExtendedEventProgramSlot;
-  festivalId: string;
+  festivalId: string | null;
+  eventId: string | null;
+  isFestivalScope: boolean;
   festivalVenueId: string | null;
   suggestedSequenceNumber: number;
   open: boolean;
@@ -774,7 +843,7 @@ function getRunSheetSectionFromSlot(kind: string, visibility: string, title?: st
   return "Event";
 }
 
-function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequenceNumber, open, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
+function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, suggestedSequenceNumber, open, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
   const { toast } = useToast();
   const [eventId, setEventId] = useState(slot.event_id ?? "");
   const [startsAt, setStartsAt] = useState(isoToLocalDatetimeString(slot.starts_at));
@@ -860,14 +929,15 @@ function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequen
     enabled: performerKind === "persona" && open,
   });
 
-  // Fetch festival events for the selector
+  // Fetch festival events for the selector (only for festival scope)
   const { data: festivalEvents } = useQuery({
     queryKey: ["festival-events-for-runsheet", festivalId],
+    enabled: isFestivalScope && open,
     queryFn: async () => {
       const { data: feRows, error: feError } = await supabase
         .from("festival_events")
         .select("event_id")
-        .eq("festival_id", festivalId);
+        .eq("festival_id", festivalId!);
       if (feError) throw feError;
       if (!feRows?.length) return [] as FestivalEvent[];
 
@@ -879,7 +949,6 @@ function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequen
         .order("start_at", { ascending: true });
       if (evError) throw evError;
 
-      // Resolve scene names for events that have scene_id
       const eventsWithScene = (events ?? []) as unknown as (Omit<FestivalEvent, 'scene_name'>)[];
       const sceneIds = eventsWithScene.map((e) => e.scene_id).filter(Boolean) as string[];
       let sceneMap = new Map<string, string>();
@@ -898,7 +967,6 @@ function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequen
         scene_name: e.scene_id ? sceneMap.get(e.scene_id) ?? null : null,
       })) as FestivalEvent[];
     },
-    enabled: open,
   });
 
   // Run sheet defaults for the selected event
@@ -919,9 +987,6 @@ function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequen
     const ev = festivalEvents?.find((e) => e.id === selectedEventId);
     if (!ev) return;
 
-    // Time & duration: use defaults if available, otherwise from event
-    // Note: runSheetDefault won't be loaded yet for the NEW eventId,
-    // so we always use event data on initial select. Defaults apply on re-open.
     setStartsAt(isoToLocalDatetimeString(ev.start_at));
     if (ev.end_at) setEndsAt(isoToLocalDatetimeString(ev.end_at));
     if (ev.end_at) {
@@ -929,7 +994,6 @@ function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequen
       if (mins > 0) setDurationMinutes(String(mins));
     }
 
-    // Scene: prefer scene name, fallback to venue name
     if (ev.scene_name) {
       setStageLabel(ev.scene_name);
     } else if (ev.venue?.name) {
@@ -956,7 +1020,6 @@ function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequen
   };
 
   const handleCreateParallel = async () => {
-    // 1) Save the current slot first so it exists in DB with latest values
     const savedPayload: any = {
       event_id: eventId || null,
       starts_at: startsAt ? new Date(startsAt).toISOString() : slot.starts_at,
@@ -986,7 +1049,6 @@ function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequen
       return;
     }
 
-    // 2) Assign parallel group
     const groupId = slot.parallel_group_id || crypto.randomUUID();
 
     if (!slot.parallel_group_id) {
@@ -1000,12 +1062,11 @@ function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequen
       }
     }
 
-    // 3) Insert parallel slot using the just-saved values
     const { error: insErr } = await supabase
       .from("event_program_slots" as any)
       .insert({
-        festival_id: slot.festival_id,
-        event_id: eventId || null,
+        festival_id: isFestivalScope ? festivalId : null,
+        event_id: isFestivalScope ? (eventId || null) : scopeEventId,
         starts_at: startsAt ? new Date(startsAt).toISOString() : slot.starts_at,
         ends_at: endsAt ? new Date(endsAt).toISOString() : null,
         duration_minutes: durationMinutes ? Number(durationMinutes) : null,
@@ -1064,9 +1125,7 @@ function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequen
   // Selected persona display name
   const selectedPersonaName = useMemo(() => {
     if (!performerPersonaId) return null;
-    // Check from slot data first
     if (slot.performer_persona?.id === performerPersonaId) return slot.performer_persona.name;
-    // Check from search results
     const found = personaResults.find((p) => p.id === performerPersonaId);
     return found?.name || null;
   }, [performerPersonaId, slot.performer_persona, personaResults]);
@@ -1114,8 +1173,8 @@ function RunSheetEditDialog({ slot, festivalId, festivalVenueId, suggestedSequen
           </div>
 
 
-          {/* Event selector */}
-          {showFields.has("event") && festivalEvents && festivalEvents.length > 0 && (
+          {/* Event selector – only for festival scope */}
+          {isFestivalScope && showFields.has("event") && festivalEvents && festivalEvents.length > 0 && (
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold">Koble til event</Label>
               <Select value={eventId || "__none__"} onValueChange={handleEventSelect}>
