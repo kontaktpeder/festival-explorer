@@ -651,16 +651,16 @@ export default function FestivalFinanceRoom() {
   };
 
   return (
-    <div className="min-h-[100svh] bg-background">
+    <div className="finance-theme min-h-[100svh]">
       <div className="max-w-6xl mx-auto px-3 py-4 md:px-8 md:py-8 space-y-6">
-        <Link to={`/dashboard/festival/${festivalId}`} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-accent transition-colors py-2">
+        <Link to={`/dashboard/festival/${festivalId}`} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2">
           <ArrowLeft className="w-4 h-4" /><span>Tilbake til festivalrommet</span>
         </Link>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Økonomi</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Regnskap for festivalen</p>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Økonomi</h1>
+            <p className="text-xs text-muted-foreground mt-0.5 uppercase tracking-wider">Regnskap · fokusmodus</p>
           </div>
           <div className="flex items-center gap-2">
             {books && books.length > 0 && (
