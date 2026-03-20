@@ -167,6 +167,7 @@ export function useUpsertIncomeEntry(bookId: string) {
             internal_only: payload.internal_only ?? false,
             payment_status: payload.payment_status ?? "unpaid",
             paid_amount: payload.paid_amount ?? null,
+            invoice_status: (payload.invoice_status ?? "pending") as FinanceInvoiceStatus,
           })
           .select("*")
           .single();
