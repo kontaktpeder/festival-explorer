@@ -1,13 +1,13 @@
 import { useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { BackstageShell } from "@/components/layout/BackstageShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, AlertCircle } from "lucide-react";
 import { useFinanceBooks, useFinanceEntries } from "@/hooks/useFestivalFinance";
 import type { FestivalFinanceEntry } from "@/types/finance";
 
@@ -26,6 +26,20 @@ function formatNok(ore: number) {
     currency: "NOK",
     minimumFractionDigits: 0,
   }).format((ore || 0) / 100);
+}
+
+function SummaryCard({ label, value, variant = "neutral", className }: {
+  label: string; value: string; variant?: "neutral" | "positive" | "negative"; className?: string;
+}) {
+  const valueColor = variant === "positive" ? "finance-positive" : variant === "negative" ? "finance-negative" : "text-foreground";
+  return (
+    <Card className={`shadow-sm border-border/60 ${className || ""}`}>
+      <CardContent className="p-3 md:p-4">
+        <span className="text-[10px] md:text-xs uppercase tracking-wider text-muted-foreground block mb-1">{label}</span>
+        <p className={`text-lg md:text-xl font-bold tabular-nums ${valueColor}`}>{value}</p>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function FestivalSettlementRoom() {
@@ -137,61 +151,134 @@ export default function FestivalSettlementRoom() {
   if (!festivalId) return null;
 
   return (
-    <BackstageShell title="Internt oppgjør" subtitle={festival?.name} backTo={`/dashboard/festival/${festivalId}/finance`}>
-      <div className="max-w-[1400px] mx-auto space-y-6 px-4 py-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Card><CardContent className="pt-4 text-center"><p className="text-xs text-muted-foreground">Totalt utlegg</p><p className="text-lg font-semibold">{formatNok(totals.totalOutlay)}</p></CardContent></Card>
-          <Card><CardContent className="pt-4 text-center"><p className="text-xs text-muted-foreground">Totalt refundert</p><p className="text-lg font-semibold">{formatNok(totals.totalReimbursed)}</p></CardContent></Card>
-          <Card><CardContent className="pt-4 text-center"><p className="text-xs text-muted-foreground">Personer</p><p className="text-lg font-semibold">{totals.peopleCount}</p></CardContent></Card>
-          <Card><CardContent className="pt-4 text-center"><p className="text-xs text-muted-foreground">Utestående</p><p className="text-lg font-semibold">{formatNok(totals.outstanding)}</p></CardContent></Card>
+    <div className="finance-theme min-h-[100svh]">
+      <div className="max-w-[1400px] mx-auto px-3 py-4 md:px-6 md:py-8 space-y-6">
+        <Link to={`/dashboard/festival/${festivalId}/finance`} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2">
+          <ArrowLeft className="w-4 h-4" /><span>Tilbake til økonomi</span>
+        </Link>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Internt oppgjør</h1>
+            <p className="text-xs text-muted-foreground mt-0.5 uppercase tracking-wider">{festival?.name}</p>
+          </div>
         </div>
 
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-base">Per person</CardTitle></CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Persona</TableHead>
-                  <TableHead className="text-right">Utlegg</TableHead>
-                  <TableHead className="text-right">Refundert</TableHead>
-                  <TableHead className="text-right">Netto</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {people.map((p) => (
-                  <TableRow key={p.personaId}>
-                    <TableCell className="font-medium">{p.name}</TableCell>
-                    <TableCell className="text-right tabular-nums">{formatNok(p.outlay)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{formatNok(p.reimbursed)}</TableCell>
-                    <TableCell className="text-right tabular-nums font-medium">{formatNok(p.net)}</TableCell>
-                    <TableCell>
-                      {p.net > 0 ? <Badge variant="outline" className="text-destructive border-destructive/30">Skal ha</Badge> : p.net < 0 ? <Badge variant="outline" className="text-primary border-primary/30">Skylder</Badge> : <Badge variant="outline" className="text-muted-foreground border-border">Oppgjort</Badge>}
-                    </TableCell>
+        {/* ── Summary cards ── */}
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <SummaryCard label="Totalt utlegg" value={formatNok(totals.totalOutlay)} />
+          <SummaryCard label="Totalt refundert" value={formatNok(totals.totalReimbursed)} />
+          <SummaryCard label="Personer" value={String(totals.peopleCount)} />
+          <SummaryCard label="Utestående" value={formatNok(totals.outstanding)} variant={totals.outstanding > 0 ? "negative" : "neutral"} />
+        </div>
+
+        {/* ── Unresolved warning ── */}
+        {unresolvedRows.length > 0 && (
+          <div className="flex items-start gap-2 px-3 py-2.5 rounded-md border border-destructive/30 bg-destructive/5">
+            <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+            <p className="text-xs text-destructive/90">
+              {unresolvedRows.length} rad(er) har «Betalt av»-tekst men mangler persona-kobling. Disse er ikke med i persona-basert oppgjør.
+            </p>
+          </div>
+        )}
+
+        {/* ── Per person table ── */}
+        <Card className="shadow-sm border-border/60">
+          <CardHeader className="pb-2 px-3 md:px-6 pt-4 md:pt-6">
+            <CardTitle className="text-base font-semibold">Per person</CardTitle>
+          </CardHeader>
+          <CardContent className="px-0 md:px-0">
+            {/* Desktop */}
+            <div className="hidden md:block overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="pl-6">Persona</TableHead>
+                    <TableHead className="text-right">Utlegg</TableHead>
+                    <TableHead className="text-right">Refundert</TableHead>
+                    <TableHead className="text-right">Netto</TableHead>
+                    <TableHead className="pr-6">Status</TableHead>
                   </TableRow>
-                ))}
-                {people.length === 0 && (
-                  <TableRow><TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-8">Ingen data ennå. Sett «Betalt av» på utgiftsrader i økonomimodulen.</TableCell></TableRow>
-                )}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {people.map((p) => (
+                    <TableRow key={p.personaId}>
+                      <TableCell className="font-medium pl-6">{p.name}</TableCell>
+                      <TableCell className="text-right tabular-nums">{formatNok(p.outlay)}</TableCell>
+                      <TableCell className="text-right tabular-nums">{formatNok(p.reimbursed)}</TableCell>
+                      <TableCell className="text-right tabular-nums font-semibold">{formatNok(p.net)}</TableCell>
+                      <TableCell className="pr-6">
+                        {p.net > 0 ? (
+                          <Badge variant="outline" className="text-destructive border-destructive/30 text-xs">Skal ha</Badge>
+                        ) : p.net < 0 ? (
+                          <Badge variant="outline" className="text-primary border-primary/30 text-xs">Skylder</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-muted-foreground border-border text-xs">Oppgjort</Badge>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {people.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-8">
+                        Ingen data ennå. Sett «Betalt av» på utgiftsrader i økonomimodulen.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile */}
+            <div className="md:hidden space-y-2 px-3">
+              {people.map((p) => (
+                <div key={p.personaId} className="rounded-md border border-border bg-card p-3 space-y-2 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-sm">{p.name}</span>
+                    {p.net > 0 ? (
+                      <Badge variant="outline" className="text-destructive border-destructive/30 text-xs">Skal ha</Badge>
+                    ) : p.net < 0 ? (
+                      <Badge variant="outline" className="text-primary border-primary/30 text-xs">Skylder</Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-muted-foreground border-border text-xs">Oppgjort</Badge>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground block">Utlegg</span>
+                      <span className="text-sm tabular-nums">{formatNok(p.outlay)}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground block">Refundert</span>
+                      <span className="text-sm tabular-nums">{formatNok(p.reimbursed)}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground block">Netto</span>
+                      <span className="text-sm tabular-nums font-semibold">{formatNok(p.net)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {people.length === 0 && (
+                <p className="text-center text-sm text-muted-foreground py-8">
+                  Ingen data ennå. Sett «Betalt av» på utgiftsrader i økonomimodulen.
+                </p>
+              )}
+            </div>
           </CardContent>
         </Card>
 
-        {unresolvedRows.length > 0 && (
-          <Card className="border-destructive/20 bg-destructive/5">
-            <CardHeader className="pb-2"><CardTitle className="text-base text-destructive">Mangler persona-kobling</CardTitle></CardHeader>
-            <CardContent><p className="text-sm text-destructive/80">{unresolvedRows.length} rad(er) har «Betalt av»-tekst men mangler persona-kobling. Disse er ikke med i persona-basert oppgjør.</p></CardContent>
-          </Card>
-        )}
-
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-base">Forslag til oppgjør</CardTitle></CardHeader>
-          <CardContent>
+        {/* ── Settlement suggestions ── */}
+        <Card className="shadow-sm border-border/60">
+          <CardHeader className="pb-2 px-3 md:px-6 pt-4 md:pt-6">
+            <CardTitle className="text-base font-semibold">Forslag til oppgjør</CardTitle>
+          </CardHeader>
+          <CardContent className="px-3 md:px-6">
             {suggestions.length ? (
               <ul className="space-y-1.5">
-                {suggestions.map((s, i) => <li key={i} className="text-sm">{s}</li>)}
+                {suggestions.map((s, i) => (
+                  <li key={i} className="text-sm text-foreground">{s}</li>
+                ))}
               </ul>
             ) : (
               <p className="text-sm text-muted-foreground">Ingen oppgjør nødvendig.</p>
@@ -199,6 +286,6 @@ export default function FestivalSettlementRoom() {
           </CardContent>
         </Card>
       </div>
-    </BackstageShell>
+    </div>
   );
 }
