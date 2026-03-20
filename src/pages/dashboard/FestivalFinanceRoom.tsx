@@ -409,6 +409,26 @@ export default function FestivalFinanceRoom() {
     </div>
   );
 
+  const PaymentStatusSelect = ({ entry, onFieldChange }: { entry: FestivalFinanceEntry; onFieldChange: typeof onExpenseFieldChange }) => (
+    <div className="flex items-center gap-1">
+      <Select value={entry.payment_status ?? "unpaid"} onValueChange={(v) => onFieldChange(entry, "payment_status" as any, v)}>
+        <SelectTrigger className="h-7 text-xs w-[90px]"><SelectValue /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="unpaid">Ubetalt</SelectItem>
+          <SelectItem value="paid">Betalt</SelectItem>
+          <SelectItem value="partial">Delvis</SelectItem>
+          <SelectItem value="cancelled">Kansellert</SelectItem>
+        </SelectContent>
+      </Select>
+      {entry.payment_status === "partial" && (
+        <Input type="number" className="h-7 text-xs w-[80px] tabular-nums" placeholder="Øre"
+          defaultValue={entry.paid_amount != null ? (entry.paid_amount / 100).toString() : ""}
+          onBlur={(ev) => { const n = parseInt(ev.target.value.replace(/\s/g, ""), 10); onFieldChange(entry, "paid_amount" as any, isNaN(n) ? "0" : (n * 100).toString()); }}
+        />
+      )}
+    </div>
+  );
+
   const renderExpenseTable = (items: FestivalFinanceEntry[]) => (
     <Table>
       <TableHeader>
@@ -419,6 +439,7 @@ export default function FestivalFinanceRoom() {
           <TableHead className="w-[120px]">Mottaker</TableHead>
           <TableHead className="w-[120px]">Betalt av</TableHead>
           <TableHead className="w-[100px] text-right">Beløp (kr)</TableHead>
+          <TableHead className="w-[140px]">Betaling</TableHead>
           <TableHead className="w-[130px]">Vedlegg</TableHead>
           <TableHead className="w-16 text-right" />
         </TableRow>
@@ -432,6 +453,7 @@ export default function FestivalFinanceRoom() {
             <TableCell><RecipientPicker festivalId={festivalId!} value={e.counterparty} onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} /></TableCell>
             <TableCell><PaidBySelect entry={e} /></TableCell>
             <TableCell><Input type="number" className="h-7 text-xs text-right tabular-nums px-1.5" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} /></TableCell>
+            <TableCell><PaymentStatusSelect entry={e} onFieldChange={onExpenseFieldChange} /></TableCell>
             <TableCell><AttachmentCell entry={e} onFieldChange={onExpenseFieldChange} /></TableCell>
             <TableCell className="text-right"><div className="flex items-center justify-end gap-0">{expenseActions(e)}</div></TableCell>
           </TableRow>
