@@ -60,6 +60,8 @@ export default function FestivalSettlementRoom() {
     enabled: !!festivalId,
   });
 
+  const { data: financeAccess, isLoading: accessLoading } = useFinanceAccess(festivalId);
+
   const { data: books = [] } = useFinanceBooks(festivalId || undefined);
   const activeBookId = books[0]?.id ?? null;
   const { data: entries = [] } = useFinanceEntries(activeBookId || undefined);
