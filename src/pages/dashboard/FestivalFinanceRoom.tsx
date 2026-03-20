@@ -518,6 +518,10 @@ export default function FestivalFinanceRoom() {
               <PaidBySelect entry={e} />
             </div>
             <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Betalingsstatus</label>
+              <PaymentStatusSelect entry={e} onFieldChange={onExpenseFieldChange} />
+            </div>
+            <div>
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Paperclip className="h-3 w-3" /> Vedlegg</label>
               <div className="mt-1">
                 <AttachmentCell entry={e} onFieldChange={onExpenseFieldChange} />
