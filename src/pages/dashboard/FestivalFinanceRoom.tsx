@@ -545,11 +545,11 @@ export default function FestivalFinanceRoom() {
                   </td>
                   <td className="py-1.5 px-1">
                     <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded ${
-                      (entry as any).invoice_status === "received" ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                        : (entry as any).invoice_status === "not_required" ? "bg-muted text-muted-foreground"
+                      (e as any).invoice_status === "received" ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                        : (e as any).invoice_status === "not_required" ? "bg-muted text-muted-foreground"
                         : "text-amber-600 dark:text-amber-400"
                     }`}>
-                      {(entry as any).invoice_status === "received" ? "Mottatt" : (entry as any).invoice_status === "not_required" ? "Ikke rel." : "Avventer"}
+                      {(e as any).invoice_status === "received" ? "Mottatt" : (e as any).invoice_status === "not_required" ? "Ikke rel." : "Avventer"}
                     </span>
                   </td>
                   <td className="py-1.5 px-0 text-right">
