@@ -267,6 +267,16 @@ export default function FestivalFinanceRoom() {
   const netExpense = expenseTotal + reimbursementTotal;
   const result = netIncome - netExpense;
 
+  // Helper: outstanding amount per entry
+  const getOutstandingAmount = (e: FestivalFinanceEntry): number => {
+    if (e.payment_status === "cancelled" || e.payment_status === "paid") return 0;
+    if (e.payment_status === "partial") {
+      const paid = e.paid_amount || 0;
+      return Math.max((e.net_amount || 0) - paid, 0);
+    }
+    return e.net_amount || 0; // unpaid or any other
+  };
+
   // Extended KPIs
   const {
     unpaidOrPartialTotal,
@@ -280,8 +290,8 @@ export default function FestivalFinanceRoom() {
     const all = entries || [];
 
     const unpaidOrPartial = all
-      .filter((e) => !e.internal_only && (e.payment_status === "unpaid" || e.payment_status === "partial"))
-      .reduce((sum, e) => sum + (e.net_amount || 0), 0);
+      .filter((e) => !e.internal_only)
+      .reduce((sum, e) => sum + getOutstandingAmount(e), 0);
 
     const blocked = all
       .filter((e) => !e.internal_only && e.payment_status !== "cancelled")
@@ -385,6 +395,13 @@ export default function FestivalFinanceRoom() {
       gross_amount: 0, net_amount: 0, date_incurred: today,
       created_by: user.id,
     });
+  };
+
+  const parseKrToOre = (v: string) => {
+    const normalized = v.replace(/\s/g, "").replace(",", ".");
+    const n = Number(normalized);
+    if (!Number.isFinite(n)) return 0;
+    return Math.round(n * 100);
   };
 
   const onExpenseFieldChange = (entry: FestivalFinanceEntry, field: keyof FestivalFinanceEntry, value: string) => {
@@ -593,9 +610,9 @@ export default function FestivalFinanceRoom() {
         </SelectContent>
       </Select>
       {entry.payment_status === "partial" && (
-        <Input type="number" className="h-7 text-xs w-[80px] tabular-nums" placeholder="Øre"
+        <Input type="text" inputMode="decimal" className="h-7 text-xs w-[80px] tabular-nums" placeholder="kr"
           defaultValue={entry.paid_amount != null ? (entry.paid_amount / 100).toString() : ""}
-          onBlur={(ev) => { const n = parseInt(ev.target.value.replace(/\s/g, ""), 10); onFieldChange(entry, "paid_amount" as any, isNaN(n) ? "0" : (n * 100).toString()); }}
+          onBlur={(ev) => { const ore = parseKrToOre(ev.target.value); onFieldChange(entry, "paid_amount" as any, ore.toString()); }}
         />
       )}
     </div>
