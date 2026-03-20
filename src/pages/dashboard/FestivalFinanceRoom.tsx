@@ -362,7 +362,7 @@ export default function FestivalFinanceRoom() {
     if (!entries || entries.length === 0) { toast.info("Ingen transaksjoner å eksportere."); return; }
     if (!financeOwnerName) { toast.error("Økonomiansvarlig (ENK) er ikke satt. Gå til Innstillinger."); return; }
 
-    const included = entries.filter((e) => !e.internal_only && e.payment_status !== "cancelled");
+    const included = entries.filter((e) => !e.internal_only && e.payment_status !== "cancelled" && ((e as any).invoice_status === "received" || (e as any).invoice_status === "not_required"));
 
     // Validate
     for (const e of included) {
@@ -371,7 +371,8 @@ export default function FestivalFinanceRoom() {
       const cp = (e.counterparty ?? "").trim();
       const motpart = cp || (e.source_type === "ticket" ? "Billetthandel" : "");
       if (!motpart && e.source_type !== "ticket") { toast.error(`Motpart mangler for manuell rad: ${label}`); return; }
-      if (e.source_type !== "ticket" && (!e.attachment_url || !e.attachment_url.trim())) { toast.error(`Vedlegg mangler for manuell rad: ${label}`); return; }
+      if ((e as any).invoice_status === "received" && (!e.attachment_url || !e.attachment_url.trim())) { toast.error(`Fakturastatus er "Mottatt" men vedlegg mangler: ${label}`); return; }
+      if (e.source_type !== "ticket" && (e as any).invoice_status !== "not_required" && (!e.attachment_url || !e.attachment_url.trim())) { toast.error(`Vedlegg mangler for manuell rad: ${label}`); return; }
       if (e.payment_status === "partial") {
         if (e.paid_amount == null || e.paid_amount <= 0) { toast.error(`Betalt beløp må være > 0 for delvis betalt rad: ${label}`); return; }
         if (e.paid_amount > e.net_amount) { toast.error(`Betalt beløp (${e.paid_amount / 100} kr) kan ikke overstige netto (${e.net_amount / 100} kr): ${label}`); return; }
@@ -463,6 +464,10 @@ export default function FestivalFinanceRoom() {
               const result = await uploadAttachment(file, festivalId, entry.voucher_number);
               onFieldChange(entry, "attachment_url", result.url);
               onFieldChange(entry, "attachment_name", result.name);
+              // Auto-set invoice_status to received if currently pending
+              if ((entry as any).invoice_status === "pending" || !(entry as any).invoice_status) {
+                onFieldChange(entry, "invoice_status" as any, "received");
+              }
             } catch (err: any) { toast.error(err.message || "Kunne ikke laste opp bilag"); }
             finally { ev.target.value = ""; }
           }} />
@@ -493,11 +498,20 @@ export default function FestivalFinanceRoom() {
     </div>
   );
 
-
+  const InvoiceStatusSelect = ({ entry, onFieldChange }: { entry: FestivalFinanceEntry; onFieldChange: typeof onExpenseFieldChange }) => (
+    <Select value={(entry as any).invoice_status ?? "pending"} onValueChange={(v) => onFieldChange(entry, "invoice_status" as any, v)}>
+      <SelectTrigger className="h-7 text-xs w-[110px]"><SelectValue /></SelectTrigger>
+      <SelectContent>
+        <SelectItem value="pending">Avventer</SelectItem>
+        <SelectItem value="received">Mottatt</SelectItem>
+        <SelectItem value="not_required">Ikke relevant</SelectItem>
+      </SelectContent>
+    </Select>
+  );
   const renderExpenseTable = (items: FestivalFinanceEntry[]) => (
     <div className="w-full">
       <table className="w-full table-fixed text-sm">
-        <thead>
+         <thead>
           <tr className="border-b text-left text-xs text-muted-foreground">
             <th className="w-[72px] py-2 px-2 font-medium">Bilag</th>
             <th className="w-[90px] py-2 px-1 font-medium">Dato</th>
@@ -505,6 +519,7 @@ export default function FestivalFinanceRoom() {
             <th className="py-2 px-1 font-medium">Beskrivelse</th>
             <th className="w-[100px] py-2 px-1 font-medium text-right">Beløp</th>
             <th className="w-[90px] py-2 px-1 font-medium">Status</th>
+            <th className="w-[90px] py-2 px-1 font-medium">Faktura</th>
             <th className="w-[36px] py-2 px-0" />
           </tr>
         </thead>
@@ -533,13 +548,22 @@ export default function FestivalFinanceRoom() {
                       {e.payment_status === "paid" ? "Betalt" : e.payment_status === "partial" ? "Delvis" : e.payment_status === "cancelled" ? "Kansellert" : "Ubetalt"}
                     </span>
                   </td>
+                  <td className="py-1.5 px-1">
+                    <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded ${
+                      (e as any).invoice_status === "received" ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                        : (e as any).invoice_status === "not_required" ? "bg-muted text-muted-foreground"
+                        : "text-amber-600 dark:text-amber-400"
+                    }`}>
+                      {(e as any).invoice_status === "received" ? "Mottatt" : (e as any).invoice_status === "not_required" ? "Ikke rel." : "Avventer"}
+                    </span>
+                  </td>
                   <td className="py-1.5 px-0 text-right">
                     <ChevronRight className={`h-3.5 w-3.5 text-muted-foreground/50 transition-transform inline-block ${isExpanded ? "rotate-90" : ""}`} />
                   </td>
                 </tr>
                 {isExpanded && (
                   <tr className="bg-muted/20">
-                    <td colSpan={7} className="px-3 py-3">
+                     <td colSpan={8} className="px-3 py-3">
                       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
                         <div>
                           <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Motpart</span>
@@ -564,6 +588,10 @@ export default function FestivalFinanceRoom() {
                         <div>
                           <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Vedlegg</span>
                           <AttachmentCell entry={e} onFieldChange={onExpenseFieldChange} />
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Faktura</span>
+                          <InvoiceStatusSelect entry={e} onFieldChange={onExpenseFieldChange} />
                         </div>
                         <div>
                           <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Kategori</span>
@@ -630,6 +658,10 @@ export default function FestivalFinanceRoom() {
                 <AttachmentCell entry={e} onFieldChange={onExpenseFieldChange} />
               </div>
             </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Faktura</label>
+              <InvoiceStatusSelect entry={e} onFieldChange={onExpenseFieldChange} />
+            </div>
           </div>
         } />
       ))}
@@ -640,12 +672,13 @@ export default function FestivalFinanceRoom() {
     <div className="w-full">
       <table className="w-full table-fixed text-sm">
         <thead>
-          <tr className="border-b text-left text-xs text-muted-foreground">
+           <tr className="border-b text-left text-xs text-muted-foreground">
             <th className="w-[90px] py-2 px-2 font-medium">Dato</th>
             <th className="py-2 px-1 font-medium">Fra</th>
             <th className="py-2 px-1 font-medium">Beskrivelse</th>
             <th className="w-[100px] py-2 px-1 font-medium text-right">Beløp</th>
             <th className="w-[90px] py-2 px-1 font-medium">Status</th>
+            <th className="w-[90px] py-2 px-1 font-medium">Faktura</th>
             <th className="w-[36px] py-2 px-0" />
           </tr>
         </thead>
@@ -671,13 +704,22 @@ export default function FestivalFinanceRoom() {
                       {e.payment_status === "paid" ? "Betalt" : e.payment_status === "partial" ? "Delvis" : e.payment_status === "cancelled" ? "Kansellert" : "Ubetalt"}
                     </span>
                   </td>
+                  <td className="py-1.5 px-1">
+                    <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded ${
+                      (e as any).invoice_status === "received" ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                        : (e as any).invoice_status === "not_required" ? "bg-muted text-muted-foreground"
+                        : "text-amber-600 dark:text-amber-400"
+                    }`}>
+                      {(e as any).invoice_status === "received" ? "Mottatt" : (e as any).invoice_status === "not_required" ? "Ikke rel." : "Avventer"}
+                    </span>
+                  </td>
                   <td className="py-1.5 px-0 text-right">
                     <ChevronRight className={`h-3.5 w-3.5 text-muted-foreground/50 transition-transform inline-block ${isExpanded ? "rotate-90" : ""}`} />
                   </td>
                 </tr>
                 {isExpanded && (
                   <tr className="bg-muted/20">
-                    <td colSpan={6} className="px-3 py-3">
+                    <td colSpan={7} className="px-3 py-3">
                       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
                         <div>
                           <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Fra (motpart)</span>
@@ -698,6 +740,14 @@ export default function FestivalFinanceRoom() {
                         <div>
                           <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Betalingsstatus</span>
                           <PaymentStatusSelect entry={e} onFieldChange={onIncomeFieldChange} />
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Faktura</span>
+                          <InvoiceStatusSelect entry={e} onFieldChange={onIncomeFieldChange} />
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Vedlegg</span>
+                          <AttachmentCell entry={e} onFieldChange={onIncomeFieldChange} />
                         </div>
                         <div className="flex items-end justify-end gap-1">
                           {incomeActions(e)}
@@ -746,6 +796,10 @@ export default function FestivalFinanceRoom() {
             <div>
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Betalingsstatus</label>
               <PaymentStatusSelect entry={e} onFieldChange={onIncomeFieldChange} />
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Faktura</label>
+              <InvoiceStatusSelect entry={e} onFieldChange={onIncomeFieldChange} />
             </div>
           </div>
         } />

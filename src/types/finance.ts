@@ -13,6 +13,7 @@ export interface FestivalFinanceBook {
 export type FinanceEntryType = "income" | "expense";
 export type FinanceEntryStatus = "planned" | "confirmed" | "paid" | "cancelled";
 export type FinancePaymentStatus = "unpaid" | "paid" | "partial" | "cancelled";
+export type FinanceInvoiceStatus = "pending" | "received" | "not_required";
 
 export interface FestivalFinanceEntry {
   id: string;
@@ -48,6 +49,7 @@ export interface FestivalFinanceEntry {
   internal_only: boolean;
   payment_status: FinancePaymentStatus;
   paid_amount: number | null;
+  invoice_status: FinanceInvoiceStatus;
   created_at: string;
   created_by: string;
 }
