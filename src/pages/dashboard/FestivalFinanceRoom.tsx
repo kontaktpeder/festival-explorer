@@ -804,7 +804,7 @@ export default function FestivalFinanceRoom() {
 
   return (
     <div className="finance-theme min-h-[100svh]">
-      <div className="max-w-6xl mx-auto px-3 py-4 md:px-8 md:py-8 space-y-6">
+      <div className="max-w-[1400px] mx-auto px-3 py-4 md:px-6 md:py-8 space-y-6">
         <Link to={`/dashboard/festival/${festivalId}`} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2">
           <ArrowLeft className="w-4 h-4" /><span>Tilbake til festivalrommet</span>
         </Link>
