@@ -89,7 +89,7 @@ export function useUpsertExpenseEntry(bookId: string) {
       };
 
       if (payload.id) {
-        const { id, created_by, created_at, ...rest } = payload;
+        const { id, created_by, created_at, voucher_number, ...rest } = payload;
         const { data, error } = await supabase
           .from("festival_finance_entries")
           .update({ ...rest, ...base })
