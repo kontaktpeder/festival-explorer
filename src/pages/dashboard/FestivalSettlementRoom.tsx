@@ -181,9 +181,9 @@ export default function FestivalSettlementRoom() {
         </Card>
 
         {unresolvedRows.length > 0 && (
-          <Card className="border-amber-200 bg-amber-50/50">
-            <CardHeader className="pb-2"><CardTitle className="text-base text-amber-800">Mangler persona-kobling</CardTitle></CardHeader>
-            <CardContent><p className="text-sm text-amber-700">{unresolvedRows.length} rad(er) har «Betalt av»-tekst men mangler persona-kobling. Disse er ikke med i persona-basert oppgjør.</p></CardContent>
+          <Card className="border-destructive/20 bg-destructive/5">
+            <CardHeader className="pb-2"><CardTitle className="text-base text-destructive">Mangler persona-kobling</CardTitle></CardHeader>
+            <CardContent><p className="text-sm text-destructive/80">{unresolvedRows.length} rad(er) har «Betalt av»-tekst men mangler persona-kobling. Disse er ikke med i persona-basert oppgjør.</p></CardContent>
           </Card>
         )}
 
