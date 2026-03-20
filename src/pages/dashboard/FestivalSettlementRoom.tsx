@@ -9,6 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import { useFinanceBooks, useFinanceEntries } from "@/hooks/useFestivalFinance";
+import { useFinanceAccess } from "@/hooks/useFinanceAccess";
 import type { FestivalFinanceEntry } from "@/types/finance";
 
 type PersonAgg = {
@@ -58,6 +59,8 @@ export default function FestivalSettlementRoom() {
     },
     enabled: !!festivalId,
   });
+
+  const { data: financeAccess, isLoading: accessLoading } = useFinanceAccess(festivalId);
 
   const { data: books = [] } = useFinanceBooks(festivalId || undefined);
   const activeBookId = books[0]?.id ?? null;
@@ -148,7 +151,24 @@ export default function FestivalSettlementRoom() {
     return out;
   }, [people]);
 
+  if (accessLoading) return null;
   if (!festivalId) return null;
+
+  if (financeAccess === "none") {
+    return (
+      <div className="finance-theme min-h-[100svh] flex items-center justify-center">
+        <Card className="max-w-md w-full shadow-sm">
+          <CardContent className="p-8 text-center space-y-4">
+            <p className="text-lg font-semibold">Ingen tilgang til økonomi</p>
+            <p className="text-sm text-muted-foreground">Du har ikke økonomi-tilgang for denne festivalen. Kontakt festivaladministrator.</p>
+            <Link to={`/dashboard/festival/${festivalId}`} className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+              <ArrowLeft className="h-4 w-4" /> Tilbake til festival
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="finance-theme min-h-[100svh]">

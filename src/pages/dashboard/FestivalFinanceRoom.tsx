@@ -23,6 +23,7 @@ import { useFinancePayers } from "@/hooks/useFinancePayers";
 import { Plus, Trash2, ArrowLeft, Undo2, TrendingUp, TrendingDown, Receipt, Wallet, ChevronRight, FolderOpen, Download, Paperclip, ExternalLink, Upload, AlertCircle } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useFinanceAttachmentUpload } from "@/hooks/useFinanceAttachmentUpload";
+import { useFinanceAccess, type FinanceAccessLevel } from "@/hooks/useFinanceAccess";
 
 import {
   useFinanceBooks, useFinanceEntries, useCreateFinanceBook,
@@ -199,13 +200,16 @@ export default function FestivalFinanceRoom() {
 
   const { data: categorySuggestions } = useFinanceCategoriesForFestival(festivalId);
   const { data: payers = [] } = useFinancePayers(festivalId);
+  const { data: financeAccess, isLoading: accessLoading } = useFinanceAccess(festivalId);
+  const canMutate = financeAccess === "editor" || financeAccess === "admin";
 
   const { data: entries, isLoading: entriesLoading } = useFinanceEntries(activeBookId || undefined);
   const expenseMutation = useUpsertExpenseEntry(activeBookId || "");
   const incomeMutation = useUpsertIncomeEntry(activeBookId || "");
   const deleteEntry = useDeleteFinanceEntry(activeBookId || "");
 
-  const isLoading = booksLoading || (!!activeBookId && entriesLoading);
+  const isLoading = booksLoading || (!!activeBookId && entriesLoading) || accessLoading;
+
 
   const { incomeTotal, feeTotal, expenseTotal, reimbursementTotal } = useMemo(() => {
     let income = 0, fee = 0, expense = 0, reimbursements = 0;
@@ -286,8 +290,24 @@ export default function FestivalFinanceRoom() {
 
   const { uploadAttachment, isUploading: isUploadingAttachment } = useFinanceAttachmentUpload();
 
+  // Block access if no finance permission (after all hooks)
+  if (!accessLoading && financeAccess === "none") {
+    return (
+      <div className="finance-theme min-h-[100svh] flex items-center justify-center">
+        <Card className="max-w-md w-full shadow-sm">
+          <CardContent className="p-8 text-center space-y-4">
+            <p className="text-lg font-semibold">Ingen tilgang til økonomi</p>
+            <p className="text-sm text-muted-foreground">Du har ikke økonomi-tilgang for denne festivalen. Kontakt festivaladministrator.</p>
+            <Link to={`/dashboard/festival/${festivalId}`} className="inline-flex items-center gap-2 text-sm text-primary hover:underline">
+              <ArrowLeft className="h-4 w-4" /> Tilbake til festival
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // Voucher numbers are allocated atomically by the DB trigger (allocate_voucher_number).
-  // Frontend never generates or overwrites voucher_number.
 
   const handleAddExpense = () => {
     if (!activeBookId || !user) return;

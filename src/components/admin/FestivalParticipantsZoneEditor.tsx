@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, ArrowUp, ArrowDown, Trash2, ChevronDown, ChevronUp, FolderPlus } from "lucide-react";
 import { toast } from "sonner";
 import { PersonaSearchPicker } from "@/components/persona/PersonaSearchPicker";
@@ -27,6 +28,8 @@ interface FestivalParticipantPermissions {
   can_view_runsheet: boolean;
 }
 
+type FinanceAccessLevel = "none" | "reader" | "editor" | "admin";
+
 interface FestivalParticipantRow {
   id: string;
   festival_id: string;
@@ -45,6 +48,7 @@ interface FestivalParticipantRow {
   can_see_revenue?: boolean;
   can_edit_festival_media?: boolean;
   can_view_runsheet?: boolean;
+  finance_access?: FinanceAccessLevel;
 }
 
 interface ResolvedRef {
@@ -135,7 +139,7 @@ export function FestivalParticipantsZoneEditor({
     setLoading(true);
     const { data, error } = await supabase
       .from("festival_participants")
-      .select("id, festival_id, zone, participant_kind, participant_id, role_label, sort_order, can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue, can_edit_festival_media, can_view_runsheet")
+      .select("id, festival_id, zone, participant_kind, participant_id, role_label, sort_order, can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue, can_edit_festival_media, can_view_runsheet, finance_access")
       .eq("festival_id", festivalId)
       .eq("zone", zone)
       .order("sort_order", { ascending: true });
@@ -482,7 +486,7 @@ export function FestivalParticipantsZoneEditor({
 
                 {/* Permissions panel */}
                 {isAdmin && isExpanded && (
-                  <div className="px-3 pb-3 pt-1 border-t border-border/50">
+                  <div className="px-3 pb-3 pt-1 border-t border-border/50 space-y-3">
                     <p className="text-xs font-medium text-muted-foreground mb-2">Tillatelser</p>
                     <div className="grid grid-cols-2 gap-2">
                        {([
@@ -519,6 +523,32 @@ export function FestivalParticipantsZoneEditor({
                           {label}
                         </Label>
                       ))}
+                    </div>
+
+                    {/* Finance access */}
+                    <div className="pt-2 border-t border-border/30">
+                      <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Økonomi-tilgang</Label>
+                      <Select
+                        value={row.finance_access || "none"}
+                        onValueChange={async (val) => {
+                          const { error } = await supabase
+                            .from("festival_participants")
+                            .update({ finance_access: val } as any)
+                            .eq("id", row.id);
+                          if (error) { toast.error("Kunne ikke oppdatere økonomi-tilgang"); return; }
+                          setRows((prev) => prev.map((r) => r.id === row.id ? { ...r, finance_access: val as FinanceAccessLevel } : r));
+                        }}
+                      >
+                        <SelectTrigger className="h-8 text-xs w-48">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Ingen</SelectItem>
+                          <SelectItem value="reader">Leser</SelectItem>
+                          <SelectItem value="editor">Editor</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 )}
