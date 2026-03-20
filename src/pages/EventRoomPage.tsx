@@ -55,7 +55,7 @@ export default function EventRoomPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const isNew = id === "new";
+  const isNew = !id || id === "new";
 
   const [formData, setFormData] = useState({
     title: "",
