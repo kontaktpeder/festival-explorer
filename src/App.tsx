@@ -158,6 +158,9 @@ const App = () => (
             <Route path="/dashboard/venue/:id/team" element={<VenueTeamRoom />} />
             <Route path="/dashboard/venue/:id/settings" element={<VenueSettingsRoom />} />
             <Route path="/dashboard/landing" element={<LandingSettingsRoom />} />
+            <Route path="/dashboard/events" element={<EventFirstGuard><DashboardEventsRoom /></EventFirstGuard>} />
+            <Route path="/dashboard/events/new" element={<EventFirstGuard><EventRoomPage /></EventFirstGuard>} />
+            <Route path="/dashboard/events/:id" element={<EventFirstGuard><EventRoomPage /></EventFirstGuard>} />
 
 
           <Route path="/p/:slug" element={<PublicChrome footerVariant="giggen"><PersonaPage /></PublicChrome>} />
