@@ -12,6 +12,7 @@ export interface FestivalFinanceBook {
 
 export type FinanceEntryType = "income" | "expense";
 export type FinanceEntryStatus = "planned" | "confirmed" | "paid" | "cancelled";
+export type FinancePaymentStatus = "unpaid" | "paid" | "partial" | "cancelled";
 
 export interface FestivalFinanceEntry {
   id: string;
