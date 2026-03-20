@@ -214,8 +214,8 @@ export default function FestivalFinanceRoom() {
 
   const { uploadAttachment, isUploading: isUploadingAttachment } = useFinanceAttachmentUpload();
 
-  const generateYearlyVoucherNumber = (allEntries: FestivalFinanceEntry[]) => {
-    const year = new Date().getFullYear().toString();
+  const generateYearlyVoucherNumber = (allEntries: FestivalFinanceEntry[], dateIncurred?: string) => {
+    const year = dateIncurred ? dateIncurred.slice(0, 4) : new Date().getFullYear().toString();
     const thisYears = (allEntries || [])
       .map((e) => e.voucher_number)
       .filter((v): v is string => Boolean(v && v.startsWith(year + "-")));
