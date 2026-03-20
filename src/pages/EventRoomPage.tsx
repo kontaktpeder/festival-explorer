@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { EventParticipantsZoneEditor } from "@/components/admin/EventParticipantsZoneEditor";
 import { EventProgramSlotsEditor } from "@/components/dashboard/EventProgramSlotsEditor";
+import { FestivalRunSheet } from "@/components/dashboard/FestivalRunSheet";
 import { EventInvitationsEditor } from "@/components/dashboard/EventInvitationsEditor";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -598,10 +599,11 @@ export default function EventRoomPage() {
               <EventInvitationsEditor eventId={id} canEdit={canEdit} />
             )}
 
-            {/* Program slots */}
+            {/* Kjøreplan (full run sheet) */}
             {!isNew && id && (
-              <EventProgramSlotsEditor eventId={id} canEdit={canEdit} eventStartAt={event?.start_at} festivalId={festivalContext?.festival_id ?? undefined} />
+              <FestivalRunSheet eventId={id} readOnly={!canEdit} />
             )}
+            {/* TODO: Remove EventProgramSlotsEditor after verifying full run sheet works for event-first */}
 
             {/* Medvirkende */}
             {!isNew && id && (
