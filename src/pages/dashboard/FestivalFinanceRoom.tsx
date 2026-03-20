@@ -144,9 +144,11 @@ function EditableText({ value, onSave, placeholder, type = "text", className = "
 export default function FestivalFinanceRoom() {
   const { id: festivalId } = useParams<{ id: string }>();
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
-  const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [showOnlyMissingAttachments, setShowOnlyMissingAttachments] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [activeFilter, setActiveFilter] = useState<"all" | "unpaid" | "pending_invoice" | "missing_attachment">("all");
+
   const toggleRow = (id: string) => {
     setExpandedRows((prev) => {
       const next = new Set(prev);
@@ -156,11 +158,7 @@ export default function FestivalFinanceRoom() {
   };
 
   const toggleCategory = (key: string) => {
-    setOpenCategories((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key); else next.add(key);
-      return next;
-    });
+    setOpenCategory((prev) => prev === key ? null : key);
   };
 
   const { data: user } = useQuery({
