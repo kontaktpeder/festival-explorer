@@ -114,11 +114,22 @@ export default function FestivalFinanceRoom() {
   const { data: festival } = useQuery({
     queryKey: ["festival-for-finance", festivalId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("festivals").select("id, name").eq("id", festivalId!).single();
+      const { data, error } = await supabase.from("festivals").select("id, name, finance_owner_persona_id").eq("id", festivalId!).single();
       if (error) throw error;
       return data;
     },
     enabled: !!festivalId,
+  });
+
+  const { data: financeOwnerName } = useQuery({
+    queryKey: ["finance-owner-name", (festival as any)?.finance_owner_persona_id],
+    queryFn: async () => {
+      const pid = (festival as any)?.finance_owner_persona_id;
+      if (!pid) return null;
+      const { data } = await supabase.from("personas").select("name").eq("id", pid).single();
+      return data?.name ?? null;
+    },
+    enabled: !!(festival as any)?.finance_owner_persona_id,
   });
 
   const { data: books, isLoading: booksLoading } = useFinanceBooks(festivalId || undefined);
