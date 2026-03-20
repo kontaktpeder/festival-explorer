@@ -168,7 +168,7 @@ export default function FestivalSettlementRoom() {
                     <TableCell className="text-right tabular-nums">{formatNok(p.reimbursed)}</TableCell>
                     <TableCell className="text-right tabular-nums font-medium">{formatNok(p.net)}</TableCell>
                     <TableCell>
-                      {p.net > 0 ? <Badge variant="outline" className="text-amber-600 border-amber-300">Skal ha</Badge> : p.net < 0 ? <Badge variant="outline" className="text-blue-600 border-blue-300">Skylder</Badge> : <Badge variant="outline" className="text-emerald-600 border-emerald-300">Oppgjort</Badge>}
+                      {p.net > 0 ? <Badge variant="outline" className="text-destructive border-destructive/30">Skal ha</Badge> : p.net < 0 ? <Badge variant="outline" className="text-primary border-primary/30">Skylder</Badge> : <Badge variant="outline" className="text-muted-foreground border-border">Oppgjort</Badge>}
                     </TableCell>
                   </TableRow>
                 ))}
