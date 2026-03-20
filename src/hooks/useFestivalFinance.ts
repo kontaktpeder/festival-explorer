@@ -5,6 +5,7 @@ import type {
   FestivalFinanceEntry,
   FinanceEntryType,
   FinanceEntryStatus,
+  FinanceInvoiceStatus,
 } from "@/types/finance";
 
 export function useFinanceBooks(festivalId?: string, ticketEventId?: string) {
