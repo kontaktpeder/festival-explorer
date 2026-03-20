@@ -1048,10 +1048,6 @@ export default function FestivalFinanceRoom() {
                   </div>
                   <Button size="sm" variant="outline" onClick={handleAddExpense}><Plus className="h-4 w-4 mr-1" /> Ny rad</Button>
                 </div>
-                <div className="flex items-center gap-2 mt-2">
-                  <Switch id="only-missing-attachments" checked={showOnlyMissingAttachments} onCheckedChange={setShowOnlyMissingAttachments} />
-                  <Label htmlFor="only-missing-attachments" className="text-xs text-muted-foreground">Vis kun rader uten vedlegg</Label>
-                </div>
               </CardHeader>
               <CardContent className="space-y-2">
                 {expenseGroups.map((group) => renderCategoryGroup(group, "expense", renderExpenseTable, renderExpenseMobileCards))}
