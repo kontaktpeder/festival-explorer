@@ -146,6 +146,14 @@ export default function FestivalFinanceRoom() {
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
   const [showOnlyMissingAttachments, setShowOnlyMissingAttachments] = useState(false);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const toggleRow = (id: string) => {
+    setExpandedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
 
   const toggleCategory = (key: string) => {
     setOpenCategories((prev) => {
