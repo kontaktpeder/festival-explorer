@@ -542,7 +542,7 @@ export default function FestivalFinanceRoom() {
           <TableHead className="w-[130px]">Underkategori</TableHead>
           <TableHead>Fra</TableHead>
           <TableHead className="w-[130px] text-right">Beløp (kr)</TableHead>
-          <TableHead className="w-[140px]">Betaling</TableHead>
+          <TableHead className="w-[140px]">Betalingsstatus</TableHead>
           <TableHead className="w-20 text-right" />
         </TableRow>
       </TableHeader>
