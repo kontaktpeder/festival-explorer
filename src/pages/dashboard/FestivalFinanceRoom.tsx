@@ -261,7 +261,7 @@ export default function FestivalFinanceRoom() {
     } else if (field === "date_incurred") {
       patch.date_incurred = value;
       if (entry.voucher_number && value.slice(0, 4) !== entry.voucher_number.slice(0, 4)) {
-        patch.voucher_number = generateYearlyVoucherNumber(entries || [], value);
+        toast.warning(`Bilagsnr ${entry.voucher_number} ble opprettet for et annet år. Vurder å opprette ny rad i stedet.`);
       }
     }
     else { patch[field] = value; }
