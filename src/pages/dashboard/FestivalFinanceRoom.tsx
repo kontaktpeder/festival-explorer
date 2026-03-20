@@ -558,7 +558,7 @@ export default function FestivalFinanceRoom() {
                 </tr>
                 {isExpanded && (
                   <tr className="bg-muted/20">
-                    <td colSpan={7} className="px-3 py-3">
+                     <td colSpan={8} className="px-3 py-3">
                       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
                         <div>
                           <span className="text-[10px] uppercase tracking-wider text-muted-foreground block mb-1">Motpart</span>
