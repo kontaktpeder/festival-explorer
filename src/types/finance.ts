@@ -49,6 +49,7 @@ export interface FestivalFinanceEntry {
   internal_only: boolean;
   payment_status: FinancePaymentStatus;
   paid_amount: number | null;
+  invoice_status: FinanceInvoiceStatus;
   created_at: string;
   created_by: string;
 }
