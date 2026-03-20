@@ -543,6 +543,15 @@ export default function FestivalFinanceRoom() {
                       {e.payment_status === "paid" ? "Betalt" : e.payment_status === "partial" ? "Delvis" : e.payment_status === "cancelled" ? "Kansellert" : "Ubetalt"}
                     </span>
                   </td>
+                  <td className="py-1.5 px-1">
+                    <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded ${
+                      (entry as any).invoice_status === "received" ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                        : (entry as any).invoice_status === "not_required" ? "bg-muted text-muted-foreground"
+                        : "text-amber-600 dark:text-amber-400"
+                    }`}>
+                      {(entry as any).invoice_status === "received" ? "Mottatt" : (entry as any).invoice_status === "not_required" ? "Ikke rel." : "Avventer"}
+                    </span>
+                  </td>
                   <td className="py-1.5 px-0 text-right">
                     <ChevronRight className={`h-3.5 w-3.5 text-muted-foreground/50 transition-transform inline-block ${isExpanded ? "rotate-90" : ""}`} />
                   </td>
