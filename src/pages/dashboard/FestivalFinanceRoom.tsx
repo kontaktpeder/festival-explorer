@@ -397,6 +397,13 @@ export default function FestivalFinanceRoom() {
     });
   };
 
+  const parseKrToOre = (v: string) => {
+    const normalized = v.replace(/\s/g, "").replace(",", ".");
+    const n = Number(normalized);
+    if (!Number.isFinite(n)) return 0;
+    return Math.round(n * 100);
+  };
+
   const onExpenseFieldChange = (entry: FestivalFinanceEntry, field: keyof FestivalFinanceEntry, value: string) => {
     const patch: any = { id: entry.id };
     if (field === "gross_amount" || field === "net_amount" || field === "paid_amount") {
