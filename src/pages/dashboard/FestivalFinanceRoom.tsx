@@ -458,7 +458,7 @@ export default function FestivalFinanceRoom() {
           <TableHead className="w-[120px]">Mottaker</TableHead>
           <TableHead className="w-[120px]">Betalt av</TableHead>
           <TableHead className="w-[100px] text-right">Beløp (kr)</TableHead>
-          <TableHead className="w-[140px]">Betaling</TableHead>
+          <TableHead className="w-[140px]">Betalingsstatus</TableHead>
           <TableHead className="w-[130px]">Vedlegg</TableHead>
           <TableHead className="w-16 text-right" />
         </TableRow>
