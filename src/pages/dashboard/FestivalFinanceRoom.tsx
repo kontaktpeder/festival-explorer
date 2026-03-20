@@ -925,7 +925,43 @@ export default function FestivalFinanceRoom() {
                 className="col-span-2 md:col-span-1" />
             </div>
 
-            {/* ── Ticket income ── */}
+            {/* ── Action inbox ── */}
+            {(actionCounts.unpaid > 0 || actionCounts.pendingInvoice > 0 || actionCounts.missingAttachment > 0) && (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setActiveFilter(activeFilter === "unpaid" ? "all" : "unpaid")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+                    activeFilter === "unpaid" ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <AlertCircle className="h-3 w-3" />
+                  {actionCounts.unpaid} ubetalt{actionCounts.unpaid !== 1 ? "e" : ""}
+                </button>
+                <button
+                  onClick={() => setActiveFilter(activeFilter === "pending_invoice" ? "all" : "pending_invoice")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+                    activeFilter === "pending_invoice" ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Receipt className="h-3 w-3" />
+                  {actionCounts.pendingInvoice} avventer faktura
+                </button>
+                <button
+                  onClick={() => setActiveFilter(activeFilter === "missing_attachment" ? "all" : "missing_attachment")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+                    activeFilter === "missing_attachment" ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Paperclip className="h-3 w-3" />
+                  {actionCounts.missingAttachment} mangler vedlegg
+                </button>
+                {activeFilter !== "all" && (
+                  <button onClick={() => setActiveFilter("all")} className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                    Vis alle
+                  </button>
+                )}
+              </div>
+            )}
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
