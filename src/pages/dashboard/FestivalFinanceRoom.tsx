@@ -657,6 +657,10 @@ export default function FestivalFinanceRoom() {
                 <AttachmentCell entry={e} onFieldChange={onExpenseFieldChange} />
               </div>
             </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Faktura</label>
+              <InvoiceStatusSelect entry={e} onFieldChange={onExpenseFieldChange} />
+            </div>
           </div>
         } />
       ))}
