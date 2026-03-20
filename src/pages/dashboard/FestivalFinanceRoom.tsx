@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/collapsible";
 import { RecipientPicker } from "@/components/finance/RecipientPicker";
 import { useFinancePayers } from "@/hooks/useFinancePayers";
-import { Plus, Trash2, ArrowLeft, Undo2, TrendingUp, TrendingDown, Receipt, Wallet, ChevronRight, FolderOpen, Download, Paperclip, ExternalLink, Upload } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Undo2, TrendingUp, TrendingDown, Receipt, Wallet, ChevronRight, FolderOpen, Download, Paperclip, ExternalLink, Upload, AlertCircle } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useFinanceAttachmentUpload } from "@/hooks/useFinanceAttachmentUpload";
 
@@ -144,9 +144,11 @@ function EditableText({ value, onSave, placeholder, type = "text", className = "
 export default function FestivalFinanceRoom() {
   const { id: festivalId } = useParams<{ id: string }>();
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
-  const [openCategories, setOpenCategories] = useState<Set<string>>(new Set());
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [showOnlyMissingAttachments, setShowOnlyMissingAttachments] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [activeFilter, setActiveFilter] = useState<"all" | "unpaid" | "pending_invoice" | "missing_attachment">("all");
+
   const toggleRow = (id: string) => {
     setExpandedRows((prev) => {
       const next = new Set(prev);
@@ -156,11 +158,7 @@ export default function FestivalFinanceRoom() {
   };
 
   const toggleCategory = (key: string) => {
-    setOpenCategories((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key); else next.add(key);
-      return next;
-    });
+    setOpenCategory((prev) => prev === key ? null : key);
   };
 
   const { data: user } = useQuery({
@@ -223,11 +221,28 @@ export default function FestivalFinanceRoom() {
     return { incomeTotal: income, feeTotal: fee, expenseTotal: expense, reimbursementTotal: reimbursements };
   }, [entries]);
 
-  const filteredEntries = useMemo(() => {
+  const actionCounts = useMemo(() => {
     const all = entries || [];
-    if (!showOnlyMissingAttachments) return all;
-    return all.filter((e) => !e.attachment_url || e.attachment_url.trim() === "");
-  }, [entries, showOnlyMissingAttachments]);
+    const active = all.filter((e) => e.payment_status !== "cancelled");
+    return {
+      unpaid: active.filter((e) => e.payment_status === "unpaid").length,
+      pendingInvoice: active.filter((e) => (e as any).invoice_status === "pending").length,
+      missingAttachment: active.filter((e) => !e.attachment_url || e.attachment_url.trim() === "").length,
+    };
+  }, [entries]);
+
+  const filteredEntries = useMemo(() => {
+    let all = entries || [];
+    if (showOnlyMissingAttachments) {
+      all = all.filter((e) => !e.attachment_url || e.attachment_url.trim() === "");
+    }
+    switch (activeFilter) {
+      case "unpaid": return all.filter((e) => e.payment_status === "unpaid");
+      case "pending_invoice": return all.filter((e) => (e as any).invoice_status === "pending");
+      case "missing_attachment": return all.filter((e) => !e.attachment_url || e.attachment_url.trim() === "");
+      default: return all;
+    }
+  }, [entries, showOnlyMissingAttachments, activeFilter]);
 
   const expenseGroups = useMemo(
     () => buildCategoryGroups(filteredEntries.filter((e) => e.source_type !== "reimbursement"), "expense"),
@@ -815,7 +830,7 @@ export default function FestivalFinanceRoom() {
     renderMobile: (items: FestivalFinanceEntry[]) => React.ReactNode,
   ) => {
     const groupKey = `${keyPrefix}-${group.category}`;
-    const isOpen = openCategories.has(groupKey);
+    const isOpen = openCategory === groupKey;
     const hasSubGroups = group.subGroups.length > 1 || (group.subGroups.length === 1 && group.subGroups[0].subcategory !== "");
 
     return (
@@ -910,7 +925,43 @@ export default function FestivalFinanceRoom() {
                 className="col-span-2 md:col-span-1" />
             </div>
 
-            {/* ── Ticket income ── */}
+            {/* ── Action inbox ── */}
+            {(actionCounts.unpaid > 0 || actionCounts.pendingInvoice > 0 || actionCounts.missingAttachment > 0) && (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setActiveFilter(activeFilter === "unpaid" ? "all" : "unpaid")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+                    activeFilter === "unpaid" ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <AlertCircle className="h-3 w-3" />
+                  {actionCounts.unpaid} ubetalt{actionCounts.unpaid !== 1 ? "e" : ""}
+                </button>
+                <button
+                  onClick={() => setActiveFilter(activeFilter === "pending_invoice" ? "all" : "pending_invoice")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+                    activeFilter === "pending_invoice" ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Receipt className="h-3 w-3" />
+                  {actionCounts.pendingInvoice} avventer faktura
+                </button>
+                <button
+                  onClick={() => setActiveFilter(activeFilter === "missing_attachment" ? "all" : "missing_attachment")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+                    activeFilter === "missing_attachment" ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Paperclip className="h-3 w-3" />
+                  {actionCounts.missingAttachment} mangler vedlegg
+                </button>
+                {activeFilter !== "all" && (
+                  <button onClick={() => setActiveFilter("all")} className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                    Vis alle
+                  </button>
+                )}
+              </div>
+            )}
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -996,10 +1047,6 @@ export default function FestivalFinanceRoom() {
                     <CardDescription className="text-xs">Festivalens kostnader</CardDescription>
                   </div>
                   <Button size="sm" variant="outline" onClick={handleAddExpense}><Plus className="h-4 w-4 mr-1" /> Ny rad</Button>
-                </div>
-                <div className="flex items-center gap-2 mt-2">
-                  <Switch id="only-missing-attachments" checked={showOnlyMissingAttachments} onCheckedChange={setShowOnlyMissingAttachments} />
-                  <Label htmlFor="only-missing-attachments" className="text-xs text-muted-foreground">Vis kun rader uten vedlegg</Label>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
