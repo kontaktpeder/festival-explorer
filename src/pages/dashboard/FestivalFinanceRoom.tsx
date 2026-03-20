@@ -796,6 +796,10 @@ export default function FestivalFinanceRoom() {
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Betalingsstatus</label>
               <PaymentStatusSelect entry={e} onFieldChange={onIncomeFieldChange} />
             </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Faktura</label>
+              <InvoiceStatusSelect entry={e} onFieldChange={onIncomeFieldChange} />
+            </div>
           </div>
         } />
       ))}
