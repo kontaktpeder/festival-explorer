@@ -267,6 +267,74 @@ export default function FestivalFinanceRoom() {
   const netExpense = expenseTotal + reimbursementTotal;
   const result = netIncome - netExpense;
 
+  // Extended KPIs
+  const {
+    unpaidOrPartialTotal,
+    blockedForEnkExportTotal,
+    pendingInvoiceTotal,
+    missingAttachmentTotal,
+    readyForEnkExportTotal,
+    internalOutstandingTotal,
+    peopleInvolvedCount,
+  } = useMemo(() => {
+    const all = entries || [];
+
+    const unpaidOrPartial = all
+      .filter((e) => !e.internal_only && (e.payment_status === "unpaid" || e.payment_status === "partial"))
+      .reduce((sum, e) => sum + (e.net_amount || 0), 0);
+
+    const blocked = all
+      .filter((e) => !e.internal_only && e.payment_status !== "cancelled")
+      .filter((e) => {
+        const invoicePending = (e as any).invoice_status === "pending";
+        const needsAttachment = e.source_type !== "ticket";
+        const missing = needsAttachment && (!e.attachment_url || !e.attachment_url.trim());
+        return invoicePending || missing;
+      })
+      .reduce((sum, e) => sum + (e.net_amount || 0), 0);
+
+    const pending = all
+      .filter((e) => !e.internal_only && (e as any).invoice_status === "pending")
+      .reduce((sum, e) => sum + (e.net_amount || 0), 0);
+
+    const missingAtt = all
+      .filter((e) => !e.internal_only && e.source_type !== "ticket" && (!e.attachment_url || !e.attachment_url.trim()))
+      .reduce((sum, e) => sum + (e.net_amount || 0), 0);
+
+    const ready = all
+      .filter((e) => !e.internal_only && e.payment_status !== "cancelled")
+      .filter((e) => {
+        const inv = (e as any).invoice_status;
+        const invoiceOk = inv === "received" || inv === "not_required";
+        const attachmentOk = e.source_type === "ticket" || !!(e.attachment_url && e.attachment_url.trim());
+        return invoiceOk && attachmentOk;
+      })
+      .reduce((sum, e) => sum + (e.net_amount || 0), 0);
+
+    const byPerson = new Map<string, { outlay: number; reimbursed: number }>();
+    all.filter((e) => e.payment_status !== "cancelled").forEach((e) => {
+      if (!e.paid_by_id) return;
+      const cur = byPerson.get(e.paid_by_id) || { outlay: 0, reimbursed: 0 };
+      if (e.entry_type === "expense" && e.source_type !== "reimbursement") cur.outlay += e.net_amount || 0;
+      if (e.source_type === "reimbursement") cur.reimbursed += Math.abs(e.net_amount || 0);
+      byPerson.set(e.paid_by_id, cur);
+    });
+    const outstanding = Array.from(byPerson.values())
+      .map((p) => p.outlay - p.reimbursed)
+      .filter((n) => n > 0)
+      .reduce((s, n) => s + n, 0);
+
+    return {
+      unpaidOrPartialTotal: unpaidOrPartial,
+      blockedForEnkExportTotal: blocked,
+      pendingInvoiceTotal: pending,
+      missingAttachmentTotal: missingAtt,
+      readyForEnkExportTotal: ready,
+      internalOutstandingTotal: outstanding,
+      peopleInvolvedCount: byPerson.size,
+    };
+  }, [entries]);
+
   // Unique subcategory suggestions per category
   const subcategorySuggestions = useMemo(() => {
     const subs = new Set<string>();
@@ -931,18 +999,44 @@ export default function FestivalFinanceRoom() {
 
         {activeBookId && !isLoading && (
           <>
-            {/* ── Summary cards ── */}
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-              <SummaryCard label="Brutto inntekter" value={formatNok(incomeTotal)} variant="neutral" />
-              <SummaryCard label="Gebyrer" value={formatNok(feeTotal)} variant="neutral" />
-              <SummaryCard label="Netto inntekter" value={formatNok(netIncome)} variant="neutral" />
-              <SummaryCard label="Totale utgifter" value={formatNok(expenseTotal)} variant="neutral" />
-              {reimbursementTotal !== 0 && (
-                <SummaryCard label="Refusjoner" value={formatNok(-reimbursementTotal)} variant="positive" />
-              )}
-              <SummaryCard label="Resultat" value={formatNok(result)}
-                variant={result >= 0 ? "positive" : "negative"}
-                className="col-span-2 md:col-span-1" />
+            {/* ── KPI groups ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+              {/* Drift nå */}
+              <Card className="shadow-sm border-border/60">
+                <CardHeader className="pb-2 pt-3 px-4">
+                  <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">Drift nå</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-1.5 text-sm px-4 pb-3">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Utestående internt</span><span className="font-medium tabular-nums">{formatNok(internalOutstandingTotal)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Personer involvert</span><span className="font-medium tabular-nums">{peopleInvolvedCount}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Ubetalt / delbetalt</span><span className="font-medium tabular-nums">{formatNok(unpaidOrPartialTotal)}</span></div>
+                </CardContent>
+              </Card>
+
+              {/* Regnskap */}
+              <Card className="shadow-sm border-border/60">
+                <CardHeader className="pb-2 pt-3 px-4">
+                  <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">Regnskap</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-1.5 text-sm px-4 pb-3">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Netto inntekter</span><span className="font-medium tabular-nums">{formatNok(netIncome)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Totale kostnader</span><span className="font-medium tabular-nums">{formatNok(expenseTotal)}</span></div>
+                  <div className="flex justify-between border-t border-border/40 pt-1.5 mt-1"><span className="font-medium">Resultat</span><span className={`font-semibold tabular-nums ${result >= 0 ? "finance-positive" : "finance-negative"}`}>{formatNok(result)}</span></div>
+                </CardContent>
+              </Card>
+
+              {/* Dokumentasjon */}
+              <Card className="shadow-sm border-border/60">
+                <CardHeader className="pb-2 pt-3 px-4">
+                  <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground">Dokumentasjon</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-1.5 text-sm px-4 pb-3">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Klar for ENK-eksport</span><span className="font-medium tabular-nums">{formatNok(readyForEnkExportTotal)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Blokkert fra ENK</span><span className="font-medium tabular-nums">{formatNok(blockedForEnkExportTotal)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Mangler vedlegg</span><span className="font-medium tabular-nums">{formatNok(missingAttachmentTotal)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Avventer faktura</span><span className="font-medium tabular-nums">{formatNok(pendingInvoiceTotal)}</span></div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* ── Action inbox ── */}
