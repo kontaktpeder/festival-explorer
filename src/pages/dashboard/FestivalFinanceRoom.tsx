@@ -259,9 +259,9 @@ export default function FestivalFinanceRoom() {
 
   const onIncomeFieldChange = (entry: FestivalFinanceEntry, field: keyof FestivalFinanceEntry, value: string) => {
     const patch: any = { id: entry.id };
-    if (field === "gross_amount" || field === "net_amount") {
+    if (field === "gross_amount" || field === "net_amount" || field === "paid_amount") {
       const n = parseInt(value.replace(/\s/g, ""), 10);
-      patch[field] = isNaN(n) ? 0 : n * 100;
+      patch[field] = isNaN(n) ? 0 : (field === "paid_amount" ? n : n * 100);
     } else if (field === "date_incurred") { patch.date_incurred = value; }
     else { patch[field] = value; }
     incomeMutation.mutate(patch);
