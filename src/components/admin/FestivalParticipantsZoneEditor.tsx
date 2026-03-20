@@ -27,6 +27,8 @@ interface FestivalParticipantPermissions {
   can_view_runsheet: boolean;
 }
 
+type FinanceAccessLevel = "none" | "reader" | "editor" | "admin";
+
 interface FestivalParticipantRow {
   id: string;
   festival_id: string;
@@ -45,6 +47,7 @@ interface FestivalParticipantRow {
   can_see_revenue?: boolean;
   can_edit_festival_media?: boolean;
   can_view_runsheet?: boolean;
+  finance_access?: FinanceAccessLevel;
 }
 
 interface ResolvedRef {
