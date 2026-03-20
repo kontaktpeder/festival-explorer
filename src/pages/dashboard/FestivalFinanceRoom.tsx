@@ -883,6 +883,9 @@ export default function FestivalFinanceRoom() {
             <Button variant="outline" size="sm" onClick={handleExportEnkCSV} disabled={!entries || entries.length === 0}>
               <Download className="h-4 w-4 mr-1" /> CSV (ENK)
             </Button>
+            <Link to={`/dashboard/festival/${festivalId}/settlement`}>
+              <Button variant="outline" size="sm"><Wallet className="h-4 w-4 mr-1" /> Internt oppgjør</Button>
+            </Link>
             <Button variant="outline" size="sm" onClick={handleCreateBook} disabled={createBook.isPending}>
               <Plus className="h-4 w-4 mr-1" /> Ny bok
             </Button>

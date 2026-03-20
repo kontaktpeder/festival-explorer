@@ -140,12 +140,6 @@ export default function FestivalSettlementRoom() {
   return (
     <BackstageShell title="Internt oppgjør" subtitle={festival?.name} backTo={`/dashboard/festival/${festivalId}/finance`}>
       <div className="max-w-[1400px] mx-auto space-y-6 px-4 py-6">
-        <Link to={`/dashboard/festival/${festivalId}/finance`} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft className="h-4 w-4" /> Tilbake til økonomi
-        </Link>
-
-        <h1 className="text-xl font-semibold">Internt oppgjør</h1>
-
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Card><CardContent className="pt-4 text-center"><p className="text-xs text-muted-foreground">Totalt utlegg</p><p className="text-lg font-semibold">{formatNok(totals.totalOutlay)}</p></CardContent></Card>
           <Card><CardContent className="pt-4 text-center"><p className="text-xs text-muted-foreground">Totalt refundert</p><p className="text-lg font-semibold">{formatNok(totals.totalReimbursed)}</p></CardContent></Card>
