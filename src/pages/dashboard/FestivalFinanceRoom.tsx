@@ -586,25 +586,35 @@ export default function FestivalFinanceRoom() {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[110px]">Dato</TableHead>
-          <TableHead>Beskrivelse</TableHead>
+          <TableHead className="w-[105px]">Dato</TableHead>
+          <TableHead className="min-w-[180px]">Beskrivelse</TableHead>
           <TableHead className="w-[130px]">Underkategori</TableHead>
-          <TableHead>Fra</TableHead>
-          <TableHead className="w-[130px] text-right">Beløp (kr)</TableHead>
-          <TableHead className="w-[140px]">Betalingsstatus</TableHead>
-          <TableHead className="w-20 text-right" />
+          <TableHead className="min-w-[140px]">Fra</TableHead>
+          <TableHead className="w-[100px] text-right">Beløp (kr)</TableHead>
+          <TableHead className="w-[110px]">Betaling</TableHead>
+          <TableHead className="w-14 text-right" />
         </TableRow>
       </TableHeader>
       <TableBody>
         {items.map((e) => (
-          <TableRow key={e.id}>
-            <TableCell><Input type="date" className="h-8 text-xs" defaultValue={e.date_incurred} onBlur={(ev) => onIncomeFieldChange(e, "date_incurred", ev.target.value)} /></TableCell>
-            <TableCell><Input className="h-8 text-xs" defaultValue={e.description} placeholder="Beskrivelse" onBlur={(ev) => onIncomeFieldChange(e, "description", ev.target.value)} /></TableCell>
-            <TableCell><Input list="finance-subcategory-suggestions" className="h-8 text-xs" defaultValue={e.subcategory || ""} placeholder="Underkategori" onBlur={(ev) => onIncomeFieldChange(e, "subcategory", ev.target.value)} /></TableCell>
-            <TableCell><Input className="h-8 text-xs" defaultValue={e.counterparty || ""} placeholder="Fra (sponsor, ordning)" onBlur={(ev) => onIncomeFieldChange(e, "counterparty", ev.target.value)} /></TableCell>
-            <TableCell><Input type="number" className="h-8 text-xs text-right tabular-nums" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onIncomeFieldChange(e, "net_amount", ev.target.value)} /></TableCell>
-            <TableCell><PaymentStatusSelect entry={e} onFieldChange={onIncomeFieldChange} /></TableCell>
-            <TableCell className="text-right">{incomeActions(e)}</TableCell>
+          <TableRow key={e.id} className="group">
+            <TableCell className="py-1.5">
+              <EditableText type="date" value={e.date_incurred} onSave={(v) => onIncomeFieldChange(e, "date_incurred", v)} />
+            </TableCell>
+            <TableCell className="py-1.5">
+              <EditableText value={e.description} placeholder="Beskrivelse…" onSave={(v) => onIncomeFieldChange(e, "description", v)} />
+            </TableCell>
+            <TableCell className="py-1.5">
+              <EditableText value={e.subcategory || ""} placeholder="Underkategori" onSave={(v) => onIncomeFieldChange(e, "subcategory", v)} />
+            </TableCell>
+            <TableCell className="py-1.5">
+              <EditableText value={e.counterparty || ""} placeholder="Fra (sponsor, ordning)" onSave={(v) => onIncomeFieldChange(e, "counterparty", v)} />
+            </TableCell>
+            <TableCell className="py-1.5">
+              <EditableText type="number" value={e.net_amount ? (e.net_amount / 100).toString() : "0"} align="right" onSave={(v) => onIncomeFieldChange(e, "net_amount", v)} />
+            </TableCell>
+            <TableCell className="py-1.5"><PaymentStatusSelect entry={e} onFieldChange={onIncomeFieldChange} /></TableCell>
+            <TableCell className="text-right py-1.5"><div className="flex items-center justify-end gap-0 opacity-0 group-hover:opacity-100 transition-opacity">{incomeActions(e)}</div></TableCell>
           </TableRow>
         ))}
       </TableBody>
