@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -89,6 +89,55 @@ function EntryCard({ fields, actions }: { fields: React.ReactNode; actions: Reac
       {fields}
       <div className="flex items-center justify-end gap-1 pt-1 border-t border-border/40">{actions}</div>
     </div>
+  );
+}
+
+/* ── Inline editable cell: read-first, click to edit ── */
+function EditableText({ value, onSave, placeholder, type = "text", className = "", align = "left" }: {
+  value: string;
+  onSave: (v: string) => void;
+  placeholder?: string;
+  type?: "text" | "number" | "date";
+  className?: string;
+  align?: "left" | "right";
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { setDraft(value); }, [value]);
+  useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
+
+  const commit = () => {
+    setEditing(false);
+    if (draft !== value) onSave(draft);
+  };
+
+  if (editing) {
+    return (
+      <Input
+        ref={inputRef}
+        type={type}
+        className={`h-7 text-xs px-1.5 ${align === "right" ? "text-right tabular-nums" : ""} ${className}`}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setDraft(value); setEditing(false); } }}
+      />
+    );
+  }
+
+  const displayValue = value || placeholder || "—";
+  const isEmpty = !value;
+
+  return (
+    <span
+      className={`block cursor-pointer rounded px-1.5 py-1 text-xs transition-colors hover:bg-muted/60 ${align === "right" ? "text-right tabular-nums" : ""} ${isEmpty ? "text-muted-foreground/50 italic" : ""} ${className}`}
+      onClick={() => setEditing(true)}
+      title={value || undefined}
+    >
+      {displayValue}
+    </span>
   );
 }
 
@@ -390,10 +439,10 @@ export default function FestivalFinanceRoom() {
 
   /* ── Render entries in a table (desktop) ── */
   const AttachmentCell = ({ entry, onFieldChange }: { entry: FestivalFinanceEntry; onFieldChange: typeof onExpenseFieldChange }) => (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-1.5 min-w-0">
       {entry.attachment_url ? (
         <a href={entry.attachment_url} target="_blank" rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-accent hover:underline truncate max-w-[120px]" title={entry.attachment_name || "Åpne vedlegg"}>
+          className="inline-flex items-center gap-1 text-xs text-accent hover:underline min-w-0" title={entry.attachment_name || "Åpne vedlegg"}>
           <Paperclip className="h-3 w-3 shrink-0" />
           <span className="truncate">{entry.attachment_name || "Vedlegg"}</span>
         </a>
@@ -440,29 +489,37 @@ export default function FestivalFinanceRoom() {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[90px]">Bilagsnr</TableHead>
-          <TableHead className="w-[100px]">Dato</TableHead>
-          <TableHead className="min-w-[120px]">Beskrivelse</TableHead>
-          <TableHead className="w-[120px]">Mottaker</TableHead>
-          <TableHead className="w-[120px]">Betalt av</TableHead>
-          <TableHead className="w-[100px] text-right">Beløp (kr)</TableHead>
-          <TableHead className="w-[140px]">Betalingsstatus</TableHead>
-          <TableHead className="w-[130px]">Vedlegg</TableHead>
-          <TableHead className="w-16 text-right" />
+          <TableHead className="w-[80px]">Bilagsnr</TableHead>
+          <TableHead className="w-[105px]">Dato</TableHead>
+          <TableHead className="min-w-[180px]">Beskrivelse</TableHead>
+          <TableHead className="min-w-[140px]">Mottaker</TableHead>
+          <TableHead className="w-[130px]">Betalt av</TableHead>
+          <TableHead className="w-[90px] text-right">Beløp (kr)</TableHead>
+          <TableHead className="w-[110px]">Betaling</TableHead>
+          <TableHead className="w-[150px]">Vedlegg</TableHead>
+          <TableHead className="w-14 text-right" />
         </TableRow>
       </TableHeader>
       <TableBody>
         {items.map((e) => (
-          <TableRow key={e.id}>
-            <TableCell className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">{e.voucher_number ?? ""}</TableCell>
-            <TableCell><Input type="date" className="h-7 text-xs px-1.5" defaultValue={e.date_incurred} onBlur={(ev) => onExpenseFieldChange(e, "date_incurred", ev.target.value)} /></TableCell>
-            <TableCell><Input className="h-7 text-xs" defaultValue={e.description} onBlur={(ev) => onExpenseFieldChange(e, "description", ev.target.value)} /></TableCell>
-            <TableCell><RecipientPicker festivalId={festivalId!} value={e.counterparty} onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} /></TableCell>
-            <TableCell><PaidBySelect entry={e} /></TableCell>
-            <TableCell><Input type="number" className="h-7 text-xs text-right tabular-nums px-1.5" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onExpenseFieldChange(e, "net_amount", ev.target.value)} /></TableCell>
-            <TableCell><PaymentStatusSelect entry={e} onFieldChange={onExpenseFieldChange} /></TableCell>
-            <TableCell><AttachmentCell entry={e} onFieldChange={onExpenseFieldChange} /></TableCell>
-            <TableCell className="text-right"><div className="flex items-center justify-end gap-0">{expenseActions(e)}</div></TableCell>
+          <TableRow key={e.id} className="group">
+            <TableCell className="text-xs text-muted-foreground tabular-nums whitespace-nowrap py-1.5">{e.voucher_number ?? ""}</TableCell>
+            <TableCell className="py-1.5">
+              <EditableText type="date" value={e.date_incurred} onSave={(v) => onExpenseFieldChange(e, "date_incurred", v)} />
+            </TableCell>
+            <TableCell className="py-1.5">
+              <EditableText value={e.description} placeholder="Beskrivelse…" onSave={(v) => onExpenseFieldChange(e, "description", v)} />
+            </TableCell>
+            <TableCell className="py-1.5">
+              <RecipientPicker festivalId={festivalId!} value={e.counterparty} onChange={(val) => onExpenseFieldChange(e, "counterparty", val)} />
+            </TableCell>
+            <TableCell className="py-1.5"><PaidBySelect entry={e} /></TableCell>
+            <TableCell className="py-1.5">
+              <EditableText type="number" value={e.net_amount ? (e.net_amount / 100).toString() : "0"} align="right" onSave={(v) => onExpenseFieldChange(e, "net_amount", v)} />
+            </TableCell>
+            <TableCell className="py-1.5"><PaymentStatusSelect entry={e} onFieldChange={onExpenseFieldChange} /></TableCell>
+            <TableCell className="py-1.5"><AttachmentCell entry={e} onFieldChange={onExpenseFieldChange} /></TableCell>
+            <TableCell className="text-right py-1.5"><div className="flex items-center justify-end gap-0 opacity-0 group-hover:opacity-100 transition-opacity">{expenseActions(e)}</div></TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -525,25 +582,35 @@ export default function FestivalFinanceRoom() {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[110px]">Dato</TableHead>
-          <TableHead>Beskrivelse</TableHead>
+          <TableHead className="w-[105px]">Dato</TableHead>
+          <TableHead className="min-w-[180px]">Beskrivelse</TableHead>
           <TableHead className="w-[130px]">Underkategori</TableHead>
-          <TableHead>Fra</TableHead>
-          <TableHead className="w-[130px] text-right">Beløp (kr)</TableHead>
-          <TableHead className="w-[140px]">Betalingsstatus</TableHead>
-          <TableHead className="w-20 text-right" />
+          <TableHead className="min-w-[140px]">Fra</TableHead>
+          <TableHead className="w-[100px] text-right">Beløp (kr)</TableHead>
+          <TableHead className="w-[110px]">Betaling</TableHead>
+          <TableHead className="w-14 text-right" />
         </TableRow>
       </TableHeader>
       <TableBody>
         {items.map((e) => (
-          <TableRow key={e.id}>
-            <TableCell><Input type="date" className="h-8 text-xs" defaultValue={e.date_incurred} onBlur={(ev) => onIncomeFieldChange(e, "date_incurred", ev.target.value)} /></TableCell>
-            <TableCell><Input className="h-8 text-xs" defaultValue={e.description} placeholder="Beskrivelse" onBlur={(ev) => onIncomeFieldChange(e, "description", ev.target.value)} /></TableCell>
-            <TableCell><Input list="finance-subcategory-suggestions" className="h-8 text-xs" defaultValue={e.subcategory || ""} placeholder="Underkategori" onBlur={(ev) => onIncomeFieldChange(e, "subcategory", ev.target.value)} /></TableCell>
-            <TableCell><Input className="h-8 text-xs" defaultValue={e.counterparty || ""} placeholder="Fra (sponsor, ordning)" onBlur={(ev) => onIncomeFieldChange(e, "counterparty", ev.target.value)} /></TableCell>
-            <TableCell><Input type="number" className="h-8 text-xs text-right tabular-nums" defaultValue={e.net_amount ? (e.net_amount / 100).toString() : "0"} onBlur={(ev) => onIncomeFieldChange(e, "net_amount", ev.target.value)} /></TableCell>
-            <TableCell><PaymentStatusSelect entry={e} onFieldChange={onIncomeFieldChange} /></TableCell>
-            <TableCell className="text-right">{incomeActions(e)}</TableCell>
+          <TableRow key={e.id} className="group">
+            <TableCell className="py-1.5">
+              <EditableText type="date" value={e.date_incurred} onSave={(v) => onIncomeFieldChange(e, "date_incurred", v)} />
+            </TableCell>
+            <TableCell className="py-1.5">
+              <EditableText value={e.description} placeholder="Beskrivelse…" onSave={(v) => onIncomeFieldChange(e, "description", v)} />
+            </TableCell>
+            <TableCell className="py-1.5">
+              <EditableText value={e.subcategory || ""} placeholder="Underkategori" onSave={(v) => onIncomeFieldChange(e, "subcategory", v)} />
+            </TableCell>
+            <TableCell className="py-1.5">
+              <EditableText value={e.counterparty || ""} placeholder="Fra (sponsor, ordning)" onSave={(v) => onIncomeFieldChange(e, "counterparty", v)} />
+            </TableCell>
+            <TableCell className="py-1.5">
+              <EditableText type="number" value={e.net_amount ? (e.net_amount / 100).toString() : "0"} align="right" onSave={(v) => onIncomeFieldChange(e, "net_amount", v)} />
+            </TableCell>
+            <TableCell className="py-1.5"><PaymentStatusSelect entry={e} onFieldChange={onIncomeFieldChange} /></TableCell>
+            <TableCell className="text-right py-1.5"><div className="flex items-center justify-end gap-0 opacity-0 group-hover:opacity-100 transition-opacity">{incomeActions(e)}</div></TableCell>
           </TableRow>
         ))}
       </TableBody>
