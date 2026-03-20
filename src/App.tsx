@@ -57,6 +57,8 @@ import VenueEventsRoom from "./pages/dashboard/VenueEventsRoom";
 import VenueTeamRoom from "./pages/dashboard/VenueTeamRoom";
 import VenueSettingsRoom from "./pages/dashboard/VenueSettingsRoom";
 import LandingSettingsRoom from "./pages/dashboard/LandingSettingsRoom";
+import DashboardEventsRoom from "./pages/dashboard/DashboardEventsRoom";
+import { EventFirstGuard } from "@/components/auth/EventFirstGuard";
 
 import VenuePage from "./pages/VenuePage";
 import EventRoomPage from "./pages/EventRoomPage";
