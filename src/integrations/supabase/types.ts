@@ -1585,6 +1585,7 @@ export type Database = {
           can_view_runsheet: boolean
           created_at: string | null
           festival_id: string
+          finance_access: Database["public"]["Enums"]["finance_access_level"]
           id: string
           is_public: boolean | null
           participant_id: string
@@ -1606,6 +1607,7 @@ export type Database = {
           can_view_runsheet?: boolean
           created_at?: string | null
           festival_id: string
+          finance_access?: Database["public"]["Enums"]["finance_access_level"]
           id?: string
           is_public?: boolean | null
           participant_id: string
@@ -1627,6 +1629,7 @@ export type Database = {
           can_view_runsheet?: boolean
           created_at?: string | null
           festival_id?: string
+          finance_access?: Database["public"]["Enums"]["finance_access_level"]
           id?: string
           is_public?: boolean | null
           participant_id?: string
@@ -3107,6 +3110,7 @@ export type Database = {
         Returns: number
       }
       can_access_media_any: { Args: never; Returns: boolean }
+      can_admin_finance_book: { Args: { p_book_id: string }; Returns: boolean }
       can_create_internal_ticket_any: { Args: never; Returns: boolean }
       can_edit_entity: { Args: { p_entity_id: string }; Returns: boolean }
       can_edit_event: { Args: { p_event_id: string }; Returns: boolean }
@@ -3117,6 +3121,7 @@ export type Database = {
         Args: { p_festival_id: string }
         Returns: boolean
       }
+      can_edit_finance_book: { Args: { p_book_id: string }; Returns: boolean }
       can_manage_venue: { Args: { p_venue_id: string }; Returns: boolean }
       can_scan_tickets_any: { Args: never; Returns: boolean }
       can_scan_tickets_for_user: {
@@ -3132,6 +3137,7 @@ export type Database = {
         Returns: boolean
       }
       can_view_event_lineup: { Args: { p_event_id: string }; Returns: boolean }
+      can_view_finance_book: { Args: { p_book_id: string }; Returns: boolean }
       checkin_ticket_atomic: {
         Args: {
           p_checked_in_by: string
@@ -3158,6 +3164,10 @@ export type Database = {
           display_name: string
           participant_id: string
         }[]
+      }
+      get_finance_access_for_festival: {
+        Args: { p_festival_id: string }
+        Returns: Database["public"]["Enums"]["finance_access_level"]
       }
       get_invitation_by_token: { Args: { p_token: string }; Returns: Json }
       get_my_festivals_as_team: {
@@ -3306,6 +3316,7 @@ export type Database = {
       credit_scope: "landing" | "festival_case"
       entity_type: "venue" | "solo" | "band"
       entity_visibility: "public" | "unlisted" | "private"
+      finance_access_level: "none" | "reader" | "editor" | "admin"
       location_type: "city" | "region" | "country" | "address"
       project_type: "solo" | "band"
       publish_status: "draft" | "submitted" | "published"
@@ -3445,6 +3456,7 @@ export const Constants = {
       credit_scope: ["landing", "festival_case"],
       entity_type: ["venue", "solo", "band"],
       entity_visibility: ["public", "unlisted", "private"],
+      finance_access_level: ["none", "reader", "editor", "admin"],
       location_type: ["city", "region", "country", "address"],
       project_type: ["solo", "band"],
       publish_status: ["draft", "submitted", "published"],
