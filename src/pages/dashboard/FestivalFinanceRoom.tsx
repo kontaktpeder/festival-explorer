@@ -689,16 +689,15 @@ export default function FestivalFinanceRoom() {
           <>
             {/* ── Summary cards ── */}
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-              <SummaryCard label="Brutto inntekter" value={formatNok(incomeTotal)} icon={<TrendingUp className="h-4 w-4 text-accent" />} />
-              <SummaryCard label="Gebyrer" value={formatNok(feeTotal)} icon={<Receipt className="h-4 w-4 text-muted-foreground" />} />
-              <SummaryCard label="Netto inntekter" value={formatNok(netIncome)} icon={<Wallet className="h-4 w-4 text-accent" />} />
-              <SummaryCard label="Totale utgifter" value={formatNok(expenseTotal)} icon={<TrendingDown className="h-4 w-4 text-destructive" />} />
+              <SummaryCard label="Brutto inntekter" value={formatNok(incomeTotal)} variant="neutral" />
+              <SummaryCard label="Gebyrer" value={formatNok(feeTotal)} variant="neutral" />
+              <SummaryCard label="Netto inntekter" value={formatNok(netIncome)} variant="neutral" />
+              <SummaryCard label="Totale utgifter" value={formatNok(expenseTotal)} variant="neutral" />
               {reimbursementTotal !== 0 && (
-                <SummaryCard label="Refusjoner" value={formatNok(-reimbursementTotal)} valueClass="text-emerald-500" icon={<Undo2 className="h-4 w-4 text-emerald-500" />} />
+                <SummaryCard label="Refusjoner" value={formatNok(-reimbursementTotal)} variant="positive" />
               )}
               <SummaryCard label="Resultat" value={formatNok(result)}
-                valueClass={result >= 0 ? "text-emerald-500" : "text-destructive"}
-                icon={result >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                variant={result >= 0 ? "positive" : "negative"}
                 className="col-span-2 md:col-span-1" />
             </div>
 
