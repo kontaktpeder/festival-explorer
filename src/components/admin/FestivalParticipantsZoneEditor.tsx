@@ -533,7 +533,7 @@ export function FestivalParticipantsZoneEditor({
                         onValueChange={async (val) => {
                           const { error } = await supabase
                             .from("festival_participants")
-                            .update({ finance_access: val })
+                            .update({ finance_access: val } as any)
                             .eq("id", row.id);
                           if (error) { toast.error("Kunne ikke oppdatere økonomi-tilgang"); return; }
                           setRows((prev) => prev.map((r) => r.id === row.id ? { ...r, finance_access: val as FinanceAccessLevel } : r));
