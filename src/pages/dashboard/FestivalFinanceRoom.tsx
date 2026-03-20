@@ -85,9 +85,9 @@ function buildCategoryGroups(entries: FestivalFinanceEntry[], entryType: "expens
 /* ── Mobile entry card ── */
 function EntryCard({ fields, actions }: { fields: React.ReactNode; actions: React.ReactNode }) {
   return (
-    <div className="rounded-md border border-border/60 bg-card/60 p-3 space-y-3">
+    <div className="rounded-md border border-border bg-card p-3 space-y-3 shadow-sm">
       {fields}
-      <div className="flex items-center justify-end gap-1 pt-1 border-t border-border/30">{actions}</div>
+      <div className="flex items-center justify-end gap-1 pt-1 border-t border-border/40">{actions}</div>
     </div>
   );
 }
@@ -651,16 +651,16 @@ export default function FestivalFinanceRoom() {
   };
 
   return (
-    <div className="min-h-[100svh] bg-background">
+    <div className="finance-theme min-h-[100svh]">
       <div className="max-w-6xl mx-auto px-3 py-4 md:px-8 md:py-8 space-y-6">
-        <Link to={`/dashboard/festival/${festivalId}`} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-accent transition-colors py-2">
+        <Link to={`/dashboard/festival/${festivalId}`} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2">
           <ArrowLeft className="w-4 h-4" /><span>Tilbake til festivalrommet</span>
         </Link>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Økonomi</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Regnskap for festivalen</p>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Økonomi</h1>
+            <p className="text-xs text-muted-foreground mt-0.5 uppercase tracking-wider">Regnskap · fokusmodus</p>
           </div>
           <div className="flex items-center gap-2">
             {books && books.length > 0 && (
@@ -689,16 +689,15 @@ export default function FestivalFinanceRoom() {
           <>
             {/* ── Summary cards ── */}
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-              <SummaryCard label="Brutto inntekter" value={formatNok(incomeTotal)} icon={<TrendingUp className="h-4 w-4 text-accent" />} />
-              <SummaryCard label="Gebyrer" value={formatNok(feeTotal)} icon={<Receipt className="h-4 w-4 text-muted-foreground" />} />
-              <SummaryCard label="Netto inntekter" value={formatNok(netIncome)} icon={<Wallet className="h-4 w-4 text-accent" />} />
-              <SummaryCard label="Totale utgifter" value={formatNok(expenseTotal)} icon={<TrendingDown className="h-4 w-4 text-destructive" />} />
+              <SummaryCard label="Brutto inntekter" value={formatNok(incomeTotal)} variant="neutral" />
+              <SummaryCard label="Gebyrer" value={formatNok(feeTotal)} variant="neutral" />
+              <SummaryCard label="Netto inntekter" value={formatNok(netIncome)} variant="neutral" />
+              <SummaryCard label="Totale utgifter" value={formatNok(expenseTotal)} variant="neutral" />
               {reimbursementTotal !== 0 && (
-                <SummaryCard label="Refusjoner" value={formatNok(-reimbursementTotal)} valueClass="text-emerald-500" icon={<Undo2 className="h-4 w-4 text-emerald-500" />} />
+                <SummaryCard label="Refusjoner" value={formatNok(-reimbursementTotal)} variant="positive" />
               )}
               <SummaryCard label="Resultat" value={formatNok(result)}
-                valueClass={result >= 0 ? "text-emerald-500" : "text-destructive"}
-                icon={result >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                variant={result >= 0 ? "positive" : "negative"}
                 className="col-span-2 md:col-span-1" />
             </div>
 
@@ -745,7 +744,7 @@ export default function FestivalFinanceRoom() {
                       </div>
                       <div className="md:hidden space-y-2">
                         {ticketEntries.map((e) => (
-                          <div key={e.id} className="rounded-md border border-border/60 bg-card/60 p-3">
+                          <div key={e.id} className="rounded-md border border-border bg-card p-3 shadow-sm">
                             <p className="font-medium text-sm">{e.description}</p>
                             <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
                               <span>Antall</span><span className="text-right text-foreground tabular-nums">{e.quantity ?? "-"}</span>
@@ -893,17 +892,15 @@ export default function FestivalFinanceRoom() {
   );
 }
 
-function SummaryCard({ label, value, icon, valueClass, className }: {
-  label: string; value: string; icon?: React.ReactNode; valueClass?: string; className?: string;
+function SummaryCard({ label, value, variant = "neutral", className }: {
+  label: string; value: string; variant?: "neutral" | "positive" | "negative"; className?: string;
 }) {
+  const valueColor = variant === "positive" ? "finance-positive" : variant === "negative" ? "finance-negative" : "text-foreground";
   return (
-    <Card className={className}>
+    <Card className={`shadow-sm border-border/60 ${className || ""}`}>
       <CardContent className="p-3 md:p-4">
-        <div className="flex items-center gap-2 mb-1">
-          {icon}
-          <span className="text-[10px] md:text-xs uppercase tracking-wider text-muted-foreground">{label}</span>
-        </div>
-        <p className={`text-lg md:text-xl font-bold tabular-nums ${valueClass || ""}`}>{value}</p>
+        <span className="text-[10px] md:text-xs uppercase tracking-wider text-muted-foreground block mb-1">{label}</span>
+        <p className={`text-lg md:text-xl font-bold tabular-nums ${valueColor}`}>{value}</p>
       </CardContent>
     </Card>
   );
