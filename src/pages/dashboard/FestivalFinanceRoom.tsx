@@ -892,17 +892,15 @@ export default function FestivalFinanceRoom() {
   );
 }
 
-function SummaryCard({ label, value, icon, valueClass, className }: {
-  label: string; value: string; icon?: React.ReactNode; valueClass?: string; className?: string;
+function SummaryCard({ label, value, variant = "neutral", className }: {
+  label: string; value: string; variant?: "neutral" | "positive" | "negative"; className?: string;
 }) {
+  const valueColor = variant === "positive" ? "finance-positive" : variant === "negative" ? "finance-negative" : "text-foreground";
   return (
-    <Card className={className}>
+    <Card className={`shadow-sm border-border/60 ${className || ""}`}>
       <CardContent className="p-3 md:p-4">
-        <div className="flex items-center gap-2 mb-1">
-          {icon}
-          <span className="text-[10px] md:text-xs uppercase tracking-wider text-muted-foreground">{label}</span>
-        </div>
-        <p className={`text-lg md:text-xl font-bold tabular-nums ${valueClass || ""}`}>{value}</p>
+        <span className="text-[10px] md:text-xs uppercase tracking-wider text-muted-foreground block mb-1">{label}</span>
+        <p className={`text-lg md:text-xl font-bold tabular-nums ${valueColor}`}>{value}</p>
       </CardContent>
     </Card>
   );
