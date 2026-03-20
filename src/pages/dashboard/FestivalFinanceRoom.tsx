@@ -23,6 +23,7 @@ import { useFinancePayers } from "@/hooks/useFinancePayers";
 import { Plus, Trash2, ArrowLeft, Undo2, TrendingUp, TrendingDown, Receipt, Wallet, ChevronRight, FolderOpen, Download, Paperclip, ExternalLink, Upload, AlertCircle } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useFinanceAttachmentUpload } from "@/hooks/useFinanceAttachmentUpload";
+import { useFinanceAccess, type FinanceAccessLevel } from "@/hooks/useFinanceAccess";
 
 import {
   useFinanceBooks, useFinanceEntries, useCreateFinanceBook,
