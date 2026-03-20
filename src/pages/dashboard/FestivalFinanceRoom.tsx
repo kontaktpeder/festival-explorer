@@ -221,11 +221,28 @@ export default function FestivalFinanceRoom() {
     return { incomeTotal: income, feeTotal: fee, expenseTotal: expense, reimbursementTotal: reimbursements };
   }, [entries]);
 
-  const filteredEntries = useMemo(() => {
+  const actionCounts = useMemo(() => {
     const all = entries || [];
-    if (!showOnlyMissingAttachments) return all;
-    return all.filter((e) => !e.attachment_url || e.attachment_url.trim() === "");
-  }, [entries, showOnlyMissingAttachments]);
+    const active = all.filter((e) => e.payment_status !== "cancelled");
+    return {
+      unpaid: active.filter((e) => e.payment_status === "unpaid").length,
+      pendingInvoice: active.filter((e) => (e as any).invoice_status === "pending").length,
+      missingAttachment: active.filter((e) => !e.attachment_url || e.attachment_url.trim() === "").length,
+    };
+  }, [entries]);
+
+  const filteredEntries = useMemo(() => {
+    let all = entries || [];
+    if (showOnlyMissingAttachments) {
+      all = all.filter((e) => !e.attachment_url || e.attachment_url.trim() === "");
+    }
+    switch (activeFilter) {
+      case "unpaid": return all.filter((e) => e.payment_status === "unpaid");
+      case "pending_invoice": return all.filter((e) => (e as any).invoice_status === "pending");
+      case "missing_attachment": return all.filter((e) => !e.attachment_url || e.attachment_url.trim() === "");
+      default: return all;
+    }
+  }, [entries, showOnlyMissingAttachments, activeFilter]);
 
   const expenseGroups = useMemo(
     () => buildCategoryGroups(filteredEntries.filter((e) => e.source_type !== "reimbursement"), "expense"),
