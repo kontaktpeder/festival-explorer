@@ -85,9 +85,9 @@ function buildCategoryGroups(entries: FestivalFinanceEntry[], entryType: "expens
 /* ── Mobile entry card ── */
 function EntryCard({ fields, actions }: { fields: React.ReactNode; actions: React.ReactNode }) {
   return (
-    <div className="rounded-md border border-border/60 bg-card/60 p-3 space-y-3">
+    <div className="rounded-md border border-border bg-card p-3 space-y-3 shadow-sm">
       {fields}
-      <div className="flex items-center justify-end gap-1 pt-1 border-t border-border/30">{actions}</div>
+      <div className="flex items-center justify-end gap-1 pt-1 border-t border-border/40">{actions}</div>
     </div>
   );
 }
