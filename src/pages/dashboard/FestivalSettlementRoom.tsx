@@ -9,6 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import { useFinanceBooks, useFinanceEntries } from "@/hooks/useFestivalFinance";
+import { useFinanceAccess } from "@/hooks/useFinanceAccess";
 import type { FestivalFinanceEntry } from "@/types/finance";
 
 type PersonAgg = {
