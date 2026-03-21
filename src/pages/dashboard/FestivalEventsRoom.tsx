@@ -69,7 +69,7 @@ export default function FestivalEventsRoom() {
           <div className="flex items-center gap-2">
             {canEdit && (
               <Button asChild size="sm" variant="outline">
-                <Link to={`/event-room/new?festival_id=${id}`}>
+                <Link to={`/dashboard/events/new?festival_id=${id}`}>
                   <Plus className="h-4 w-4 mr-1" />
                   Ny event
                 </Link>
@@ -91,7 +91,7 @@ export default function FestivalEventsRoom() {
               fe.event ? (
                 <Link
                   key={fe.event_id}
-                  to={`/event-room/${fe.event.id}`}
+                  to={`/dashboard/events/${fe.event.id}`}
                   className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
                 >
                   <div className="flex items-center justify-between">

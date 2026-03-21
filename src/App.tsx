@@ -58,6 +58,10 @@ import VenueTeamRoom from "./pages/dashboard/VenueTeamRoom";
 import VenueSettingsRoom from "./pages/dashboard/VenueSettingsRoom";
 import LandingSettingsRoom from "./pages/dashboard/LandingSettingsRoom";
 import DashboardEventsRoom from "./pages/dashboard/DashboardEventsRoom";
+import EventDashboardRoom from "./pages/dashboard/EventDashboardRoom";
+import EventDetailsRoom from "./pages/dashboard/EventDetailsRoom";
+import EventRunSheetRoom from "./pages/dashboard/EventRunSheetRoom";
+import EventParticipantsRoom from "./pages/dashboard/EventParticipantsRoom";
 import { EventFirstGuard } from "@/components/auth/EventFirstGuard";
 
 import VenuePage from "./pages/VenuePage";
@@ -113,6 +117,7 @@ const App = () => (
           <Route path="/festival/case/:slug" element={<PublicChrome footerVariant="festival"><FestivalCasePage /></PublicChrome>} />
           <Route path="/festival-oslo-2026" element={<PublicChrome footerVariant="festival"><FestivalOslo2026Page /></PublicChrome>} />
           <Route path="/event-room/:id" element={<EventRoomPage />} />
+          {/* Redirect legacy event-room/new to dashboard */}
           <Route path="/event/:slug" element={<PublicChrome footerVariant="giggen"><EventPage /></PublicChrome>} />
           <Route path="/project/:slug" element={<PublicChrome footerVariant="giggen"><ProjectPage /></PublicChrome>} />
           <Route path="/venue/:slug" element={<PublicChrome footerVariant="giggen"><VenuePage /></PublicChrome>} />
@@ -162,7 +167,10 @@ const App = () => (
             <Route path="/dashboard/landing" element={<LandingSettingsRoom />} />
             <Route path="/dashboard/events" element={<EventFirstGuard><DashboardEventsRoom /></EventFirstGuard>} />
             <Route path="/dashboard/events/new" element={<EventFirstGuard><EventRoomPage /></EventFirstGuard>} />
-            <Route path="/dashboard/events/:id" element={<EventFirstGuard><EventRoomPage /></EventFirstGuard>} />
+            <Route path="/dashboard/events/:id" element={<EventDashboardRoom />} />
+            <Route path="/dashboard/events/:id/details" element={<EventDetailsRoom />} />
+            <Route path="/dashboard/events/:id/run-sheet" element={<EventRunSheetRoom />} />
+            <Route path="/dashboard/events/:id/participants" element={<EventParticipantsRoom />} />
 
 
           <Route path="/p/:slug" element={<PublicChrome footerVariant="giggen"><PersonaPage /></PublicChrome>} />

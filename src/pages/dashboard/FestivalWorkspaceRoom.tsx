@@ -103,7 +103,7 @@ export default function FestivalWorkspaceRoom() {
                 fe.event ? (
                   <Link
                     key={fe.event_id}
-                    to={`/event-room/${fe.event.id}`}
+                    to={`/dashboard/events/${fe.event.id}`}
                     className="group rounded-xl border border-border/30 bg-card/40 p-4 hover:border-accent/30 hover:bg-card/70 transition-all duration-300 flex items-center justify-between"
                   >
                     <div className="flex items-center gap-3 min-w-0">
