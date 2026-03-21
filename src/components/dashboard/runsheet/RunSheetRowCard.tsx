@@ -224,6 +224,43 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
                   );
                 })}
               </div>
+            ) : isCustom ? (
+              <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
+                <span className={cn(
+                  "text-sm font-semibold truncate",
+                  displayTitle === "Legg til hva som skjer" ? "text-muted-foreground/50 italic" : "text-foreground/80"
+                )}>
+                  {displayTitle}
+                </span>
+                {(() => {
+                  const performer = getPerformerDisplay(slot);
+                  const hasNamedPerformer =
+                    performer.name &&
+                    performer.name !== "Ukjent prosjekt" &&
+                    performer.name !== "TBA" &&
+                    performer.name !== displayTitle;
+                  if (!hasNamedPerformer) return null;
+                  return (
+                    <span className="text-xs text-muted-foreground/60">
+                      {performer.href ? (
+                        <Link to={performer.href} className="text-accent hover:underline underline-offset-2">
+                          {performer.name}
+                        </Link>
+                      ) : (
+                        performer.name
+                      )}
+                    </span>
+                  );
+                })()}
+                {showFields.has("scene") && slot.stage_label && (
+                  <span className={cn(
+                    "text-[8px] md:text-[9px] font-bold uppercase tracking-wider px-1 md:px-1.5 py-0.5 rounded shrink-0",
+                    sceneColor ? `${sceneColor.bg} ${sceneColor.text}` : "text-muted-foreground/50"
+                  )}>
+                    {slot.stage_label}
+                  </span>
+                )}
+              </div>
             ) : (
               <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
                 {kindConfig && (
