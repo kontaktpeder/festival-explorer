@@ -29,7 +29,7 @@ export const SLOT_KIND_OPTIONS: {
   { value: "doors", label: "Dører", icon: DoorOpen },
   { value: "closing", label: "Stenging", icon: DoorClosed },
   { value: "stage_talk", label: "Snakk fra scenen", icon: Mic },
-  { value: "custom", label: "Egendefinert", icon: SquarePen },
+  { value: "custom", label: "Standardpost", icon: SquarePen },
 ];
 
 export const INTERNAL_STATUS_OPTIONS: {
