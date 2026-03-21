@@ -859,6 +859,7 @@ interface RunSheetEditDialogProps {
   eventId: string | null;
   isFestivalScope: boolean;
   festivalVenueId: string | null;
+  anchorDateIso: string | null;
   suggestedSequenceNumber: number;
   open: boolean;
   initialAdvancedOpen?: boolean | null;
