@@ -593,6 +593,14 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+            <Button
+              size="sm"
+              className="h-8 text-xs gap-1.5"
+              onClick={() => createManualSlot.mutate({ sectionType: "custom", seq: nextSequenceNumber })}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Ny post
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -600,8 +608,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                   size="sm"
                   className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
                 >
-                  <Plus className="h-3.5 w-3.5" />
-                  Ny rad
+                  Mer
                   <ChevronDown className="h-3 w-3 opacity-50" />
                 </Button>
               </DropdownMenuTrigger>
@@ -632,9 +639,6 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "crew", seq: nextSequenceNumber })}>
                   Crew
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "custom", seq: nextSequenceNumber })}>
-                  Egendefinert
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
