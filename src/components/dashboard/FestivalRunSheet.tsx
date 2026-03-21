@@ -1108,8 +1108,8 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
     const ev = festivalEvents?.find((e) => e.id === selectedEventId);
     if (!ev) return;
 
-    setStartsAt(isoToLocalDatetimeString(ev.start_at));
-    if (ev.end_at) setEndsAt(isoToLocalDatetimeString(ev.end_at));
+    setStartTime(isoToLocalTimeHHmm(ev.start_at));
+    if (ev.end_at) setEndTime(isoToLocalTimeHHmm(ev.end_at));
     if (ev.end_at) {
       const mins = Math.round((new Date(ev.end_at).getTime() - new Date(ev.start_at).getTime()) / 60000);
       if (mins > 0) setDurationMinutes(String(mins));
