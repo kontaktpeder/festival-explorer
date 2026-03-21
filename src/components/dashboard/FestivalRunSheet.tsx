@@ -1222,11 +1222,12 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   };
 
   const handleSubmit = () => {
+    const timeIso = buildStartsEndsIso();
     onSave({
       event_id: eventId || null,
-      starts_at: startsAt ? new Date(startsAt).toISOString() : undefined,
-      ends_at: endsAt ? new Date(endsAt).toISOString() : null,
-      duration_minutes: durationMinutes ? Number(durationMinutes) : null,
+      starts_at: timeIso.starts_at,
+      ends_at: timeIso.ends_at,
+      duration_minutes: timeIso.duration_minutes,
       sequence_number: sequenceNumber ? Number(sequenceNumber) : suggestedSequenceNumber,
       title_override: titleOverride || null,
       stage_label: stageLabel || null,
