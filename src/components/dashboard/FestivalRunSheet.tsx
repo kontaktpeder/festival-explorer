@@ -1099,6 +1099,20 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   const sceneIdsFromDefault = runSheetDefault?.scene_ids?.length ? runSheetDefault.scene_ids : null;
   const { data: sceneOptions = [] } = useEventSceneOptions(venueIdForScenes, sceneIdsFromDefault);
 
+  // SessionStorage: default area to last-used when opening a slot with no area set
+  useEffect(() => {
+    if (!open || !sceneOptions.length) return;
+    if (stageLabel) return;
+    try {
+      const last = sessionStorage.getItem(areaStorageKey);
+      const match = sceneOptions.find((s) => s.name === last || s.id === last);
+      if (match) setStageLabel(match.name);
+      else if (sceneOptions[0]) setStageLabel(sceneOptions[0].name);
+    } catch {
+      if (sceneOptions[0]) setStageLabel(sceneOptions[0].name);
+    }
+  }, [open, sceneOptions, areaStorageKey, stageLabel]);
+
   const handleEventSelect = (selectedEventId: string) => {
     if (selectedEventId === "__none__") {
       setEventId("");
