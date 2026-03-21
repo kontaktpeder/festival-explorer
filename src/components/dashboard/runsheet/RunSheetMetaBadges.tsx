@@ -9,6 +9,8 @@ interface RunSheetMetaBadgesProps {
   hasContract: boolean;
   slotTypeLabel?: string;
   isParallel?: boolean;
+  /** Hide status badge (e.g. default DB-confirmed on simple custom posts) */
+  hideInternalStatus?: boolean;
 }
 
 const STATUS_LABELS: Record<string, string> = {
