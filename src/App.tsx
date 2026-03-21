@@ -113,6 +113,7 @@ const App = () => (
           <Route path="/festival/case/:slug" element={<PublicChrome footerVariant="festival"><FestivalCasePage /></PublicChrome>} />
           <Route path="/festival-oslo-2026" element={<PublicChrome footerVariant="festival"><FestivalOslo2026Page /></PublicChrome>} />
           <Route path="/event-room/:id" element={<EventRoomPage />} />
+          {/* Redirect legacy event-room/new to dashboard */}
           <Route path="/event/:slug" element={<PublicChrome footerVariant="giggen"><EventPage /></PublicChrome>} />
           <Route path="/project/:slug" element={<PublicChrome footerVariant="giggen"><ProjectPage /></PublicChrome>} />
           <Route path="/venue/:slug" element={<PublicChrome footerVariant="giggen"><VenuePage /></PublicChrome>} />
