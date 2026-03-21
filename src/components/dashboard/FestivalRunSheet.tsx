@@ -853,6 +853,7 @@ interface RunSheetEditDialogProps {
   festivalVenueId: string | null;
   suggestedSequenceNumber: number;
   open: boolean;
+  initialAdvancedOpen?: boolean | null;
   onOpenChange: (open: boolean) => void;
   onSave: (updates: Record<string, unknown>) => void;
   onParallelCreated?: () => void;
