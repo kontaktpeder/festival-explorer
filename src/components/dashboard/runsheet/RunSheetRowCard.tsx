@@ -4,6 +4,7 @@ import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-
 import type { RunSheetSectionKey } from "@/lib/runsheet-sections";
 import { getPerformerDisplay } from "@/lib/program-performers";
 import { getSlotKindConfig, getFieldsForSlotKind } from "@/lib/program-slots";
+import { customRowTitle } from "@/lib/runsheet-ux-helpers";
 import type { SlotKind } from "@/types/database";
 import { cn } from "@/lib/utils";
 import { Pencil, Trash2 } from "lucide-react";
