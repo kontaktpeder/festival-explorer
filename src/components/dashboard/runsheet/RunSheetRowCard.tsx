@@ -43,6 +43,8 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
   const seqNum = index + 1;
   const isParallel = group.items.length > 1;
   const isCritical = isCriticalSlotKind(slot.slot_kind);
+  const isCustom = slot.slot_kind === "custom";
+  const displayTitle = isCustom ? customRowTitle(slot) : null;
   const sceneColor = !isParallel && showFields.has("scene") ? getSceneColor(slot.stage_label) : null;
 
   // Inline time editing
