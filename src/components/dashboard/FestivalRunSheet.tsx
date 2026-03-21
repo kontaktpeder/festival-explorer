@@ -801,6 +801,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           eventId={eventId}
           isFestivalScope={isFestivalScope}
           festivalVenueId={scopeVenueId ?? null}
+          anchorDateIso={scopeStartAt ?? editingSlot?.starts_at ?? null}
           slot={editingSlot}
           suggestedSequenceNumber={nextSequenceNumber}
           open={dialogOpen}
