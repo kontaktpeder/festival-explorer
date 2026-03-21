@@ -243,27 +243,30 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
 
   const createManualSlot = useMutation({
     mutationFn: async ({ sectionType, seq }: { sectionType: "opprigg" | "lydprøve" | "event" | "doors" | "closing" | "stage_talk" | "giggen_info" | "break" | "crew" | "custom"; seq: number }) => {
-      const now = new Date();
-      const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean }> = {
-        opprigg: { slot_kind: "rigging", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false },
-        lydprøve: { slot_kind: "soundcheck", title_override: "LYDPRØVE", visibility: "internal", is_visible_public: false },
-        event: { slot_kind: "concert", title_override: "", visibility: "public", is_visible_public: true },
-        doors: { slot_kind: "doors", title_override: "", visibility: "public", is_visible_public: true },
-        closing: { slot_kind: "closing", title_override: "", visibility: "public", is_visible_public: true },
-        stage_talk: { slot_kind: "stage_talk", title_override: "", visibility: "public", is_visible_public: true },
-        giggen_info: { slot_kind: "giggen_info", title_override: "", visibility: "public", is_visible_public: true },
-        break: { slot_kind: "break", title_override: "", visibility: "internal", is_visible_public: false },
-        crew: { slot_kind: "crew", title_override: "", visibility: "internal", is_visible_public: false },
-        custom: { slot_kind: "custom", title_override: "", visibility: "public", is_visible_public: true },
+      const isCustom = sectionType === "custom";
+      const startsAt = isCustom
+        ? computeNextSlotStartsAt((data?.slots ?? []) as ExtendedEventProgramSlot[])
+        : new Date();
+      const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean; internal_status: string }> = {
+        opprigg: { slot_kind: "rigging", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
+        lydprøve: { slot_kind: "soundcheck", title_override: "LYDPRØVE", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
+        event: { slot_kind: "concert", title_override: "", visibility: "public", is_visible_public: true, internal_status: "contract_pending" },
+        doors: { slot_kind: "doors", title_override: "", visibility: "public", is_visible_public: true, internal_status: "confirmed" },
+        closing: { slot_kind: "closing", title_override: "", visibility: "public", is_visible_public: true, internal_status: "confirmed" },
+        stage_talk: { slot_kind: "stage_talk", title_override: "", visibility: "public", is_visible_public: true, internal_status: "confirmed" },
+        giggen_info: { slot_kind: "giggen_info", title_override: "", visibility: "public", is_visible_public: true, internal_status: "confirmed" },
+        break: { slot_kind: "break", title_override: "", visibility: "internal", is_visible_public: false, internal_status: "confirmed" },
+        crew: { slot_kind: "crew", title_override: "", visibility: "internal", is_visible_public: false, internal_status: "confirmed" },
+        custom: { slot_kind: "custom", title_override: "", visibility: "internal", is_visible_public: false, internal_status: "confirmed" },
       };
       const preset = presets[sectionType];
-      const { error } = await supabase
+      const { data: inserted, error } = await supabase
         .from("event_program_slots" as any)
         .insert({
           festival_id: isFestivalScope ? festivalId : null,
           event_id: isFestivalScope ? null : eventId,
           entity_id: null,
-          starts_at: now.toISOString(),
+          starts_at: startsAt.toISOString(),
           ends_at: null,
           duration_minutes: null,
           sequence_number: seq,
@@ -271,19 +274,33 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           slot_type: null,
           source: "manual",
           visibility: preset.visibility,
-          internal_status: "contract_pending",
+          internal_status: preset.internal_status,
           internal_note: "",
           is_canceled: false,
           is_visible_public: preset.is_visible_public,
           title_override: preset.title_override || null,
-        } as any);
+        } as any)
+        .select(`
+          *,
+          entity:entities!event_program_slots_entity_id_fkey(id, name, slug),
+          performer_entity:entities!event_program_slots_performer_entity_id_fkey(id, name, slug, is_published),
+          performer_persona:personas!event_program_slots_performer_persona_id_fkey(id, name, slug, is_public)
+        `)
+        .single();
       if (error) throw error;
+      return { inserted: inserted as unknown as ExtendedEventProgramSlot, openEditor: isCustom };
     },
-    onSuccess: async () => {
+    onSuccess: async (result) => {
       await queryClient.invalidateQueries({ queryKey });
       await renumberSlots();
       queryClient.invalidateQueries({ queryKey });
-      toast({ title: "Ny rad opprettet" });
+      if (result?.openEditor && result.inserted) {
+        setEditingSlot(result.inserted);
+        setDialogInitialAdvanced(false);
+        setDialogOpen(true);
+      } else {
+        toast({ title: "Ny rad opprettet" });
+      }
     },
     onError: (e: Error) =>
       toast({ title: "Feil", description: e.message, variant: "destructive" }),
