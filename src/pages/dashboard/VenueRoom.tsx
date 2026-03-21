@@ -339,7 +339,7 @@ export default function VenueRoom() {
               {venueEvents.map((event) => (
                 <Link
                   key={event.id}
-                  to={`/event-room/${event.id}`}
+                  to={`/dashboard/events/${event.id}`}
                   className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
                 >
                   <div className="flex items-center justify-between">

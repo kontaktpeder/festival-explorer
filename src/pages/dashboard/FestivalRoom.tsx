@@ -387,7 +387,7 @@ export default function FestivalRoom() {
                 fe.event ? (
                   <Link
                     key={fe.event_id}
-                    to={`/event-room/${fe.event.id}`}
+                    to={`/dashboard/events/${fe.event.id}`}
                     className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
                   >
                     <div className="flex items-center justify-between">

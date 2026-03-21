@@ -139,7 +139,7 @@ export default function AdminEvents() {
 
               <div className="flex flex-wrap gap-1.5 md:gap-2">
                 <Button asChild variant="default" size="sm" className="h-8 text-xs md:text-sm">
-                  <Link to={`/event-room/${event.id}`}>
+                  <Link to={`/dashboard/events/${event.id}`}>
                     Åpne
                   </Link>
                 </Button>
