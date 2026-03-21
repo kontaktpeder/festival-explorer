@@ -909,6 +909,13 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   const [performerEntityId, setPerformerEntityId] = useState(slot.performer_entity_id || slot.entity_id || "");
   const [performerPersonaId, setPerformerPersonaId] = useState(slot.performer_persona_id || "");
   const [personaQuery, setPersonaQuery] = useState("");
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  // Sync advanced open state when dialog opens
+  useEffect(() => {
+    if (!open) return;
+    setShowAdvanced(initialAdvancedOpen ?? shouldOpenAdvancedInitially(slot));
+  }, [open, slot.id, initialAdvancedOpen]);
 
   // Auto-calculate duration from start/end times
   useEffect(() => {
