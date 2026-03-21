@@ -32,7 +32,14 @@ import {
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { cn, isoToLocalDatetimeString } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import {
+  combineAnchorDateWithTime,
+  isoToLocalTimeHHmm,
+  adjustOvernightEnd,
+  minutesBetween,
+  type TimePairEditSource,
+} from "@/lib/runsheet-time-ui";
 import { Plus, ClipboardList, ChevronDown, Printer, Filter, Download, Settings2 } from "lucide-react";
 import {
   Collapsible,
