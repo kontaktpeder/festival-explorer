@@ -32,7 +32,14 @@ import {
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { cn, isoToLocalDatetimeString } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import {
+  combineAnchorDateWithTime,
+  isoToLocalTimeHHmm,
+  adjustOvernightEnd,
+  minutesBetween,
+  type TimePairEditSource,
+} from "@/lib/runsheet-time-ui";
 import { Plus, ClipboardList, ChevronDown, Printer, Filter, Download, Settings2 } from "lucide-react";
 import {
   Collapsible,
@@ -794,6 +801,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           eventId={eventId}
           isFestivalScope={isFestivalScope}
           festivalVenueId={scopeVenueId ?? null}
+          anchorDateIso={scopeStartAt ?? editingSlot?.starts_at ?? null}
           slot={editingSlot}
           suggestedSequenceNumber={nextSequenceNumber}
           open={dialogOpen}
@@ -851,6 +859,7 @@ interface RunSheetEditDialogProps {
   eventId: string | null;
   isFestivalScope: boolean;
   festivalVenueId: string | null;
+  anchorDateIso: string | null;
   suggestedSequenceNumber: number;
   open: boolean;
   initialAdvancedOpen?: boolean | null;
@@ -883,12 +892,17 @@ function getRunSheetSectionFromSlot(kind: string, visibility: string, title?: st
   return "Event";
 }
 
-function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, suggestedSequenceNumber, open, initialAdvancedOpen, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
+function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, anchorDateIso, suggestedSequenceNumber, open, initialAdvancedOpen, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
   const { toast } = useToast();
+  const anchor = anchorDateIso || slot.starts_at;
   const [eventId, setEventId] = useState(slot.event_id ?? "");
-  const [startsAt, setStartsAt] = useState(isoToLocalDatetimeString(slot.starts_at));
-  const [endsAt, setEndsAt] = useState(slot.ends_at ? isoToLocalDatetimeString(slot.ends_at) : "");
+
+  // Time-only state (HH:mm strings)
+  const [startTime, setStartTime] = useState(() => isoToLocalTimeHHmm(slot.starts_at));
+  const [endTime, setEndTime] = useState(() => slot.ends_at ? isoToLocalTimeHHmm(slot.ends_at) : "");
   const [durationMinutes, setDurationMinutes] = useState(String(slot.duration_minutes ?? ""));
+  const [timeEditSource, setTimeEditSource] = useState<TimePairEditSource>(null);
+
   const [sequenceNumber, setSequenceNumber] = useState(String(slot.sequence_number ?? ""));
   const [titleOverride, setTitleOverride] = useState(slot.title_override ?? "");
   const [stageLabel, setStageLabel] = useState(slot.stage_label ?? "");
@@ -911,21 +925,81 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   const [personaQuery, setPersonaQuery] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  // Sync advanced open state when dialog opens
+  // Sync state when dialog opens
   useEffect(() => {
     if (!open) return;
     setShowAdvanced(initialAdvancedOpen ?? shouldOpenAdvancedInitially(slot));
+    setStartTime(isoToLocalTimeHHmm(slot.starts_at));
+    setEndTime(slot.ends_at ? isoToLocalTimeHHmm(slot.ends_at) : "");
+    setDurationMinutes(slot.duration_minutes != null ? String(slot.duration_minutes) : "");
+    setTimeEditSource(null);
   }, [open, slot.id, initialAdvancedOpen]);
 
-  // Auto-calculate duration from start/end times
-  useEffect(() => {
-    if (!startsAt || !endsAt) return;
-    const start = new Date(startsAt).getTime();
-    const end = new Date(endsAt).getTime();
-    if (end <= start) return;
-    const minutes = Math.round((end - start) / 60000);
-    setDurationMinutes(String(minutes));
-  }, [startsAt, endsAt]);
+  // ── Two-way time sync helpers ──
+  const applyDurationToEnd = (st: string, durMin: number) => {
+    if (!st || !durMin || durMin <= 0) return;
+    const startDt = combineAnchorDateWithTime(anchor, st);
+    const endDt = new Date(startDt.getTime() + durMin * 60000);
+    setEndTime(isoToLocalTimeHHmm(endDt.toISOString()));
+  };
+
+  const applyEndToDuration = (st: string, et: string) => {
+    if (!st || !et) { setDurationMinutes(""); return; }
+    const startDt = combineAnchorDateWithTime(anchor, st);
+    let endDt = combineAnchorDateWithTime(anchor, et);
+    endDt = adjustOvernightEnd(startDt, endDt);
+    setDurationMinutes(String(minutesBetween(startDt, endDt)));
+  };
+
+  const onStartTimeChange = (v: string) => {
+    const prev = timeEditSource;
+    setStartTime(v);
+    setTimeEditSource("start");
+    const dur = parseInt(durationMinutes, 10);
+    if (prev === "duration" && !Number.isNaN(dur) && dur > 0) {
+      applyDurationToEnd(v, dur);
+    } else if (endTime) {
+      applyEndToDuration(v, endTime);
+    }
+  };
+
+  const onEndTimeChange = (v: string) => {
+    setEndTime(v);
+    setTimeEditSource("end");
+    if (startTime) applyEndToDuration(startTime, v);
+  };
+
+  const onDurationChange = (raw: string) => {
+    setDurationMinutes(raw);
+    setTimeEditSource("duration");
+    const dur = parseInt(raw, 10);
+    if (!startTime || Number.isNaN(dur) || dur <= 0) return;
+    applyDurationToEnd(startTime, dur);
+  };
+
+  // Build ISO timestamps from time-only state
+  const buildStartsEndsIso = () => {
+    const a = anchorDateIso || slot.starts_at;
+    const startDt = combineAnchorDateWithTime(a, startTime);
+    let endsIso: string | null = null;
+    let dur: number | null = null;
+    if (endTime) {
+      let endDt = combineAnchorDateWithTime(a, endTime);
+      endDt = adjustOvernightEnd(startDt, endDt);
+      endsIso = endDt.toISOString();
+      dur = minutesBetween(startDt, endDt);
+    } else if (durationMinutes) {
+      const d = parseInt(durationMinutes, 10);
+      if (!Number.isNaN(d) && d > 0) {
+        dur = d;
+        endsIso = new Date(startDt.getTime() + d * 60000).toISOString();
+      }
+    }
+    return { starts_at: startDt.toISOString(), ends_at: endsIso, duration_minutes: dur };
+  };
+
+  // SessionStorage for last-used area
+  const areaStorageKey = `runsheet-area:${isFestivalScope ? festivalId : scopeEventId}`;
 
   // Default sequence number when slot doesn't have one
   useEffect(() => {
@@ -1025,6 +1099,20 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   const sceneIdsFromDefault = runSheetDefault?.scene_ids?.length ? runSheetDefault.scene_ids : null;
   const { data: sceneOptions = [] } = useEventSceneOptions(venueIdForScenes, sceneIdsFromDefault);
 
+  // SessionStorage: default area to last-used when opening a slot with no area set
+  useEffect(() => {
+    if (!open || !sceneOptions.length) return;
+    if (stageLabel) return;
+    try {
+      const last = sessionStorage.getItem(areaStorageKey);
+      const match = sceneOptions.find((s) => s.name === last || s.id === last);
+      if (match) setStageLabel(match.name);
+      else if (sceneOptions[0]) setStageLabel(sceneOptions[0].name);
+    } catch {
+      if (sceneOptions[0]) setStageLabel(sceneOptions[0].name);
+    }
+  }, [open, sceneOptions, areaStorageKey, stageLabel]);
+
   const handleEventSelect = (selectedEventId: string) => {
     if (selectedEventId === "__none__") {
       setEventId("");
@@ -1034,8 +1122,8 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
     const ev = festivalEvents?.find((e) => e.id === selectedEventId);
     if (!ev) return;
 
-    setStartsAt(isoToLocalDatetimeString(ev.start_at));
-    if (ev.end_at) setEndsAt(isoToLocalDatetimeString(ev.end_at));
+    setStartTime(isoToLocalTimeHHmm(ev.start_at));
+    if (ev.end_at) setEndTime(isoToLocalTimeHHmm(ev.end_at));
     if (ev.end_at) {
       const mins = Math.round((new Date(ev.end_at).getTime() - new Date(ev.start_at).getTime()) / 60000);
       if (mins > 0) setDurationMinutes(String(mins));
@@ -1053,8 +1141,8 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   // When defaults load (async after eventId changes), apply time from defaults
   useEffect(() => {
     if (!runSheetDefault) return;
-    setStartsAt(isoToLocalDatetimeString(runSheetDefault.starts_at));
-    if (runSheetDefault.ends_at) setEndsAt(isoToLocalDatetimeString(runSheetDefault.ends_at));
+    setStartTime(isoToLocalTimeHHmm(runSheetDefault.starts_at));
+    if (runSheetDefault.ends_at) setEndTime(isoToLocalTimeHHmm(runSheetDefault.ends_at));
     if (runSheetDefault.duration_minutes != null) setDurationMinutes(String(runSheetDefault.duration_minutes));
   }, [runSheetDefault?.id]);
 
@@ -1067,11 +1155,12 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   };
 
   const handleCreateParallel = async () => {
+    const timeIso = buildStartsEndsIso();
     const savedPayload: any = {
       event_id: eventId || null,
-      starts_at: startsAt ? new Date(startsAt).toISOString() : slot.starts_at,
-      ends_at: endsAt ? new Date(endsAt).toISOString() : null,
-      duration_minutes: durationMinutes ? Number(durationMinutes) : null,
+      starts_at: timeIso.starts_at,
+      ends_at: timeIso.ends_at,
+      duration_minutes: timeIso.duration_minutes,
       sequence_number: sequenceNumber ? Number(sequenceNumber) : suggestedSequenceNumber,
       title_override: titleOverride || null,
       stage_label: stageLabel || null,
@@ -1114,9 +1203,9 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
       .insert({
         festival_id: isFestivalScope ? festivalId : null,
         event_id: isFestivalScope ? (eventId || null) : scopeEventId,
-        starts_at: startsAt ? new Date(startsAt).toISOString() : slot.starts_at,
-        ends_at: endsAt ? new Date(endsAt).toISOString() : null,
-        duration_minutes: durationMinutes ? Number(durationMinutes) : null,
+        starts_at: timeIso.starts_at,
+        ends_at: timeIso.ends_at,
+        duration_minutes: timeIso.duration_minutes,
         sequence_number: sequenceNumber ? Number(sequenceNumber) : suggestedSequenceNumber,
         slot_kind: slotKind,
         slot_type: slotType || null,
@@ -1147,11 +1236,12 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   };
 
   const handleSubmit = () => {
+    const timeIso = buildStartsEndsIso();
     onSave({
       event_id: eventId || null,
-      starts_at: startsAt ? new Date(startsAt).toISOString() : undefined,
-      ends_at: endsAt ? new Date(endsAt).toISOString() : null,
-      duration_minutes: durationMinutes ? Number(durationMinutes) : null,
+      starts_at: timeIso.starts_at,
+      ends_at: timeIso.ends_at,
+      duration_minutes: timeIso.duration_minutes,
       sequence_number: sequenceNumber ? Number(sequenceNumber) : suggestedSequenceNumber,
       title_override: titleOverride || null,
       stage_label: stageLabel || null,
@@ -1193,14 +1283,19 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
 
           {/* Time */}
           {showFields.has("time") && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs">Starttid</Label>
-                <Input type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className="h-9 text-base" />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Sluttid</Label>
-                <Input type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} className="h-9 text-base" />
+            <div className="space-y-3">
+              <p className="text-[10px] text-muted-foreground/60">
+                Dato følger arrangementet — du setter bare klokkeslett.
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Start</Label>
+                  <Input type="time" value={startTime} onChange={(e) => onStartTimeChange(e.target.value)} className="h-9 text-base font-mono tabular-nums" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Slutt</Label>
+                  <Input type="time" value={endTime} onChange={(e) => onEndTimeChange(e.target.value)} className="h-9 text-base font-mono tabular-nums" />
+                </div>
               </div>
             </div>
           )}
@@ -1209,8 +1304,7 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-xs">Varighet (min)</Label>
-                <Input type="number" placeholder="—" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} className="h-9" />
-                <p className="text-[10px] text-muted-foreground">Beregnes fra start/slutt</p>
+                <Input type="number" placeholder="—" value={durationMinutes} onChange={(e) => onDurationChange(e.target.value)} className="h-9" />
               </div>
             </div>
           )}
@@ -1236,7 +1330,10 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                       return;
                     }
                     const scene = sceneOptions.find((s) => s.id === v);
-                    if (scene) setStageLabel(scene.name);
+                    if (scene) {
+                      setStageLabel(scene.name);
+                      try { sessionStorage.setItem(areaStorageKey, scene.name); } catch { /* ignore */ }
+                    }
                   }}
                 >
                   <SelectTrigger className="h-9">

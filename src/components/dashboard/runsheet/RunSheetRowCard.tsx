@@ -307,14 +307,24 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
           )}
 
           {/* Meta badges */}
-          <RunSheetMetaBadges
-            stageLabel={showFields.has("scene") && !isParallel ? slot.stage_label : undefined}
-            visibility={showFields.has("visibilityStatus") ? slot.visibility : undefined}
-            internalStatus={showFields.has("visibilityStatus") ? slot.internal_status : undefined}
-            hasContract={showFields.has("visibilityStatus") && !!slot.contract_media_id}
-            slotTypeLabel={showFields.has("category") ? slotTypeLabel : undefined}
-            isParallel={isParallel}
-          />
+          {(() => {
+            const hideStatusForSimpleCustom =
+              slot.slot_kind === "custom" &&
+              slot.internal_status === "confirmed" &&
+              !slot.slot_type &&
+              !slot.is_canceled;
+            return (
+              <RunSheetMetaBadges
+                stageLabel={showFields.has("scene") && !isParallel ? slot.stage_label : undefined}
+                visibility={showFields.has("visibilityStatus") ? slot.visibility : undefined}
+                internalStatus={showFields.has("visibilityStatus") ? slot.internal_status : undefined}
+                hasContract={showFields.has("visibilityStatus") && !!slot.contract_media_id}
+                slotTypeLabel={showFields.has("category") ? slotTypeLabel : undefined}
+                isParallel={isParallel}
+                hideInternalStatus={hideStatusForSimpleCustom}
+              />
+            );
+          })()}
         </div>
 
         {/* ── Actions – always visible on mobile, hover on desktop ── */}

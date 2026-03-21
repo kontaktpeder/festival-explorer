@@ -9,6 +9,8 @@ interface RunSheetMetaBadgesProps {
   hasContract: boolean;
   slotTypeLabel?: string;
   isParallel?: boolean;
+  /** Hide status badge (e.g. default DB-confirmed on simple custom posts) */
+  hideInternalStatus?: boolean;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -30,10 +32,11 @@ export function RunSheetMetaBadges({
   hasContract,
   slotTypeLabel,
   isParallel,
+  hideInternalStatus,
 }: RunSheetMetaBadgesProps) {
   const isPublic = visibility === "public";
   const showVisibility = !!visibility;
-  const showStatus = !!internalStatus;
+  const showStatus = !!internalStatus && !hideInternalStatus;
   const sceneColor = getSceneColor(stageLabel);
 
   // Nothing to render
