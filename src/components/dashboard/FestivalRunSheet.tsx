@@ -1330,7 +1330,10 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                       return;
                     }
                     const scene = sceneOptions.find((s) => s.id === v);
-                    if (scene) setStageLabel(scene.name);
+                    if (scene) {
+                      setStageLabel(scene.name);
+                      try { sessionStorage.setItem(areaStorageKey, scene.name); } catch { /* ignore */ }
+                    }
                   }}
                 >
                   <SelectTrigger className="h-9">
