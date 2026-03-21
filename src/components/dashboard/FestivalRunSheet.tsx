@@ -883,7 +883,7 @@ function getRunSheetSectionFromSlot(kind: string, visibility: string, title?: st
   return "Event";
 }
 
-function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, suggestedSequenceNumber, open, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
+function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, suggestedSequenceNumber, open, initialAdvancedOpen, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
   const { toast } = useToast();
   const [eventId, setEventId] = useState(slot.event_id ?? "");
   const [startsAt, setStartsAt] = useState(isoToLocalDatetimeString(slot.starts_at));
