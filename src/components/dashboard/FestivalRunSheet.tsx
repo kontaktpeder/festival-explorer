@@ -892,12 +892,17 @@ function getRunSheetSectionFromSlot(kind: string, visibility: string, title?: st
   return "Event";
 }
 
-function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, suggestedSequenceNumber, open, initialAdvancedOpen, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
+function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, anchorDateIso, suggestedSequenceNumber, open, initialAdvancedOpen, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
   const { toast } = useToast();
+  const anchor = anchorDateIso || slot.starts_at;
   const [eventId, setEventId] = useState(slot.event_id ?? "");
-  const [startsAt, setStartsAt] = useState(isoToLocalDatetimeString(slot.starts_at));
-  const [endsAt, setEndsAt] = useState(slot.ends_at ? isoToLocalDatetimeString(slot.ends_at) : "");
+
+  // Time-only state (HH:mm strings)
+  const [startTime, setStartTime] = useState(() => isoToLocalTimeHHmm(slot.starts_at));
+  const [endTime, setEndTime] = useState(() => slot.ends_at ? isoToLocalTimeHHmm(slot.ends_at) : "");
   const [durationMinutes, setDurationMinutes] = useState(String(slot.duration_minutes ?? ""));
+  const [timeEditSource, setTimeEditSource] = useState<TimePairEditSource>(null);
+
   const [sequenceNumber, setSequenceNumber] = useState(String(slot.sequence_number ?? ""));
   const [titleOverride, setTitleOverride] = useState(slot.title_override ?? "");
   const [stageLabel, setStageLabel] = useState(slot.stage_label ?? "");
@@ -920,21 +925,81 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   const [personaQuery, setPersonaQuery] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  // Sync advanced open state when dialog opens
+  // Sync state when dialog opens
   useEffect(() => {
     if (!open) return;
     setShowAdvanced(initialAdvancedOpen ?? shouldOpenAdvancedInitially(slot));
+    setStartTime(isoToLocalTimeHHmm(slot.starts_at));
+    setEndTime(slot.ends_at ? isoToLocalTimeHHmm(slot.ends_at) : "");
+    setDurationMinutes(slot.duration_minutes != null ? String(slot.duration_minutes) : "");
+    setTimeEditSource(null);
   }, [open, slot.id, initialAdvancedOpen]);
 
-  // Auto-calculate duration from start/end times
-  useEffect(() => {
-    if (!startsAt || !endsAt) return;
-    const start = new Date(startsAt).getTime();
-    const end = new Date(endsAt).getTime();
-    if (end <= start) return;
-    const minutes = Math.round((end - start) / 60000);
-    setDurationMinutes(String(minutes));
-  }, [startsAt, endsAt]);
+  // ── Two-way time sync helpers ──
+  const applyDurationToEnd = (st: string, durMin: number) => {
+    if (!st || !durMin || durMin <= 0) return;
+    const startDt = combineAnchorDateWithTime(anchor, st);
+    const endDt = new Date(startDt.getTime() + durMin * 60000);
+    setEndTime(isoToLocalTimeHHmm(endDt.toISOString()));
+  };
+
+  const applyEndToDuration = (st: string, et: string) => {
+    if (!st || !et) { setDurationMinutes(""); return; }
+    const startDt = combineAnchorDateWithTime(anchor, st);
+    let endDt = combineAnchorDateWithTime(anchor, et);
+    endDt = adjustOvernightEnd(startDt, endDt);
+    setDurationMinutes(String(minutesBetween(startDt, endDt)));
+  };
+
+  const onStartTimeChange = (v: string) => {
+    const prev = timeEditSource;
+    setStartTime(v);
+    setTimeEditSource("start");
+    const dur = parseInt(durationMinutes, 10);
+    if (prev === "duration" && !Number.isNaN(dur) && dur > 0) {
+      applyDurationToEnd(v, dur);
+    } else if (endTime) {
+      applyEndToDuration(v, endTime);
+    }
+  };
+
+  const onEndTimeChange = (v: string) => {
+    setEndTime(v);
+    setTimeEditSource("end");
+    if (startTime) applyEndToDuration(startTime, v);
+  };
+
+  const onDurationChange = (raw: string) => {
+    setDurationMinutes(raw);
+    setTimeEditSource("duration");
+    const dur = parseInt(raw, 10);
+    if (!startTime || Number.isNaN(dur) || dur <= 0) return;
+    applyDurationToEnd(startTime, dur);
+  };
+
+  // Build ISO timestamps from time-only state
+  const buildStartsEndsIso = () => {
+    const a = anchorDateIso || slot.starts_at;
+    const startDt = combineAnchorDateWithTime(a, startTime);
+    let endsIso: string | null = null;
+    let dur: number | null = null;
+    if (endTime) {
+      let endDt = combineAnchorDateWithTime(a, endTime);
+      endDt = adjustOvernightEnd(startDt, endDt);
+      endsIso = endDt.toISOString();
+      dur = minutesBetween(startDt, endDt);
+    } else if (durationMinutes) {
+      const d = parseInt(durationMinutes, 10);
+      if (!Number.isNaN(d) && d > 0) {
+        dur = d;
+        endsIso = new Date(startDt.getTime() + d * 60000).toISOString();
+      }
+    }
+    return { starts_at: startDt.toISOString(), ends_at: endsIso, duration_minutes: dur };
+  };
+
+  // SessionStorage for last-used area
+  const areaStorageKey = `runsheet-area:${isFestivalScope ? festivalId : scopeEventId}`;
 
   // Default sequence number when slot doesn't have one
   useEffect(() => {
