@@ -1269,14 +1269,19 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
 
           {/* Time */}
           {showFields.has("time") && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs">Starttid</Label>
-                <Input type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className="h-9 text-base" />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Sluttid</Label>
-                <Input type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} className="h-9 text-base" />
+            <div className="space-y-3">
+              <p className="text-[10px] text-muted-foreground/60">
+                Dato følger arrangementet — du setter bare klokkeslett.
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Start</Label>
+                  <Input type="time" value={startTime} onChange={(e) => onStartTimeChange(e.target.value)} className="h-9 text-base font-mono tabular-nums" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Slutt</Label>
+                  <Input type="time" value={endTime} onChange={(e) => onEndTimeChange(e.target.value)} className="h-9 text-base font-mono tabular-nums" />
+                </div>
               </div>
             </div>
           )}
@@ -1285,8 +1290,7 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-xs">Varighet (min)</Label>
-                <Input type="number" placeholder="—" value={durationMinutes} onChange={(e) => setDurationMinutes(e.target.value)} className="h-9" />
-                <p className="text-[10px] text-muted-foreground">Beregnes fra start/slutt</p>
+                <Input type="number" placeholder="—" value={durationMinutes} onChange={(e) => onDurationChange(e.target.value)} className="h-9" />
               </div>
             </div>
           )}
