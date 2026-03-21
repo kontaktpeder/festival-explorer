@@ -797,14 +797,19 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           slot={editingSlot}
           suggestedSequenceNumber={nextSequenceNumber}
           open={dialogOpen}
+          initialAdvancedOpen={dialogInitialAdvanced}
           onOpenChange={(open) => {
             setDialogOpen(open);
-            if (!open) setEditingSlot(null);
+            if (!open) {
+              setEditingSlot(null);
+              setDialogInitialAdvanced(null);
+            }
           }}
           onSave={handleSave}
           onParallelCreated={() => {
             queryClient.invalidateQueries({ queryKey });
             setEditingSlot(null);
+            setDialogInitialAdvanced(null);
           }}
           types={types}
           festivalEntities={festivalEntities}
