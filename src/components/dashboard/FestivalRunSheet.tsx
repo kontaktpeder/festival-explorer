@@ -1127,8 +1127,8 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   // When defaults load (async after eventId changes), apply time from defaults
   useEffect(() => {
     if (!runSheetDefault) return;
-    setStartsAt(isoToLocalDatetimeString(runSheetDefault.starts_at));
-    if (runSheetDefault.ends_at) setEndsAt(isoToLocalDatetimeString(runSheetDefault.ends_at));
+    setStartTime(isoToLocalTimeHHmm(runSheetDefault.starts_at));
+    if (runSheetDefault.ends_at) setEndTime(isoToLocalTimeHHmm(runSheetDefault.ends_at));
     if (runSheetDefault.duration_minutes != null) setDurationMinutes(String(runSheetDefault.duration_minutes));
   }, [runSheetDefault?.id]);
 
