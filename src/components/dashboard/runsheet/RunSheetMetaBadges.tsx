@@ -32,10 +32,11 @@ export function RunSheetMetaBadges({
   hasContract,
   slotTypeLabel,
   isParallel,
+  hideInternalStatus,
 }: RunSheetMetaBadgesProps) {
   const isPublic = visibility === "public";
   const showVisibility = !!visibility;
-  const showStatus = !!internalStatus;
+  const showStatus = !!internalStatus && !hideInternalStatus;
   const sceneColor = getSceneColor(stageLabel);
 
   // Nothing to render
