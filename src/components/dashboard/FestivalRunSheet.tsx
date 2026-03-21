@@ -1141,11 +1141,12 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   };
 
   const handleCreateParallel = async () => {
+    const timeIso = buildStartsEndsIso();
     const savedPayload: any = {
       event_id: eventId || null,
-      starts_at: startsAt ? new Date(startsAt).toISOString() : slot.starts_at,
-      ends_at: endsAt ? new Date(endsAt).toISOString() : null,
-      duration_minutes: durationMinutes ? Number(durationMinutes) : null,
+      starts_at: timeIso.starts_at,
+      ends_at: timeIso.ends_at,
+      duration_minutes: timeIso.duration_minutes,
       sequence_number: sequenceNumber ? Number(sequenceNumber) : suggestedSequenceNumber,
       title_override: titleOverride || null,
       stage_label: stageLabel || null,
@@ -1188,9 +1189,9 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
       .insert({
         festival_id: isFestivalScope ? festivalId : null,
         event_id: isFestivalScope ? (eventId || null) : scopeEventId,
-        starts_at: startsAt ? new Date(startsAt).toISOString() : slot.starts_at,
-        ends_at: endsAt ? new Date(endsAt).toISOString() : null,
-        duration_minutes: durationMinutes ? Number(durationMinutes) : null,
+        starts_at: timeIso.starts_at,
+        ends_at: timeIso.ends_at,
+        duration_minutes: timeIso.duration_minutes,
         sequence_number: sequenceNumber ? Number(sequenceNumber) : suggestedSequenceNumber,
         slot_kind: slotKind,
         slot_type: slotType || null,
