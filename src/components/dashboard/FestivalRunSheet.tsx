@@ -681,11 +681,18 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               <DropdownMenuItem onClick={() => triggerPrint("event")}>Kun event</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          <Button
+            size="sm"
+            className="h-9 text-xs gap-1 flex-1"
+            onClick={() => createManualSlot.mutate({ sectionType: "custom", seq: nextSequenceNumber })}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Ny post
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 text-xs gap-1 flex-1 border-border/30">
-                <Plus className="h-3.5 w-3.5" />
-                Ny rad
+              <Button variant="outline" size="sm" className="h-9 text-xs gap-1 border-border/30">
+                Mer
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -698,7 +705,6 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "giggen_info", seq: nextSequenceNumber })}>Hva er GIGGEN</DropdownMenuItem>
               <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "break", seq: nextSequenceNumber })}>Pause</DropdownMenuItem>
               <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "crew", seq: nextSequenceNumber })}>Crew</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "custom", seq: nextSequenceNumber })}>Egendefinert</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
