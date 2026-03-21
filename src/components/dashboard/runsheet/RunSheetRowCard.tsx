@@ -300,7 +300,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
           )}
 
           {/* Internal note */}
-          {showFields.has("note") && slot.internal_note && (
+          {slot.internal_note && (
             <p className="text-[11px] text-muted-foreground/50 leading-relaxed line-clamp-2 italic">
               {slot.internal_note}
             </p>
