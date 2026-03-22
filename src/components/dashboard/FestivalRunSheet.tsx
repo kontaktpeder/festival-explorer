@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { syncArtistCancelledIssueForSlot } from "@/lib/eventIssues";
+import { syncArtistCancelledIssueForSlot, syncRiderMissingIssueForSlot } from "@/lib/eventIssues";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ExtendedEventProgramSlot, ProgramSlotType, PerformerKind } from "@/types/program-slots";
