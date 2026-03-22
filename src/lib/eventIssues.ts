@@ -10,15 +10,16 @@ export function computeEventHealth(
   return "stable";
 }
 
-/** First festival participant with persona + 'lineup' in domain_responsibilities → user_id */
-export async function getLineupOwnerUserId(
-  festivalId: string
+/** Generic domain owner resolver */
+export async function getDomainOwnerUserId(
+  festivalId: string,
+  domainTag: string
 ): Promise<string | null> {
   const { data, error } = await supabase
     .from("festival_participants")
     .select("participant_id, participant_kind, domain_responsibilities")
     .eq("festival_id", festivalId)
-    .contains("domain_responsibilities", ["lineup"]);
+    .contains("domain_responsibilities", [domainTag]);
 
   if (error || !data?.length) return null;
 
@@ -34,6 +35,13 @@ export async function getLineupOwnerUserId(
     .maybeSingle();
 
   return persona?.user_id ?? null;
+}
+
+/** First festival participant with persona + 'lineup' in domain_responsibilities → user_id */
+export async function getLineupOwnerUserId(
+  festivalId: string
+): Promise<string | null> {
+  return getDomainOwnerUserId(festivalId, "lineup");
 }
 
 /** Fallback chain: lineup owner → event creator → festival creator */
@@ -144,4 +152,68 @@ export async function completeFindReplacementFlow(params: {
   if (error) throw error;
 
   return ins.data;
+}
+
+/**
+ * Sync rider_missing issue: concert/soundcheck slot with performer but no tech_rider → open issue.
+ * Call after updating a slot.
+ */
+export async function syncRiderMissingIssueForSlot(slot: {
+  id: string;
+  festival_id: string | null;
+  event_id: string | null;
+  is_canceled: boolean;
+  performer_entity_id: string | null;
+  slot_kind: string;
+  tech_rider_media_id: string | null;
+}) {
+  const needsRider =
+    !slot.is_canceled &&
+    !!slot.performer_entity_id &&
+    (slot.slot_kind === "concert" || slot.slot_kind === "soundcheck") &&
+    !slot.tech_rider_media_id;
+
+  if (!needsRider) {
+    await supabase
+      .from("event_issue" as any)
+      .delete()
+      .eq("related_program_slot_id", slot.id)
+      .eq("type", "rider_missing")
+      .eq("status", "open");
+    return;
+  }
+
+  const owner =
+    (slot.festival_id
+      ? await getDomainOwnerUserId(slot.festival_id, "technical")
+      : null) ??
+    (slot.festival_id
+      ? await getDomainOwnerUserId(slot.festival_id, "lineup")
+      : null) ??
+    (await getDefaultIssueOwnerForSlot({
+      festivalId: slot.festival_id,
+      eventId: slot.event_id,
+    }));
+
+  // Upsert: delete then insert (unique index prevents dupes)
+  await supabase
+    .from("event_issue" as any)
+    .delete()
+    .eq("related_program_slot_id", slot.id)
+    .eq("type", "rider_missing")
+    .eq("status", "open");
+
+  const { error } = await supabase.from("event_issue" as any).insert({
+    festival_id: slot.festival_id,
+    event_id: slot.event_id,
+    type: "rider_missing",
+    severity: "high",
+    status: "open",
+    waiting_on: "organizer",
+    owner_user_id: owner,
+    related_program_slot_id: slot.id,
+    payload: {},
+  });
+
+  if (error) console.error("rider_missing issue:", error);
 }

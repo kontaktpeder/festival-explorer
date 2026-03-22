@@ -49,7 +49,17 @@ interface FestivalParticipantRow {
   can_edit_festival_media?: boolean;
   can_view_runsheet?: boolean;
   finance_access?: FinanceAccessLevel;
+  domain_responsibilities?: string[];
 }
+
+const DOMAIN_RESPONSIBILITY_OPTIONS = [
+  { value: "lineup", label: "Lineup (issue-eier)" },
+  { value: "technical", label: "Teknisk / rider" },
+  { value: "contracts", label: "Kontrakter" },
+  { value: "promo", label: "Promo" },
+  { value: "finance", label: "Økonomi" },
+  { value: "tickets", label: "Billetter" },
+] as const;
 
 interface ResolvedRef {
   id: string;
@@ -139,7 +149,7 @@ export function FestivalParticipantsZoneEditor({
     setLoading(true);
     const { data, error } = await supabase
       .from("festival_participants")
-      .select("id, festival_id, zone, participant_kind, participant_id, role_label, sort_order, can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue, can_edit_festival_media, can_view_runsheet, finance_access")
+      .select("id, festival_id, zone, participant_kind, participant_id, role_label, sort_order, can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue, can_edit_festival_media, can_view_runsheet, finance_access, domain_responsibilities")
       .eq("festival_id", festivalId)
       .eq("zone", zone)
       .order("sort_order", { ascending: true });
@@ -292,6 +302,15 @@ export function FestivalParticipantsZoneEditor({
     else {
       setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...perms } : r)));
     }
+  }, []);
+
+  const saveDomainResponsibilities = useCallback(async (id: string, tags: string[]) => {
+    const { error } = await supabase
+      .from("festival_participants")
+      .update({ domain_responsibilities: tags } as any)
+      .eq("id", id);
+    if (error) toast.error("Kunne ikke oppdatere ansvar");
+    else setRows((prev) => prev.map((r) => (r.id === id ? { ...r, domain_responsibilities: tags } : r)));
   }, []);
 
   const toggleRowExpanded = (id: string) => {
@@ -550,6 +569,35 @@ export function FestivalParticipantsZoneEditor({
                         </SelectContent>
                       </Select>
                     </div>
+
+                    {/* Domain responsibilities */}
+                    {isPersona && (zone === "host" || zone === "backstage") && (
+                      <div className="pt-2 border-t border-border/30">
+                        <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                          Operativt ansvar (issues)
+                        </Label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {DOMAIN_RESPONSIBILITY_OPTIONS.map((opt) => {
+                            const tags = row.domain_responsibilities ?? [];
+                            const on = tags.includes(opt.value);
+                            return (
+                              <Label key={opt.value} className="flex items-center gap-2 text-xs font-normal cursor-pointer">
+                                <Checkbox
+                                  checked={on}
+                                  onCheckedChange={(v) => {
+                                    const next = v
+                                      ? [...tags, opt.value]
+                                      : tags.filter((t) => t !== opt.value);
+                                    void saveDomainResponsibilities(row.id, next);
+                                  }}
+                                />
+                                {opt.label}
+                              </Label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

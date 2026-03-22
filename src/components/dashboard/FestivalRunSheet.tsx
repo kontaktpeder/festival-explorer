@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { syncArtistCancelledIssueForSlot } from "@/lib/eventIssues";
+import { syncArtistCancelledIssueForSlot, syncRiderMissingIssueForSlot } from "@/lib/eventIssues";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ExtendedEventProgramSlot, ProgramSlotType, PerformerKind } from "@/types/program-slots";
@@ -261,6 +261,28 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           console.error("Issue sync failed:", e);
         }
       }
+
+      // Sync rider_missing issue on relevant changes
+      if (editingSlot) {
+        try {
+          const merged = { ...editingSlot, ...variables } as any;
+          await syncRiderMissingIssueForSlot({
+            id: editingSlot.id,
+            festival_id: merged.festival_id ?? festivalId,
+            event_id: merged.event_id ?? eventId,
+            is_canceled: !!merged.is_canceled,
+            performer_entity_id: merged.performer_entity_id ?? null,
+            slot_kind: merged.slot_kind ?? editingSlot.slot_kind,
+            tech_rider_media_id: merged.tech_rider_media_id ?? null,
+          });
+        } catch (e) {
+          console.error("Rider issue sync failed:", e);
+        }
+      }
+
+      // Invalidate issues queries so UI updates
+      await queryClient.invalidateQueries({ queryKey: ["open-event-issues"] });
+      await queryClient.invalidateQueries({ queryKey: ["my-open-event-issues"] });
     },
     onError: (e: Error) =>
       toast({ title: "Feil", description: e.message, variant: "destructive" }),
