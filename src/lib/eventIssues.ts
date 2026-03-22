@@ -10,15 +10,16 @@ export function computeEventHealth(
   return "stable";
 }
 
-/** First festival participant with persona + 'lineup' in domain_responsibilities → user_id */
-export async function getLineupOwnerUserId(
-  festivalId: string
+/** Generic domain owner resolver */
+export async function getDomainOwnerUserId(
+  festivalId: string,
+  domainTag: string
 ): Promise<string | null> {
   const { data, error } = await supabase
     .from("festival_participants")
     .select("participant_id, participant_kind, domain_responsibilities")
     .eq("festival_id", festivalId)
-    .contains("domain_responsibilities", ["lineup"]);
+    .contains("domain_responsibilities", [domainTag]);
 
   if (error || !data?.length) return null;
 
@@ -34,6 +35,13 @@ export async function getLineupOwnerUserId(
     .maybeSingle();
 
   return persona?.user_id ?? null;
+}
+
+/** First festival participant with persona + 'lineup' in domain_responsibilities → user_id */
+export async function getLineupOwnerUserId(
+  festivalId: string
+): Promise<string | null> {
+  return getDomainOwnerUserId(festivalId, "lineup");
 }
 
 /** Fallback chain: lineup owner → event creator → festival creator */
