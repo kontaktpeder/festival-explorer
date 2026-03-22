@@ -739,6 +739,83 @@ export type Database = {
           },
         ]
       }
+      event_issue: {
+        Row: {
+          created_at: string
+          event_id: string | null
+          festival_id: string | null
+          handled_at: string | null
+          id: string
+          owner_user_id: string | null
+          payload: Json
+          related_program_slot_id: string
+          resolved_at: string | null
+          severity: string
+          status: string
+          type: string
+          waiting_on: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id?: string | null
+          festival_id?: string | null
+          handled_at?: string | null
+          id?: string
+          owner_user_id?: string | null
+          payload?: Json
+          related_program_slot_id: string
+          resolved_at?: string | null
+          severity: string
+          status?: string
+          type: string
+          waiting_on?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string | null
+          festival_id?: string | null
+          handled_at?: string | null
+          id?: string
+          owner_user_id?: string | null
+          payload?: Json
+          related_program_slot_id?: string
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          type?: string
+          waiting_on?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_issue_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_issue_festival_id_fkey"
+            columns: ["festival_id"]
+            isOneToOne: false
+            referencedRelation: "festivals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_issue_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_issue_related_program_slot_id_fkey"
+            columns: ["related_program_slot_id"]
+            isOneToOne: false
+            referencedRelation: "event_program_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_participants: {
         Row: {
           created_at: string
@@ -1584,6 +1661,7 @@ export type Database = {
           can_see_ticket_stats: boolean | null
           can_view_runsheet: boolean
           created_at: string | null
+          domain_responsibilities: string[]
           festival_id: string
           finance_access: Database["public"]["Enums"]["finance_access_level"]
           id: string
@@ -1606,6 +1684,7 @@ export type Database = {
           can_see_ticket_stats?: boolean | null
           can_view_runsheet?: boolean
           created_at?: string | null
+          domain_responsibilities?: string[]
           festival_id: string
           finance_access?: Database["public"]["Enums"]["finance_access_level"]
           id?: string
@@ -1628,6 +1707,7 @@ export type Database = {
           can_see_ticket_stats?: boolean | null
           can_view_runsheet?: boolean
           created_at?: string | null
+          domain_responsibilities?: string[]
           festival_id?: string
           finance_access?: Database["public"]["Enums"]["finance_access_level"]
           id?: string
