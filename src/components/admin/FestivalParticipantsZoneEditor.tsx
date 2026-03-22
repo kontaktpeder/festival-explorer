@@ -304,6 +304,15 @@ export function FestivalParticipantsZoneEditor({
     }
   }, []);
 
+  const saveDomainResponsibilities = useCallback(async (id: string, tags: string[]) => {
+    const { error } = await supabase
+      .from("festival_participants")
+      .update({ domain_responsibilities: tags } as any)
+      .eq("id", id);
+    if (error) toast.error("Kunne ikke oppdatere ansvar");
+    else setRows((prev) => prev.map((r) => (r.id === id ? { ...r, domain_responsibilities: tags } : r)));
+  }, []);
+
   const toggleRowExpanded = (id: string) => {
     setExpandedRows((prev) => {
       const next = new Set(prev);
