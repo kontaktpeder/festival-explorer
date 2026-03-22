@@ -242,9 +242,26 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
         .update(payload)
         .eq("id", id);
       if (error) throw error;
+      return { id, payload };
     },
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey }),
+    onSuccess: async (_result, variables) => {
+      await queryClient.invalidateQueries({ queryKey });
+
+      // Sync artist_cancelled issue when is_canceled changes
+      if (variables.is_canceled !== undefined && editingSlot) {
+        try {
+          await syncArtistCancelledIssueForSlot({
+            id: editingSlot.id,
+            festival_id: (editingSlot as any).festival_id ?? festivalId,
+            event_id: (editingSlot as any).event_id ?? eventId,
+            is_canceled: !!variables.is_canceled,
+            performer_entity_id: variables.performer_entity_id ?? editingSlot.performer_entity_id ?? null,
+          });
+        } catch (e) {
+          console.error("Issue sync failed:", e);
+        }
+      }
+    },
     onError: (e: Error) =>
       toast({ title: "Feil", description: e.message, variant: "destructive" }),
   });
