@@ -49,7 +49,17 @@ interface FestivalParticipantRow {
   can_edit_festival_media?: boolean;
   can_view_runsheet?: boolean;
   finance_access?: FinanceAccessLevel;
+  domain_responsibilities?: string[];
 }
+
+const DOMAIN_RESPONSIBILITY_OPTIONS = [
+  { value: "lineup", label: "Lineup (issue-eier)" },
+  { value: "technical", label: "Teknisk / rider" },
+  { value: "contracts", label: "Kontrakter" },
+  { value: "promo", label: "Promo" },
+  { value: "finance", label: "Økonomi" },
+  { value: "tickets", label: "Billetter" },
+] as const;
 
 interface ResolvedRef {
   id: string;
