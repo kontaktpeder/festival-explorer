@@ -569,6 +569,35 @@ export function FestivalParticipantsZoneEditor({
                         </SelectContent>
                       </Select>
                     </div>
+
+                    {/* Domain responsibilities */}
+                    {isPersona && (zone === "host" || zone === "backstage") && (
+                      <div className="pt-2 border-t border-border/30">
+                        <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                          Operativt ansvar (issues)
+                        </Label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {DOMAIN_RESPONSIBILITY_OPTIONS.map((opt) => {
+                            const tags = row.domain_responsibilities ?? [];
+                            const on = tags.includes(opt.value);
+                            return (
+                              <Label key={opt.value} className="flex items-center gap-2 text-xs font-normal cursor-pointer">
+                                <Checkbox
+                                  checked={on}
+                                  onCheckedChange={(v) => {
+                                    const next = v
+                                      ? [...tags, opt.value]
+                                      : tags.filter((t) => t !== opt.value);
+                                    void saveDomainResponsibilities(row.id, next);
+                                  }}
+                                />
+                                {opt.label}
+                              </Label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

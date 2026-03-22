@@ -1,12 +1,23 @@
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BackstageShell } from "@/components/layout/BackstageShell";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { FestivalRunSheet } from "@/components/dashboard/FestivalRunSheet";
+import { useOpenEventIssues } from "@/hooks/useOpenEventIssues";
+import { useMyOpenIssues } from "@/hooks/useMyOpenIssues";
+import { ProductionHealthBar } from "@/components/production/ProductionHealthBar";
+import { OpenIssuesList } from "@/components/production/OpenIssuesList";
+import { FindReplacementModal } from "@/components/production/FindReplacementModal";
+import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
+import type { Database } from "@/integrations/supabase/types";
+
+type EventIssueRow = Database["public"]["Tables"]["event_issue"]["Row"];
 
 export default function FestivalRunSheetRoom() {
   const { id } = useParams<{ id: string }>();
+  const [replaceIssue, setReplaceIssue] = useState<EventIssueRow | null>(null);
 
   const { data: festival, isLoading } = useQuery({
     queryKey: ["festival-shell", id],
@@ -20,6 +31,21 @@ export default function FestivalRunSheetRoom() {
     },
     enabled: !!id,
   });
+
+  const { data: openIssues = [] } = useOpenEventIssues({
+    festivalId: id ?? null,
+    eventId: null,
+  });
+
+  const { data: myIssues = [] } = useMyOpenIssues({
+    festivalId: id ?? null,
+    eventId: null,
+  });
+
+  const { data: festivalSubjects = [] } = useFestivalSubjects(id ?? null);
+  const entityOptions = festivalSubjects
+    .filter((s: any) => s.kind === "entity")
+    .map((s: any) => ({ id: s.id, name: s.name }));
 
   if (isLoading) {
     return (
@@ -40,7 +66,39 @@ export default function FestivalRunSheetRoom() {
           : undefined
       }
     >
-      <FestivalRunSheet festivalId={id!} />
+      <div className="space-y-4">
+        <ProductionHealthBar issues={openIssues} />
+
+        {myIssues.length > 0 && (
+          <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-2.5">
+            <p className="text-xs font-medium text-primary mb-1">
+              Dine åpne saker ({myIssues.length})
+            </p>
+            <div className="space-y-1">
+              {myIssues.map((i) => (
+                <p key={i.id} className="text-xs text-muted-foreground">
+                  {i.type.replace(/_/g, " ")} · {i.severity}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <OpenIssuesList
+          issues={openIssues}
+          onFindReplacement={(issue) => setReplaceIssue(issue)}
+        />
+
+        <FestivalRunSheet festivalId={id!} />
+      </div>
+
+      <FindReplacementModal
+        open={!!replaceIssue}
+        onOpenChange={(v) => !v && setReplaceIssue(null)}
+        issue={replaceIssue}
+        runsheetQueryKey={["festival-run-sheet", id]}
+        entityOptions={entityOptions}
+      />
     </BackstageShell>
   );
 }
