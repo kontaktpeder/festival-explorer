@@ -47,6 +47,14 @@ export default function FestivalRunSheetRoom() {
     .filter((s: any) => s.kind === "entity")
     .map((s: any) => ({ id: s.id, name: s.name }));
 
+  const scrollToSlot = useCallback((slotId: string) => {
+    const el = document.getElementById(`runsheet-slot-${slotId}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("ring-2", "ring-primary", "ring-offset-2", "ring-offset-background");
+    setTimeout(() => el.classList.remove("ring-2", "ring-primary", "ring-offset-2", "ring-offset-background"), 2500);
+  }, []);
+
   if (isLoading) {
     return (
       <div className="min-h-[100svh] bg-background flex items-center justify-center">
