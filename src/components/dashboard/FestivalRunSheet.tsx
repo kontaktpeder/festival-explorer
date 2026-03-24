@@ -1004,6 +1004,8 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   const [contractMediaId, setContractMediaId] = useState<string | null>(slot.contract_media_id ?? null);
   const [techRiderAssetId, setTechRiderAssetId] = useState<string | null>((slot as any).tech_rider_asset_id ?? null);
   const [hospRiderAssetId, setHospRiderAssetId] = useState<string | null>((slot as any).hosp_rider_asset_id ?? null);
+  const [techInherited, setTechInherited] = useState(false);
+  const [hospInherited, setHospInherited] = useState(false);
 
   // Performer fields
   const [performerKind, setPerformerKind] = useState<PerformerKind>(slot.performer_kind || "entity");
