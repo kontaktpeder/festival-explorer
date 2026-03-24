@@ -193,6 +193,35 @@ export default function Dashboard() {
     };
   }, [navigate]);
 
+  // Realtime: auto-refresh when user gets new project access
+  useEffect(() => {
+    if (!currentUser?.id) return;
+
+    const channel = supabase
+      .channel("dashboard-entity-team")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "entity_team",
+          filter: `user_id=eq.${currentUser.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["my-entities"] });
+          queryClient.invalidateQueries({ queryKey: ["my-entities-filtered"] });
+          queryClient.invalidateQueries({ queryKey: ["has-backstage-access"] });
+          queryClient.invalidateQueries({ queryKey: ["dashboard-my-venues"] });
+          queryClient.invalidateQueries({ queryKey: ["dashboard-my-festivals"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUser?.id, queryClient]);
+
   const clearPersonaFilter = () => {
     localStorage.removeItem("selectedPersonaId");
     window.dispatchEvent(new Event("personaChanged"));
