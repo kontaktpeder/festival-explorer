@@ -1610,17 +1610,17 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                 </div>
               )}
 
-              {/* Dokumenter (rider/kontrakt) */}
-              {showFields.has("performer") && isFestivalScope && (
+              {/* Dokumenter (rider/kontrakt) – both scopes via asset_handles */}
+              {showFields.has("performer") && (
                 <div className="space-y-2 rounded-lg border border-border/20 p-3">
                   <Label className="text-xs font-semibold">Dokumenter</Label>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">Teknisk rider</span>
-                      {techRiderMediaId ? (
+                      {(techRiderAssetId || techRiderMediaId) ? (
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs text-accent">✓ Vedlagt</span>
-                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => setTechRiderMediaId(null)}>Fjern</button>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setTechRiderMediaId(null); setTechRiderAssetId(null); }}>Fjern</button>
                         </div>
                       ) : (
                         <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "tech_rider_media_id")}>
@@ -1630,10 +1630,10 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">Hospitality rider</span>
-                      {hospRiderMediaId ? (
+                      {(hospRiderAssetId || hospRiderMediaId) ? (
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs text-accent">✓ Vedlagt</span>
-                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => setHospRiderMediaId(null)}>Fjern</button>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setHospRiderMediaId(null); setHospRiderAssetId(null); }}>Fjern</button>
                         </div>
                       ) : (
                         <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "hosp_rider_media_id")}>
@@ -1641,19 +1641,22 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                         </Button>
                       )}
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Kontrakt</span>
-                      {contractMediaId ? (
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs text-accent">✓ Vedlagt</span>
-                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => setContractMediaId(null)}>Fjern</button>
-                        </div>
-                      ) : (
-                        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "contract_media_id")}>
-                          Velg fil
-                        </Button>
-                      )}
-                    </div>
+                    {/* Contract only in festival scope (uses festival_media FK) */}
+                    {isFestivalScope && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Kontrakt</span>
+                        {contractMediaId ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-accent">✓ Vedlagt</span>
+                            <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => setContractMediaId(null)}>Fjern</button>
+                          </div>
+                        ) : (
+                          <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "contract_media_id")}>
+                            Velg fil
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
