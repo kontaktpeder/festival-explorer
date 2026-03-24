@@ -253,6 +253,8 @@ export default function EntityEdit() {
         logo_image_settings: logoImageSettings,
         logo_display_mode: formData.logo_display_mode,
         social_links: socialLinks,
+        tech_rider_media_id: techRiderMediaId,
+        hosp_rider_media_id: hospRiderMediaId,
         ...locationData,
       };
 
