@@ -172,7 +172,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
                   const itemKindConfig = getSlotKindConfig(item.slot_kind as any);
                   const isLast = idx === group.items.length - 1;
                   return (
-                    <div key={item.id} className="flex items-center gap-1.5 md:gap-2 text-xs">
+                    <div key={item.id} className={cn("flex items-center gap-1.5 md:gap-2 text-xs", item.is_canceled && "opacity-40 line-through")}>
                       {/* Tree connector */}
                       <span className="text-muted-foreground/30 font-mono text-xs shrink-0 w-3">
                         {isLast ? "└" : "├"}
