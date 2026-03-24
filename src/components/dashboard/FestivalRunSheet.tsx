@@ -890,21 +890,6 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
         />
       )}
 
-      {/* Media picker for documents – event scope uses MediaPicker (personal filbank) */}
-      {!isFestivalScope && attachTarget && (
-        <MediaPicker
-          open={!!attachTarget}
-          onOpenChange={(open) => !open && setAttachTarget(null)}
-          fileType="document"
-          onSelect={async (mediaId) => {
-            await updateSlot.mutateAsync({
-              id: attachTarget.slotId,
-              [attachTarget.field]: mediaId,
-            } as any);
-            setAttachTarget(null);
-          }}
-        />
-      )}
 
       {/* ── Clean print view (hidden on screen, shown on print) ── */}
       <RunSheetPrintView
