@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BackstageShell } from "@/components/layout/BackstageShell";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -11,6 +11,10 @@ import { useMyOpenIssues } from "@/hooks/useMyOpenIssues";
 import { ProductionHealthBar } from "@/components/production/ProductionHealthBar";
 import { OpenIssuesList, type IssueSlotContext } from "@/components/production/OpenIssuesList";
 import { FindReplacementModal } from "@/components/production/FindReplacementModal";
+import { syncRiderMissingForScope } from "@/lib/eventIssues";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
 type EventIssueRow = Database["public"]["Tables"]["event_issue"]["Row"];
