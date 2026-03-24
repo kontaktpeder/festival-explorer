@@ -56,7 +56,10 @@ import {
   X,
   Mail,
   Check,
+  Wrench,
+  FileText,
 } from "lucide-react";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { useToast } from "@/hooks/use-toast";
 import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
@@ -78,7 +81,7 @@ const ACCESS_LABELS: Record<AccessLevel, string> = {
   viewer: "Se",
 };
 
-type ActivePanel = null | "basic" | "location" | "social" | "timeline" | "danger";
+type ActivePanel = null | "basic" | "location" | "social" | "timeline" | "technical" | "danger";
 
 export default function EntityEdit() {
   const { id } = useParams<{ id: string }>();
@@ -100,6 +103,11 @@ export default function EntityEdit() {
   
   const [locationName, setLocationName] = useState("");
   const [locationType, setLocationType] = useState<LocationType | "">("");
+  
+  // Rider state
+  const [techRiderMediaId, setTechRiderMediaId] = useState<string | null>(null);
+  const [hospRiderMediaId, setHospRiderMediaId] = useState<string | null>(null);
+  const [riderPickerTarget, setRiderPickerTarget] = useState<"tech" | "hosp" | null>(null);
 
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
   const [transferTargetId, setTransferTargetId] = useState<string | null>(null);
@@ -224,6 +232,8 @@ export default function EntityEdit() {
       setSocialLinks(((entityWithAccess as any).social_links || []) as SocialLink[]);
       setLocationName((entityWithAccess as any).location_name || "");
       setLocationType((entityWithAccess as any).location_type || "");
+      setTechRiderMediaId((entityWithAccess as any).tech_rider_media_id || null);
+      setHospRiderMediaId((entityWithAccess as any).hosp_rider_media_id || null);
     }
   }, [entityWithAccess]);
 
@@ -243,6 +253,8 @@ export default function EntityEdit() {
         logo_image_settings: logoImageSettings,
         logo_display_mode: formData.logo_display_mode,
         social_links: socialLinks,
+        tech_rider_media_id: techRiderMediaId,
+        hosp_rider_media_id: hospRiderMediaId,
         ...locationData,
       };
 
@@ -363,6 +375,7 @@ export default function EntityEdit() {
     { key: "basic", title: "Grunnleggende", description: "Navn, bio, bilder og logo", icon: Building2 },
     { key: "location", title: "Lokasjon", description: locationName || "Sted og type", icon: MapPin },
     { key: "social", title: "Sosiale lenker", description: `${socialLinks.length} lenke${socialLinks.length !== 1 ? "r" : ""}`, icon: Link2 },
+    { key: "technical", title: "Teknisk", description: techRiderMediaId || hospRiderMediaId ? "Rider lastet opp" : "Tech rider, hospitality rider", icon: Wrench },
     { key: "timeline", title: isVenue ? "Historien" : "Min reise", description: "Viktige hendelser og milepæler", icon: Clock },
     ...(canEdit ? [{ key: "danger" as ActivePanel, title: "Farlig sone", description: "Eierskap, forlat, slett", icon: AlertTriangle, danger: true }] : []),
   ];
@@ -878,6 +891,111 @@ export default function EntityEdit() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={activePanel === "technical"} onOpenChange={(o) => !o && setActivePanel(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wrench className="h-5 w-5 text-accent" />
+              Teknisk
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 pt-2">
+            <p className="text-sm text-muted-foreground">
+              Last opp tech rider og hospitality rider. Disse kan hentes automatisk inn i kjøreplanen.
+            </p>
+
+            {/* Tech rider */}
+            <div className="space-y-2">
+              <Label className="text-muted-foreground text-xs uppercase tracking-wide">Tech rider</Label>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  {techRiderMediaId ? (
+                    <div className="flex items-center gap-2 text-sm text-foreground">
+                      <FileText className="h-4 w-4 text-accent shrink-0" />
+                      <span className="truncate">Fil valgt</span>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Ingen fil valgt</span>
+                  )}
+                </div>
+                {canEdit && (
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setRiderPickerTarget("tech")}
+                      className="text-xs"
+                    >
+                      {techRiderMediaId ? "Bytt" : "Velg fil"}
+                    </Button>
+                    {techRiderMediaId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setTechRiderMediaId(null)}
+                        className="text-xs text-destructive hover:text-destructive h-8 w-8 p-0"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Hospitality rider */}
+            <div className="space-y-2">
+              <Label className="text-muted-foreground text-xs uppercase tracking-wide">Hospitality rider</Label>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  {hospRiderMediaId ? (
+                    <div className="flex items-center gap-2 text-sm text-foreground">
+                      <FileText className="h-4 w-4 text-accent shrink-0" />
+                      <span className="truncate">Fil valgt</span>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Ingen fil valgt</span>
+                  )}
+                </div>
+                {canEdit && (
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setRiderPickerTarget("hosp")}
+                      className="text-xs"
+                    >
+                      {hospRiderMediaId ? "Bytt" : "Velg fil"}
+                    </Button>
+                    {hospRiderMediaId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setHospRiderMediaId(null)}
+                        className="text-xs text-destructive hover:text-destructive h-8 w-8 p-0"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <MediaPicker
+        open={riderPickerTarget !== null}
+        onOpenChange={(open) => { if (!open) setRiderPickerTarget(null); }}
+        onSelect={(mediaId) => {
+          if (riderPickerTarget === "tech") setTechRiderMediaId(mediaId);
+          else if (riderPickerTarget === "hosp") setHospRiderMediaId(mediaId);
+          setRiderPickerTarget(null);
+        }}
+        userOnly
+      />
 
       <Dialog open={activePanel === "danger"} onOpenChange={(o) => !o && setActivePanel(null)}>
         <DialogContent className="max-w-lg">

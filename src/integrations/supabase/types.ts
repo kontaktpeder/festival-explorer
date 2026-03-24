@@ -348,6 +348,7 @@ export type Database = {
           entity_kind: string | null
           hero_image_settings: Json | null
           hero_image_url: string | null
+          hosp_rider_media_id: string | null
           id: string
           is_published: boolean
           is_system: boolean
@@ -362,6 +363,7 @@ export type Database = {
           slug: string
           social_links: Json | null
           tagline: string | null
+          tech_rider_media_id: string | null
           type: Database["public"]["Enums"]["entity_type"]
           updated_at: string
           visibility: Database["public"]["Enums"]["entity_visibility"]
@@ -379,6 +381,7 @@ export type Database = {
           entity_kind?: string | null
           hero_image_settings?: Json | null
           hero_image_url?: string | null
+          hosp_rider_media_id?: string | null
           id?: string
           is_published?: boolean
           is_system?: boolean
@@ -393,6 +396,7 @@ export type Database = {
           slug: string
           social_links?: Json | null
           tagline?: string | null
+          tech_rider_media_id?: string | null
           type: Database["public"]["Enums"]["entity_type"]
           updated_at?: string
           visibility?: Database["public"]["Enums"]["entity_visibility"]
@@ -410,6 +414,7 @@ export type Database = {
           entity_kind?: string | null
           hero_image_settings?: Json | null
           hero_image_url?: string | null
+          hosp_rider_media_id?: string | null
           id?: string
           is_published?: boolean
           is_system?: boolean
@@ -424,6 +429,7 @@ export type Database = {
           slug?: string
           social_links?: Json | null
           tagline?: string | null
+          tech_rider_media_id?: string | null
           type?: Database["public"]["Enums"]["entity_type"]
           updated_at?: string
           visibility?: Database["public"]["Enums"]["entity_visibility"]
@@ -434,6 +440,20 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entities_hosp_rider_media_id_fkey"
+            columns: ["hosp_rider_media_id"]
+            isOneToOne: false
+            referencedRelation: "media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entities_tech_rider_media_id_fkey"
+            columns: ["tech_rider_media_id"]
+            isOneToOne: false
+            referencedRelation: "media"
             referencedColumns: ["id"]
           },
         ]
