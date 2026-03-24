@@ -166,12 +166,16 @@ export async function syncRiderMissingIssueForSlot(slot: {
   performer_entity_id: string | null;
   slot_kind: string;
   tech_rider_media_id: string | null;
+  tech_rider_asset_id?: string | null;
 }) {
+  // Check both asset_id (new) and media_id (legacy) for rider presence
+  const hasRider = !!(slot.tech_rider_asset_id || slot.tech_rider_media_id);
+  
   const needsRider =
     !slot.is_canceled &&
     !!slot.performer_entity_id &&
     (slot.slot_kind === "concert" || slot.slot_kind === "soundcheck") &&
-    !slot.tech_rider_media_id;
+    !hasRider;
 
   if (!needsRider) {
     await supabase

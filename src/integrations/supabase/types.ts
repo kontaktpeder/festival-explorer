@@ -157,6 +157,61 @@ export type Database = {
           },
         ]
       }
+      asset_handles: {
+        Row: {
+          created_at: string
+          created_by: string
+          festival_media_id: string | null
+          id: string
+          kind: string | null
+          label: string | null
+          media_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          festival_media_id?: string | null
+          id?: string
+          kind?: string | null
+          label?: string | null
+          media_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          festival_media_id?: string | null
+          id?: string
+          kind?: string | null
+          label?: string | null
+          media_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_handles_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_handles_festival_media_id_fkey"
+            columns: ["festival_media_id"]
+            isOneToOne: false
+            referencedRelation: "festival_media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_handles_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "media"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checkins: {
         Row: {
           checked_in_at: string | null
@@ -348,6 +403,7 @@ export type Database = {
           entity_kind: string | null
           hero_image_settings: Json | null
           hero_image_url: string | null
+          hosp_rider_asset_id: string | null
           hosp_rider_media_id: string | null
           id: string
           is_published: boolean
@@ -363,6 +419,7 @@ export type Database = {
           slug: string
           social_links: Json | null
           tagline: string | null
+          tech_rider_asset_id: string | null
           tech_rider_media_id: string | null
           type: Database["public"]["Enums"]["entity_type"]
           updated_at: string
@@ -381,6 +438,7 @@ export type Database = {
           entity_kind?: string | null
           hero_image_settings?: Json | null
           hero_image_url?: string | null
+          hosp_rider_asset_id?: string | null
           hosp_rider_media_id?: string | null
           id?: string
           is_published?: boolean
@@ -396,6 +454,7 @@ export type Database = {
           slug: string
           social_links?: Json | null
           tagline?: string | null
+          tech_rider_asset_id?: string | null
           tech_rider_media_id?: string | null
           type: Database["public"]["Enums"]["entity_type"]
           updated_at?: string
@@ -414,6 +473,7 @@ export type Database = {
           entity_kind?: string | null
           hero_image_settings?: Json | null
           hero_image_url?: string | null
+          hosp_rider_asset_id?: string | null
           hosp_rider_media_id?: string | null
           id?: string
           is_published?: boolean
@@ -429,6 +489,7 @@ export type Database = {
           slug?: string
           social_links?: Json | null
           tagline?: string | null
+          tech_rider_asset_id?: string | null
           tech_rider_media_id?: string | null
           type?: Database["public"]["Enums"]["entity_type"]
           updated_at?: string
@@ -443,10 +504,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "entities_hosp_rider_asset_id_fkey"
+            columns: ["hosp_rider_asset_id"]
+            isOneToOne: false
+            referencedRelation: "asset_handles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "entities_hosp_rider_media_id_fkey"
             columns: ["hosp_rider_media_id"]
             isOneToOne: false
             referencedRelation: "media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entities_tech_rider_asset_id_fkey"
+            columns: ["tech_rider_asset_id"]
+            isOneToOne: false
+            referencedRelation: "asset_handles"
             referencedColumns: ["id"]
           },
           {
@@ -895,6 +970,7 @@ export type Database = {
           entity_id: string | null
           event_id: string | null
           festival_id: string | null
+          hosp_rider_asset_id: string | null
           hosp_rider_media_id: string | null
           id: string
           internal_note: string | null
@@ -912,6 +988,7 @@ export type Database = {
           source: string
           stage_label: string | null
           starts_at: string
+          tech_rider_asset_id: string | null
           tech_rider_media_id: string | null
           title_override: string | null
           updated_at: string
@@ -925,6 +1002,7 @@ export type Database = {
           entity_id?: string | null
           event_id?: string | null
           festival_id?: string | null
+          hosp_rider_asset_id?: string | null
           hosp_rider_media_id?: string | null
           id?: string
           internal_note?: string | null
@@ -942,6 +1020,7 @@ export type Database = {
           source?: string
           stage_label?: string | null
           starts_at: string
+          tech_rider_asset_id?: string | null
           tech_rider_media_id?: string | null
           title_override?: string | null
           updated_at?: string
@@ -955,6 +1034,7 @@ export type Database = {
           entity_id?: string | null
           event_id?: string | null
           festival_id?: string | null
+          hosp_rider_asset_id?: string | null
           hosp_rider_media_id?: string | null
           id?: string
           internal_note?: string | null
@@ -972,6 +1052,7 @@ export type Database = {
           source?: string
           stage_label?: string | null
           starts_at?: string
+          tech_rider_asset_id?: string | null
           tech_rider_media_id?: string | null
           title_override?: string | null
           updated_at?: string
@@ -1007,6 +1088,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "event_program_slots_hosp_rider_asset_id_fkey"
+            columns: ["hosp_rider_asset_id"]
+            isOneToOne: false
+            referencedRelation: "asset_handles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "event_program_slots_hosp_rider_media_id_fkey"
             columns: ["hosp_rider_media_id"]
             isOneToOne: false
@@ -1025,6 +1113,13 @@ export type Database = {
             columns: ["performer_persona_id"]
             isOneToOne: false
             referencedRelation: "personas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_program_slots_tech_rider_asset_id_fkey"
+            columns: ["tech_rider_asset_id"]
+            isOneToOne: false
+            referencedRelation: "asset_handles"
             referencedColumns: ["id"]
           },
           {
@@ -3148,7 +3243,22 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      asset_handles_resolved: {
+        Row: {
+          asset_id: string | null
+          created_at: string | null
+          created_by: string | null
+          festival_id: string | null
+          file_type: string | null
+          mime_type: string | null
+          original_filename: string | null
+          public_url: string | null
+          size_bytes: number | null
+          source_id: string | null
+          source_type: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       accept_event_invitation: {

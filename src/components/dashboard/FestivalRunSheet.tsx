@@ -1,5 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { syncArtistCancelledIssueForSlot, syncRiderMissingIssueForSlot } from "@/lib/eventIssues";
+import { ensureAssetHandle } from "@/lib/assetHandles";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ExtendedEventProgramSlot, ProgramSlotType, PerformerKind } from "@/types/program-slots";
@@ -279,6 +281,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
             performer_entity_id: merged.performer_entity_id ?? null,
             slot_kind: merged.slot_kind ?? slotCtx.slot_kind,
             tech_rider_media_id: merged.tech_rider_media_id ?? null,
+            tech_rider_asset_id: merged.tech_rider_asset_id ?? null,
           });
         } catch (e) {
           console.error("Rider issue sync failed:", e);
@@ -879,13 +882,39 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           festivalId={festivalId!}
           open={!!attachTarget}
           onOpenChange={(open) => !open && setAttachTarget(null)}
-          onSelect={async (mediaId) => {
-            await updateSlot.mutateAsync({
-              id: attachTarget.slotId,
-              [attachTarget.field]: mediaId,
-            } as any);
+          onSelect={async (festivalMediaId) => {
+            try {
+              const kind = attachTarget.field === "tech_rider_media_id" ? "tech_rider" : attachTarget.field === "hosp_rider_media_id" ? "hosp_rider" : "contract";
+              const assetId = await ensureAssetHandle({ festivalMediaId, kind });
+              const assetField = attachTarget.field === "tech_rider_media_id" ? "tech_rider_asset_id" : attachTarget.field === "hosp_rider_media_id" ? "hosp_rider_asset_id" : null;
+              const payload: Record<string, unknown> = { id: attachTarget.slotId, [attachTarget.field]: festivalMediaId };
+              if (assetField) payload[assetField] = assetId;
+              await updateSlot.mutateAsync(payload as any);
+            } catch (e: any) {
+              console.error("Asset handle creation failed:", e);
+            }
             setAttachTarget(null);
           }}
+        />
+      )}
+
+      {/* Media picker for documents – event scope uses MediaPicker */}
+      {!isFestivalScope && attachTarget && (
+        <MediaPicker
+          open={!!attachTarget}
+          onOpenChange={(open) => !open && setAttachTarget(null)}
+          onSelect={async (mediaId) => {
+            try {
+              const kind = attachTarget.field === "tech_rider_media_id" ? "tech_rider" : "hosp_rider";
+              const assetId = await ensureAssetHandle({ mediaId, kind });
+              const assetField = attachTarget.field === "tech_rider_media_id" ? "tech_rider_asset_id" : "hosp_rider_asset_id";
+              await updateSlot.mutateAsync({ id: attachTarget.slotId, [assetField]: assetId } as any);
+            } catch (e: any) {
+              console.error("Asset handle creation failed:", e);
+            }
+            setAttachTarget(null);
+          }}
+          userOnly
         />
       )}
 
@@ -969,10 +998,12 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   const [isCanceled, setIsCanceled] = useState(slot.is_canceled);
   const [nameOverride, setNameOverride] = useState(slot.performer_name_override ?? "");
 
-  // Rider fields
+  // Rider fields (legacy media_id + new asset_id)
   const [techRiderMediaId, setTechRiderMediaId] = useState<string | null>(slot.tech_rider_media_id ?? null);
   const [hospRiderMediaId, setHospRiderMediaId] = useState<string | null>(slot.hosp_rider_media_id ?? null);
   const [contractMediaId, setContractMediaId] = useState<string | null>(slot.contract_media_id ?? null);
+  const [techRiderAssetId, setTechRiderAssetId] = useState<string | null>((slot as any).tech_rider_asset_id ?? null);
+  const [hospRiderAssetId, setHospRiderAssetId] = useState<string | null>((slot as any).hosp_rider_asset_id ?? null);
 
   // Performer fields
   const [performerKind, setPerformerKind] = useState<PerformerKind>(slot.performer_kind || "entity");
@@ -992,6 +1023,8 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
     setTechRiderMediaId(slot.tech_rider_media_id ?? null);
     setHospRiderMediaId(slot.hosp_rider_media_id ?? null);
     setContractMediaId(slot.contract_media_id ?? null);
+    setTechRiderAssetId((slot as any).tech_rider_asset_id ?? null);
+    setHospRiderAssetId((slot as any).hosp_rider_asset_id ?? null);
   }, [open, slot.id, initialAdvancedOpen]);
 
   // ── Two-way time sync helpers ──
@@ -1318,6 +1351,8 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
       tech_rider_media_id: techRiderMediaId || null,
       hosp_rider_media_id: hospRiderMediaId || null,
       contract_media_id: contractMediaId || null,
+      tech_rider_asset_id: techRiderAssetId || null,
+      hosp_rider_asset_id: hospRiderAssetId || null,
     });
   };
 
@@ -1602,17 +1637,17 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                 </div>
               )}
 
-              {/* Dokumenter (rider/kontrakt) */}
-              {showFields.has("performer") && isFestivalScope && (
+              {/* Dokumenter (rider/kontrakt) – both scopes via asset_handles */}
+              {showFields.has("performer") && (
                 <div className="space-y-2 rounded-lg border border-border/20 p-3">
                   <Label className="text-xs font-semibold">Dokumenter</Label>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">Teknisk rider</span>
-                      {techRiderMediaId ? (
+                      {(techRiderAssetId || techRiderMediaId) ? (
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs text-accent">✓ Vedlagt</span>
-                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => setTechRiderMediaId(null)}>Fjern</button>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setTechRiderMediaId(null); setTechRiderAssetId(null); }}>Fjern</button>
                         </div>
                       ) : (
                         <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "tech_rider_media_id")}>
@@ -1622,10 +1657,10 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">Hospitality rider</span>
-                      {hospRiderMediaId ? (
+                      {(hospRiderAssetId || hospRiderMediaId) ? (
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs text-accent">✓ Vedlagt</span>
-                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => setHospRiderMediaId(null)}>Fjern</button>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setHospRiderMediaId(null); setHospRiderAssetId(null); }}>Fjern</button>
                         </div>
                       ) : (
                         <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "hosp_rider_media_id")}>
@@ -1633,19 +1668,22 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                         </Button>
                       )}
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Kontrakt</span>
-                      {contractMediaId ? (
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs text-accent">✓ Vedlagt</span>
-                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => setContractMediaId(null)}>Fjern</button>
-                        </div>
-                      ) : (
-                        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "contract_media_id")}>
-                          Velg fil
-                        </Button>
-                      )}
-                    </div>
+                    {/* Contract only in festival scope (uses festival_media FK) */}
+                    {isFestivalScope && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Kontrakt</span>
+                        {contractMediaId ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-accent">✓ Vedlagt</span>
+                            <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => setContractMediaId(null)}>Fjern</button>
+                          </div>
+                        ) : (
+                          <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "contract_media_id")}>
+                            Velg fil
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

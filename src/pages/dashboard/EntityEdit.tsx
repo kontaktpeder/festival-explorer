@@ -60,6 +60,7 @@ import {
   FileText,
 } from "lucide-react";
 import { MediaPicker } from "@/components/admin/MediaPicker";
+import { ensureAssetHandle, resolveAssetNames } from "@/lib/assetHandles";
 import { useToast } from "@/hooks/use-toast";
 import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
@@ -104,10 +105,13 @@ export default function EntityEdit() {
   const [locationName, setLocationName] = useState("");
   const [locationType, setLocationType] = useState<LocationType | "">("");
   
-  // Rider state
+  // Rider state (asset_id based)
+  const [techRiderAssetId, setTechRiderAssetId] = useState<string | null>(null);
+  const [hospRiderAssetId, setHospRiderAssetId] = useState<string | null>(null);
+  const [riderPickerTarget, setRiderPickerTarget] = useState<"tech" | "hosp" | null>(null);
+  // Legacy compat: keep media_id fields for save
   const [techRiderMediaId, setTechRiderMediaId] = useState<string | null>(null);
   const [hospRiderMediaId, setHospRiderMediaId] = useState<string | null>(null);
-  const [riderPickerTarget, setRiderPickerTarget] = useState<"tech" | "hosp" | null>(null);
 
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
   const [transferTargetId, setTransferTargetId] = useState<string | null>(null);
@@ -234,6 +238,8 @@ export default function EntityEdit() {
       setLocationType((entityWithAccess as any).location_type || "");
       setTechRiderMediaId((entityWithAccess as any).tech_rider_media_id || null);
       setHospRiderMediaId((entityWithAccess as any).hosp_rider_media_id || null);
+      setTechRiderAssetId((entityWithAccess as any).tech_rider_asset_id || null);
+      setHospRiderAssetId((entityWithAccess as any).hosp_rider_asset_id || null);
     }
   }, [entityWithAccess]);
 
@@ -255,6 +261,8 @@ export default function EntityEdit() {
         social_links: socialLinks,
         tech_rider_media_id: techRiderMediaId,
         hosp_rider_media_id: hospRiderMediaId,
+        tech_rider_asset_id: techRiderAssetId,
+        hosp_rider_asset_id: hospRiderAssetId,
         ...locationData,
       };
 
@@ -376,7 +384,7 @@ export default function EntityEdit() {
     { key: "basic", title: "Grunnleggende", description: "Navn, bio, bilder og logo", icon: Building2 },
     { key: "location", title: "Lokasjon", description: locationName || "Sted og type", icon: MapPin },
     { key: "social", title: "Sosiale lenker", description: `${socialLinks.length} lenke${socialLinks.length !== 1 ? "r" : ""}`, icon: Link2 },
-    { key: "technical", title: "Teknisk", description: techRiderMediaId || hospRiderMediaId ? "Rider lastet opp" : "Tech rider, hospitality rider", icon: Wrench },
+    { key: "technical", title: "Teknisk", description: techRiderAssetId || techRiderMediaId || hospRiderAssetId || hospRiderMediaId ? "Rider lastet opp" : "Tech rider, hospitality rider", icon: Wrench },
     { key: "timeline", title: isVenue ? "Historien" : "Min reise", description: "Viktige hendelser og milepæler", icon: Clock },
     { key: "danger" as ActivePanel, title: "Farlig sone", description: isOwner ? "Eierskap, slett" : "Forlat prosjektet", icon: AlertTriangle, danger: true },
   ];
@@ -911,7 +919,7 @@ export default function EntityEdit() {
               <Label className="text-muted-foreground text-xs uppercase tracking-wide">Tech rider</Label>
               <div className="flex items-center gap-3">
                 <div className="flex-1 min-w-0">
-                  {techRiderMediaId ? (
+                  {(techRiderAssetId || techRiderMediaId) ? (
                     <div className="flex items-center gap-2 text-sm text-foreground">
                       <FileText className="h-4 w-4 text-accent shrink-0" />
                       <span className="truncate">Fil valgt</span>
@@ -928,13 +936,13 @@ export default function EntityEdit() {
                       onClick={() => setRiderPickerTarget("tech")}
                       className="text-xs"
                     >
-                      {techRiderMediaId ? "Bytt" : "Velg fil"}
+                      {(techRiderAssetId || techRiderMediaId) ? "Bytt" : "Velg fil"}
                     </Button>
-                    {techRiderMediaId && (
+                    {(techRiderAssetId || techRiderMediaId) && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setTechRiderMediaId(null)}
+                        onClick={() => { setTechRiderMediaId(null); setTechRiderAssetId(null); }}
                         className="text-xs text-destructive hover:text-destructive h-8 w-8 p-0"
                       >
                         <X className="h-3.5 w-3.5" />
@@ -950,7 +958,7 @@ export default function EntityEdit() {
               <Label className="text-muted-foreground text-xs uppercase tracking-wide">Hospitality rider</Label>
               <div className="flex items-center gap-3">
                 <div className="flex-1 min-w-0">
-                  {hospRiderMediaId ? (
+                  {(hospRiderAssetId || hospRiderMediaId) ? (
                     <div className="flex items-center gap-2 text-sm text-foreground">
                       <FileText className="h-4 w-4 text-accent shrink-0" />
                       <span className="truncate">Fil valgt</span>
@@ -967,13 +975,13 @@ export default function EntityEdit() {
                       onClick={() => setRiderPickerTarget("hosp")}
                       className="text-xs"
                     >
-                      {hospRiderMediaId ? "Bytt" : "Velg fil"}
+                      {(hospRiderAssetId || hospRiderMediaId) ? "Bytt" : "Velg fil"}
                     </Button>
-                    {hospRiderMediaId && (
+                    {(hospRiderAssetId || hospRiderMediaId) && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setHospRiderMediaId(null)}
+                        onClick={() => { setHospRiderMediaId(null); setHospRiderAssetId(null); }}
                         className="text-xs text-destructive hover:text-destructive h-8 w-8 p-0"
                       >
                         <X className="h-3.5 w-3.5" />
@@ -990,9 +998,20 @@ export default function EntityEdit() {
       <MediaPicker
         open={riderPickerTarget !== null}
         onOpenChange={(open) => { if (!open) setRiderPickerTarget(null); }}
-        onSelect={(mediaId) => {
-          if (riderPickerTarget === "tech") setTechRiderMediaId(mediaId);
-          else if (riderPickerTarget === "hosp") setHospRiderMediaId(mediaId);
+        onSelect={async (mediaId) => {
+          try {
+            const kind = riderPickerTarget === "tech" ? "tech_rider" : "hosp_rider";
+            const assetId = await ensureAssetHandle({ mediaId, kind });
+            if (riderPickerTarget === "tech") {
+              setTechRiderMediaId(mediaId);
+              setTechRiderAssetId(assetId);
+            } else if (riderPickerTarget === "hosp") {
+              setHospRiderMediaId(mediaId);
+              setHospRiderAssetId(assetId);
+            }
+          } catch (e: any) {
+            toast({ title: "Feil", description: e.message, variant: "destructive" });
+          }
           setRiderPickerTarget(null);
         }}
         userOnly
