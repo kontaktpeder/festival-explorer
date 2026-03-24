@@ -890,6 +890,12 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               const payload: Record<string, unknown> = { id: attachTarget.slotId, [attachTarget.field]: festivalMediaId };
               if (assetField) payload[assetField] = assetId;
               await updateSlot.mutateAsync(payload as any);
+              // Sync editingSlot so the open dialog reflects the change immediately
+              const slotId = attachTarget.slotId;
+              setEditingSlot((prev) => {
+                if (!prev || prev.id !== slotId) return prev;
+                return { ...prev, ...payload, id: slotId } as any;
+              });
             } catch (e: any) {
               console.error("Asset handle creation failed:", e);
             }
@@ -908,7 +914,14 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               const kind = attachTarget.field === "tech_rider_media_id" ? "tech_rider" : "hosp_rider";
               const assetId = await ensureAssetHandle({ mediaId, kind });
               const assetField = attachTarget.field === "tech_rider_media_id" ? "tech_rider_asset_id" : "hosp_rider_asset_id";
-              await updateSlot.mutateAsync({ id: attachTarget.slotId, [assetField]: assetId } as any);
+              const eventPayload = { id: attachTarget.slotId, [assetField]: assetId };
+              await updateSlot.mutateAsync(eventPayload as any);
+              // Sync editingSlot so the open dialog reflects the change immediately
+              const slotId = attachTarget.slotId;
+              setEditingSlot((prev) => {
+                if (!prev || prev.id !== slotId) return prev;
+                return { ...prev, [assetField]: assetId } as any;
+              });
             } catch (e: any) {
               console.error("Asset handle creation failed:", e);
             }
@@ -1030,6 +1043,20 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
     setTechInherited(false);
     setHospInherited(false);
   }, [open, slot.id, initialAdvancedOpen]);
+
+  // Sync rider fields when slot prop updates (e.g. after picker saves while dialog is open)
+  useEffect(() => {
+    const newTech = (slot as any).tech_rider_asset_id ?? null;
+    const newHosp = (slot as any).hosp_rider_asset_id ?? null;
+    const newTechMedia = slot.tech_rider_media_id ?? null;
+    const newHospMedia = slot.hosp_rider_media_id ?? null;
+    const newContract = slot.contract_media_id ?? null;
+    if (newTech !== techRiderAssetId) setTechRiderAssetId(newTech);
+    if (newHosp !== hospRiderAssetId) setHospRiderAssetId(newHosp);
+    if (newTechMedia !== techRiderMediaId) setTechRiderMediaId(newTechMedia);
+    if (newHospMedia !== hospRiderMediaId) setHospRiderMediaId(newHospMedia);
+    if (newContract !== contractMediaId) setContractMediaId(newContract);
+  }, [(slot as any).tech_rider_asset_id, (slot as any).hosp_rider_asset_id, slot.tech_rider_media_id, slot.hosp_rider_media_id, slot.contract_media_id]);
 
   // Prefill rider from performer entity defaults (only when slot has no rider yet)
   const { data: performerRiderDefaults } = useQuery({
