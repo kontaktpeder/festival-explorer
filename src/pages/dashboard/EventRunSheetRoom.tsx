@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BackstageShell } from "@/components/layout/BackstageShell";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -11,6 +11,10 @@ import { useMyOpenIssues } from "@/hooks/useMyOpenIssues";
 import { ProductionHealthBar } from "@/components/production/ProductionHealthBar";
 import { OpenIssuesList, type IssueSlotContext } from "@/components/production/OpenIssuesList";
 import { FindReplacementModal } from "@/components/production/FindReplacementModal";
+import { syncRiderMissingForScope } from "@/lib/eventIssues";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
 type EventIssueRow = Database["public"]["Tables"]["event_issue"]["Row"];
@@ -19,6 +23,9 @@ export default function EventRunSheetRoom() {
   const { id } = useParams<{ id: string }>();
   const { event, isLoading, canEdit } = useEventBackstageAccess(id);
   const [replaceIssue, setReplaceIssue] = useState<EventIssueRow | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: openIssues = [] } = useOpenEventIssues({
     festivalId: null,
@@ -85,6 +92,20 @@ export default function EventRunSheetRoom() {
     setTimeout(() => el.classList.remove("ring-2", "ring-primary", "ring-offset-2", "ring-offset-background"), 2500);
   }, []);
 
+  const handleSyncRiders = useCallback(async () => {
+    setSyncing(true);
+    try {
+      const count = await syncRiderMissingForScope({ eventId: id });
+      await queryClient.invalidateQueries({ queryKey: ["open-event-issues"] });
+      await queryClient.invalidateQueries({ queryKey: ["my-open-event-issues"] });
+      toast({ title: `Sjekket ${count} poster for manglende rider` });
+    } catch (e: any) {
+      toast({ title: "Feil", description: e.message, variant: "destructive" });
+    } finally {
+      setSyncing(false);
+    }
+  }, [id, queryClient, toast]);
+
   if (isLoading) {
     return (
       <div className="min-h-[100svh] bg-background flex items-center justify-center">
@@ -113,7 +134,13 @@ export default function EventRunSheetRoom() {
       }
     >
       <div className="space-y-4">
-        <ProductionHealthBar issues={openIssues} />
+        <div className="flex items-center justify-between">
+          <ProductionHealthBar issues={openIssues} />
+          <Button variant="outline" size="sm" onClick={handleSyncRiders} disabled={syncing}>
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${syncing ? "animate-spin" : ""}`} />
+            Sjekk ridere
+          </Button>
+        </div>
 
         {myIssues.length > 0 && (
           <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-2.5">

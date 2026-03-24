@@ -225,3 +225,29 @@ export async function syncRiderMissingIssueForSlot(slot: {
 
   if (error) console.error("rider_missing issue:", error);
 }
+
+/**
+ * Resync rider_missing issues for an entire festival or event scope.
+ * Fetches all relevant slots and runs syncRiderMissingIssueForSlot for each.
+ */
+export async function syncRiderMissingForScope(params: {
+  festivalId?: string | null;
+  eventId?: string | null;
+}): Promise<number> {
+  let q = supabase
+    .from("event_program_slots")
+    .select("id, festival_id, event_id, is_canceled, performer_entity_id, slot_kind, tech_rider_asset_id, tech_rider_media_id");
+
+  if (params.festivalId) q = q.eq("festival_id", params.festivalId);
+  if (params.eventId) q = q.eq("event_id", params.eventId);
+
+  const { data, error } = await q;
+  if (error) throw error;
+
+  let count = 0;
+  for (const s of data ?? []) {
+    await syncRiderMissingIssueForSlot(s as any);
+    count++;
+  }
+  return count;
+}
