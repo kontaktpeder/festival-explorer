@@ -1324,6 +1324,8 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
       tech_rider_media_id: techRiderMediaId || null,
       hosp_rider_media_id: hospRiderMediaId || null,
       contract_media_id: contractMediaId || null,
+      tech_rider_asset_id: techRiderAssetId || null,
+      hosp_rider_asset_id: hospRiderAssetId || null,
     });
   };
 
