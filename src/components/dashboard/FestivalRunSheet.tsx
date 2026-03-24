@@ -1535,13 +1535,27 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                     <div className="space-y-1.5">
                       <Select
                         value={performerEntityId || "__none__"}
-                        onValueChange={(v) => {
+                        onValueChange={async (v) => {
                           const newId = v === "__none__" ? "" : v;
                           const selected = festivalEntities.find((e) => e.id === newId);
                           const prevName = getCurrentPerformerName();
                           setPerformerEntityId(newId);
                           if (!titleOverride || titleOverride === prevName) {
                             setTitleOverride(selected?.name ?? "");
+                          }
+                          // Prefill riders from entity if slot doesn't have them yet
+                          if (newId) {
+                            try {
+                              const { data: ent } = await supabase
+                                .from("entities")
+                                .select("tech_rider_media_id, hosp_rider_media_id")
+                                .eq("id", newId)
+                                .single();
+                              if (ent) {
+                                if (!techRiderMediaId && ent.tech_rider_media_id) setTechRiderMediaId(ent.tech_rider_media_id);
+                                if (!hospRiderMediaId && ent.hosp_rider_media_id) setHospRiderMediaId(ent.hosp_rider_media_id);
+                              }
+                            } catch { /* ignore */ }
                           }
                         }}
                       >
