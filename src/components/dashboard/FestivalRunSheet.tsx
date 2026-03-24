@@ -870,6 +870,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           }}
           types={types}
           festivalEntities={festivalEntities}
+          onPickMedia={(slotId, field) => setAttachTarget({ slotId, field })}
         />
       )}
 
@@ -967,6 +968,11 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   const [isVisiblePublic, setIsVisiblePublic] = useState(slot.is_visible_public);
   const [isCanceled, setIsCanceled] = useState(slot.is_canceled);
   const [nameOverride, setNameOverride] = useState(slot.performer_name_override ?? "");
+
+  // Rider fields
+  const [techRiderMediaId, setTechRiderMediaId] = useState<string | null>(slot.tech_rider_media_id ?? null);
+  const [hospRiderMediaId, setHospRiderMediaId] = useState<string | null>(slot.hosp_rider_media_id ?? null);
+  const [contractMediaId, setContractMediaId] = useState<string | null>(slot.contract_media_id ?? null);
 
   // Performer fields
   const [performerKind, setPerformerKind] = useState<PerformerKind>(slot.performer_kind || "entity");
