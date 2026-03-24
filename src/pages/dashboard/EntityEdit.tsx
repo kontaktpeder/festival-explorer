@@ -81,7 +81,7 @@ const ACCESS_LABELS: Record<AccessLevel, string> = {
   viewer: "Se",
 };
 
-type ActivePanel = null | "basic" | "location" | "social" | "timeline" | "danger";
+type ActivePanel = null | "basic" | "location" | "social" | "timeline" | "technical" | "danger";
 
 export default function EntityEdit() {
   const { id } = useParams<{ id: string }>();
