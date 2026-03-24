@@ -1,5 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { syncArtistCancelledIssueForSlot, syncRiderMissingIssueForSlot } from "@/lib/eventIssues";
+import { ensureAssetHandle } from "@/lib/assetHandles";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ExtendedEventProgramSlot, ProgramSlotType, PerformerKind } from "@/types/program-slots";
@@ -969,10 +971,12 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   const [isCanceled, setIsCanceled] = useState(slot.is_canceled);
   const [nameOverride, setNameOverride] = useState(slot.performer_name_override ?? "");
 
-  // Rider fields
+  // Rider fields (legacy media_id + new asset_id)
   const [techRiderMediaId, setTechRiderMediaId] = useState<string | null>(slot.tech_rider_media_id ?? null);
   const [hospRiderMediaId, setHospRiderMediaId] = useState<string | null>(slot.hosp_rider_media_id ?? null);
   const [contractMediaId, setContractMediaId] = useState<string | null>(slot.contract_media_id ?? null);
+  const [techRiderAssetId, setTechRiderAssetId] = useState<string | null>((slot as any).tech_rider_asset_id ?? null);
+  const [hospRiderAssetId, setHospRiderAssetId] = useState<string | null>((slot as any).hosp_rider_asset_id ?? null);
 
   // Performer fields
   const [performerKind, setPerformerKind] = useState<PerformerKind>(slot.performer_kind || "entity");
@@ -992,6 +996,8 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
     setTechRiderMediaId(slot.tech_rider_media_id ?? null);
     setHospRiderMediaId(slot.hosp_rider_media_id ?? null);
     setContractMediaId(slot.contract_media_id ?? null);
+    setTechRiderAssetId((slot as any).tech_rider_asset_id ?? null);
+    setHospRiderAssetId((slot as any).hosp_rider_asset_id ?? null);
   }, [open, slot.id, initialAdvancedOpen]);
 
   // ── Two-way time sync helpers ──
