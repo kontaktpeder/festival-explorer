@@ -1027,7 +1027,36 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
     setContractMediaId(slot.contract_media_id ?? null);
     setTechRiderAssetId((slot as any).tech_rider_asset_id ?? null);
     setHospRiderAssetId((slot as any).hosp_rider_asset_id ?? null);
+    setTechInherited(false);
+    setHospInherited(false);
   }, [open, slot.id, initialAdvancedOpen]);
+
+  // Prefill rider from performer entity defaults (only when slot has no rider yet)
+  const { data: performerRiderDefaults } = useQuery({
+    queryKey: ["entity-rider-asset-defaults", performerEntityId],
+    enabled: !!performerEntityId && open,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("entities")
+        .select("id, tech_rider_asset_id, hosp_rider_asset_id")
+        .eq("id", performerEntityId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  useEffect(() => {
+    if (!performerRiderDefaults) return;
+    if (!techRiderAssetId && !techRiderMediaId && performerRiderDefaults.tech_rider_asset_id) {
+      setTechRiderAssetId(performerRiderDefaults.tech_rider_asset_id);
+      setTechInherited(true);
+    }
+    if (!hospRiderAssetId && !hospRiderMediaId && performerRiderDefaults.hosp_rider_asset_id) {
+      setHospRiderAssetId(performerRiderDefaults.hosp_rider_asset_id);
+      setHospInherited(true);
+    }
+  }, [performerRiderDefaults?.id]);
 
   // ── Two-way time sync helpers ──
   const applyDurationToEnd = (st: string, durMin: number) => {
