@@ -22,6 +22,9 @@ type EventIssueRow = Database["public"]["Tables"]["event_issue"]["Row"];
 export default function FestivalRunSheetRoom() {
   const { id } = useParams<{ id: string }>();
   const [replaceIssue, setReplaceIssue] = useState<EventIssueRow | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: festival, isLoading } = useQuery({
     queryKey: ["festival-shell", id],

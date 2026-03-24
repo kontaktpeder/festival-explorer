@@ -23,6 +23,9 @@ export default function EventRunSheetRoom() {
   const { id } = useParams<{ id: string }>();
   const { event, isLoading, canEdit } = useEventBackstageAccess(id);
   const [replaceIssue, setReplaceIssue] = useState<EventIssueRow | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: openIssues = [] } = useOpenEventIssues({
     festivalId: null,
