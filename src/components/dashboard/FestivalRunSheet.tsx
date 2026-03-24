@@ -59,6 +59,7 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { usePersonaSearch } from "@/hooks/usePersonaSearch";
 import { FestivalMediaPickerDialog } from "./FestivalMediaPickerDialog";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { RunSheetSection } from "./runsheet/RunSheetSection";
 import { RunSheetPrintView } from "./runsheet/RunSheetPrintView";
 import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
@@ -916,6 +917,7 @@ interface RunSheetEditDialogProps {
   onParallelCreated?: () => void;
   types: ProgramSlotType[];
   festivalEntities: { id: string; name: string; slug: string }[];
+  onPickMedia: (slotId: string, field: "contract_media_id" | "tech_rider_media_id" | "hosp_rider_media_id") => void;
 }
 
 interface FestivalEvent {
