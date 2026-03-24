@@ -1315,6 +1315,9 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
       performer_entity_id: performerKind === "entity" ? performerEntityId || null : null,
       performer_persona_id: performerKind === "persona" ? performerPersonaId || null : null,
       performer_name_override: performerKind === "text" ? nameOverride || null : null,
+      tech_rider_media_id: techRiderMediaId || null,
+      hosp_rider_media_id: hospRiderMediaId || null,
+      contract_media_id: contractMediaId || null,
     });
   };
 
