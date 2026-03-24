@@ -9,7 +9,7 @@ import { useEventBackstageAccess } from "@/hooks/useEventBackstageAccess";
 import { useOpenEventIssues } from "@/hooks/useOpenEventIssues";
 import { useMyOpenIssues } from "@/hooks/useMyOpenIssues";
 import { ProductionHealthBar } from "@/components/production/ProductionHealthBar";
-import { OpenIssuesList } from "@/components/production/OpenIssuesList";
+import { OpenIssuesList, type IssueSlotContext } from "@/components/production/OpenIssuesList";
 import { FindReplacementModal } from "@/components/production/FindReplacementModal";
 import type { Database } from "@/integrations/supabase/types";
 
