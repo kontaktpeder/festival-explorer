@@ -172,7 +172,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
                   const itemKindConfig = getSlotKindConfig(item.slot_kind as any);
                   const isLast = idx === group.items.length - 1;
                   return (
-                    <div key={item.id} className="flex items-center gap-1.5 md:gap-2 text-xs">
+                    <div key={item.id} className={cn("flex items-center gap-1.5 md:gap-2 text-xs", item.is_canceled && "opacity-40 line-through")}>
                       {/* Tree connector */}
                       <span className="text-muted-foreground/30 font-mono text-xs shrink-0 w-3">
                         {isLast ? "└" : "├"}
@@ -216,7 +216,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
                           className="h-6 w-6 md:h-5 md:w-5 text-muted-foreground/40 active:text-foreground hover:text-foreground"
                           onClick={() => onEdit(item)}
                           title="Rediger"
-                          disabled={isCanceled}
+                          disabled={item.is_canceled}
                         >
                           <Pencil className="h-3 w-3 md:h-2.5 md:w-2.5" />
                         </Button>

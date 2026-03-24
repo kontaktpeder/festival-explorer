@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +8,7 @@ import { FestivalRunSheet } from "@/components/dashboard/FestivalRunSheet";
 import { useOpenEventIssues } from "@/hooks/useOpenEventIssues";
 import { useMyOpenIssues } from "@/hooks/useMyOpenIssues";
 import { ProductionHealthBar } from "@/components/production/ProductionHealthBar";
-import { OpenIssuesList } from "@/components/production/OpenIssuesList";
+import { OpenIssuesList, type IssueSlotContext } from "@/components/production/OpenIssuesList";
 import { FindReplacementModal } from "@/components/production/FindReplacementModal";
 import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
 import type { Database } from "@/integrations/supabase/types";
@@ -46,6 +46,31 @@ export default function FestivalRunSheetRoom() {
   const entityOptions = festivalSubjects
     .filter((s: any) => s.kind === "entity")
     .map((s: any) => ({ id: s.id, name: s.name }));
+
+  // Build issue context from related slots
+  const slotIds = useMemo(() => openIssues.map((i) => i.related_program_slot_id), [openIssues]);
+  const { data: issueSlots = [] } = useQuery({
+    queryKey: ["issue-slot-context", slotIds],
+    enabled: slotIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("event_program_slots")
+        .select("id, stage_label, slot_kind, performer_entity_id, performer_name_override, performer_entity:entities!event_program_slots_performer_entity_id_fkey(name)")
+        .in("id", slotIds);
+      return data ?? [];
+    },
+  });
+  const issueContextBySlotId = useMemo(() => {
+    const map: Record<string, IssueSlotContext> = {};
+    for (const s of issueSlots) {
+      map[s.id] = {
+        performerName: (s as any).performer_entity?.name ?? s.performer_name_override ?? undefined,
+        stageLabel: s.stage_label ?? undefined,
+        slotKind: s.slot_kind ?? undefined,
+      };
+    }
+    return map;
+  }, [issueSlots]);
 
   const scrollToSlot = useCallback((slotId: string) => {
     const el = document.getElementById(`runsheet-slot-${slotId}`);
@@ -96,6 +121,7 @@ export default function FestivalRunSheetRoom() {
           issues={openIssues}
           onFindReplacement={(issue) => setReplaceIssue(issue)}
           onScrollToSlot={scrollToSlot}
+          issueContextBySlotId={issueContextBySlotId}
         />
 
         <FestivalRunSheet festivalId={id!} />
