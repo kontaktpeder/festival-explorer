@@ -134,7 +134,13 @@ export default function EventRunSheetRoom() {
       }
     >
       <div className="space-y-4">
-        <ProductionHealthBar issues={openIssues} />
+        <div className="flex items-center justify-between">
+          <ProductionHealthBar issues={openIssues} />
+          <Button variant="outline" size="sm" onClick={handleSyncRiders} disabled={syncing}>
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${syncing ? "animate-spin" : ""}`} />
+            Sjekk ridere
+          </Button>
+        </div>
 
         {myIssues.length > 0 && (
           <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-2.5">
