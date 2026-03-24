@@ -56,7 +56,10 @@ import {
   X,
   Mail,
   Check,
+  Wrench,
+  FileText,
 } from "lucide-react";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { useToast } from "@/hooks/use-toast";
 import type { EntityType, AccessLevel, ImageSettings } from "@/types/database";
 import { parseImageSettings } from "@/types/database";
