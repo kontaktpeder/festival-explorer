@@ -281,6 +281,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
             performer_entity_id: merged.performer_entity_id ?? null,
             slot_kind: merged.slot_kind ?? slotCtx.slot_kind,
             tech_rider_media_id: merged.tech_rider_media_id ?? null,
+            tech_rider_asset_id: merged.tech_rider_asset_id ?? null,
           });
         } catch (e) {
           console.error("Rider issue sync failed:", e);
@@ -881,13 +882,39 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           festivalId={festivalId!}
           open={!!attachTarget}
           onOpenChange={(open) => !open && setAttachTarget(null)}
-          onSelect={async (mediaId) => {
-            await updateSlot.mutateAsync({
-              id: attachTarget.slotId,
-              [attachTarget.field]: mediaId,
-            } as any);
+          onSelect={async (festivalMediaId) => {
+            try {
+              const kind = attachTarget.field === "tech_rider_media_id" ? "tech_rider" : attachTarget.field === "hosp_rider_media_id" ? "hosp_rider" : "contract";
+              const assetId = await ensureAssetHandle({ festivalMediaId, kind });
+              const assetField = attachTarget.field === "tech_rider_media_id" ? "tech_rider_asset_id" : attachTarget.field === "hosp_rider_media_id" ? "hosp_rider_asset_id" : null;
+              const payload: Record<string, unknown> = { id: attachTarget.slotId, [attachTarget.field]: festivalMediaId };
+              if (assetField) payload[assetField] = assetId;
+              await updateSlot.mutateAsync(payload as any);
+            } catch (e: any) {
+              console.error("Asset handle creation failed:", e);
+            }
             setAttachTarget(null);
           }}
+        />
+      )}
+
+      {/* Media picker for documents – event scope uses MediaPicker */}
+      {!isFestivalScope && attachTarget && (
+        <MediaPicker
+          open={!!attachTarget}
+          onOpenChange={(open) => !open && setAttachTarget(null)}
+          onSelect={async (mediaId) => {
+            try {
+              const kind = attachTarget.field === "tech_rider_media_id" ? "tech_rider" : "hosp_rider";
+              const assetId = await ensureAssetHandle({ mediaId, kind });
+              const assetField = attachTarget.field === "tech_rider_media_id" ? "tech_rider_asset_id" : "hosp_rider_asset_id";
+              await updateSlot.mutateAsync({ id: attachTarget.slotId, [assetField]: assetId } as any);
+            } catch (e: any) {
+              console.error("Asset handle creation failed:", e);
+            }
+            setAttachTarget(null);
+          }}
+          userOnly
         />
       )}
 
