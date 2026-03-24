@@ -33,12 +33,11 @@ export const SLOT_KIND_OPTIONS: {
 ];
 
 export const INTERNAL_STATUS_OPTIONS: {
-  value: "contract_pending" | "confirmed" | "canceled";
+  value: "contract_pending" | "confirmed";
   label: string;
 }[] = [
   { value: "contract_pending", label: "Kontrakt venter" },
   { value: "confirmed", label: "Bekreftet" },
-  { value: "canceled", label: "Avlyst" },
 ];
 
 export function getSlotKindConfig(kind: SlotKind) {

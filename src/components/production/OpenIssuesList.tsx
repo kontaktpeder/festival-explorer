@@ -10,9 +10,19 @@ const severityColor: Record<string, string> = {
   low: "text-muted-foreground",
 };
 
+const ISSUE_LABELS: Record<string, string> = {
+  artist_cancelled: "Artist avlyst",
+  rider_missing: "Rider mangler",
+};
+
+function issueLabel(issue: EventIssueRow): string {
+  return ISSUE_LABELS[issue.type] ?? issue.type.replace(/_/g, " ");
+}
+
 export function OpenIssuesList(props: {
   issues: EventIssueRow[];
   onFindReplacement?: (issue: EventIssueRow) => void;
+  onScrollToSlot?: (slotId: string) => void;
 }) {
   if (!props.issues.length) return null;
 
@@ -22,24 +32,43 @@ export function OpenIssuesList(props: {
       {props.issues.map((issue) => (
         <div
           key={issue.id}
-          className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 px-3 py-2"
+          className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 px-3 py-2 cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => props.onScrollToSlot?.(issue.related_program_slot_id)}
         >
           <div className="text-sm">
             <span className={severityColor[issue.severity] ?? "text-foreground"}>
-              {issue.type.replace(/_/g, " ")}
+              {issueLabel(issue)}
             </span>
             <span className="text-muted-foreground"> · {issue.severity}</span>
           </div>
-          {issue.type === "artist_cancelled" && props.onFindReplacement && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs"
-              onClick={() => props.onFindReplacement!(issue)}
-            >
-              Finn erstatter
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {issue.type === "artist_cancelled" && props.onFindReplacement && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  props.onFindReplacement!(issue);
+                }}
+              >
+                Finn erstatter
+              </Button>
+            )}
+            {issue.type === "rider_missing" && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  props.onScrollToSlot?.(issue.related_program_slot_id);
+                }}
+              >
+                Gå til post
+              </Button>
+            )}
+          </div>
         </div>
       ))}
     </div>
