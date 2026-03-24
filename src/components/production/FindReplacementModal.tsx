@@ -80,6 +80,7 @@ export function FindReplacementModal(props: {
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: props.runsheetQueryKey as string[] });
       await qc.invalidateQueries({ queryKey: ["open-event-issues"] });
+      await qc.invalidateQueries({ queryKey: ["my-open-event-issues"] });
       props.onOpenChange(false);
     },
   });
