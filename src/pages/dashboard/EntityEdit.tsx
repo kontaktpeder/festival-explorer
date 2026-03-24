@@ -378,7 +378,7 @@ export default function EntityEdit() {
     { key: "social", title: "Sosiale lenker", description: `${socialLinks.length} lenke${socialLinks.length !== 1 ? "r" : ""}`, icon: Link2 },
     { key: "technical", title: "Teknisk", description: techRiderMediaId || hospRiderMediaId ? "Rider lastet opp" : "Tech rider, hospitality rider", icon: Wrench },
     { key: "timeline", title: isVenue ? "Historien" : "Min reise", description: "Viktige hendelser og milepæler", icon: Clock },
-    ...(canEdit ? [{ key: "danger" as ActivePanel, title: "Farlig sone", description: "Eierskap, forlat, slett", icon: AlertTriangle, danger: true }] : []),
+    { key: "danger" as ActivePanel, title: "Farlig sone", description: isOwner ? "Eierskap, slett" : "Forlat prosjektet", icon: AlertTriangle, danger: true },
   ];
 
   return (
