@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +8,7 @@ import { FestivalRunSheet } from "@/components/dashboard/FestivalRunSheet";
 import { useOpenEventIssues } from "@/hooks/useOpenEventIssues";
 import { useMyOpenIssues } from "@/hooks/useMyOpenIssues";
 import { ProductionHealthBar } from "@/components/production/ProductionHealthBar";
-import { OpenIssuesList } from "@/components/production/OpenIssuesList";
+import { OpenIssuesList, type IssueSlotContext } from "@/components/production/OpenIssuesList";
 import { FindReplacementModal } from "@/components/production/FindReplacementModal";
 import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
 import type { Database } from "@/integrations/supabase/types";
