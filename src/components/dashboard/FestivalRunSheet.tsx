@@ -1044,6 +1044,20 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
     setHospInherited(false);
   }, [open, slot.id, initialAdvancedOpen]);
 
+  // Sync rider fields when slot prop updates (e.g. after picker saves while dialog is open)
+  useEffect(() => {
+    const newTech = (slot as any).tech_rider_asset_id ?? null;
+    const newHosp = (slot as any).hosp_rider_asset_id ?? null;
+    const newTechMedia = slot.tech_rider_media_id ?? null;
+    const newHospMedia = slot.hosp_rider_media_id ?? null;
+    const newContract = slot.contract_media_id ?? null;
+    if (newTech !== techRiderAssetId) setTechRiderAssetId(newTech);
+    if (newHosp !== hospRiderAssetId) setHospRiderAssetId(newHosp);
+    if (newTechMedia !== techRiderMediaId) setTechRiderMediaId(newTechMedia);
+    if (newHospMedia !== hospRiderMediaId) setHospRiderMediaId(newHospMedia);
+    if (newContract !== contractMediaId) setContractMediaId(newContract);
+  }, [(slot as any).tech_rider_asset_id, (slot as any).hosp_rider_asset_id, slot.tech_rider_media_id, slot.hosp_rider_media_id, slot.contract_media_id]);
+
   // Prefill rider from performer entity defaults (only when slot has no rider yet)
   const { data: performerRiderDefaults } = useQuery({
     queryKey: ["entity-rider-asset-defaults", performerEntityId],
