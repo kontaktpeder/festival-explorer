@@ -1004,6 +1004,8 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   const [contractMediaId, setContractMediaId] = useState<string | null>(slot.contract_media_id ?? null);
   const [techRiderAssetId, setTechRiderAssetId] = useState<string | null>((slot as any).tech_rider_asset_id ?? null);
   const [hospRiderAssetId, setHospRiderAssetId] = useState<string | null>((slot as any).hosp_rider_asset_id ?? null);
+  const [techInherited, setTechInherited] = useState(false);
+  const [hospInherited, setHospInherited] = useState(false);
 
   // Performer fields
   const [performerKind, setPerformerKind] = useState<PerformerKind>(slot.performer_kind || "entity");
@@ -1025,7 +1027,36 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
     setContractMediaId(slot.contract_media_id ?? null);
     setTechRiderAssetId((slot as any).tech_rider_asset_id ?? null);
     setHospRiderAssetId((slot as any).hosp_rider_asset_id ?? null);
+    setTechInherited(false);
+    setHospInherited(false);
   }, [open, slot.id, initialAdvancedOpen]);
+
+  // Prefill rider from performer entity defaults (only when slot has no rider yet)
+  const { data: performerRiderDefaults } = useQuery({
+    queryKey: ["entity-rider-asset-defaults", performerEntityId],
+    enabled: !!performerEntityId && open,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("entities")
+        .select("id, tech_rider_asset_id, hosp_rider_asset_id")
+        .eq("id", performerEntityId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  useEffect(() => {
+    if (!performerRiderDefaults) return;
+    if (!techRiderAssetId && !techRiderMediaId && performerRiderDefaults.tech_rider_asset_id) {
+      setTechRiderAssetId(performerRiderDefaults.tech_rider_asset_id);
+      setTechInherited(true);
+    }
+    if (!hospRiderAssetId && !hospRiderMediaId && performerRiderDefaults.hosp_rider_asset_id) {
+      setHospRiderAssetId(performerRiderDefaults.hosp_rider_asset_id);
+      setHospInherited(true);
+    }
+  }, [performerRiderDefaults?.id]);
 
   // ── Two-way time sync helpers ──
   const applyDurationToEnd = (st: string, durMin: number) => {
@@ -1643,11 +1674,15 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                   <Label className="text-xs font-semibold">Dokumenter</Label>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Teknisk rider</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-muted-foreground">Teknisk rider</span>
+                        {techInherited && <span className="text-[9px] text-muted-foreground/60 bg-muted/40 px-1.5 py-0.5 rounded">fra prosjekt</span>}
+                      </div>
                       {(techRiderAssetId || techRiderMediaId) ? (
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs text-accent">✓ Vedlagt</span>
-                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setTechRiderMediaId(null); setTechRiderAssetId(null); }}>Fjern</button>
+                          <button type="button" className="text-[10px] text-muted-foreground hover:text-foreground hover:underline" onClick={() => onPickMedia(slot.id, "tech_rider_media_id")}>Bytt</button>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setTechRiderMediaId(null); setTechRiderAssetId(null); setTechInherited(false); }}>Fjern</button>
                         </div>
                       ) : (
                         <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "tech_rider_media_id")}>
@@ -1656,11 +1691,15 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                       )}
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Hospitality rider</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-muted-foreground">Hospitality rider</span>
+                        {hospInherited && <span className="text-[9px] text-muted-foreground/60 bg-muted/40 px-1.5 py-0.5 rounded">fra prosjekt</span>}
+                      </div>
                       {(hospRiderAssetId || hospRiderMediaId) ? (
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs text-accent">✓ Vedlagt</span>
-                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setHospRiderMediaId(null); setHospRiderAssetId(null); }}>Fjern</button>
+                          <button type="button" className="text-[10px] text-muted-foreground hover:text-foreground hover:underline" onClick={() => onPickMedia(slot.id, "hosp_rider_media_id")}>Bytt</button>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setHospRiderMediaId(null); setHospRiderAssetId(null); setHospInherited(false); }}>Fjern</button>
                         </div>
                       ) : (
                         <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "hosp_rider_media_id")}>

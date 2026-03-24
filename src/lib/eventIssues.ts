@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { RIDER_MISSING_ENABLED } from "@/lib/featureFlags";
 
 export type EventHealth = "stable" | "at_risk" | "broken";
 
@@ -168,6 +169,9 @@ export async function syncRiderMissingIssueForSlot(slot: {
   tech_rider_media_id: string | null;
   tech_rider_asset_id?: string | null;
 }) {
+  // Behind feature flag – skip entirely when disabled
+  if (!RIDER_MISSING_ENABLED) return;
+
   // Check both asset_id (new) and media_id (legacy) for rider presence
   const hasRider = !!(slot.tech_rider_asset_id || slot.tech_rider_media_id);
   
