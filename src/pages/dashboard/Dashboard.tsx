@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, Navigate, useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMyEntities, useMyEntitiesFilteredByPersona } from "@/hooks/useEntity";
 import { useFestivalIdsForPersona } from "@/hooks/useFestival";
