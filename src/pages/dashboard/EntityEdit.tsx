@@ -892,6 +892,111 @@ export default function EntityEdit() {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={activePanel === "technical"} onOpenChange={(o) => !o && setActivePanel(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wrench className="h-5 w-5 text-accent" />
+              Teknisk
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 pt-2">
+            <p className="text-sm text-muted-foreground">
+              Last opp tech rider og hospitality rider. Disse kan hentes automatisk inn i kjøreplanen.
+            </p>
+
+            {/* Tech rider */}
+            <div className="space-y-2">
+              <Label className="text-muted-foreground text-xs uppercase tracking-wide">Tech rider</Label>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  {techRiderMediaId ? (
+                    <div className="flex items-center gap-2 text-sm text-foreground">
+                      <FileText className="h-4 w-4 text-accent shrink-0" />
+                      <span className="truncate">Fil valgt</span>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Ingen fil valgt</span>
+                  )}
+                </div>
+                {canEdit && (
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setRiderPickerTarget("tech")}
+                      className="text-xs"
+                    >
+                      {techRiderMediaId ? "Bytt" : "Velg fil"}
+                    </Button>
+                    {techRiderMediaId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setTechRiderMediaId(null)}
+                        className="text-xs text-destructive hover:text-destructive h-8 w-8 p-0"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Hospitality rider */}
+            <div className="space-y-2">
+              <Label className="text-muted-foreground text-xs uppercase tracking-wide">Hospitality rider</Label>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  {hospRiderMediaId ? (
+                    <div className="flex items-center gap-2 text-sm text-foreground">
+                      <FileText className="h-4 w-4 text-accent shrink-0" />
+                      <span className="truncate">Fil valgt</span>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Ingen fil valgt</span>
+                  )}
+                </div>
+                {canEdit && (
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setRiderPickerTarget("hosp")}
+                      className="text-xs"
+                    >
+                      {hospRiderMediaId ? "Bytt" : "Velg fil"}
+                    </Button>
+                    {hospRiderMediaId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setHospRiderMediaId(null)}
+                        className="text-xs text-destructive hover:text-destructive h-8 w-8 p-0"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <MediaPicker
+        open={riderPickerTarget !== null}
+        onOpenChange={(open) => { if (!open) setRiderPickerTarget(null); }}
+        onSelect={(mediaId) => {
+          if (riderPickerTarget === "tech") setTechRiderMediaId(mediaId);
+          else if (riderPickerTarget === "hosp") setHospRiderMediaId(mediaId);
+          setRiderPickerTarget(null);
+        }}
+        userOnly
+      />
+
       <Dialog open={activePanel === "danger"} onOpenChange={(o) => !o && setActivePanel(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
