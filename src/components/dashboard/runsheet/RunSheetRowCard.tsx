@@ -345,6 +345,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
             className="h-8 w-8 text-muted-foreground/50 active:text-foreground hover:text-foreground"
             onClick={() => onEdit(slot)}
             title="Rediger"
+            disabled={isCanceled}
           >
             <Pencil className="h-3.5 w-3.5" />
           </Button>

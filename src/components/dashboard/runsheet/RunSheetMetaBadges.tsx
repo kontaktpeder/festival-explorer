@@ -16,13 +16,11 @@ interface RunSheetMetaBadgesProps {
 const STATUS_LABELS: Record<string, string> = {
   confirmed: "Bekreftet",
   contract_pending: "Kontrakt venter",
-  canceled: "Avlyst",
 };
 
 const STATUS_STYLES: Record<string, string> = {
   confirmed: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
   contract_pending: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-  canceled: "bg-destructive/10 text-destructive border-destructive/20",
 };
 
 export function RunSheetMetaBadges({
