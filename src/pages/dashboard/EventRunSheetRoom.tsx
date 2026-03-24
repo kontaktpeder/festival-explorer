@@ -135,6 +135,7 @@ export default function EventRunSheetRoom() {
             issues={openIssues}
             onFindReplacement={(issue) => setReplaceIssue(issue)}
             onScrollToSlot={scrollToSlot}
+            issueContextBySlotId={issueContextBySlotId}
           />
         )}
 
