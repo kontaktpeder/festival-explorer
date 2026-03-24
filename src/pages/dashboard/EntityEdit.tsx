@@ -492,7 +492,7 @@ export default function EntityEdit() {
                           <p className="text-sm font-semibold text-foreground truncate">{displayName}</p>
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-muted-foreground">
-                              {ACCESS_LABELS[(isCurrentUser ? (entityWithAccess?.access ?? member.access) : member.access) as AccessLevel]}
+                              {ACCESS_LABELS[member.access as AccessLevel]}
                             </span>
                             {roleLabel && <span className="text-xs text-accent">{roleLabel}</span>}
                             {isCurrentUser && (
