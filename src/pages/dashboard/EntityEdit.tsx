@@ -919,7 +919,7 @@ export default function EntityEdit() {
               <Label className="text-muted-foreground text-xs uppercase tracking-wide">Tech rider</Label>
               <div className="flex items-center gap-3">
                 <div className="flex-1 min-w-0">
-                  {techRiderMediaId ? (
+                  {(techRiderAssetId || techRiderMediaId) ? (
                     <div className="flex items-center gap-2 text-sm text-foreground">
                       <FileText className="h-4 w-4 text-accent shrink-0" />
                       <span className="truncate">Fil valgt</span>
@@ -936,13 +936,13 @@ export default function EntityEdit() {
                       onClick={() => setRiderPickerTarget("tech")}
                       className="text-xs"
                     >
-                      {techRiderMediaId ? "Bytt" : "Velg fil"}
+                      {(techRiderAssetId || techRiderMediaId) ? "Bytt" : "Velg fil"}
                     </Button>
-                    {techRiderMediaId && (
+                    {(techRiderAssetId || techRiderMediaId) && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setTechRiderMediaId(null)}
+                        onClick={() => { setTechRiderMediaId(null); setTechRiderAssetId(null); }}
                         className="text-xs text-destructive hover:text-destructive h-8 w-8 p-0"
                       >
                         <X className="h-3.5 w-3.5" />
@@ -958,7 +958,7 @@ export default function EntityEdit() {
               <Label className="text-muted-foreground text-xs uppercase tracking-wide">Hospitality rider</Label>
               <div className="flex items-center gap-3">
                 <div className="flex-1 min-w-0">
-                  {hospRiderMediaId ? (
+                  {(hospRiderAssetId || hospRiderMediaId) ? (
                     <div className="flex items-center gap-2 text-sm text-foreground">
                       <FileText className="h-4 w-4 text-accent shrink-0" />
                       <span className="truncate">Fil valgt</span>
@@ -975,13 +975,13 @@ export default function EntityEdit() {
                       onClick={() => setRiderPickerTarget("hosp")}
                       className="text-xs"
                     >
-                      {hospRiderMediaId ? "Bytt" : "Velg fil"}
+                      {(hospRiderAssetId || hospRiderMediaId) ? "Bytt" : "Velg fil"}
                     </Button>
-                    {hospRiderMediaId && (
+                    {(hospRiderAssetId || hospRiderMediaId) && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setHospRiderMediaId(null)}
+                        onClick={() => { setHospRiderMediaId(null); setHospRiderAssetId(null); }}
                         className="text-xs text-destructive hover:text-destructive h-8 w-8 p-0"
                       >
                         <X className="h-3.5 w-3.5" />
