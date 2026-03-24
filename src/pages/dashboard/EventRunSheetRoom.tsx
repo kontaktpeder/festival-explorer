@@ -92,6 +92,20 @@ export default function EventRunSheetRoom() {
     setTimeout(() => el.classList.remove("ring-2", "ring-primary", "ring-offset-2", "ring-offset-background"), 2500);
   }, []);
 
+  const handleSyncRiders = useCallback(async () => {
+    setSyncing(true);
+    try {
+      const count = await syncRiderMissingForScope({ eventId: id });
+      await queryClient.invalidateQueries({ queryKey: ["open-event-issues"] });
+      await queryClient.invalidateQueries({ queryKey: ["my-open-event-issues"] });
+      toast({ title: `Sjekket ${count} poster for manglende rider` });
+    } catch (e: any) {
+      toast({ title: "Feil", description: e.message, variant: "destructive" });
+    } finally {
+      setSyncing(false);
+    }
+  }, [id, queryClient, toast]);
+
   if (isLoading) {
     return (
       <div className="min-h-[100svh] bg-background flex items-center justify-center">
