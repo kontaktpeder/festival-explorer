@@ -52,6 +52,31 @@ export default function EventRunSheetRoom() {
     },
   });
 
+  // Build issue context from related slots
+  const slotIds = useMemo(() => openIssues.map((i) => i.related_program_slot_id), [openIssues]);
+  const { data: issueSlots = [] } = useQuery({
+    queryKey: ["issue-slot-context-event", slotIds],
+    enabled: slotIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("event_program_slots")
+        .select("id, stage_label, slot_kind, performer_entity_id, performer_name_override, performer_entity:entities!event_program_slots_performer_entity_id_fkey(name)")
+        .in("id", slotIds);
+      return data ?? [];
+    },
+  });
+  const issueContextBySlotId = useMemo(() => {
+    const map: Record<string, IssueSlotContext> = {};
+    for (const s of issueSlots) {
+      map[s.id] = {
+        performerName: (s as any).performer_entity?.name ?? s.performer_name_override ?? undefined,
+        stageLabel: s.stage_label ?? undefined,
+        slotKind: s.slot_kind ?? undefined,
+      };
+    }
+    return map;
+  }, [issueSlots]);
+
   const scrollToSlot = useCallback((slotId: string) => {
     const el = document.getElementById(`runsheet-slot-${slotId}`);
     if (!el) return;
