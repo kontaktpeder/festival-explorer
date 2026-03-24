@@ -1602,6 +1602,54 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                 </div>
               )}
 
+              {/* Dokumenter (rider/kontrakt) */}
+              {showFields.has("performer") && (
+                <div className="space-y-2 rounded-lg border border-border/20 p-3">
+                  <Label className="text-xs font-semibold">Dokumenter</Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Teknisk rider</span>
+                      {techRiderMediaId ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-accent">✓ Vedlagt</span>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => setTechRiderMediaId(null)}>Fjern</button>
+                        </div>
+                      ) : (
+                        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "tech_rider_media_id")}>
+                          Velg fil
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Hospitality rider</span>
+                      {hospRiderMediaId ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-accent">✓ Vedlagt</span>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => setHospRiderMediaId(null)}>Fjern</button>
+                        </div>
+                      ) : (
+                        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "hosp_rider_media_id")}>
+                          Velg fil
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Kontrakt</span>
+                      {contractMediaId ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-accent">✓ Vedlagt</span>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => setContractMediaId(null)}>Fjern</button>
+                        </div>
+                      ) : (
+                        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "contract_media_id")}>
+                          Velg fil
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Kategori */}
               {showFields.has("category") && types.length > 0 && (
                 <div className="space-y-1.5">
