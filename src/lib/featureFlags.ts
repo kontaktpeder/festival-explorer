@@ -16,4 +16,4 @@ export const EVENT_FIRST_ACCESS: EventFirstAccessLevel = "admin_only";
  * rider_missing issue auto-sync.
  * Set to true once the asset_handles flow is fully QA'd and stable.
  */
-export const RIDER_MISSING_ENABLED = false;
+export const RIDER_MISSING_ENABLED = true;
