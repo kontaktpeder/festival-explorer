@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, Navigate, useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMyEntities, useMyEntitiesFilteredByPersona } from "@/hooks/useEntity";
 import { useFestivalIdsForPersona } from "@/hooks/useFestival";
@@ -62,6 +62,7 @@ const ACCESS_DESCRIPTIONS: Record<AccessLevel, string> = {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const setEntityTeamPersona = useSetEntityTeamPersona();
   const [searchParams] = useSearchParams();
   const fromOnboarding = searchParams.get("from") === "onboarding";
@@ -191,6 +192,35 @@ export default function Dashboard() {
       subscription.unsubscribe();
     };
   }, [navigate]);
+
+  // Realtime: auto-refresh when user gets new project access
+  useEffect(() => {
+    if (!currentUser?.id) return;
+
+    const channel = supabase
+      .channel("dashboard-entity-team")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "entity_team",
+          filter: `user_id=eq.${currentUser.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["my-entities"] });
+          queryClient.invalidateQueries({ queryKey: ["my-entities-filtered"] });
+          queryClient.invalidateQueries({ queryKey: ["has-backstage-access"] });
+          queryClient.invalidateQueries({ queryKey: ["dashboard-my-venues"] });
+          queryClient.invalidateQueries({ queryKey: ["dashboard-my-festivals"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUser?.id, queryClient]);
 
   const clearPersonaFilter = () => {
     localStorage.removeItem("selectedPersonaId");
