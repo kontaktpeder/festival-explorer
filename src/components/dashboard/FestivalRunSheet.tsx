@@ -247,15 +247,20 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     onSuccess: async (_result, variables) => {
       await queryClient.invalidateQueries({ queryKey });
 
+      // Resolve slot context: prefer editingSlot, fallback to data list
+      const slotCtx = editingSlot
+        ?? (data?.slots ?? []).find((s) => s.id === variables.id)
+        ?? null;
+
       // Sync artist_cancelled issue when is_canceled changes
-      if (variables.is_canceled !== undefined && editingSlot) {
+      if (variables.is_canceled !== undefined && slotCtx) {
         try {
           await syncArtistCancelledIssueForSlot({
-            id: editingSlot.id,
-            festival_id: (editingSlot as any).festival_id ?? festivalId,
-            event_id: (editingSlot as any).event_id ?? eventId,
+            id: slotCtx.id,
+            festival_id: (slotCtx as any).festival_id ?? festivalId,
+            event_id: (slotCtx as any).event_id ?? eventId,
             is_canceled: !!variables.is_canceled,
-            performer_entity_id: variables.performer_entity_id ?? editingSlot.performer_entity_id ?? null,
+            performer_entity_id: variables.performer_entity_id ?? slotCtx.performer_entity_id ?? null,
           });
         } catch (e) {
           console.error("Issue sync failed:", e);
@@ -263,16 +268,16 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
       }
 
       // Sync rider_missing issue on relevant changes
-      if (editingSlot) {
+      if (slotCtx) {
         try {
-          const merged = { ...editingSlot, ...variables } as any;
+          const merged = { ...slotCtx, ...variables } as any;
           await syncRiderMissingIssueForSlot({
-            id: editingSlot.id,
+            id: slotCtx.id,
             festival_id: merged.festival_id ?? festivalId,
             event_id: merged.event_id ?? eventId,
             is_canceled: !!merged.is_canceled,
             performer_entity_id: merged.performer_entity_id ?? null,
-            slot_kind: merged.slot_kind ?? editingSlot.slot_kind,
+            slot_kind: merged.slot_kind ?? slotCtx.slot_kind,
             tech_rider_media_id: merged.tech_rider_media_id ?? null,
           });
         } catch (e) {
