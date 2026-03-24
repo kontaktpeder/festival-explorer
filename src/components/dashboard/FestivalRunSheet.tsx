@@ -1603,7 +1603,7 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
               )}
 
               {/* Dokumenter (rider/kontrakt) */}
-              {showFields.has("performer") && (
+              {showFields.has("performer") && isFestivalScope && (
                 <div className="space-y-2 rounded-lg border border-border/20 p-3">
                   <Label className="text-xs font-semibold">Dokumenter</Label>
                   <div className="space-y-2">
