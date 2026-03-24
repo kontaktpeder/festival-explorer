@@ -232,6 +232,8 @@ export default function EntityEdit() {
       setSocialLinks(((entityWithAccess as any).social_links || []) as SocialLink[]);
       setLocationName((entityWithAccess as any).location_name || "");
       setLocationType((entityWithAccess as any).location_type || "");
+      setTechRiderMediaId((entityWithAccess as any).tech_rider_media_id || null);
+      setHospRiderMediaId((entityWithAccess as any).hosp_rider_media_id || null);
     }
   }, [entityWithAccess]);
 
