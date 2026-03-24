@@ -432,6 +432,9 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           queryClient.invalidateQueries({ queryKey });
         }
       }
+      // Deleted slot may have had open issues — refresh
+      await queryClient.invalidateQueries({ queryKey: ["open-event-issues"] });
+      await queryClient.invalidateQueries({ queryKey: ["my-open-event-issues"] });
       toast({ title: "Rad slettet" });
     },
     onError: (e: Error) =>
