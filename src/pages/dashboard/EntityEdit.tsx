@@ -998,9 +998,20 @@ export default function EntityEdit() {
       <MediaPicker
         open={riderPickerTarget !== null}
         onOpenChange={(open) => { if (!open) setRiderPickerTarget(null); }}
-        onSelect={(mediaId) => {
-          if (riderPickerTarget === "tech") setTechRiderMediaId(mediaId);
-          else if (riderPickerTarget === "hosp") setHospRiderMediaId(mediaId);
+        onSelect={async (mediaId) => {
+          try {
+            const kind = riderPickerTarget === "tech" ? "tech_rider" : "hosp_rider";
+            const assetId = await ensureAssetHandle({ mediaId, kind });
+            if (riderPickerTarget === "tech") {
+              setTechRiderMediaId(mediaId);
+              setTechRiderAssetId(assetId);
+            } else if (riderPickerTarget === "hosp") {
+              setHospRiderMediaId(mediaId);
+              setHospRiderAssetId(assetId);
+            }
+          } catch (e: any) {
+            toast({ title: "Feil", description: e.message, variant: "destructive" });
+          }
           setRiderPickerTarget(null);
         }}
         userOnly
