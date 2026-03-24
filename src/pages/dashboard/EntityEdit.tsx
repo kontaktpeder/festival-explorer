@@ -355,7 +355,8 @@ export default function EntityEdit() {
   if (!entityWithAccess) return null;
 
   const isVenue = entityWithAccess.type === "venue";
-  const userAccess = entityWithAccess.access;
+  const currentTeamMember = teamMembers?.find((m) => m.user_id === currentUser?.id);
+  const userAccess = (currentTeamMember?.access ?? entityWithAccess.access) as AccessLevel;
   const canEdit = ["editor", "admin", "owner"].includes(userAccess);
   const canInvite = ["admin", "owner"].includes(userAccess);
   const canManagePersonas = ["admin", "owner"].includes(userAccess);
