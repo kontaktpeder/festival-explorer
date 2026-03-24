@@ -887,10 +887,14 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               const kind = attachTarget.field === "tech_rider_media_id" ? "tech_rider" : attachTarget.field === "hosp_rider_media_id" ? "hosp_rider" : "contract";
               const assetId = await ensureAssetHandle({ festivalMediaId, kind });
               const assetField = attachTarget.field === "tech_rider_media_id" ? "tech_rider_asset_id" : attachTarget.field === "hosp_rider_media_id" ? "hosp_rider_asset_id" : null;
-              const payload: Record<string, unknown> = { id: attachTarget.slotId, [attachTarget.field]: festivalMediaId };
-              if (assetField) payload[assetField] = assetId;
+              // For contract, still write the legacy FK; for riders, write only asset_id
+              const payload: Record<string, unknown> = { id: attachTarget.slotId };
+              if (attachTarget.field === "contract_media_id") {
+                payload.contract_media_id = festivalMediaId;
+              } else if (assetField) {
+                payload[assetField] = assetId;
+              }
               await updateSlot.mutateAsync(payload as any);
-              // Sync editingSlot so the open dialog reflects the change immediately
               const slotId = attachTarget.slotId;
               setEditingSlot((prev) => {
                 if (!prev || prev.id !== slotId) return prev;
@@ -1058,7 +1062,7 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
     if (newContract !== contractMediaId) setContractMediaId(newContract);
   }, [(slot as any).tech_rider_asset_id, (slot as any).hosp_rider_asset_id, slot.tech_rider_media_id, slot.hosp_rider_media_id, slot.contract_media_id]);
 
-  // Prefill rider from performer entity defaults (only when slot has no rider yet)
+  // Fetch rider defaults from performer entity (for manual "Hent fra prosjekt")
   const { data: performerRiderDefaults } = useQuery({
     queryKey: ["entity-rider-asset-defaults", performerEntityId],
     enabled: !!performerEntityId && open,
@@ -1073,17 +1077,17 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
     },
   });
 
-  useEffect(() => {
+  const performerHasRiders = !!(performerRiderDefaults?.tech_rider_asset_id || performerRiderDefaults?.hosp_rider_asset_id);
+
+  const handlePullFromProject = () => {
     if (!performerRiderDefaults) return;
-    if (!techRiderAssetId && !techRiderMediaId && performerRiderDefaults.tech_rider_asset_id) {
-      setTechRiderAssetId(performerRiderDefaults.tech_rider_asset_id);
-      setTechInherited(true);
-    }
-    if (!hospRiderAssetId && !hospRiderMediaId && performerRiderDefaults.hosp_rider_asset_id) {
-      setHospRiderAssetId(performerRiderDefaults.hosp_rider_asset_id);
-      setHospInherited(true);
-    }
-  }, [performerRiderDefaults?.id]);
+    setTechRiderAssetId(performerRiderDefaults.tech_rider_asset_id ?? null);
+    setHospRiderAssetId(performerRiderDefaults.hosp_rider_asset_id ?? null);
+    setTechInherited(!!performerRiderDefaults.tech_rider_asset_id);
+    setHospInherited(!!performerRiderDefaults.hosp_rider_asset_id);
+    setTechRiderMediaId(null);
+    setHospRiderMediaId(null);
+  };
 
   // ── Two-way time sync helpers ──
   const applyDurationToEnd = (st: string, durMin: number) => {
@@ -1406,8 +1410,6 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
       performer_entity_id: performerKind === "entity" ? performerEntityId || null : null,
       performer_persona_id: performerKind === "persona" ? performerPersonaId || null : null,
       performer_name_override: performerKind === "text" ? nameOverride || null : null,
-      tech_rider_media_id: techRiderMediaId || null,
-      hosp_rider_media_id: hospRiderMediaId || null,
       contract_media_id: contractMediaId || null,
       tech_rider_asset_id: techRiderAssetId || null,
       hosp_rider_asset_id: hospRiderAssetId || null,
@@ -1698,18 +1700,35 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
               {/* Dokumenter (rider/kontrakt) – both scopes via asset_handles */}
               {showFields.has("performer") && (
                 <div className="space-y-2 rounded-lg border border-border/20 p-3">
-                  <Label className="text-xs font-semibold">Dokumenter</Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold">Dokumenter</Label>
+                    {performerHasRiders && (
+                      <button
+                        type="button"
+                        className="text-[10px] text-accent hover:underline font-medium"
+                        onClick={handlePullFromProject}
+                      >
+                        Hent fra prosjekt
+                      </button>
+                    )}
+                  </div>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs text-muted-foreground">Teknisk rider</span>
                         {techInherited && <span className="text-[9px] text-muted-foreground/60 bg-muted/40 px-1.5 py-0.5 rounded">fra prosjekt</span>}
                       </div>
-                      {(techRiderAssetId || techRiderMediaId) ? (
+                      {techRiderAssetId ? (
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs text-accent">✓ Vedlagt</span>
                           <button type="button" className="text-[10px] text-muted-foreground hover:text-foreground hover:underline" onClick={() => onPickMedia(slot.id, "tech_rider_media_id")}>Bytt</button>
-                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setTechRiderMediaId(null); setTechRiderAssetId(null); setTechInherited(false); }}>Fjern</button>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setTechRiderAssetId(null); setTechRiderMediaId(null); setTechInherited(false); }}>Fjern</button>
+                        </div>
+                      ) : techRiderMediaId ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-accent">✓ Vedlagt (legacy)</span>
+                          <button type="button" className="text-[10px] text-muted-foreground hover:text-foreground hover:underline" onClick={() => onPickMedia(slot.id, "tech_rider_media_id")}>Bytt</button>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setTechRiderMediaId(null); setTechInherited(false); }}>Fjern</button>
                         </div>
                       ) : (
                         <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "tech_rider_media_id")}>
@@ -1722,11 +1741,17 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                         <span className="text-xs text-muted-foreground">Hospitality rider</span>
                         {hospInherited && <span className="text-[9px] text-muted-foreground/60 bg-muted/40 px-1.5 py-0.5 rounded">fra prosjekt</span>}
                       </div>
-                      {(hospRiderAssetId || hospRiderMediaId) ? (
+                      {hospRiderAssetId ? (
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs text-accent">✓ Vedlagt</span>
                           <button type="button" className="text-[10px] text-muted-foreground hover:text-foreground hover:underline" onClick={() => onPickMedia(slot.id, "hosp_rider_media_id")}>Bytt</button>
-                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setHospRiderMediaId(null); setHospRiderAssetId(null); setHospInherited(false); }}>Fjern</button>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setHospRiderAssetId(null); setHospRiderMediaId(null); setHospInherited(false); }}>Fjern</button>
+                        </div>
+                      ) : hospRiderMediaId ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-accent">✓ Vedlagt (legacy)</span>
+                          <button type="button" className="text-[10px] text-muted-foreground hover:text-foreground hover:underline" onClick={() => onPickMedia(slot.id, "hosp_rider_media_id")}>Bytt</button>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setHospRiderMediaId(null); setHospInherited(false); }}>Fjern</button>
                         </div>
                       ) : (
                         <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "hosp_rider_media_id")}>

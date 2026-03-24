@@ -21,7 +21,7 @@ export function slotHasHospRider(slot: {
   return !!(slot.hosp_rider_asset_id || slot.hosp_rider_media_id);
 }
 
-/** Build the rider write payload – only *_asset_id fields */
+/** Build the rider write payload – only *_asset_id fields (never set legacy *_media_id) */
 export function buildRiderWritePayload(params: {
   techRiderAssetId: string | null;
   hospRiderAssetId: string | null;
@@ -30,4 +30,19 @@ export function buildRiderWritePayload(params: {
     tech_rider_asset_id: params.techRiderAssetId || null,
     hosp_rider_asset_id: params.hospRiderAssetId || null,
   };
+}
+
+/** Resolve the effective rider ID for a slot (asset-first, legacy fallback) */
+export function getEffectiveTechRiderId(slot: {
+  tech_rider_asset_id?: string | null;
+  tech_rider_media_id?: string | null;
+}): string | null {
+  return slot.tech_rider_asset_id || slot.tech_rider_media_id || null;
+}
+
+export function getEffectiveHospRiderId(slot: {
+  hosp_rider_asset_id?: string | null;
+  hosp_rider_media_id?: string | null;
+}): string | null {
+  return slot.hosp_rider_asset_id || slot.hosp_rider_media_id || null;
 }
