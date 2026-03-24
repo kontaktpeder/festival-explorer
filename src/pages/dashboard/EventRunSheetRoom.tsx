@@ -109,6 +109,7 @@ export default function EventRunSheetRoom() {
           <OpenIssuesList
             issues={openIssues}
             onFindReplacement={(issue) => setReplaceIssue(issue)}
+            onScrollToSlot={scrollToSlot}
           />
         )}
 

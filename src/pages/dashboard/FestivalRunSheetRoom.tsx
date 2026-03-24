@@ -95,6 +95,7 @@ export default function FestivalRunSheetRoom() {
         <OpenIssuesList
           issues={openIssues}
           onFindReplacement={(issue) => setReplaceIssue(issue)}
+          onScrollToSlot={scrollToSlot}
         />
 
         <FestivalRunSheet festivalId={id!} />
