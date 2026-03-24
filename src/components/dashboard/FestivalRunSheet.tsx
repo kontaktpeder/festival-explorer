@@ -989,6 +989,9 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
     setEndTime(slot.ends_at ? isoToLocalTimeHHmm(slot.ends_at) : "");
     setDurationMinutes(slot.duration_minutes != null ? String(slot.duration_minutes) : "");
     setTimeEditSource(null);
+    setTechRiderMediaId(slot.tech_rider_media_id ?? null);
+    setHospRiderMediaId(slot.hosp_rider_media_id ?? null);
+    setContractMediaId(slot.contract_media_id ?? null);
   }, [open, slot.id, initialAdvancedOpen]);
 
   // ── Two-way time sync helpers ──
