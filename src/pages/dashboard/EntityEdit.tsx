@@ -103,6 +103,11 @@ export default function EntityEdit() {
   
   const [locationName, setLocationName] = useState("");
   const [locationType, setLocationType] = useState<LocationType | "">("");
+  
+  // Rider state
+  const [techRiderMediaId, setTechRiderMediaId] = useState<string | null>(null);
+  const [hospRiderMediaId, setHospRiderMediaId] = useState<string | null>(null);
+  const [riderPickerTarget, setRiderPickerTarget] = useState<"tech" | "hosp" | null>(null);
 
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
   const [transferTargetId, setTransferTargetId] = useState<string | null>(null);
