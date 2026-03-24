@@ -59,7 +59,6 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { usePersonaSearch } from "@/hooks/usePersonaSearch";
 import { FestivalMediaPickerDialog } from "./FestivalMediaPickerDialog";
-import { MediaPicker } from "@/components/admin/MediaPicker";
 import { RunSheetSection } from "./runsheet/RunSheetSection";
 import { RunSheetPrintView } from "./runsheet/RunSheetPrintView";
 import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
@@ -890,21 +889,6 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
         />
       )}
 
-      {/* Media picker for documents – event scope uses MediaPicker (personal filbank) */}
-      {!isFestivalScope && attachTarget && (
-        <MediaPicker
-          open={!!attachTarget}
-          onOpenChange={(open) => !open && setAttachTarget(null)}
-          fileType="document"
-          onSelect={async (mediaId) => {
-            await updateSlot.mutateAsync({
-              id: attachTarget.slotId,
-              [attachTarget.field]: mediaId,
-            } as any);
-            setAttachTarget(null);
-          }}
-        />
-      )}
 
       {/* ── Clean print view (hidden on screen, shown on print) ── */}
       <RunSheetPrintView
@@ -1543,20 +1527,6 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                           if (!titleOverride || titleOverride === prevName) {
                             setTitleOverride(selected?.name ?? "");
                           }
-                          // Prefill riders from entity if slot doesn't have them yet
-                          if (newId) {
-                            try {
-                              const { data: ent } = await supabase
-                                .from("entities")
-                                .select("tech_rider_media_id, hosp_rider_media_id")
-                                .eq("id", newId)
-                                .single();
-                              if (ent) {
-                                if (!techRiderMediaId && ent.tech_rider_media_id) setTechRiderMediaId(ent.tech_rider_media_id);
-                                if (!hospRiderMediaId && ent.hosp_rider_media_id) setHospRiderMediaId(ent.hosp_rider_media_id);
-                              }
-                            } catch { /* ignore */ }
-                          }
                         }}
                       >
                         <SelectTrigger className="h-9">
@@ -1633,7 +1603,7 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
               )}
 
               {/* Dokumenter (rider/kontrakt) */}
-              {showFields.has("performer") && (
+              {showFields.has("performer") && isFestivalScope && (
                 <div className="space-y-2 rounded-lg border border-border/20 p-3">
                   <Label className="text-xs font-semibold">Dokumenter</Label>
                   <div className="space-y-2">
