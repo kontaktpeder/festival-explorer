@@ -59,6 +59,7 @@ import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { usePersonaSearch } from "@/hooks/usePersonaSearch";
 import { FestivalMediaPickerDialog } from "./FestivalMediaPickerDialog";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { RunSheetSection } from "./runsheet/RunSheetSection";
 import { RunSheetPrintView } from "./runsheet/RunSheetPrintView";
 import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
@@ -869,15 +870,32 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           }}
           types={types}
           festivalEntities={festivalEntities}
+          onPickMedia={(slotId, field) => setAttachTarget({ slotId, field })}
         />
       )}
 
-      {/* Media picker for documents – only for festival scope */}
+      {/* Media picker for documents – festival scope uses FestivalMediaPickerDialog */}
       {isFestivalScope && attachTarget && (
         <FestivalMediaPickerDialog
           festivalId={festivalId!}
           open={!!attachTarget}
           onOpenChange={(open) => !open && setAttachTarget(null)}
+          onSelect={async (mediaId) => {
+            await updateSlot.mutateAsync({
+              id: attachTarget.slotId,
+              [attachTarget.field]: mediaId,
+            } as any);
+            setAttachTarget(null);
+          }}
+        />
+      )}
+
+      {/* Media picker for documents – event scope uses MediaPicker (personal filbank) */}
+      {!isFestivalScope && attachTarget && (
+        <MediaPicker
+          open={!!attachTarget}
+          onOpenChange={(open) => !open && setAttachTarget(null)}
+          fileType="document"
           onSelect={async (mediaId) => {
             await updateSlot.mutateAsync({
               id: attachTarget.slotId,
@@ -916,6 +934,7 @@ interface RunSheetEditDialogProps {
   onParallelCreated?: () => void;
   types: ProgramSlotType[];
   festivalEntities: { id: string; name: string; slug: string }[];
+  onPickMedia: (slotId: string, field: "contract_media_id" | "tech_rider_media_id" | "hosp_rider_media_id") => void;
 }
 
 interface FestivalEvent {
@@ -940,7 +959,7 @@ function getRunSheetSectionFromSlot(kind: string, visibility: string, title?: st
   return "Event";
 }
 
-function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, anchorDateIso, suggestedSequenceNumber, open, initialAdvancedOpen, onOpenChange, onSave, onParallelCreated, types, festivalEntities }: RunSheetEditDialogProps) {
+function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, anchorDateIso, suggestedSequenceNumber, open, initialAdvancedOpen, onOpenChange, onSave, onParallelCreated, types, festivalEntities, onPickMedia }: RunSheetEditDialogProps) {
   const { toast } = useToast();
   const anchor = anchorDateIso || slot.starts_at;
   const [eventId, setEventId] = useState(slot.event_id ?? "");
@@ -966,6 +985,11 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   const [isCanceled, setIsCanceled] = useState(slot.is_canceled);
   const [nameOverride, setNameOverride] = useState(slot.performer_name_override ?? "");
 
+  // Rider fields
+  const [techRiderMediaId, setTechRiderMediaId] = useState<string | null>(slot.tech_rider_media_id ?? null);
+  const [hospRiderMediaId, setHospRiderMediaId] = useState<string | null>(slot.hosp_rider_media_id ?? null);
+  const [contractMediaId, setContractMediaId] = useState<string | null>(slot.contract_media_id ?? null);
+
   // Performer fields
   const [performerKind, setPerformerKind] = useState<PerformerKind>(slot.performer_kind || "entity");
   const [performerEntityId, setPerformerEntityId] = useState(slot.performer_entity_id || slot.entity_id || "");
@@ -981,6 +1005,9 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
     setEndTime(slot.ends_at ? isoToLocalTimeHHmm(slot.ends_at) : "");
     setDurationMinutes(slot.duration_minutes != null ? String(slot.duration_minutes) : "");
     setTimeEditSource(null);
+    setTechRiderMediaId(slot.tech_rider_media_id ?? null);
+    setHospRiderMediaId(slot.hosp_rider_media_id ?? null);
+    setContractMediaId(slot.contract_media_id ?? null);
   }, [open, slot.id, initialAdvancedOpen]);
 
   // ── Two-way time sync helpers ──
@@ -1304,6 +1331,9 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
       performer_entity_id: performerKind === "entity" ? performerEntityId || null : null,
       performer_persona_id: performerKind === "persona" ? performerPersonaId || null : null,
       performer_name_override: performerKind === "text" ? nameOverride || null : null,
+      tech_rider_media_id: techRiderMediaId || null,
+      hosp_rider_media_id: hospRiderMediaId || null,
+      contract_media_id: contractMediaId || null,
     });
   };
 
@@ -1505,13 +1535,27 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                     <div className="space-y-1.5">
                       <Select
                         value={performerEntityId || "__none__"}
-                        onValueChange={(v) => {
+                        onValueChange={async (v) => {
                           const newId = v === "__none__" ? "" : v;
                           const selected = festivalEntities.find((e) => e.id === newId);
                           const prevName = getCurrentPerformerName();
                           setPerformerEntityId(newId);
                           if (!titleOverride || titleOverride === prevName) {
                             setTitleOverride(selected?.name ?? "");
+                          }
+                          // Prefill riders from entity if slot doesn't have them yet
+                          if (newId) {
+                            try {
+                              const { data: ent } = await supabase
+                                .from("entities")
+                                .select("tech_rider_media_id, hosp_rider_media_id")
+                                .eq("id", newId)
+                                .single();
+                              if (ent) {
+                                if (!techRiderMediaId && ent.tech_rider_media_id) setTechRiderMediaId(ent.tech_rider_media_id);
+                                if (!hospRiderMediaId && ent.hosp_rider_media_id) setHospRiderMediaId(ent.hosp_rider_media_id);
+                              }
+                            } catch { /* ignore */ }
                           }
                         }}
                       >
@@ -1585,6 +1629,54 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                       />
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Dokumenter (rider/kontrakt) */}
+              {showFields.has("performer") && (
+                <div className="space-y-2 rounded-lg border border-border/20 p-3">
+                  <Label className="text-xs font-semibold">Dokumenter</Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Teknisk rider</span>
+                      {techRiderMediaId ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-accent">✓ Vedlagt</span>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => setTechRiderMediaId(null)}>Fjern</button>
+                        </div>
+                      ) : (
+                        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "tech_rider_media_id")}>
+                          Velg fil
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Hospitality rider</span>
+                      {hospRiderMediaId ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-accent">✓ Vedlagt</span>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => setHospRiderMediaId(null)}>Fjern</button>
+                        </div>
+                      ) : (
+                        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "hosp_rider_media_id")}>
+                          Velg fil
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Kontrakt</span>
+                      {contractMediaId ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-accent">✓ Vedlagt</span>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => setContractMediaId(null)}>Fjern</button>
+                        </div>
+                      ) : (
+                        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "contract_media_id")}>
+                          Velg fil
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
 
