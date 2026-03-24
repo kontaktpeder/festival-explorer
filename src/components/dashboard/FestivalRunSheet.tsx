@@ -874,12 +874,28 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
         />
       )}
 
-      {/* Media picker for documents – only for festival scope */}
+      {/* Media picker for documents – festival scope uses FestivalMediaPickerDialog */}
       {isFestivalScope && attachTarget && (
         <FestivalMediaPickerDialog
           festivalId={festivalId!}
           open={!!attachTarget}
           onOpenChange={(open) => !open && setAttachTarget(null)}
+          onSelect={async (mediaId) => {
+            await updateSlot.mutateAsync({
+              id: attachTarget.slotId,
+              [attachTarget.field]: mediaId,
+            } as any);
+            setAttachTarget(null);
+          }}
+        />
+      )}
+
+      {/* Media picker for documents – event scope uses MediaPicker (personal filbank) */}
+      {!isFestivalScope && attachTarget && (
+        <MediaPicker
+          open={!!attachTarget}
+          onOpenChange={(open) => !open && setAttachTarget(null)}
+          fileType="document"
           onSelect={async (mediaId) => {
             await updateSlot.mutateAsync({
               id: attachTarget.slotId,
