@@ -1674,11 +1674,15 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                   <Label className="text-xs font-semibold">Dokumenter</Label>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Teknisk rider</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-muted-foreground">Teknisk rider</span>
+                        {techInherited && <span className="text-[9px] text-muted-foreground/60 bg-muted/40 px-1.5 py-0.5 rounded">fra prosjekt</span>}
+                      </div>
                       {(techRiderAssetId || techRiderMediaId) ? (
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs text-accent">✓ Vedlagt</span>
-                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setTechRiderMediaId(null); setTechRiderAssetId(null); }}>Fjern</button>
+                          <button type="button" className="text-[10px] text-muted-foreground hover:text-foreground hover:underline" onClick={() => onPickMedia(slot.id, "tech_rider_media_id")}>Bytt</button>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setTechRiderMediaId(null); setTechRiderAssetId(null); setTechInherited(false); }}>Fjern</button>
                         </div>
                       ) : (
                         <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "tech_rider_media_id")}>
@@ -1687,11 +1691,15 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                       )}
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Hospitality rider</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-muted-foreground">Hospitality rider</span>
+                        {hospInherited && <span className="text-[9px] text-muted-foreground/60 bg-muted/40 px-1.5 py-0.5 rounded">fra prosjekt</span>}
+                      </div>
                       {(hospRiderAssetId || hospRiderMediaId) ? (
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs text-accent">✓ Vedlagt</span>
-                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setHospRiderMediaId(null); setHospRiderAssetId(null); }}>Fjern</button>
+                          <button type="button" className="text-[10px] text-muted-foreground hover:text-foreground hover:underline" onClick={() => onPickMedia(slot.id, "hosp_rider_media_id")}>Bytt</button>
+                          <button type="button" className="text-[10px] text-destructive hover:underline" onClick={() => { setHospRiderMediaId(null); setHospRiderAssetId(null); setHospInherited(false); }}>Fjern</button>
                         </div>
                       ) : (
                         <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onPickMedia(slot.id, "hosp_rider_media_id")}>
