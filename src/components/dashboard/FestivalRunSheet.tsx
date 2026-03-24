@@ -887,10 +887,14 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               const kind = attachTarget.field === "tech_rider_media_id" ? "tech_rider" : attachTarget.field === "hosp_rider_media_id" ? "hosp_rider" : "contract";
               const assetId = await ensureAssetHandle({ festivalMediaId, kind });
               const assetField = attachTarget.field === "tech_rider_media_id" ? "tech_rider_asset_id" : attachTarget.field === "hosp_rider_media_id" ? "hosp_rider_asset_id" : null;
-              const payload: Record<string, unknown> = { id: attachTarget.slotId, [attachTarget.field]: festivalMediaId };
-              if (assetField) payload[assetField] = assetId;
+              // For contract, still write the legacy FK; for riders, write only asset_id
+              const payload: Record<string, unknown> = { id: attachTarget.slotId };
+              if (attachTarget.field === "contract_media_id") {
+                payload.contract_media_id = festivalMediaId;
+              } else if (assetField) {
+                payload[assetField] = assetId;
+              }
               await updateSlot.mutateAsync(payload as any);
-              // Sync editingSlot so the open dialog reflects the change immediately
               const slotId = attachTarget.slotId;
               setEditingSlot((prev) => {
                 if (!prev || prev.id !== slotId) return prev;
