@@ -62,6 +62,7 @@ const ACCESS_DESCRIPTIONS: Record<AccessLevel, string> = {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const setEntityTeamPersona = useSetEntityTeamPersona();
   const [searchParams] = useSearchParams();
   const fromOnboarding = searchParams.get("from") === "onboarding";
