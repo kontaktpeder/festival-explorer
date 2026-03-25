@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, ArrowUp, ArrowDown, Trash2, Music } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -26,6 +27,8 @@ interface EventParticipantRow {
   participant_id: string;
   role_label: string | null;
   sort_order: number;
+  can_view_runsheet: boolean;
+  can_operate_runsheet: boolean;
 }
 
 interface ResolvedRef {
