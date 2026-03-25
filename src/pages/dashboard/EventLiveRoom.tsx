@@ -13,7 +13,6 @@ import { toLiveCardItem } from "@/lib/runsheet-live-view-model";
 import { selectLiveBuckets } from "@/lib/runsheet-live-selection";
 import { computeEffectiveTimeline, type LiveAction } from "@/lib/runsheet-live";
 import { resolveLiveRole, getLivePermissions, assertLiveAction } from "@/lib/live-permissions";
-import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ExtendedEventProgramSlot } from "@/types/program-slots";
@@ -26,7 +25,6 @@ export default function EventLiveRoom() {
   const { toast } = useToast();
   const [acting, setActing] = useState(false);
 
-  // Explicit live_role from event_participants
   const { data: explicitRole } = useLiveRoleFromParticipants("event", id);
 
   const { data: canOperate = false } = useQuery({
@@ -49,7 +47,6 @@ export default function EventLiveRoom() {
     },
   });
 
-  // Resolve: explicit live_role wins, then fallback to derived
   const role = resolveLiveRole(explicitRole, {
     canViewRunsheet: canViewRunsheet ?? false,
     canOperateRunsheet: canOperate,
@@ -83,7 +80,6 @@ export default function EventLiveRoom() {
 
   const handleAction = useCallback(
     async (slotId: string, action: LiveAction) => {
-      // Hard guard: check permissions before touching DB
       try {
         assertLiveAction(role, action);
       } catch (e: any) {
@@ -122,7 +118,7 @@ export default function EventLiveRoom() {
 
   if (isLoading) {
     return (
-      <div className="min-h-[100svh] bg-background flex items-center justify-center">
+      <div className="min-h-[100svh] bg-[#050505] flex items-center justify-center">
         <LoadingState message="Laster live-visning..." />
       </div>
     );
@@ -130,27 +126,28 @@ export default function EventLiveRoom() {
 
   if (!event || !perms.canView) {
     return (
-      <div className="min-h-[100svh] bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Ikke tilgang til live-visning.</p>
+      <div className="min-h-[100svh] bg-[#050505] flex items-center justify-center">
+        <p className="text-white/30">Ikke tilgang til live-visning.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-[100svh] bg-background">
-      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 md:py-6">
-        <div className="mb-4">
-          <Button asChild variant="ghost" size="sm" className="text-muted-foreground">
-            <Link to={`/dashboard/events/${id}`}>
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Tilbake
-            </Link>
-          </Button>
-        </div>
+    <div className="min-h-[100svh] bg-[#050505] text-white">
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-3 md:py-4 flex flex-col min-h-[100svh]">
+        {/* Back link */}
+        <Link
+          to={`/dashboard/events/${id}`}
+          className="inline-flex items-center gap-1 text-white/20 text-xs uppercase tracking-wider mb-2 active:text-white/40 transition-colors w-fit"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Tilbake
+        </Link>
 
         <LiveHeader title={event.title} role={role} showAdminBadge={perms.showAdminBadge} />
 
-        <div className="space-y-8 md:space-y-10">
+        {/* Main content */}
+        <div className="flex flex-col gap-8 md:gap-10 flex-1">
           <LiveNowBlock
             items={buckets.now}
             role={role}

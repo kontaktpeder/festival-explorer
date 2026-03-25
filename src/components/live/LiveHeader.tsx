@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Shield } from "lucide-react";
 import type { LiveRolePreset } from "@/types/live-role";
 
 type Props = {
@@ -10,10 +8,10 @@ type Props = {
 };
 
 const ROLE_LABELS: Record<string, string> = {
-  viewer: "Leser",
-  crew: "Crew",
-  editor: "Editor",
-  admin: "Admin",
+  viewer: "LESER",
+  crew: "CREW",
+  editor: "EDITOR",
+  admin: "ADMIN",
 };
 
 function hhmmss(d: Date) {
@@ -29,31 +27,38 @@ export function LiveHeader({ title, role, showAdminBadge }: Props) {
   }, []);
 
   return (
-    <header className="flex items-center justify-between border-b border-border/30 pb-4 mb-6">
-      <div className="flex items-center gap-3">
-        <span className="inline-flex items-center gap-2 text-destructive text-xs font-bold uppercase tracking-wider">
-          <span className="h-2.5 w-2.5 rounded-full bg-destructive animate-pulse" />
-          Live
+    <header className="flex items-center justify-between py-3 md:py-4 mb-2">
+      <div className="flex items-center gap-3 md:gap-4">
+        {/* Live pulse */}
+        <span className="inline-flex items-center gap-2">
+          <span className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-60" />
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.7)]" />
+          </span>
+          <span className="text-red-500 text-xs font-bold uppercase tracking-[0.2em]">
+            Live
+          </span>
         </span>
-        <span className="font-mono text-2xl md:text-3xl font-bold text-foreground tabular-nums">
+
+        {/* Clock */}
+        <span className="font-mono text-3xl md:text-4xl font-bold text-white/90 tabular-nums tracking-tight">
           {hhmmss(now)}
         </span>
       </div>
 
-      <p className="hidden md:block text-sm text-muted-foreground truncate px-4 max-w-xs">
+      <p className="hidden md:block text-sm text-white/30 truncate px-4 max-w-xs font-medium">
         {title}
       </p>
 
       <div className="flex items-center gap-2">
         {showAdminBadge && (
-          <Badge variant="destructive" className="text-[10px]">
-            <Shield className="h-3 w-3 mr-1" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-red-400 border border-red-500/30 rounded px-2 py-0.5">
             Admin
-          </Badge>
+          </span>
         )}
-        <Badge variant="outline" className="text-[10px]">
+        <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/40 border border-white/10 rounded px-2 py-0.5">
           {ROLE_LABELS[role] ?? role}
-        </Badge>
+        </span>
       </div>
     </header>
   );
