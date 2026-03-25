@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { LoadingState } from "@/components/ui/LoadingState";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,6 +45,34 @@ export default function CreateProfileWizard() {
   const navigate = useNavigate();
   const createPersona = useCreatePersona();
   const [step, setStep] = useState(0);
+  const [guardChecked, setGuardChecked] = useState(false);
+
+  // Guard: redirect existing users (with personas) away from wizard.
+  // This prevents email-change callbacks from landing users in onboarding.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) {
+          if (!cancelled) setGuardChecked(true);
+          return;
+        }
+        const { count } = await supabase
+          .from("personas")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", session.user.id);
+        if (!cancelled && count && count > 0) {
+          navigate("/dashboard?from=onboarding", { replace: true });
+          return;
+        }
+      } catch (_) {
+        // If guard check fails, allow wizard to proceed
+      }
+      if (!cancelled) setGuardChecked(true);
+    })();
+    return () => { cancelled = true; };
+  }, [navigate]);
   const [type, setType] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
@@ -77,6 +106,14 @@ export default function CreateProfileWizard() {
   };
 
   const stepCount = 6;
+
+  if (!guardChecked) {
+    return (
+      <div className="min-h-[100svh] bg-background flex items-center justify-center">
+        <LoadingState />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[100svh] bg-background flex flex-col">

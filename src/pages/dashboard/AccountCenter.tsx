@@ -146,7 +146,10 @@ export default function AccountCenter() {
     }
     setEmailLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ email: newEmail.trim() });
+      const { error } = await supabase.auth.updateUser(
+        { email: newEmail.trim() },
+        { emailRedirectTo: `${window.location.origin}/dashboard` }
+      );
       if (error) throw error;
       sonnerToast.success("Bekreftelseslenke sendt til ny e-post. Sjekk innboksen din.");
       setEditingEmail(false);
