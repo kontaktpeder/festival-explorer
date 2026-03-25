@@ -47,7 +47,7 @@ export default function EventLiveRoom() {
     },
   });
 
-  // Derive role preset
+  // Derive role preset — admin override, then check participant live_role
   const role = deriveLiveRole({
     canViewRunsheet: canViewRunsheet ?? false,
     canOperateRunsheet: canOperate,
