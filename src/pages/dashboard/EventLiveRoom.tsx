@@ -12,7 +12,9 @@ import { LiveActionBar } from "@/components/live/LiveActionBar";
 import { toLiveCardItem } from "@/lib/runsheet-live-view-model";
 import { selectLiveBuckets } from "@/lib/runsheet-live-selection";
 import { computeEffectiveTimeline, type LiveAction } from "@/lib/runsheet-live";
+import { deriveLiveRole, getLivePermissions } from "@/lib/live-permissions";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ExtendedEventProgramSlot } from "@/types/program-slots";
@@ -37,11 +39,27 @@ export default function EventLiveRoom() {
     },
   });
 
-  // Fetch slots – only "Event" section (skip soundcheck/rigging for live view)
+  const { data: isAdmin = false } = useQuery({
+    queryKey: ["is-admin-live"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("is_admin");
+      return !!data;
+    },
+  });
+
+  // Derive role preset
+  const role = deriveLiveRole({
+    canViewRunsheet: canViewRunsheet ?? false,
+    canOperateRunsheet: canOperate,
+    canEdit: canEdit ?? false,
+    isAdmin,
+  });
+  const perms = getLivePermissions(role);
+
   const { data: slots = [] } = useQuery({
     queryKey: ["event-live-slots", id],
     enabled: !!id,
-    refetchInterval: 10_000, // poll every 10s for live updates
+    refetchInterval: 10_000,
     queryFn: async () => {
       const { data } = await supabase
         .from("event_program_slots")
@@ -55,12 +73,10 @@ export default function EventLiveRoom() {
   });
 
   const effectiveTimeline = useMemo(() => computeEffectiveTimeline(slots), [slots]);
-
   const liveItems = useMemo(
     () => slots.map((s) => toLiveCardItem(s, effectiveTimeline.get(s.id))),
     [slots, effectiveTimeline]
   );
-
   const buckets = useMemo(() => selectLiveBuckets(liveItems), [liveItems]);
 
   const handleAction = useCallback(
@@ -102,13 +118,20 @@ export default function EventLiveRoom() {
     );
   }
 
-  if (!event || (!canViewRunsheet && !canEdit)) {
+  if (!event || !perms.canView) {
     return (
       <div className="min-h-[100svh] bg-background flex items-center justify-center">
         <p className="text-muted-foreground">Ikke tilgang til live-visning.</p>
       </div>
     );
   }
+
+  const ROLE_LABELS: Record<string, string> = {
+    viewer: "Leser",
+    crew: "Crew",
+    editor: "Editor",
+    admin: "Admin",
+  };
 
   return (
     <div className="min-h-[100svh] bg-background">
@@ -120,22 +143,24 @@ export default function EventLiveRoom() {
               Tilbake
             </Link>
           </Button>
+          <Badge variant="outline" className="text-[10px] ml-auto">
+            {ROLE_LABELS[role] ?? role}
+          </Badge>
         </div>
 
         <LiveHeader title={event.title} />
 
         <div className="space-y-6">
-          {/* NOW */}
           <div>
             <LiveNowBlock items={buckets.now} />
-            {canOperate && buckets.now.length > 0 && (
+            {perms.canOperate && buckets.now.length > 0 && (
               <div className="mt-2 space-y-1">
                 {buckets.now.map((item) => (
                   <LiveActionBar
                     key={item.id}
                     slotId={item.id}
                     liveStatus={item.liveStatus}
-                    canOperate={canOperate}
+                    canOperate={perms.canOperate}
                     onAction={handleAction}
                     disabled={acting}
                   />
@@ -144,17 +169,16 @@ export default function EventLiveRoom() {
             )}
           </div>
 
-          {/* NEXT */}
           <div>
             <LiveNextBlock items={buckets.next} />
-            {canOperate && buckets.next.length > 0 && (
+            {perms.canOperate && buckets.next.length > 0 && (
               <div className="mt-2 space-y-1">
                 {buckets.next.map((item) => (
                   <LiveActionBar
                     key={item.id}
                     slotId={item.id}
                     liveStatus={item.liveStatus}
-                    canOperate={canOperate}
+                    canOperate={perms.canOperate}
                     onAction={handleAction}
                     disabled={acting}
                   />
@@ -163,7 +187,6 @@ export default function EventLiveRoom() {
             )}
           </div>
 
-          {/* LATER */}
           <LiveLaterList items={buckets.later} />
         </div>
       </div>
