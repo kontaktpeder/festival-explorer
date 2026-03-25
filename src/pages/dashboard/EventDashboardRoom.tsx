@@ -1,5 +1,5 @@
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { FileText, ClipboardList, Users, ChevronRight, ExternalLink, ArrowLeft, Radio, Wrench } from "lucide-react";
+import { FileText, ClipboardList, Users, ChevronRight, ExternalLink, ArrowLeft, Radio, Wrench, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useEventBackstageAccess } from "@/hooks/useEventBackstageAccess";
@@ -59,6 +59,16 @@ export default function EventDashboardRoom() {
         ]
       : []),
     ...(canEdit
+      ? [
+          {
+            title: "Plan",
+            description: "Kjøreplan, tider og rekkefølge",
+            icon: ClipboardList,
+            to: `${base}/plan`,
+          },
+        ]
+      : []),
+    ...(canViewRunsheet || canEdit
       ? [
           {
             title: "Produksjon",
