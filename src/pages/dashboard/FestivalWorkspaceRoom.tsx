@@ -1,7 +1,7 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Calendar, Music, FolderOpen, Settings, QrCode, ChevronRight, ClipboardList } from "lucide-react";
+import { ArrowLeft, Calendar, Music, FolderOpen, Settings, QrCode, ChevronRight, Wrench } from "lucide-react";
 import { LoadingState } from "@/components/ui/LoadingState";
 import gIcon from "@/assets/giggen-g-icon-red.png";
 
@@ -40,7 +40,7 @@ export default function FestivalWorkspaceRoom() {
 
   const shortcuts = [
     { title: "Program", icon: Calendar, to: `/dashboard/festival/${id}/program` },
-    { title: "Kjøreplan", icon: ClipboardList, to: `/dashboard/festival/${id}/run-sheet` },
+    { title: "Produksjon", icon: Wrench, to: `/dashboard/festival/${id}/run-sheet` },
     { title: "Events", icon: Music, to: `/dashboard/festival/${id}/events` },
     { title: "Filbank", icon: FolderOpen, to: `/dashboard/festival/${id}/media` },
     { title: "Innstillinger", icon: Settings, to: `/dashboard/festival/${id}/settings` },
