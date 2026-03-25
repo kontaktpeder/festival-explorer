@@ -242,7 +242,7 @@ export function FestivalParticipantsZoneEditor({
       can_see_revenue: false,
       can_edit_festival_media: false,
       can_view_runsheet: zone === "on_stage" ? true : false,
-    });
+      can_operate_runsheet: false,
 
     if (error) {
       toast.error("Kunne ikke legge til");
@@ -357,7 +357,8 @@ export function FestivalParticipantsZoneEditor({
       const defaultPerms = {
         can_edit_festival: false, can_edit_events: false, can_access_media: false,
         can_scan_tickets: false, can_see_ticket_stats: false, can_create_internal_ticket: false,
-        can_see_report: false, can_see_revenue: false, can_edit_festival_media: false, can_view_runsheet: false,
+        can_see_report: false, can_see_revenue: false, can_edit_festival_media: false,
+        can_view_runsheet: false, can_operate_runsheet: false,
       };
 
       projectIds.forEach((pid) => {
