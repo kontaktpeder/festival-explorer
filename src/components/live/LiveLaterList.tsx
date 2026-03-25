@@ -1,7 +1,6 @@
 import type { LiveCardItem } from "@/lib/runsheet-live-view-model";
 import type { LiveRolePreset } from "@/types/live-role";
 import { getLiveViewMode } from "@/lib/live-view-mode";
-import { Badge } from "@/components/ui/badge";
 
 type Props = {
   items: LiveCardItem[];
@@ -9,7 +8,7 @@ type Props = {
   maxItems?: number;
 };
 
-export function LiveLaterList({ items, role, maxItems = 5 }: Props) {
+export function LiveLaterList({ items, role, maxItems = 8 }: Props) {
   const vm = getLiveViewMode(role);
 
   if (!items.length) return null;
@@ -19,33 +18,45 @@ export function LiveLaterList({ items, role, maxItems = 5 }: Props) {
 
   return (
     <section>
-      <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 font-bold mb-2">
+      <p className="text-[10px] uppercase tracking-[0.2em] text-white/20 font-bold mb-2">
         Kommer ({items.length})
       </p>
-      <div className="space-y-1">
-        {visible.map((item) => (
-          <div
-            key={item.id}
-            className="rounded-lg border border-border/15 bg-card/20 px-4 py-2.5 flex items-center gap-3"
-          >
-            <span className="font-mono text-xs text-muted-foreground/70 tabular-nums w-10 shrink-0">
-              {item.timeLabel}
-            </span>
-            <p className="text-sm text-foreground/60 truncate flex-1">{item.title}</p>
-            {vm.showContext && item.areaLabel && (
-              <span className="text-[10px] text-muted-foreground/50 shrink-0 hidden md:inline">
-                {item.areaLabel}
+      <div>
+        {visible.map((item, i) => {
+          // Closer items get more opacity
+          const opacity = Math.max(0.15, 0.5 - i * 0.05);
+          return (
+            <div
+              key={item.id}
+              className="border-t border-white/[0.04] flex items-center gap-3 py-2 md:py-2.5"
+            >
+              <span
+                className="font-mono text-xs tabular-nums w-10 shrink-0"
+                style={{ color: `rgba(255,255,255,${opacity})` }}
+              >
+                {item.timeLabel}
               </span>
-            )}
-            {vm.showRichContext && item.slotTypeLabel && (
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 shrink-0 hidden md:inline-flex">
-                {item.slotTypeLabel}
-              </Badge>
-            )}
-          </div>
-        ))}
+              <p
+                className="text-sm truncate flex-1"
+                style={{ color: `rgba(255,255,255,${opacity * 0.9})` }}
+              >
+                {item.title}
+              </p>
+              {vm.showContext && item.areaLabel && (
+                <span className="text-[10px] text-white/15 shrink-0 hidden md:inline">
+                  {item.areaLabel}
+                </span>
+              )}
+              {vm.showRichContext && item.slotTypeLabel && (
+                <span className="text-[10px] text-white/10 border border-white/5 rounded px-1 py-0 shrink-0 hidden md:inline">
+                  {item.slotTypeLabel}
+                </span>
+              )}
+            </div>
+          );
+        })}
         {remaining > 0 && (
-          <p className="text-[10px] text-muted-foreground/40 text-center py-1">
+          <p className="text-[10px] text-white/15 py-2">
             + {remaining} til
           </p>
         )}

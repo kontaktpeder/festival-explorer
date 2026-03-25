@@ -2,8 +2,6 @@ import { useMemo } from "react";
 import type { LiveCardItem } from "@/lib/runsheet-live-view-model";
 import type { LiveRolePreset } from "@/types/live-role";
 import { getLiveViewMode } from "@/lib/live-view-mode";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Play, XCircle } from "lucide-react";
 import type { LiveAction } from "@/lib/runsheet-live";
 
@@ -32,12 +30,12 @@ export function LiveNextBlock({ items, role, onAction, acting }: Props) {
 
   return (
     <section>
-      <p className="text-[10px] uppercase tracking-[0.15em] text-accent-foreground/70 font-bold mb-2">
+      <p className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold mb-3">
         Neste
       </p>
-      <div className="space-y-2">
+      <div className="space-y-1">
         {items.map((item) => (
-          <NextCard
+          <NextRow
             key={item.id}
             item={item}
             vm={vm}
@@ -50,7 +48,7 @@ export function LiveNextBlock({ items, role, onAction, acting }: Props) {
   );
 }
 
-function NextCard({
+function NextRow({
   item,
   vm,
   onAction,
@@ -64,68 +62,59 @@ function NextCard({
   const countdown = useMemo(() => minutesUntil(item.timeLabel), [item.timeLabel]);
 
   return (
-    <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 md:p-5">
+    <div className="border-t border-white/5 py-3 md:py-4">
       <div className="flex items-center gap-4">
-        <span className="font-mono text-base md:text-lg font-semibold text-foreground tabular-nums w-14 shrink-0">
+        <span className="font-mono text-xl md:text-2xl font-semibold text-white/80 tabular-nums w-16 shrink-0">
           {item.timeLabel}
         </span>
         <div className="flex-1 min-w-0">
-          <p className="text-sm md:text-base font-semibold text-foreground truncate">{item.title}</p>
-          {vm.showContext && (
-            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-              {item.areaLabel && (
-                <span className="text-[11px] text-muted-foreground">{item.areaLabel}</span>
-              )}
-              {vm.showRichContext && item.slotTypeLabel && (
-                <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                  {item.slotTypeLabel}
-                </Badge>
-              )}
-              {item.delayMinutes > 0 && (
-                <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
-                  +{item.delayMinutes} min
-                </Badge>
-              )}
-              {countdown && (
-                <span className="text-[10px] text-muted-foreground font-medium">{countdown}</span>
-              )}
-            </div>
-          )}
-          {/* Viewer still sees countdown even without full context */}
-          {vm.showMinimal && countdown && (
-            <span className="text-[10px] text-muted-foreground font-medium mt-0.5 block">{countdown}</span>
-          )}
+          <p className="text-base md:text-lg font-semibold text-white/80 truncate">{item.title}</p>
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+            {vm.showContext && item.areaLabel && (
+              <span className="text-[11px] text-white/25">{item.areaLabel}</span>
+            )}
+            {vm.showRichContext && item.slotTypeLabel && (
+              <span className="text-[10px] text-white/20 border border-white/8 rounded px-1.5 py-0">
+                {item.slotTypeLabel}
+              </span>
+            )}
+            {item.delayMinutes > 0 && (
+              <span className="text-[10px] font-bold text-yellow-400">
+                +{item.delayMinutes} min
+              </span>
+            )}
+            {countdown && (
+              <span className="text-[10px] text-white/25 font-medium">{countdown}</span>
+            )}
+          </div>
           {vm.showNotes && item.shortNote && (
-            <p className="text-[11px] text-muted-foreground mt-1 truncate">{item.shortNote}</p>
+            <p className="text-[11px] text-white/20 mt-1 truncate">{item.shortNote}</p>
           )}
         </div>
-      </div>
 
-      {vm.showActions && onAction && (
-        <div className="flex items-center gap-2 mt-3 pt-2 border-t border-accent/20">
-          <Button
-            size="lg"
-            className="flex-1 md:flex-none min-h-[44px] text-sm font-semibold"
-            disabled={acting}
-            onClick={() => onAction(item.id, "start")}
-          >
-            <Play className="h-4 w-4 mr-2" />
-            Start
-          </Button>
-          {vm.showCancel && (
-            <Button
-              size="lg"
-              variant="ghost"
-              className="min-h-[44px] text-sm text-muted-foreground"
+        {/* Inline start action */}
+        {vm.showActions && onAction && (
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              className="min-h-[44px] px-5 rounded-lg border border-white/15 text-white/70 font-semibold text-xs uppercase tracking-wider transition-all active:scale-[0.97] active:bg-white/5 disabled:opacity-30"
               disabled={acting}
-              onClick={() => onAction(item.id, "cancel")}
+              onClick={() => onAction(item.id, "start")}
             >
-              <XCircle className="h-4 w-4 mr-1.5" />
-              Avlys
-            </Button>
-          )}
-        </div>
-      )}
+              <Play className="h-3.5 w-3.5 inline mr-1.5 -mt-0.5" />
+              Start
+            </button>
+            {vm.showCancel && (
+              <button
+                className="min-h-[44px] px-3 rounded-lg text-white/20 text-xs transition-all active:text-red-400 disabled:opacity-30"
+                disabled={acting}
+                onClick={() => onAction(item.id, "cancel")}
+              >
+                <XCircle className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
