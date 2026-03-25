@@ -22,20 +22,22 @@ export function ProductionCardDetails({ item, liveBasePath }: Props) {
     "Uten tittel";
 
   return (
-    <div className="px-4 pb-4 pt-1 space-y-3 border-t border-border/20">
-      {/* Meta */}
-      <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
+    <div className="px-4 pb-4 pt-1 space-y-4 bg-muted/10 border-t border-border/50">
+      {/* Meta grid */}
+      <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 text-xs">
         <div>
           <span className="text-muted-foreground">Tid:</span>{" "}
-          {slot.starts_at
-            ? format(new Date(slot.starts_at), "HH:mm", { locale: nb })
-            : "—"}
-          {slot.ends_at &&
-            ` – ${format(new Date(slot.ends_at), "HH:mm", { locale: nb })}`}
+          <span className="tabular-nums">
+            {slot.starts_at
+              ? format(new Date(slot.starts_at), "HH:mm", { locale: nb })
+              : "—"}
+            {slot.ends_at &&
+              ` – ${format(new Date(slot.ends_at), "HH:mm", { locale: nb })}`}
+          </span>
         </div>
         <div>
           <span className="text-muted-foreground">Scene:</span>{" "}
-          {slot.stage_label || "Ikke satt"}
+          {slot.stage_label || <span className="text-destructive">Ikke satt</span>}
         </div>
         <div>
           <span className="text-muted-foreground">Type:</span> {slot.slot_kind}
@@ -47,15 +49,12 @@ export function ProductionCardDetails({ item, liveBasePath }: Props) {
 
       {/* Issues */}
       {issues.length > 0 && (
-        <div className="space-y-1">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        <div className="space-y-1.5">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
             Issues ({issues.length})
           </p>
           {issues.map((iss) => (
-            <div
-              key={iss.id}
-              className="flex items-center gap-2 text-xs"
-            >
+            <div key={iss.id} className="flex items-center gap-2 text-xs">
               <Badge
                 variant={
                   iss.severity === "critical" || iss.severity === "high"
@@ -75,11 +74,11 @@ export function ProductionCardDetails({ item, liveBasePath }: Props) {
       )}
 
       {/* Status signals */}
-      <div className="space-y-1">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+      <div className="space-y-1.5">
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
           Status
         </p>
-        <div className="flex flex-wrap gap-3 text-xs">
+        <div className="flex flex-wrap gap-4 text-xs">
           <StatusRow label="Rider" ok={!signals.missingTechRider} />
           <StatusRow label="Kontrakt" ok={!signals.missingContract} />
           <StatusRow label="Crew/scene" ok={!signals.missingCrew} />
@@ -89,7 +88,7 @@ export function ProductionCardDetails({ item, liveBasePath }: Props) {
       {/* Internal note */}
       {slot.internal_note && (
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
             Notat
           </p>
           <p className="text-xs text-muted-foreground line-clamp-3">
@@ -113,13 +112,13 @@ export function ProductionCardDetails({ item, liveBasePath }: Props) {
 
 function StatusRow({ label, ok }: { label: string; ok: boolean }) {
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1.5">
       {ok ? (
-        <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+        <CheckCircle2 className="h-3.5 w-3.5 text-foreground/40" />
       ) : (
-        <XCircle className="h-3 w-3 text-destructive" />
+        <XCircle className="h-3.5 w-3.5 text-destructive" />
       )}
-      <span className={ok ? "text-muted-foreground" : "text-foreground"}>
+      <span className={ok ? "text-muted-foreground" : "text-foreground font-medium"}>
         {label}
       </span>
     </div>

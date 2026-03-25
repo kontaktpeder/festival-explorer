@@ -35,10 +35,10 @@ export function ProductionFilters({ active, onChange, sceneLabels }: Props) {
         <button
           key={chip.value}
           onClick={() => onChange(chip.value)}
-          className={`rounded-full px-3 py-1 text-[11px] font-medium transition-colors ${
+          className={`rounded-md border px-3 py-1.5 text-[11px] font-medium transition-colors ${
             active === chip.value
-              ? "bg-accent text-accent-foreground"
-              : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+              ? "bg-foreground text-background border-foreground"
+              : "bg-card text-muted-foreground border-border hover:border-foreground/30 hover:text-foreground"
           }`}
         >
           {chip.label}
