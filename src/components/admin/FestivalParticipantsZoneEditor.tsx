@@ -49,6 +49,7 @@ interface FestivalParticipantRow {
   can_see_revenue?: boolean;
   can_edit_festival_media?: boolean;
   can_view_runsheet?: boolean;
+  can_operate_runsheet?: boolean;
   finance_access?: FinanceAccessLevel;
   domain_responsibilities?: string[];
 }
@@ -150,7 +151,7 @@ export function FestivalParticipantsZoneEditor({
     setLoading(true);
     const { data, error } = await supabase
       .from("festival_participants")
-      .select("id, festival_id, zone, participant_kind, participant_id, role_label, sort_order, can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue, can_edit_festival_media, can_view_runsheet, finance_access, domain_responsibilities")
+      .select("id, festival_id, zone, participant_kind, participant_id, role_label, sort_order, can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue, can_edit_festival_media, can_view_runsheet, can_operate_runsheet, finance_access, domain_responsibilities")
       .eq("festival_id", festivalId)
       .eq("zone", zone)
       .order("sort_order", { ascending: true });
