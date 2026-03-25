@@ -1,5 +1,5 @@
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { FileText, ClipboardList, Users, ChevronRight, ExternalLink, ArrowLeft } from "lucide-react";
+import { FileText, ClipboardList, Users, ChevronRight, ExternalLink, ArrowLeft, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useEventBackstageAccess } from "@/hooks/useEventBackstageAccess";
@@ -65,6 +65,12 @@ export default function EventDashboardRoom() {
             description: "Produksjonsflyt og tidslinje",
             icon: ClipboardList,
             to: `${base}/run-sheet`,
+          },
+          {
+            title: "Live-visning",
+            description: "Sanntids NÅ / NESTE oversikt",
+            icon: Radio,
+            to: `${base}/live`,
           },
         ]
       : []),
