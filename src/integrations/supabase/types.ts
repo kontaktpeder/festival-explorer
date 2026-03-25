@@ -913,6 +913,7 @@ export type Database = {
       }
       event_participants: {
         Row: {
+          can_operate_runsheet: boolean
           created_at: string
           end_at: string | null
           event_id: string
@@ -926,6 +927,7 @@ export type Database = {
           zone: string
         }
         Insert: {
+          can_operate_runsheet?: boolean
           created_at?: string
           end_at?: string | null
           event_id: string
@@ -939,6 +941,7 @@ export type Database = {
           zone: string
         }
         Update: {
+          can_operate_runsheet?: boolean
           created_at?: string
           end_at?: string | null
           event_id?: string
@@ -963,8 +966,12 @@ export type Database = {
       }
       event_program_slots: {
         Row: {
+          actual_ended_at: string | null
+          actual_started_at: string | null
+          completed_at: string | null
           contract_media_id: string | null
           created_at: string
+          delay_minutes: number
           duration_minutes: number | null
           ends_at: string | null
           entity_id: string | null
@@ -977,6 +984,8 @@ export type Database = {
           internal_status: string
           is_canceled: boolean
           is_visible_public: boolean
+          live_note: string | null
+          live_status: string
           parallel_group_id: string | null
           performer_entity_id: string | null
           performer_kind: string
@@ -995,8 +1004,12 @@ export type Database = {
           visibility: string
         }
         Insert: {
+          actual_ended_at?: string | null
+          actual_started_at?: string | null
+          completed_at?: string | null
           contract_media_id?: string | null
           created_at?: string
+          delay_minutes?: number
           duration_minutes?: number | null
           ends_at?: string | null
           entity_id?: string | null
@@ -1009,6 +1022,8 @@ export type Database = {
           internal_status?: string
           is_canceled?: boolean
           is_visible_public?: boolean
+          live_note?: string | null
+          live_status?: string
           parallel_group_id?: string | null
           performer_entity_id?: string | null
           performer_kind?: string
@@ -1027,8 +1042,12 @@ export type Database = {
           visibility?: string
         }
         Update: {
+          actual_ended_at?: string | null
+          actual_started_at?: string | null
+          completed_at?: string | null
           contract_media_id?: string | null
           created_at?: string
+          delay_minutes?: number
           duration_minutes?: number | null
           ends_at?: string | null
           entity_id?: string | null
@@ -1041,6 +1060,8 @@ export type Database = {
           internal_status?: string
           is_canceled?: boolean
           is_visible_public?: boolean
+          live_note?: string | null
+          live_status?: string
           parallel_group_id?: string | null
           performer_entity_id?: string | null
           performer_kind?: string
@@ -1770,6 +1791,7 @@ export type Database = {
           can_edit_events: boolean | null
           can_edit_festival: boolean | null
           can_edit_festival_media: boolean
+          can_operate_runsheet: boolean
           can_scan_tickets: boolean | null
           can_see_report: boolean | null
           can_see_revenue: boolean | null
@@ -1793,6 +1815,7 @@ export type Database = {
           can_edit_events?: boolean | null
           can_edit_festival?: boolean | null
           can_edit_festival_media?: boolean
+          can_operate_runsheet?: boolean
           can_scan_tickets?: boolean | null
           can_see_report?: boolean | null
           can_see_revenue?: boolean | null
@@ -1816,6 +1839,7 @@ export type Database = {
           can_edit_events?: boolean | null
           can_edit_festival?: boolean | null
           can_edit_festival_media?: boolean
+          can_operate_runsheet?: boolean
           can_scan_tickets?: boolean | null
           can_see_report?: boolean | null
           can_see_revenue?: boolean | null
@@ -3333,6 +3357,18 @@ export type Database = {
       }
       can_edit_finance_book: { Args: { p_book_id: string }; Returns: boolean }
       can_manage_venue: { Args: { p_venue_id: string }; Returns: boolean }
+      can_operate_runsheet_event: {
+        Args: { p_event_id: string }
+        Returns: boolean
+      }
+      can_operate_runsheet_festival: {
+        Args: { p_festival_id: string }
+        Returns: boolean
+      }
+      can_operate_runsheet_slot: {
+        Args: { p_event_id: string; p_festival_id: string }
+        Returns: boolean
+      }
       can_scan_tickets_any: { Args: never; Returns: boolean }
       can_scan_tickets_for_user: {
         Args: { p_user_id: string }
