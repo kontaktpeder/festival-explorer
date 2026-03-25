@@ -9,10 +9,14 @@ import {
   filterProductionSlots,
   groupBySections,
   getUniqueSceneLabels,
+  groupByContributors,
+  groupContributorsBySections,
   type ProductionFilter,
   type ProductionSlot,
   type ProductionKpis,
   type ProductionSectionKey,
+  type ProductionContributor,
+  type ContributorKpis,
 } from "@/lib/production-board-mappers";
 
 interface UseProductionBoardDataParams {
@@ -75,6 +79,26 @@ export function useProductionBoardData({
 
   const sceneLabels = useMemo(() => getUniqueSceneLabels(slots), [slots]);
 
+  // Contributor view
+  const contributors = useMemo(
+    () => groupByContributors(filtered),
+    [filtered],
+  );
+
+  const contributorSections: Record<ProductionSectionKey, ProductionContributor[]> = useMemo(
+    () => groupContributorsBySections(contributors),
+    [contributors],
+  );
+
+  const contributorKpis: ContributorKpis = useMemo(
+    () => ({
+      totalContributors: contributors.length,
+      withIssues: contributors.filter(c => !c.signals.ready).length,
+      ready: contributors.filter(c => c.signals.ready).length,
+    }),
+    [contributors],
+  );
+
   return {
     isLoading: slotsLoading || issuesLoading,
     kpis,
@@ -83,5 +107,8 @@ export function useProductionBoardData({
     allItems,
     filtered,
     issues,
+    contributors,
+    contributorSections,
+    contributorKpis,
   };
 }
