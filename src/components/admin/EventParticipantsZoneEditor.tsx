@@ -191,6 +191,7 @@ export function EventParticipantsZoneEditor({
       role_label: null,
       sort_order: maxOrder + 1,
       is_public: true,
+      can_view_runsheet: true,
     });
     if (error) {
       toast.error("Kunne ikke legge til");
