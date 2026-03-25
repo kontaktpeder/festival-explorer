@@ -21,12 +21,16 @@ type EventIssueRow = Database["public"]["Tables"]["event_issue"]["Row"];
 
 export default function EventRunSheetRoom() {
   const { id } = useParams<{ id: string }>();
-  const { event, isLoading, canEdit } = useEventBackstageAccess(id);
+  const { event, isLoading, canEdit, festivalContext } = useEventBackstageAccess(id);
+  const festivalId = festivalContext?.festival_id ?? null;
   const { data: canOperate = false } = useQuery({
-    queryKey: ["can-operate-runsheet-event", id],
+    queryKey: ["can-operate-runsheet-slot", festivalId, id],
     enabled: !!id,
     queryFn: async () => {
-      const { data } = await supabase.rpc("can_operate_runsheet_event" as any, { p_event_id: id! });
+      const { data } = await supabase.rpc("can_operate_runsheet_slot" as any, {
+        p_festival_id: festivalId,
+        p_event_id: id!,
+      });
       return !!data;
     },
   });

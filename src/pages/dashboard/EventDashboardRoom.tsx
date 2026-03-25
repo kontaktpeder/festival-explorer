@@ -7,7 +7,7 @@ import { useEventBackstageAccess } from "@/hooks/useEventBackstageAccess";
 export default function EventDashboardRoom() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { event, isLoading, canEdit, festivalContext } = useEventBackstageAccess(id);
+  const { event, isLoading, canEdit, canViewRunsheet, festivalContext } = useEventBackstageAccess(id);
 
   if (isLoading) {
     return (
@@ -25,10 +25,10 @@ export default function EventDashboardRoom() {
     );
   }
 
-  if (!canEdit) {
+  if (!canEdit && !canViewRunsheet) {
     return (
       <div className="min-h-[100svh] bg-background flex items-center justify-center flex-col gap-4">
-        <p className="text-muted-foreground">Du har ikke tilgang til å redigere dette eventet.</p>
+        <p className="text-muted-foreground">Du har ikke tilgang til dette eventet.</p>
         {event.slug && (
           <Button asChild variant="outline" size="sm">
             <Link to={`/event/${event.slug}`}>Se publikumsvisning</Link>
@@ -48,24 +48,36 @@ export default function EventDashboardRoom() {
     : null;
 
   const modules = [
-    {
-      title: "Detaljer",
-      description: "Tittel, tid, sted, beskrivelse og hero",
-      icon: FileText,
-      to: `${base}/details`,
-    },
-    {
-      title: "Kjøreplan",
-      description: "Produksjonsflyt og tidslinje",
-      icon: ClipboardList,
-      to: `${base}/run-sheet`,
-    },
-    {
-      title: "Medvirkende",
-      description: "Invitasjoner og deltakere i soner",
-      icon: Users,
-      to: `${base}/participants`,
-    },
+    ...(canEdit
+      ? [
+          {
+            title: "Detaljer",
+            description: "Tittel, tid, sted, beskrivelse og hero",
+            icon: FileText,
+            to: `${base}/details`,
+          },
+        ]
+      : []),
+    ...(canViewRunsheet || canEdit
+      ? [
+          {
+            title: "Kjøreplan",
+            description: "Produksjonsflyt og tidslinje",
+            icon: ClipboardList,
+            to: `${base}/run-sheet`,
+          },
+        ]
+      : []),
+    ...(canEdit
+      ? [
+          {
+            title: "Medvirkende",
+            description: "Invitasjoner og deltakere i soner",
+            icon: Users,
+            to: `${base}/participants`,
+          },
+        ]
+      : []),
   ];
 
   return (
