@@ -58,7 +58,7 @@ export default function EventDashboardRoom() {
           },
         ]
       : []),
-    ...(canViewRunsheet || canEdit
+    ...(canEdit
       ? [
           {
             title: "Kjøreplan",
@@ -66,6 +66,10 @@ export default function EventDashboardRoom() {
             icon: ClipboardList,
             to: `${base}/run-sheet`,
           },
+        ]
+      : []),
+    ...(canViewRunsheet || canEdit
+      ? [
           {
             title: "Live-visning",
             description: "Sanntids NÅ / NESTE oversikt",
