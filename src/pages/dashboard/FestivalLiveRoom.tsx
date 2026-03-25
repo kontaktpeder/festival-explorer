@@ -11,7 +11,9 @@ import { LiveActionBar } from "@/components/live/LiveActionBar";
 import { toLiveCardItem } from "@/lib/runsheet-live-view-model";
 import { selectLiveBuckets } from "@/lib/runsheet-live-selection";
 import { computeEffectiveTimeline, type LiveAction } from "@/lib/runsheet-live";
+import { deriveLiveRole, getLivePermissions } from "@/lib/live-permissions";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ExtendedEventProgramSlot } from "@/types/program-slots";
@@ -45,6 +47,44 @@ export default function FestivalLiveRoom() {
       return !!data;
     },
   });
+
+  const { data: canViewRunsheet = false } = useQuery({
+    queryKey: ["can-view-runsheet-festival-live", id],
+    enabled: !!id,
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_view_runsheet_festival" as any, {
+        p_festival_id: id!,
+      });
+      return !!data;
+    },
+  });
+
+  const { data: canEditFestival = false } = useQuery({
+    queryKey: ["can-edit-festival-live", id],
+    enabled: !!id,
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_edit_festival" as any, {
+        _festival_id: id!,
+      });
+      return !!data;
+    },
+  });
+
+  const { data: isAdmin = false } = useQuery({
+    queryKey: ["is-admin-live"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("is_admin");
+      return !!data;
+    },
+  });
+
+  const role = deriveLiveRole({
+    canViewRunsheet,
+    canOperateRunsheet: canOperate,
+    canEdit: canEditFestival,
+    isAdmin,
+  });
+  const perms = getLivePermissions(role);
 
   const { data: slots = [] } = useQuery({
     queryKey: ["festival-live-slots", id],
@@ -116,6 +156,13 @@ export default function FestivalLiveRoom() {
     );
   }
 
+  const ROLE_LABELS: Record<string, string> = {
+    viewer: "Leser",
+    crew: "Crew",
+    editor: "Editor",
+    admin: "Admin",
+  };
+
   return (
     <div className="min-h-[100svh] bg-background">
       <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6">
@@ -126,6 +173,9 @@ export default function FestivalLiveRoom() {
               Tilbake
             </Link>
           </Button>
+          <Badge variant="outline" className="text-[10px] ml-auto">
+            {ROLE_LABELS[role] ?? role}
+          </Badge>
         </div>
 
         <LiveHeader title={festival.name} />
@@ -133,14 +183,14 @@ export default function FestivalLiveRoom() {
         <div className="space-y-6">
           <div>
             <LiveNowBlock items={buckets.now} />
-            {canOperate && buckets.now.length > 0 && (
+            {perms.canOperate && buckets.now.length > 0 && (
               <div className="mt-2 space-y-1">
                 {buckets.now.map((item) => (
                   <LiveActionBar
                     key={item.id}
                     slotId={item.id}
                     liveStatus={item.liveStatus}
-                    canOperate={canOperate}
+                    canOperate={perms.canOperate}
                     onAction={handleAction}
                     disabled={acting}
                   />
@@ -151,14 +201,14 @@ export default function FestivalLiveRoom() {
 
           <div>
             <LiveNextBlock items={buckets.next} />
-            {canOperate && buckets.next.length > 0 && (
+            {perms.canOperate && buckets.next.length > 0 && (
               <div className="mt-2 space-y-1">
                 {buckets.next.map((item) => (
                   <LiveActionBar
                     key={item.id}
                     slotId={item.id}
                     liveStatus={item.liveStatus}
-                    canOperate={canOperate}
+                    canOperate={perms.canOperate}
                     onAction={handleAction}
                     disabled={acting}
                   />
