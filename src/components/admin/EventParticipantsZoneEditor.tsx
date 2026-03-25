@@ -254,6 +254,18 @@ export function EventParticipantsZoneEditor({
     if (error) toast.error("Kunne ikke oppdatere rolle");
   }, []);
 
+  const togglePermission = useCallback(async (id: string, field: "can_view_runsheet" | "can_operate_runsheet", value: boolean) => {
+    const { error } = await supabase
+      .from("event_participants")
+      .update({ [field]: value })
+      .eq("id", id);
+    if (error) {
+      toast.error("Kunne ikke oppdatere tillatelse");
+      return;
+    }
+    setRows((prev) => prev.map((r) => r.id === id ? { ...r, [field]: value } : r));
+  }, []);
+
   const reorder = async (index: number, direction: "up" | "down") => {
     const newIndex = direction === "up" ? index - 1 : index + 1;
     if (newIndex < 0 || newIndex >= rows.length) return;
