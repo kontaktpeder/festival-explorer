@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import type { LiveRolePreset } from "@/types/live-role";
 import { Loader2, ArrowUp, ArrowDown, Trash2, Music } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -29,6 +30,7 @@ interface EventParticipantRow {
   sort_order: number;
   can_view_runsheet: boolean;
   can_operate_runsheet: boolean;
+  live_role: LiveRolePreset;
 }
 
 interface ResolvedRef {
@@ -192,6 +194,7 @@ export function EventParticipantsZoneEditor({
       sort_order: maxOrder + 1,
       is_public: true,
       can_view_runsheet: true,
+      live_role: "viewer" as any,
     });
     if (error) {
       toast.error("Kunne ikke legge til");
@@ -235,6 +238,7 @@ export function EventParticipantsZoneEditor({
       participant_id: persona.id,
       role_label: null,
       sort_order: nextSort,
+      live_role: "viewer" as any,
     });
 
     if (error) {
@@ -255,16 +259,16 @@ export function EventParticipantsZoneEditor({
     if (error) toast.error("Kunne ikke oppdatere rolle");
   }, []);
 
-  const togglePermission = useCallback(async (id: string, field: "can_view_runsheet" | "can_operate_runsheet", value: boolean) => {
+  const saveLiveRole = useCallback(async (id: string, role: LiveRolePreset) => {
     const { error } = await supabase
       .from("event_participants")
-      .update({ [field]: value })
+      .update({ live_role: role } as any)
       .eq("id", id);
     if (error) {
-      toast.error("Kunne ikke oppdatere tillatelse");
+      toast.error("Kunne ikke oppdatere live-rolle");
       return;
     }
-    setRows((prev) => prev.map((r) => r.id === id ? { ...r, [field]: value } : r));
+    setRows((prev) => prev.map((r) => r.id === id ? { ...r, live_role: role } : r));
   }, []);
 
   const reorder = async (index: number, direction: "up" | "down") => {
@@ -404,24 +408,23 @@ export function EventParticipantsZoneEditor({
                       {fallbackRole || "Artist"}
                     </p>
                   )}
-                  {/* Permission toggles */}
-                  <div className="flex items-center gap-3 mt-1 px-1.5">
-                    <label className="flex items-center gap-1.5 text-[10px] text-muted-foreground cursor-pointer">
-                      <Checkbox
-                        checked={row.can_view_runsheet}
-                        onCheckedChange={(v) => togglePermission(row.id, "can_view_runsheet", !!v)}
-                        className="h-3.5 w-3.5"
-                      />
-                      Se kjøreplan
-                    </label>
-                    <label className="flex items-center gap-1.5 text-[10px] text-muted-foreground cursor-pointer">
-                      <Checkbox
-                        checked={row.can_operate_runsheet}
-                        onCheckedChange={(v) => togglePermission(row.id, "can_operate_runsheet", !!v)}
-                        className="h-3.5 w-3.5"
-                      />
-                      Operere live
-                    </label>
+                  {/* Live role select */}
+                  <div className="flex items-center gap-2 mt-1 px-1.5">
+                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">Live-rolle:</span>
+                    <Select
+                      value={row.live_role || "viewer"}
+                      onValueChange={(v) => saveLiveRole(row.id, v as LiveRolePreset)}
+                    >
+                      <SelectTrigger className="h-6 text-[11px] w-28 border-transparent bg-transparent hover:bg-muted/30 shadow-none">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="viewer">Leser</SelectItem>
+                        <SelectItem value="crew">Crew</SelectItem>
+                        <SelectItem value="editor">Editor</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 

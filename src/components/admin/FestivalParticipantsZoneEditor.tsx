@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { PersonaSearchPicker } from "@/components/persona/PersonaSearchPicker";
 import { usePersonaSearch, type PersonaOption } from "@/hooks/usePersonaSearch";
 import { getPersonaTypeLabel } from "@/lib/role-model-helpers";
+import type { LiveRolePreset } from "@/types/live-role";
 
 type FestivalZone = "backstage" | "host" | "crew" | "on_stage" | "other";
 
@@ -50,6 +51,7 @@ interface FestivalParticipantRow {
   can_edit_festival_media?: boolean;
   can_view_runsheet?: boolean;
   can_operate_runsheet?: boolean;
+  live_role?: LiveRolePreset;
   finance_access?: FinanceAccessLevel;
   domain_responsibilities?: string[];
 }
@@ -151,7 +153,7 @@ export function FestivalParticipantsZoneEditor({
     setLoading(true);
     const { data, error } = await supabase
       .from("festival_participants")
-      .select("id, festival_id, zone, participant_kind, participant_id, role_label, sort_order, can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue, can_edit_festival_media, can_view_runsheet, can_operate_runsheet, finance_access, domain_responsibilities")
+      .select("id, festival_id, zone, participant_kind, participant_id, role_label, sort_order, can_edit_festival, can_edit_events, can_access_media, can_scan_tickets, can_see_ticket_stats, can_create_internal_ticket, can_see_report, can_see_revenue, can_edit_festival_media, can_view_runsheet, can_operate_runsheet, live_role, finance_access, domain_responsibilities")
       .eq("festival_id", festivalId)
       .eq("zone", zone)
       .order("sort_order", { ascending: true });
@@ -243,6 +245,7 @@ export function FestivalParticipantsZoneEditor({
       can_edit_festival_media: false,
       can_view_runsheet: zone === "on_stage" ? true : false,
       can_operate_runsheet: false,
+      live_role: "viewer" as any,
     });
 
     if (error) {
@@ -522,9 +525,7 @@ export function FestivalParticipantsZoneEditor({
                         { key: "can_create_internal_ticket", label: "Internbillett" },
                         { key: "can_see_report", label: "Rapport" },
                         { key: "can_see_revenue", label: "Se inntekt" },
-                        { key: "can_view_runsheet", label: "Se kjøreplan" },
-                        { key: "can_operate_runsheet", label: "Operere live" },
-                      ] as const).map(({ key, label }) => (
+                       ] as const).map(({ key, label }) => (
                         <Label key={key} className="flex items-center gap-2 text-xs font-normal cursor-pointer">
                           <Checkbox
                             checked={!!row[key]}
