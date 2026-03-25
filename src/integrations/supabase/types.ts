@@ -914,6 +914,7 @@ export type Database = {
       event_participants: {
         Row: {
           can_operate_runsheet: boolean
+          can_view_runsheet: boolean
           created_at: string
           end_at: string | null
           event_id: string
@@ -928,6 +929,7 @@ export type Database = {
         }
         Insert: {
           can_operate_runsheet?: boolean
+          can_view_runsheet?: boolean
           created_at?: string
           end_at?: string | null
           event_id: string
@@ -942,6 +944,7 @@ export type Database = {
         }
         Update: {
           can_operate_runsheet?: boolean
+          can_view_runsheet?: boolean
           created_at?: string
           end_at?: string | null
           event_id?: string
@@ -3384,6 +3387,18 @@ export type Database = {
       }
       can_view_event_lineup: { Args: { p_event_id: string }; Returns: boolean }
       can_view_finance_book: { Args: { p_book_id: string }; Returns: boolean }
+      can_view_runsheet_event: {
+        Args: { p_event_id: string }
+        Returns: boolean
+      }
+      can_view_runsheet_festival: {
+        Args: { p_festival_id: string }
+        Returns: boolean
+      }
+      can_view_runsheet_slot: {
+        Args: { p_event_id: string; p_festival_id: string }
+        Returns: boolean
+      }
       checkin_ticket_atomic: {
         Args: {
           p_checked_in_by: string
