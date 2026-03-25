@@ -551,6 +551,32 @@ export function FestivalParticipantsZoneEditor({
                       ))}
                     </div>
 
+                    {/* Live role */}
+                    <div className="pt-2 border-t border-border/30">
+                      <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Live-rolle</Label>
+                      <Select
+                        value={(row.live_role as string) || "viewer"}
+                        onValueChange={async (val) => {
+                          const { error } = await supabase
+                            .from("festival_participants")
+                            .update({ live_role: val } as any)
+                            .eq("id", row.id);
+                          if (error) { toast.error("Kunne ikke oppdatere live-rolle"); return; }
+                          setRows((prev) => prev.map((r) => r.id === row.id ? { ...r, live_role: val as LiveRolePreset } : r));
+                        }}
+                      >
+                        <SelectTrigger className="h-8 text-xs w-48">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="viewer">Leser</SelectItem>
+                          <SelectItem value="crew">Crew</SelectItem>
+                          <SelectItem value="editor">Editor</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
                     {/* Finance access */}
                     <div className="pt-2 border-t border-border/30">
                       <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Økonomi-tilgang</Label>
