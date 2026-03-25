@@ -16,6 +16,8 @@ import {
   Users,
   LayoutGrid,
   ClipboardList,
+  Wrench,
+  Radio,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -160,10 +162,24 @@ export default function FestivalRoom() {
       hidden: !canAccessEvents,
     },
     {
-      title: "Kjøreplan",
-      description: "Produksjonskjøreplan og tidslinje",
+      title: "Plan",
+      description: "Kjøreplan, tider og rekkefølge",
       icon: ClipboardList,
+      to: `/dashboard/festival/${id}/plan`,
+      hidden: !canAccessEvents,
+    },
+    {
+      title: "Produksjon",
+      description: "Statusoversikt, mangler og prioriteringer",
+      icon: Wrench,
       to: `/dashboard/festival/${id}/run-sheet`,
+      hidden: !canAccessEvents,
+    },
+    {
+      title: "Live",
+      description: "Sanntids NÅ / NESTE oversikt",
+      icon: Radio,
+      to: `/dashboard/festival/${id}/live`,
       hidden: !canAccessEvents,
     },
     {
