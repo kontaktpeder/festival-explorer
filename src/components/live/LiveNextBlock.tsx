@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 import type { LiveCardItem } from "@/lib/runsheet-live-view-model";
+import type { LiveRolePreset } from "@/types/live-role";
+import { roleToSurface, isFieldVisible, getLiveActions } from "@/lib/field-view-matrix";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Play, XCircle } from "lucide-react";
@@ -7,9 +9,7 @@ import type { LiveAction } from "@/lib/runsheet-live";
 
 type Props = {
   items: LiveCardItem[];
-  showNotes?: boolean;
-  canStartDelayComplete?: boolean;
-  canCancel?: boolean;
+  role: LiveRolePreset;
   onAction?: (slotId: string, action: LiveAction) => void;
   acting?: boolean;
 };
@@ -25,14 +25,10 @@ function minutesUntil(timeLabel: string): string | null {
   return `om ${diff} min`;
 }
 
-export function LiveNextBlock({
-  items,
-  showNotes = false,
-  canStartDelayComplete = false,
-  canCancel = false,
-  onAction,
-  acting,
-}: Props) {
+export function LiveNextBlock({ items, role, onAction, acting }: Props) {
+  const surface = roleToSurface(role);
+  const actions = getLiveActions(role);
+
   if (!items.length) return null;
 
   return (
@@ -45,9 +41,8 @@ export function LiveNextBlock({
           <NextCard
             key={item.id}
             item={item}
-            showNotes={showNotes}
-            canStartDelayComplete={canStartDelayComplete}
-            canCancel={canCancel}
+            surface={surface}
+            actions={actions}
             onAction={onAction}
             acting={acting}
           />
@@ -59,20 +54,25 @@ export function LiveNextBlock({
 
 function NextCard({
   item,
-  showNotes,
-  canStartDelayComplete,
-  canCancel,
+  surface,
+  actions,
   onAction,
   acting,
 }: {
   item: LiveCardItem;
-  showNotes: boolean;
-  canStartDelayComplete: boolean;
-  canCancel: boolean;
+  surface: string;
+  actions: ReturnType<typeof getLiveActions>;
   onAction?: (slotId: string, action: LiveAction) => void;
   acting?: boolean;
 }) {
   const countdown = useMemo(() => minutesUntil(item.timeLabel), [item.timeLabel]);
+  const s = surface as any;
+
+  const showStage = isFieldVisible("stage_label", s);
+  const showSlotType = isFieldVisible("slot_type", s);
+  const showDelay = isFieldVisible("delay_minutes", s);
+  const showNote = isFieldVisible("internal_note", s);
+  const hasAnyAction = actions.start || actions.cancel;
 
   return (
     <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 md:p-5">
@@ -83,15 +83,15 @@ function NextCard({
         <div className="flex-1 min-w-0">
           <p className="text-sm md:text-base font-semibold text-foreground truncate">{item.title}</p>
           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-            {item.areaLabel && (
+            {showStage && item.areaLabel && (
               <span className="text-[11px] text-muted-foreground">{item.areaLabel}</span>
             )}
-            {item.slotTypeLabel && (
+            {showSlotType && item.slotTypeLabel && (
               <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
                 {item.slotTypeLabel}
               </Badge>
             )}
-            {item.delayMinutes > 0 && (
+            {showDelay && item.delayMinutes > 0 && (
               <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
                 +{item.delayMinutes} min
               </Badge>
@@ -100,24 +100,26 @@ function NextCard({
               <span className="text-[10px] text-muted-foreground font-medium">{countdown}</span>
             )}
           </div>
-          {showNotes && item.shortNote && (
+          {showNote && item.shortNote && (
             <p className="text-[11px] text-muted-foreground mt-1 truncate">{item.shortNote}</p>
           )}
         </div>
       </div>
 
-      {canStartDelayComplete && onAction && (
+      {hasAnyAction && onAction && (
         <div className="flex items-center gap-2 mt-3 pt-2 border-t border-accent/20">
-          <Button
-            size="lg"
-            className="flex-1 md:flex-none min-h-[44px] text-sm font-semibold"
-            disabled={acting}
-            onClick={() => onAction(item.id, "start")}
-          >
-            <Play className="h-4 w-4 mr-2" />
-            Start
-          </Button>
-          {canCancel && (
+          {actions.start && (
+            <Button
+              size="lg"
+              className="flex-1 md:flex-none min-h-[44px] text-sm font-semibold"
+              disabled={acting}
+              onClick={() => onAction(item.id, "start")}
+            >
+              <Play className="h-4 w-4 mr-2" />
+              Start
+            </Button>
+          )}
+          {actions.cancel && (
             <Button
               size="lg"
               variant="ghost"
