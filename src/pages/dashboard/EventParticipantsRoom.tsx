@@ -28,6 +28,14 @@ export default function EventParticipantsRoom() {
     );
   }
 
+  if (!canEdit) {
+    return (
+      <div className="min-h-[100svh] bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Du har ikke tilgang til å redigere medvirkende.</p>
+      </div>
+    );
+  }
+
   return (
     <BackstageShell
       title="Medvirkende"
