@@ -1,6 +1,7 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { syncArtistCancelledIssueForSlot, syncRiderMissingIssueForSlot } from "@/lib/eventIssues";
 import { ensureAssetHandle } from "@/lib/assetHandles";
+import { computeEffectiveTimeline, type LiveAction } from "@/lib/runsheet-live";
 import { MediaPicker } from "@/components/admin/MediaPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,7 +44,7 @@ import {
   minutesBetween,
   type TimePairEditSource,
 } from "@/lib/runsheet-time-ui";
-import { Plus, ClipboardList, ChevronDown, Printer, Filter, Download, Settings2 } from "lucide-react";
+import { Plus, ClipboardList, ChevronDown, Printer, Filter, Download, Settings2, Play, Square, Timer, XCircle } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -68,16 +69,18 @@ import { useEventRunSheetDefault, useEventSceneOptions } from "@/hooks/useEventR
 
 /* ── Scope-based props ── */
 type FestivalRunSheetProps =
-  | { festivalId: string; eventId?: undefined; readOnly?: boolean }
-  | { festivalId?: undefined; eventId: string; readOnly?: boolean }
-  | { scope: "festival"; festivalId: string; eventId?: undefined; readOnly?: boolean }
-  | { scope: "event"; eventId: string; festivalId?: undefined; readOnly?: boolean };
+  | { festivalId: string; eventId?: undefined; readOnly?: boolean; canOperate?: boolean }
+  | { festivalId?: undefined; eventId: string; readOnly?: boolean; canOperate?: boolean }
+  | { scope: "festival"; festivalId: string; eventId?: undefined; readOnly?: boolean; canOperate?: boolean }
+  | { scope: "event"; eventId: string; festivalId?: undefined; readOnly?: boolean; canOperate?: boolean };
 
 export function FestivalRunSheet(props: FestivalRunSheetProps) {
   const readOnly = props.readOnly ?? false;
+  const canOperate = props.canOperate ?? false;
   const festivalId = props.festivalId ?? null;
   const eventId = props.eventId ?? null;
   const isFestivalScope = !!festivalId;
+  const [mode, setMode] = useState<"plan" | "live">("plan");
 
   // Unified query key used throughout
   const queryKey = isFestivalScope
@@ -291,6 +294,23 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
       // Invalidate issues queries so UI updates
       await queryClient.invalidateQueries({ queryKey: ["open-event-issues"] });
       await queryClient.invalidateQueries({ queryKey: ["my-open-event-issues"] });
+    },
+    onError: (e: Error) =>
+      toast({ title: "Feil", description: e.message, variant: "destructive" }),
+  });
+
+  /** Live-only mutation – skips issue sync to prevent churn */
+  const liveUpdateSlot = useMutation({
+    mutationFn: async (partial: Record<string, unknown> & { id: string }) => {
+      const { id, ...payload } = partial;
+      const { error } = await supabase
+        .from("event_program_slots" as any)
+        .update(payload)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
     },
     onError: (e: Error) =>
       toast({ title: "Feil", description: e.message, variant: "destructive" }),
@@ -581,15 +601,15 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
             </div>
             <div>
               <h2 className="text-lg font-bold tracking-tight text-foreground">
-                Kjøreplan{readOnly ? " (kun visning)" : ""}
+                Kjøreplan{readOnly ? " (kun visning)" : mode === "live" ? " · Live" : ""}
               </h2>
               <p className="text-xs text-muted-foreground">
-                {slots.length} punkt{slots.length !== 1 ? "er" : ""} · {readOnly ? "Lesemodus" : "Produksjonsdokument"}
+                {slots.length} punkt{slots.length !== 1 ? "er" : ""} · {mode === "live" ? "Live-modus" : readOnly ? "Lesemodus" : "Produksjonsdokument"}
               </p>
             </div>
           </div>
-          {/* Desktop: all buttons inline – hidden in readOnly */}
-          {!readOnly && (
+          {/* Desktop: all buttons inline – hidden in readOnly and live mode */}
+          {!readOnly && mode === "plan" && (
             <div className="hidden md:flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -704,8 +724,34 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           )}
         </div>
 
+        {/* Mode toggle (plan / live) */}
+        {canOperate && (
+          <div className="flex items-center gap-2 print:hidden">
+            <div className="flex items-center gap-0.5 bg-muted/50 rounded-lg p-0.5">
+              <button
+                className={cn(
+                  "px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                  mode === "plan" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => setMode("plan")}
+              >
+                Plan
+              </button>
+              <button
+                className={cn(
+                  "px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                  mode === "live" ? "bg-accent text-accent-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => setMode("live")}
+              >
+                Live
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Mobile: compact button row */}
-        {!readOnly && (
+        {!readOnly && mode === "plan" && (
         <div className="flex md:hidden items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -823,22 +869,26 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               globalIndex += sectionSlots.length;
               return (
                 <RunSheetSection
-                  key={sectionKey}
-                  sectionKey={sectionKey}
-                  title={sectionKey}
-                  displayName={sectionNames[sectionKey] || (sectionKey === "Lydprøver" ? "Lydprøver & Opprigg" : undefined)}
-                  sectionPrefix={sectionPrefixes[sectionKey]}
-                  slots={sectionSlots}
-                  slotTypeMap={slotTypeMap}
-                  startIndex={startIdx}
-                  nowSlotId={nowSlotId}
-                  onEdit={readOnly ? () => {} : openEdit}
-                  onDelete={readOnly ? () => {} : handleDelete}
-                  onAddToSection={readOnly ? undefined : handleAddToSection}
-                  onRenameSection={readOnly ? undefined : handleRenameSection}
-                  onDeleteSection={readOnly ? undefined : handleDeleteSection}
-                  onTimeChange={readOnly ? undefined : handleSingleTimeChange}
-                 />
+                    key={sectionKey}
+                    sectionKey={sectionKey}
+                    title={sectionKey}
+                    displayName={sectionNames[sectionKey] || (sectionKey === "Lydprøver" ? "Lydprøver & Opprigg" : undefined)}
+                    sectionPrefix={sectionPrefixes[sectionKey]}
+                    slots={sectionSlots}
+                    slotTypeMap={slotTypeMap}
+                    startIndex={startIdx}
+                    nowSlotId={nowSlotId}
+                    onEdit={readOnly || mode === "live" ? () => {} : openEdit}
+                    onDelete={readOnly || mode === "live" ? () => {} : handleDelete}
+                    onAddToSection={readOnly || mode === "live" ? undefined : handleAddToSection}
+                    onRenameSection={readOnly || mode === "live" ? undefined : handleRenameSection}
+                    onDeleteSection={readOnly || mode === "live" ? undefined : handleDeleteSection}
+                    onTimeChange={readOnly || mode === "live" ? undefined : handleSingleTimeChange}
+                    mode={mode}
+                    canOperate={canOperate}
+                    onLiveAction={handleLiveAction}
+                    effectiveTimeline={effectiveTimeline}
+                   />
               );
             });
           })()}
@@ -846,7 +896,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
       )}
 
       {/* Edit dialog */}
-      {!readOnly && editingSlot && (
+      {!readOnly && mode === "plan" && editingSlot && (
         <RunSheetEditDialog
           festivalId={festivalId}
           eventId={eventId}

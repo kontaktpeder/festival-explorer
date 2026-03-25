@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
+import type { ExtendedEventProgramSlot } from "@/types/program-slots";
 import type { RunSheetSectionKey } from "@/lib/runsheet-sections";
+import type { LiveAction, LiveStatus } from "@/lib/runsheet-live";
+import { getLiveStatusLabel } from "@/lib/runsheet-live";
 import { getPerformerDisplay } from "@/lib/program-performers";
 import { getSlotKindConfig, getFieldsForSlotKind } from "@/lib/program-slots";
 import { customRowTitle } from "@/lib/runsheet-ux-helpers";
 import type { SlotKind } from "@/types/database";
 import { cn } from "@/lib/utils";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Play, Square, Timer, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RunSheetTimeBlock } from "./RunSheetTimeBlock";
@@ -34,10 +36,20 @@ interface RunSheetRowCardProps {
   onEdit: (slot: ExtendedEventProgramSlot) => void;
   onDelete: (slot: ExtendedEventProgramSlot) => void;
   onTimeChange?: (slotId: string, startsAt: string, endsAt: string | null) => void;
+  mode?: "plan" | "live";
+  canOperate?: boolean;
+  onLiveAction?: (slotId: string, action: LiveAction) => void;
+  liveEffectiveStart?: string | null;
+  liveEffectiveEnd?: string | null;
 }
 
-export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotTypeLabel, isNow, onEdit, onDelete, onTimeChange }: RunSheetRowCardProps) {
+export function RunSheetRowCard({
+  group, index, sectionKey, sectionPrefix, slotTypeLabel, isNow,
+  onEdit, onDelete, onTimeChange,
+  mode = "plan", canOperate = false, onLiveAction, liveEffectiveStart, liveEffectiveEnd,
+}: RunSheetRowCardProps) {
   const slot = group.primary;
+  const isLive = mode === "live";
   const kindConfig = getSlotKindConfig(slot.slot_kind as any);
   const showFields = getFieldsForSlotKind(slot.slot_kind as SlotKind);
   const seqNum = index + 1;
@@ -47,7 +59,22 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
   const displayTitle = isCustom ? customRowTitle(slot) : null;
   const sceneColor = !isParallel && showFields.has("scene") ? getSceneColor(slot.stage_label) : null;
 
-  // Inline time editing
+  const liveStatus = (slot.live_status ?? "not_started") as string;
+
+  // Display times: actual > effective > plan
+  const displayStartsAt = useMemo(() => {
+    if (!isLive) return slot.starts_at;
+    if (slot.actual_started_at && slot.live_status !== "not_started") return slot.actual_started_at;
+    return liveEffectiveStart ?? slot.starts_at;
+  }, [isLive, slot.starts_at, slot.actual_started_at, slot.live_status, liveEffectiveStart]);
+
+  const displayEndsAt = useMemo(() => {
+    if (!isLive) return slot.ends_at;
+    if (slot.actual_ended_at && slot.live_status !== "not_started") return slot.actual_ended_at;
+    return liveEffectiveEnd ?? slot.ends_at;
+  }, [isLive, slot.ends_at, slot.actual_ended_at, slot.live_status, liveEffectiveEnd]);
+
+  // Inline time editing (plan mode only)
   const [timePopOpen, setTimePopOpen] = useState(false);
   const toTimeStr = (iso: string) => {
     const d = new Date(iso);
@@ -57,6 +84,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
   const [editEnd, setEditEnd] = useState("");
 
   const openTimePop = () => {
+    if (isLive) return;
     setEditStart(toTimeStr(slot.starts_at));
     setEditEnd(slot.ends_at ? toTimeStr(slot.ends_at) : "");
     setTimePopOpen(true);
@@ -81,6 +109,57 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
 
   const isCanceled = !!slot.is_canceled;
 
+  // Live action buttons for a single slot
+  const renderLiveActions = (s: ExtendedEventProgramSlot) => {
+    if (!canOperate || s.is_canceled) return null;
+    const ls = (s.live_status ?? "not_started") as string;
+    if (ls === "completed" || ls === "cancelled") return null;
+    return (
+      <div className="flex items-center gap-0.5">
+        {ls === "not_started" && (
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-accent hover:text-accent hover:bg-accent/10" onClick={(e) => { e.stopPropagation(); onLiveAction?.(s.id, "start"); }} title="Start">
+            <Play className="h-3.5 w-3.5" />
+          </Button>
+        )}
+        <Button variant="ghost" size="icon" className="h-7 w-7 text-amber-500 hover:text-amber-600 hover:bg-amber-500/10" onClick={(e) => { e.stopPropagation(); onLiveAction?.(s.id, "delay5"); }} title="+5 min">
+          <Timer className="h-3.5 w-3.5" />
+        </Button>
+        {ls === "in_progress" && (
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-green-500 hover:text-green-600 hover:bg-green-500/10" onClick={(e) => { e.stopPropagation(); onLiveAction?.(s.id, "complete"); }} title="Fullfør">
+            <Square className="h-3.5 w-3.5" />
+          </Button>
+        )}
+        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/50 hover:text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); onLiveAction?.(s.id, "cancel"); }} title="Avlys live">
+          <XCircle className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    );
+  };
+
+  // Live status badge
+  const renderLiveStatusBadge = (s: ExtendedEventProgramSlot) => {
+    const ls = (s.live_status ?? "not_started") as string;
+    if (ls === "not_started" && !(s.delay_minutes > 0)) return null;
+    return (
+      <div className="flex items-center gap-1">
+        <span className={cn(
+          "text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded",
+          ls === "in_progress" && "bg-accent/20 text-accent",
+          ls === "completed" && "bg-green-500/20 text-green-700 dark:text-green-400",
+          ls === "cancelled" && "bg-destructive/20 text-destructive",
+          ls === "not_started" && "bg-muted text-muted-foreground",
+        )}>
+          {getLiveStatusLabel(ls as LiveStatus)}
+        </span>
+        {s.delay_minutes > 0 && (
+          <span className="text-[9px] font-mono text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1 py-0.5 rounded">
+            +{s.delay_minutes}m
+          </span>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div
       id={`runsheet-slot-${slot.id}`}
@@ -92,7 +171,10 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
           : "border border-border/20 bg-card/80 hover:border-border/40",
         isCanceled && "opacity-50 bg-muted/40 border-destructive/20 pointer-events-auto",
         slot.visibility === "internal" && !isCritical && !isCanceled && "border-l-2 border-l-amber-500/30",
-        isNow && !isCanceled && "ring-2 ring-accent/60 ring-offset-1 ring-offset-background"
+        isNow && !isCanceled && "ring-2 ring-accent/60 ring-offset-1 ring-offset-background",
+        isLive && liveStatus === "in_progress" && !isCanceled && "ring-2 ring-accent/40",
+        isLive && liveStatus === "completed" && "opacity-60",
+        isLive && liveStatus === "cancelled" && "opacity-40",
       )}
     >
       {isCanceled && (
@@ -107,48 +189,52 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
       )}
 
       <div className="flex gap-0 min-h-[80px] md:min-h-[120px]">
-        {/* ── Time block (clickable for inline edit) ── */}
-        <Popover open={timePopOpen} onOpenChange={setTimePopOpen}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              onClick={openTimePop}
-              className={cn(
-                "w-[64px] md:w-[110px] shrink-0 px-2 md:px-3 py-3 md:py-4 border-r flex items-center justify-center cursor-pointer active:bg-muted/60 hover:bg-muted/40 transition-colors rounded-l-xl print:cursor-default",
-                isCritical ? "border-accent/20" : "border-border/10"
-              )}
-              title="Endre tidspunkt"
-            >
-              <RunSheetTimeBlock
-                startsAt={slot.starts_at}
-                endsAt={slot.ends_at}
-                durationMinutes={slot.duration_minutes}
-                isCritical={isCritical}
-              />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-56 p-4" align="start">
-            <div className="space-y-3">
-              <p className="text-xs font-semibold text-foreground">Endre tidspunkt</p>
-              <div className="space-y-2">
-                <div>
-                  <label className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-semibold">Start</label>
-                  <Input type="time" value={editStart} onChange={(e) => setEditStart(e.target.value)} className="h-8 text-base font-mono tabular-nums" />
+        {/* ── Time block ── */}
+        {isLive ? (
+          <div className={cn(
+            "w-[64px] md:w-[110px] shrink-0 px-2 md:px-3 py-3 md:py-4 border-r flex items-center justify-center rounded-l-xl",
+            isCritical ? "border-accent/20" : "border-border/10"
+          )}>
+            <RunSheetTimeBlock startsAt={displayStartsAt} endsAt={displayEndsAt} durationMinutes={slot.duration_minutes} isCritical={isCritical} />
+          </div>
+        ) : (
+          <Popover open={timePopOpen} onOpenChange={setTimePopOpen}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                onClick={openTimePop}
+                className={cn(
+                  "w-[64px] md:w-[110px] shrink-0 px-2 md:px-3 py-3 md:py-4 border-r flex items-center justify-center cursor-pointer active:bg-muted/60 hover:bg-muted/40 transition-colors rounded-l-xl print:cursor-default",
+                  isCritical ? "border-accent/20" : "border-border/10"
+                )}
+                title="Endre tidspunkt"
+              >
+                <RunSheetTimeBlock startsAt={displayStartsAt} endsAt={displayEndsAt} durationMinutes={slot.duration_minutes} isCritical={isCritical} />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-4" align="start">
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-foreground">Endre tidspunkt</p>
+                <div className="space-y-2">
+                  <div>
+                    <label className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-semibold">Start</label>
+                    <Input type="time" value={editStart} onChange={(e) => setEditStart(e.target.value)} className="h-8 text-base font-mono tabular-nums" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-semibold">Slutt</label>
+                    <Input type="time" value={editEnd} onChange={(e) => setEditEnd(e.target.value)} className="h-8 text-base font-mono tabular-nums" />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-semibold">Slutt</label>
-                  <Input type="time" value={editEnd} onChange={(e) => setEditEnd(e.target.value)} className="h-8 text-base font-mono tabular-nums" />
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="flex-1 text-xs h-7" onClick={() => setTimePopOpen(false)}>Avbryt</Button>
+                  <Button size="sm" className="flex-1 text-xs h-7" onClick={commitTime} disabled={!editStart}>Lagre</Button>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1 text-xs h-7" onClick={() => setTimePopOpen(false)}>Avbryt</Button>
-                <Button size="sm" className="flex-1 text-xs h-7" onClick={commitTime} disabled={!editStart}>Lagre</Button>
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
+            </PopoverContent>
+          </Popover>
+        )}
 
-        {/* ── Sequence number (hidden on mobile to save space) ── */}
+        {/* ── Sequence number (hidden on mobile) ── */}
         <div className="hidden md:flex w-[56px] shrink-0 items-center justify-center border-r border-border/10">
           <span className={cn(
             "text-xl md:text-2xl font-bold tabular-nums",
@@ -160,6 +246,8 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
 
         {/* ── Main content area ── */}
         <div className="flex-1 min-w-0 px-3 md:px-6 py-3 md:py-4 flex flex-col justify-center gap-1">
+          {/* Live status badge (primary slot) */}
+          {isLive && renderLiveStatusBadge(slot)}
 
           {/* Performer(s) – parallel tree view or single */}
           {showFields.has("performer") && (
@@ -196,10 +284,7 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
                         <>
                           <span className="text-muted-foreground/30 hidden md:inline">·</span>
                           {performer.href ? (
-                            <Link
-                              to={performer.href}
-                              className="text-xs font-medium text-accent hover:underline underline-offset-2 truncate"
-                            >
+                            <Link to={performer.href} className="text-xs font-medium text-accent hover:underline underline-offset-2 truncate">
                               {performer.name}
                             </Link>
                           ) : (
@@ -209,26 +294,27 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
                           )}
                         </>
                       )}
+                      {/* Per-item live badge */}
+                      {isLive && renderLiveStatusBadge(item)}
                       <div className="flex items-center gap-0.5 ml-auto shrink-0 print:hidden">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 md:h-5 md:w-5 text-muted-foreground/40 active:text-foreground hover:text-foreground"
-                          onClick={() => onEdit(item)}
-                          title="Rediger"
-                          disabled={item.is_canceled}
-                        >
-                          <Pencil className="h-3 w-3 md:h-2.5 md:w-2.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 md:h-5 md:w-5 text-muted-foreground/40 active:text-destructive hover:text-destructive"
-                          onClick={() => onDelete(item)}
-                          title="Slett"
-                        >
-                          <Trash2 className="h-3 w-3 md:h-2.5 md:w-2.5" />
-                        </Button>
+                        {isLive ? renderLiveActions(item) : (
+                          <>
+                            <Button
+                              variant="ghost" size="icon"
+                              className="h-6 w-6 md:h-5 md:w-5 text-muted-foreground/40 active:text-foreground hover:text-foreground"
+                              onClick={() => onEdit(item)} title="Rediger" disabled={item.is_canceled}
+                            >
+                              <Pencil className="h-3 w-3 md:h-2.5 md:w-2.5" />
+                            </Button>
+                            <Button
+                              variant="ghost" size="icon"
+                              className="h-6 w-6 md:h-5 md:w-5 text-muted-foreground/40 active:text-destructive hover:text-destructive"
+                              onClick={() => onDelete(item)} title="Slett"
+                            >
+                              <Trash2 className="h-3 w-3 md:h-2.5 md:w-2.5" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </div>
                   );
@@ -316,6 +402,13 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
             </p>
           )}
 
+          {/* Live note */}
+          {isLive && slot.live_note && (
+            <p className="text-[11px] text-accent/70 leading-relaxed line-clamp-2">
+              💬 {slot.live_note}
+            </p>
+          )}
+
           {/* Meta badges */}
           {(() => {
             const hideStatusForSimpleCustom =
@@ -337,28 +430,37 @@ export function RunSheetRowCard({ group, index, sectionKey, sectionPrefix, slotT
           })()}
         </div>
 
-        {/* ── Actions – always visible on mobile, hover on desktop ── */}
-        <div className="w-[40px] md:w-[48px] shrink-0 flex flex-col items-center justify-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity print:hidden">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground/50 active:text-foreground hover:text-foreground"
-            onClick={() => onEdit(slot)}
-            title="Rediger"
-            disabled={isCanceled}
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </Button>
-          {slot.source === "manual" && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive/40 active:text-destructive hover:text-destructive"
-              onClick={() => onDelete(slot)}
-              title="Slett"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
+        {/* ── Actions ── */}
+        <div className={cn(
+          "w-[40px] md:w-[48px] shrink-0 flex flex-col items-center justify-center gap-1 transition-opacity print:hidden",
+          isLive ? "opacity-100" : "md:opacity-0 md:group-hover:opacity-100"
+        )}>
+          {isLive ? (
+            !isParallel && renderLiveActions(slot)
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground/50 active:text-foreground hover:text-foreground"
+                onClick={() => onEdit(slot)}
+                title="Rediger"
+                disabled={isCanceled}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+              {slot.source === "manual" && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive/40 active:text-destructive hover:text-destructive"
+                  onClick={() => onDelete(slot)}
+                  title="Slett"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </>
           )}
         </div>
       </div>
