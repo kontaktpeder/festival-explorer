@@ -26,18 +26,25 @@ export function useLiveRoleFromParticipants(
         .eq("user_id", userId);
       const personaIds = (personas ?? []).map((p: any) => p.id);
 
-      const table =
-        scope === "event" ? "event_participants" : "festival_participants";
-      const fkCol = scope === "event" ? "event_id" : "festival_id";
-
       let role: string | null = null;
 
       // 2 — persona-linked role (highest priority)
-      if (personaIds.length) {
+      if (scope === "event" && personaIds.length) {
         const { data: row } = await supabase
-          .from(table)
+          .from("event_participants")
           .select("live_role")
-          .eq(fkCol, scopeId!)
+          .eq("event_id", scopeId!)
+          .eq("participant_kind", "persona")
+          .in("participant_id", personaIds)
+          .order("sort_order", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        role = (row as any)?.live_role ?? null;
+      } else if (scope === "festival" && personaIds.length) {
+        const { data: row } = await supabase
+          .from("festival_participants")
+          .select("live_role")
+          .eq("festival_id", scopeId!)
           .eq("participant_kind", "persona")
           .in("participant_id", personaIds)
           .order("sort_order", { ascending: true })
@@ -56,16 +63,29 @@ export function useLiveRoleFromParticipants(
         const entityIds = (team ?? []).map((t: any) => t.entity_id);
 
         if (entityIds.length) {
-          const { data: row } = await supabase
-            .from(table)
-            .select("live_role")
-            .eq(fkCol, scopeId!)
-            .eq("participant_kind", "entity")
-            .in("participant_id", entityIds)
-            .order("sort_order", { ascending: true })
-            .limit(1)
-            .maybeSingle();
-          role = (row as any)?.live_role ?? null;
+          if (scope === "event") {
+            const { data: row } = await supabase
+              .from("event_participants")
+              .select("live_role")
+              .eq("event_id", scopeId!)
+              .eq("participant_kind", "entity")
+              .in("participant_id", entityIds)
+              .order("sort_order", { ascending: true })
+              .limit(1)
+              .maybeSingle();
+            role = (row as any)?.live_role ?? null;
+          } else {
+            const { data: row } = await supabase
+              .from("festival_participants")
+              .select("live_role")
+              .eq("festival_id", scopeId!)
+              .eq("participant_kind", "entity")
+              .in("participant_id", entityIds)
+              .order("sort_order", { ascending: true })
+              .limit(1)
+              .maybeSingle();
+            role = (row as any)?.live_role ?? null;
+          }
         }
       }
 
