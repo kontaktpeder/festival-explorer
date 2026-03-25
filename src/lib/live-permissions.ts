@@ -1,14 +1,12 @@
 import type { LiveRolePreset } from "@/types/live-role";
 
 export interface LivePermissions {
-  /** Can see the live view at all */
   canView: boolean;
-  /** Can trigger Start / Complete / Delay / Cancel */
-  canOperate: boolean;
-  /** Can edit slot metadata (title, time, performer) */
-  canEdit: boolean;
-  /** Full admin: can change permissions, delete slots */
-  canAdmin: boolean;
+  canSeeNotes: boolean;
+  canEditNotes: boolean;
+  canStartDelayComplete: boolean;
+  canCancel: boolean;
+  showAdminBadge: boolean;
 }
 
 /**
@@ -29,10 +27,38 @@ export function deriveLiveRole(flags: {
 }
 
 const PRESET_MAP: Record<LiveRolePreset, LivePermissions> = {
-  viewer: { canView: true, canOperate: false, canEdit: false, canAdmin: false },
-  crew: { canView: true, canOperate: true, canEdit: false, canAdmin: false },
-  editor: { canView: true, canOperate: true, canEdit: true, canAdmin: false },
-  admin: { canView: true, canOperate: true, canEdit: true, canAdmin: true },
+  viewer: {
+    canView: true,
+    canSeeNotes: false,
+    canEditNotes: false,
+    canStartDelayComplete: false,
+    canCancel: false,
+    showAdminBadge: false,
+  },
+  crew: {
+    canView: true,
+    canSeeNotes: true,
+    canEditNotes: false,
+    canStartDelayComplete: false,
+    canCancel: false,
+    showAdminBadge: false,
+  },
+  editor: {
+    canView: true,
+    canSeeNotes: true,
+    canEditNotes: true,
+    canStartDelayComplete: true,
+    canCancel: false,
+    showAdminBadge: false,
+  },
+  admin: {
+    canView: true,
+    canSeeNotes: true,
+    canEditNotes: true,
+    canStartDelayComplete: true,
+    canCancel: true,
+    showAdminBadge: true,
+  },
 };
 
 /** Turn a preset into a concrete permission object */

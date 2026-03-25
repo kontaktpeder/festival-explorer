@@ -15,7 +15,7 @@ import { computeEffectiveTimeline, type LiveAction } from "@/lib/runsheet-live";
 import { deriveLiveRole, getLivePermissions } from "@/lib/live-permissions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ExtendedEventProgramSlot } from "@/types/program-slots";
 
@@ -47,7 +47,6 @@ export default function EventLiveRoom() {
     },
   });
 
-  // Derive role preset — admin override, then check participant live_role
   const role = deriveLiveRole({
     canViewRunsheet: canViewRunsheet ?? false,
     canOperateRunsheet: canOperate,
@@ -133,6 +132,8 @@ export default function EventLiveRoom() {
     admin: "Admin",
   };
 
+  const showActions = perms.canStartDelayComplete || perms.canCancel;
+
   return (
     <div className="min-h-[100svh] bg-background">
       <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6">
@@ -143,24 +144,33 @@ export default function EventLiveRoom() {
               Tilbake
             </Link>
           </Button>
-          <Badge variant="outline" className="text-[10px] ml-auto">
-            {ROLE_LABELS[role] ?? role}
-          </Badge>
+          <div className="ml-auto flex items-center gap-2">
+            {perms.showAdminBadge && (
+              <Badge variant="destructive" className="text-[10px]">
+                <Shield className="h-3 w-3 mr-1" />
+                Admin
+              </Badge>
+            )}
+            <Badge variant="outline" className="text-[10px]">
+              {ROLE_LABELS[role] ?? role}
+            </Badge>
+          </div>
         </div>
 
         <LiveHeader title={event.title} />
 
         <div className="space-y-6">
           <div>
-            <LiveNowBlock items={buckets.now} />
-            {perms.canOperate && buckets.now.length > 0 && (
+            <LiveNowBlock items={buckets.now} showNotes={perms.canSeeNotes} />
+            {showActions && buckets.now.length > 0 && (
               <div className="mt-2 space-y-1">
                 {buckets.now.map((item) => (
                   <LiveActionBar
                     key={item.id}
                     slotId={item.id}
                     liveStatus={item.liveStatus}
-                    canOperate={perms.canOperate}
+                    canStartDelayComplete={perms.canStartDelayComplete}
+                    canCancel={perms.canCancel}
                     onAction={handleAction}
                     disabled={acting}
                   />
@@ -170,15 +180,16 @@ export default function EventLiveRoom() {
           </div>
 
           <div>
-            <LiveNextBlock items={buckets.next} />
-            {perms.canOperate && buckets.next.length > 0 && (
+            <LiveNextBlock items={buckets.next} showNotes={perms.canSeeNotes} />
+            {showActions && buckets.next.length > 0 && (
               <div className="mt-2 space-y-1">
                 {buckets.next.map((item) => (
                   <LiveActionBar
                     key={item.id}
                     slotId={item.id}
                     liveStatus={item.liveStatus}
-                    canOperate={perms.canOperate}
+                    canStartDelayComplete={perms.canStartDelayComplete}
+                    canCancel={perms.canCancel}
                     onAction={handleAction}
                     disabled={acting}
                   />
