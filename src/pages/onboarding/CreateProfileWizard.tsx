@@ -107,6 +107,14 @@ export default function CreateProfileWizard() {
 
   const stepCount = 6;
 
+  if (!guardChecked) {
+    return (
+      <div className="min-h-[100svh] bg-background flex items-center justify-center">
+        <LoadingState />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-[100svh] bg-background flex flex-col">
       <header
