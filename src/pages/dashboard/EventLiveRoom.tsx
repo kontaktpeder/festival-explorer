@@ -165,7 +165,7 @@ export default function EventLiveRoom() {
             acting={acting}
           />
 
-          <LiveLaterList items={buckets.later} />
+          <LiveLaterList items={buckets.later} role={role} />
         </div>
       </div>
     </div>

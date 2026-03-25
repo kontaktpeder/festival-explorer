@@ -1,11 +1,17 @@
 import type { LiveCardItem } from "@/lib/runsheet-live-view-model";
+import type { LiveRolePreset } from "@/types/live-role";
+import { getLiveViewMode } from "@/lib/live-view-mode";
+import { Badge } from "@/components/ui/badge";
 
 type Props = {
   items: LiveCardItem[];
+  role: LiveRolePreset;
   maxItems?: number;
 };
 
-export function LiveLaterList({ items, maxItems = 5 }: Props) {
+export function LiveLaterList({ items, role, maxItems = 5 }: Props) {
+  const vm = getLiveViewMode(role);
+
   if (!items.length) return null;
 
   const visible = items.slice(0, maxItems);
@@ -26,10 +32,15 @@ export function LiveLaterList({ items, maxItems = 5 }: Props) {
               {item.timeLabel}
             </span>
             <p className="text-sm text-foreground/60 truncate flex-1">{item.title}</p>
-            {item.areaLabel && (
+            {vm.showContext && item.areaLabel && (
               <span className="text-[10px] text-muted-foreground/50 shrink-0 hidden md:inline">
                 {item.areaLabel}
               </span>
+            )}
+            {vm.showRichContext && item.slotTypeLabel && (
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 shrink-0 hidden md:inline-flex">
+                {item.slotTypeLabel}
+              </Badge>
             )}
           </div>
         ))}
