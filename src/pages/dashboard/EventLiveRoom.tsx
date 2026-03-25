@@ -153,18 +153,14 @@ export default function EventLiveRoom() {
         <div className="space-y-8 md:space-y-10">
           <LiveNowBlock
             items={buckets.now}
-            showNotes={perms.canSeeNotes}
-            canStartDelayComplete={perms.canStartDelayComplete}
-            canCancel={perms.canCancel}
+            role={role}
             onAction={handleAction}
             acting={acting}
           />
 
           <LiveNextBlock
             items={buckets.next}
-            showNotes={perms.canSeeNotes}
-            canStartDelayComplete={perms.canStartDelayComplete}
-            canCancel={perms.canCancel}
+            role={role}
             onAction={handleAction}
             acting={acting}
           />
