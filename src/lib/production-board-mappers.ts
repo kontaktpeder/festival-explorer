@@ -224,3 +224,121 @@ export function getUniqueSceneLabels(slots: ExtendedEventProgramSlot[]): string[
   }
   return [...set].sort();
 }
+
+// ── Contributor grouping ──
+
+export interface ContributorSignals {
+  requiresAction: boolean;
+  unclear: boolean;
+  ready: boolean;
+  badges: string[];
+}
+
+export interface ProductionContributor {
+  id: string;
+  name: string;
+  slug?: string;
+  kind: "entity" | "persona" | "text";
+  slots: ProductionSlot[];
+  signals: ContributorSignals;
+  stageLabels: string[];
+  slotKinds: string[];
+}
+
+export function groupByContributors(items: ProductionSlot[]): ProductionContributor[] {
+  const map = new Map<string, { name: string; slug?: string; kind: "entity" | "persona" | "text"; slots: ProductionSlot[] }>();
+
+  for (const item of items) {
+    const { slot } = item;
+    let id: string;
+    let name: string;
+    let slug: string | undefined;
+    let kind: "entity" | "persona" | "text";
+
+    if (slot.performer_entity_id && slot.performer_entity) {
+      id = `entity:${slot.performer_entity_id}`;
+      name = slot.performer_entity.name;
+      slug = slot.performer_entity.slug;
+      kind = "entity";
+    } else if (slot.performer_persona_id && slot.performer_persona) {
+      id = `persona:${slot.performer_persona_id}`;
+      name = slot.performer_persona.name;
+      slug = slot.performer_persona.slug;
+      kind = "persona";
+    } else if (slot.performer_name_override) {
+      id = `text:${slot.performer_name_override}`;
+      name = slot.performer_name_override;
+      kind = "text";
+    } else {
+      // No performer — skip from contributor view
+      continue;
+    }
+
+    if (!map.has(id)) map.set(id, { name, slug, kind, slots: [] });
+    map.get(id)!.slots.push(item);
+  }
+
+  const contributors: ProductionContributor[] = [];
+  for (const [id, entry] of map) {
+    const hasReqAction = entry.slots.some(s => s.signals.requiresAction);
+    const hasUnclear = entry.slots.some(s => s.signals.unclear);
+    const allReady = !hasReqAction && !hasUnclear;
+
+    const badges: string[] = [];
+    const badgeCounts = new Map<string, number>();
+    for (const s of entry.slots) {
+      for (const b of s.signals.badges) {
+        if (b === "Klar") continue;
+        badgeCounts.set(b, (badgeCounts.get(b) ?? 0) + 1);
+      }
+    }
+    for (const [b] of badgeCounts) badges.push(b);
+    if (allReady) badges.push("Klar");
+
+    const stageLabels = [...new Set(entry.slots.map(s => s.slot.stage_label).filter(Boolean))] as string[];
+    const slotKinds = [...new Set(entry.slots.map(s => s.slot.slot_kind))];
+
+    contributors.push({
+      id,
+      name: entry.name,
+      slug: entry.slug,
+      kind: entry.kind,
+      slots: entry.slots,
+      signals: { requiresAction: hasReqAction, unclear: hasUnclear && !hasReqAction, ready: allReady, badges },
+      stageLabels,
+      slotKinds,
+    });
+  }
+
+  // Sort: requires_action first, then unclear, then ready. Within same status, alphabetical.
+  contributors.sort((a, b) => {
+    const pa = a.signals.requiresAction ? 0 : a.signals.unclear ? 1 : 2;
+    const pb = b.signals.requiresAction ? 0 : b.signals.unclear ? 1 : 2;
+    if (pa !== pb) return pa - pb;
+    return a.name.localeCompare(b.name, "nb");
+  });
+
+  return contributors;
+}
+
+export function groupContributorsBySections(
+  contributors: ProductionContributor[],
+): Record<ProductionSectionKey, ProductionContributor[]> {
+  const sections: Record<ProductionSectionKey, ProductionContributor[]> = {
+    requires_action: [],
+    unclear: [],
+    ready: [],
+  };
+  for (const c of contributors) {
+    if (c.signals.requiresAction) sections.requires_action.push(c);
+    else if (c.signals.unclear) sections.unclear.push(c);
+    else sections.ready.push(c);
+  }
+  return sections;
+}
+
+export interface ContributorKpis {
+  totalContributors: number;
+  withIssues: number;
+  ready: number;
+}
