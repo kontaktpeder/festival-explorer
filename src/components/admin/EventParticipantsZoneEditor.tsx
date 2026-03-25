@@ -403,6 +403,25 @@ export function EventParticipantsZoneEditor({
                       {fallbackRole || "Artist"}
                     </p>
                   )}
+                  {/* Permission toggles */}
+                  <div className="flex items-center gap-3 mt-1 px-1.5">
+                    <label className="flex items-center gap-1.5 text-[10px] text-muted-foreground cursor-pointer">
+                      <Checkbox
+                        checked={row.can_view_runsheet}
+                        onCheckedChange={(v) => togglePermission(row.id, "can_view_runsheet", !!v)}
+                        className="h-3.5 w-3.5"
+                      />
+                      Se kjøreplan
+                    </label>
+                    <label className="flex items-center gap-1.5 text-[10px] text-muted-foreground cursor-pointer">
+                      <Checkbox
+                        checked={row.can_operate_runsheet}
+                        onCheckedChange={(v) => togglePermission(row.id, "can_operate_runsheet", !!v)}
+                        className="h-3.5 w-3.5"
+                      />
+                      Operere live
+                    </label>
+                  </div>
                 </div>
 
                 {/* Reorder + delete */}
