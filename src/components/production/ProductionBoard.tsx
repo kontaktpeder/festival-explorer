@@ -31,10 +31,9 @@ export function ProductionBoard({ festivalId, eventId, liveBasePath }: Props) {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground">Produksjon</h2>
+    <div className="space-y-5">
+      {/* Live link */}
+      <div className="flex justify-end">
         <Button asChild variant="outline" size="sm" className="text-xs">
           <Link to={liveBasePath}>
             <Radio className="h-3.5 w-3.5 mr-1.5" />
