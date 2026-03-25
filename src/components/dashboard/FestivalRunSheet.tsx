@@ -80,7 +80,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
   const festivalId = props.festivalId ?? null;
   const eventId = props.eventId ?? null;
   const isFestivalScope = !!festivalId;
-  const [mode, setMode] = useState<"plan" | "live">("plan");
+  const mode = "plan" as const;
 
   // Unified query key used throughout
   const queryKey = isFestivalScope
@@ -786,31 +786,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           )}
         </div>
 
-        {/* Mode toggle (plan / live) */}
-        {canOperate && (
-          <div className="flex items-center gap-2 print:hidden">
-            <div className="flex items-center gap-0.5 bg-muted/50 rounded-lg p-0.5">
-              <button
-                className={cn(
-                  "px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-                  mode === "plan" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                )}
-                onClick={() => setMode("plan")}
-              >
-                Plan
-              </button>
-              <button
-                className={cn(
-                  "px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-                  mode === "live" ? "bg-accent text-accent-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                )}
-                onClick={() => setMode("live")}
-              >
-                Live
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Live toggle removed — live view is now a separate page */}
 
         {/* Mobile: compact button row */}
         {!readOnly && mode === "plan" && (
