@@ -920,6 +920,7 @@ export type Database = {
           event_id: string
           id: string
           is_public: boolean
+          live_role: Database["public"]["Enums"]["live_role_level"]
           participant_id: string
           participant_kind: string
           role_label: string | null
@@ -935,6 +936,7 @@ export type Database = {
           event_id: string
           id?: string
           is_public?: boolean
+          live_role?: Database["public"]["Enums"]["live_role_level"]
           participant_id: string
           participant_kind: string
           role_label?: string | null
@@ -950,6 +952,7 @@ export type Database = {
           event_id?: string
           id?: string
           is_public?: boolean
+          live_role?: Database["public"]["Enums"]["live_role_level"]
           participant_id?: string
           participant_kind?: string
           role_label?: string | null
@@ -1806,6 +1809,7 @@ export type Database = {
           finance_access: Database["public"]["Enums"]["finance_access_level"]
           id: string
           is_public: boolean | null
+          live_role: Database["public"]["Enums"]["live_role_level"]
           participant_id: string
           participant_kind: string
           role_label: string | null
@@ -1830,6 +1834,7 @@ export type Database = {
           finance_access?: Database["public"]["Enums"]["finance_access_level"]
           id?: string
           is_public?: boolean | null
+          live_role?: Database["public"]["Enums"]["live_role_level"]
           participant_id: string
           participant_kind: string
           role_label?: string | null
@@ -1854,6 +1859,7 @@ export type Database = {
           finance_access?: Database["public"]["Enums"]["finance_access_level"]
           id?: string
           is_public?: boolean | null
+          live_role?: Database["public"]["Enums"]["live_role_level"]
           participant_id?: string
           participant_kind?: string
           role_label?: string | null
@@ -3590,6 +3596,7 @@ export type Database = {
       entity_type: "venue" | "solo" | "band"
       entity_visibility: "public" | "unlisted" | "private"
       finance_access_level: "none" | "reader" | "editor" | "admin"
+      live_role_level: "viewer" | "crew" | "editor" | "admin"
       location_type: "city" | "region" | "country" | "address"
       project_type: "solo" | "band"
       publish_status: "draft" | "submitted" | "published"
@@ -3730,6 +3737,7 @@ export const Constants = {
       entity_type: ["venue", "solo", "band"],
       entity_visibility: ["public", "unlisted", "private"],
       finance_access_level: ["none", "reader", "editor", "admin"],
+      live_role_level: ["viewer", "crew", "editor", "admin"],
       location_type: ["city", "region", "country", "address"],
       project_type: ["solo", "band"],
       publish_status: ["draft", "submitted", "published"],
