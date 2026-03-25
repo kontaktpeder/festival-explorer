@@ -7,14 +7,12 @@ import { LiveHeader } from "@/components/live/LiveHeader";
 import { LiveNowBlock } from "@/components/live/LiveNowBlock";
 import { LiveNextBlock } from "@/components/live/LiveNextBlock";
 import { LiveLaterList } from "@/components/live/LiveLaterList";
-import { LiveActionBar } from "@/components/live/LiveActionBar";
 import { toLiveCardItem } from "@/lib/runsheet-live-view-model";
 import { selectLiveBuckets } from "@/lib/runsheet-live-selection";
 import { computeEffectiveTimeline, type LiveAction } from "@/lib/runsheet-live";
 import { deriveLiveRole, getLivePermissions } from "@/lib/live-permissions";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Shield } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ExtendedEventProgramSlot } from "@/types/program-slots";
 
@@ -156,78 +154,38 @@ export default function FestivalLiveRoom() {
     );
   }
 
-  const ROLE_LABELS: Record<string, string> = {
-    viewer: "Leser",
-    crew: "Crew",
-    editor: "Editor",
-    admin: "Admin",
-  };
-
-  const showActions = perms.canStartDelayComplete || perms.canCancel;
-
   return (
     <div className="min-h-[100svh] bg-background">
-      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 py-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Button asChild variant="ghost" size="sm">
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 md:py-6">
+        <div className="mb-4">
+          <Button asChild variant="ghost" size="sm" className="text-muted-foreground">
             <Link to={`/dashboard/festival/${id}`}>
               <ArrowLeft className="h-4 w-4 mr-1" />
               Tilbake
             </Link>
           </Button>
-          <div className="ml-auto flex items-center gap-2">
-            {perms.showAdminBadge && (
-              <Badge variant="destructive" className="text-[10px]">
-                <Shield className="h-3 w-3 mr-1" />
-                Admin
-              </Badge>
-            )}
-            <Badge variant="outline" className="text-[10px]">
-              {ROLE_LABELS[role] ?? role}
-            </Badge>
-          </div>
         </div>
 
-        <LiveHeader title={festival.name} />
+        <LiveHeader title={festival.name} role={role} showAdminBadge={perms.showAdminBadge} />
 
-        <div className="space-y-6">
-          <div>
-            <LiveNowBlock items={buckets.now} showNotes={perms.canSeeNotes} />
-            {showActions && buckets.now.length > 0 && (
-              <div className="mt-2 space-y-1">
-                {buckets.now.map((item) => (
-                  <LiveActionBar
-                    key={item.id}
-                    slotId={item.id}
-                    liveStatus={item.liveStatus}
-                    canStartDelayComplete={perms.canStartDelayComplete}
-                    canCancel={perms.canCancel}
-                    onAction={handleAction}
-                    disabled={acting}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+        <div className="space-y-8 md:space-y-10">
+          <LiveNowBlock
+            items={buckets.now}
+            showNotes={perms.canSeeNotes}
+            canStartDelayComplete={perms.canStartDelayComplete}
+            canCancel={perms.canCancel}
+            onAction={handleAction}
+            acting={acting}
+          />
 
-          <div>
-            <LiveNextBlock items={buckets.next} showNotes={perms.canSeeNotes} />
-            {showActions && buckets.next.length > 0 && (
-              <div className="mt-2 space-y-1">
-                {buckets.next.map((item) => (
-                  <LiveActionBar
-                    key={item.id}
-                    slotId={item.id}
-                    liveStatus={item.liveStatus}
-                    canStartDelayComplete={perms.canStartDelayComplete}
-                    canCancel={perms.canCancel}
-                    onAction={handleAction}
-                    disabled={acting}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          <LiveNextBlock
+            items={buckets.next}
+            showNotes={perms.canSeeNotes}
+            canStartDelayComplete={perms.canStartDelayComplete}
+            canCancel={perms.canCancel}
+            onAction={handleAction}
+            acting={acting}
+          />
 
           <LiveLaterList items={buckets.later} />
         </div>
