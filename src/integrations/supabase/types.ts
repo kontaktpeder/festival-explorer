@@ -3431,6 +3431,18 @@ export type Database = {
         Returns: Database["public"]["Enums"]["finance_access_level"]
       }
       get_invitation_by_token: { Args: { p_token: string }; Returns: Json }
+      get_my_events: {
+        Args: never
+        Returns: {
+          can_edit: boolean
+          city: string
+          id: string
+          slug: string
+          start_at: string
+          status: Database["public"]["Enums"]["publish_status"]
+          title: string
+        }[]
+      }
       get_my_festivals_as_team: {
         Args: never
         Returns: {
