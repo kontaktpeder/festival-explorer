@@ -5,17 +5,25 @@ import type { LiveAction } from "@/lib/runsheet-live";
 type Props = {
   slotId: string;
   liveStatus: string;
-  canOperate: boolean;
+  canStartDelayComplete: boolean;
+  canCancel: boolean;
   onAction: (slotId: string, action: LiveAction) => void;
   disabled?: boolean;
 };
 
-export function LiveActionBar({ slotId, liveStatus, canOperate, onAction, disabled }: Props) {
-  if (!canOperate) return null;
+export function LiveActionBar({
+  slotId,
+  liveStatus,
+  canStartDelayComplete,
+  canCancel,
+  onAction,
+  disabled,
+}: Props) {
+  if (!canStartDelayComplete && !canCancel) return null;
 
   return (
     <div className="flex items-center gap-1.5">
-      {liveStatus === "not_started" && (
+      {canStartDelayComplete && liveStatus === "not_started" && (
         <Button
           size="sm"
           variant="default"
@@ -27,7 +35,7 @@ export function LiveActionBar({ slotId, liveStatus, canOperate, onAction, disabl
           Start
         </Button>
       )}
-      {liveStatus === "in_progress" && (
+      {canStartDelayComplete && liveStatus === "in_progress" && (
         <>
           <Button
             size="sm"
@@ -51,7 +59,7 @@ export function LiveActionBar({ slotId, liveStatus, canOperate, onAction, disabl
           </Button>
         </>
       )}
-      {(liveStatus === "not_started" || liveStatus === "in_progress") && (
+      {canCancel && (liveStatus === "not_started" || liveStatus === "in_progress") && (
         <Button
           size="sm"
           variant="ghost"

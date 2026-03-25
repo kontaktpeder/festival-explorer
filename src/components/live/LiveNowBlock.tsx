@@ -3,9 +3,10 @@ import { Badge } from "@/components/ui/badge";
 
 type Props = {
   items: LiveCardItem[];
+  showNotes?: boolean;
 };
 
-export function LiveNowBlock({ items }: Props) {
+export function LiveNowBlock({ items, showNotes = true }: Props) {
   if (!items.length) {
     return (
       <div className="rounded-xl border border-border/30 bg-card/40 p-8 text-center">
@@ -45,7 +46,7 @@ export function LiveNowBlock({ items }: Props) {
                   </Badge>
                 )}
               </div>
-              {item.shortNote && (
+              {showNotes && item.shortNote && (
                 <p className="text-[11px] text-muted-foreground mt-1 truncate">{item.shortNote}</p>
               )}
             </div>
