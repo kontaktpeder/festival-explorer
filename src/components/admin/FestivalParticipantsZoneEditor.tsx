@@ -521,6 +521,7 @@ export function FestivalParticipantsZoneEditor({
                         { key: "can_see_report", label: "Rapport" },
                         { key: "can_see_revenue", label: "Se inntekt" },
                         { key: "can_view_runsheet", label: "Se kjøreplan" },
+                        { key: "can_operate_runsheet", label: "Operere live" },
                       ] as const).map(({ key, label }) => (
                         <Label key={key} className="flex items-center gap-2 text-xs font-normal cursor-pointer">
                           <Checkbox
@@ -537,6 +538,7 @@ export function FestivalParticipantsZoneEditor({
                                 can_see_revenue: !!row.can_see_revenue,
                                 can_edit_festival_media: !!row.can_edit_festival_media,
                                 can_view_runsheet: !!row.can_view_runsheet,
+                                can_operate_runsheet: !!row.can_operate_runsheet,
                                 [key]: !!v,
                               })
                             }
