@@ -24,17 +24,13 @@ export default function DashboardEventsRoom() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
-  // Phase 1: admin sees all events. Phase 2: scope to "my events" via RPC.
+  // Role-based: returns only events the user can view or edit
   const { data: events, isLoading } = useQuery({
     queryKey: ["dashboard-events-list"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("events")
-        .select("id, title, slug, status, start_at, venue_id, created_at, city")
-        .order("start_at", { ascending: false })
-        .limit(200);
+      const { data, error } = await supabase.rpc("get_my_events" as any);
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as Array<{ id: string; title: string; slug: string; status: string; start_at: string | null; city: string | null; can_edit: boolean }>;
     },
   });
 

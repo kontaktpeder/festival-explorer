@@ -103,6 +103,17 @@ export default function Dashboard() {
     enabled: !!hasBackstageAccess,
   });
 
+  // Events the user can view or edit (via RPC)
+  const { data: myEvents } = useQuery({
+    queryKey: ["dashboard-my-events"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_my_events" as any);
+      if (error) throw error;
+      return (data ?? []) as Array<{ id: string; title: string; slug: string; status: string; start_at: string | null; city: string | null; can_edit: boolean }>;
+    },
+    enabled: !!currentUser?.id,
+  });
+
   // Venues the user owns or has staff access to (via RPC)
   const { data: myVenues } = useQuery({
     queryKey: ["dashboard-my-venues", currentUser?.id, selectedPersonaId],
@@ -254,7 +265,8 @@ export default function Dashboard() {
     const hasProjectAccess = hostEntities.length > 0 || projectEntities.length > 0;
     const hasFestivalAccess = !!(hasBackstageAccess && displayedFestivals.length > 0);
     const hasVenueAccess = !!(myVenues && myVenues.length > 0);
-    const hasAnyAccess = hasProjectAccess || hasFestivalAccess || hasVenueAccess;
+    const hasEventAccess = !!(myEvents && myEvents.length > 0);
+    const hasAnyAccess = hasProjectAccess || hasFestivalAccess || hasVenueAccess || hasEventAccess;
 
     return (
       <div className="min-h-[100svh] bg-background">
@@ -398,6 +410,55 @@ export default function Dashboard() {
                         <Pencil className="h-3 w-3" />
                         Rediger prosjekt
                       </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Mine events */}
+          {hasEventAccess && (
+            <section className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+                  Events
+                </h2>
+                <span className="text-[11px] text-muted-foreground/50">
+                  {myEvents!.length} event{myEvents!.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+                {myEvents!.map((ev) => (
+                  <Link
+                    key={ev.id}
+                    to={`/dashboard/events/${ev.id}`}
+                    className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
+                        <Calendar className="h-5 w-5 text-accent" />
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Badge
+                          variant={ev.status === "published" ? "default" : "secondary"}
+                          className="text-[10px]"
+                        >
+                          {ev.status === "published" ? "Publisert" : "Utkast"}
+                        </Badge>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                      </div>
+                    </div>
+                    <h3 className="text-sm font-semibold text-foreground mb-1 truncate">{ev.title}</h3>
+                    <div className="flex items-center gap-1.5">
+                      {ev.start_at && (
+                        <p className="text-[10px] text-muted-foreground/60">
+                          {new Date(ev.start_at).toLocaleDateString("nb-NO", { day: "numeric", month: "short", year: "numeric" })}
+                        </p>
+                      )}
+                      {ev.city && (
+                        <span className="text-[10px] text-muted-foreground/40">· {ev.city}</span>
+                      )}
                     </div>
                   </Link>
                 ))}
