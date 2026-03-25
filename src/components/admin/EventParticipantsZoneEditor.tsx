@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, ArrowUp, ArrowDown, Trash2, Music } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -26,6 +27,8 @@ interface EventParticipantRow {
   participant_id: string;
   role_label: string | null;
   sort_order: number;
+  can_view_runsheet: boolean;
+  can_operate_runsheet: boolean;
 }
 
 interface ResolvedRef {
@@ -251,6 +254,18 @@ export function EventParticipantsZoneEditor({
     if (error) toast.error("Kunne ikke oppdatere rolle");
   }, []);
 
+  const togglePermission = useCallback(async (id: string, field: "can_view_runsheet" | "can_operate_runsheet", value: boolean) => {
+    const { error } = await supabase
+      .from("event_participants")
+      .update({ [field]: value })
+      .eq("id", id);
+    if (error) {
+      toast.error("Kunne ikke oppdatere tillatelse");
+      return;
+    }
+    setRows((prev) => prev.map((r) => r.id === id ? { ...r, [field]: value } : r));
+  }, []);
+
   const reorder = async (index: number, direction: "up" | "down") => {
     const newIndex = direction === "up" ? index - 1 : index + 1;
     if (newIndex < 0 || newIndex >= rows.length) return;
@@ -388,6 +403,25 @@ export function EventParticipantsZoneEditor({
                       {fallbackRole || "Artist"}
                     </p>
                   )}
+                  {/* Permission toggles */}
+                  <div className="flex items-center gap-3 mt-1 px-1.5">
+                    <label className="flex items-center gap-1.5 text-[10px] text-muted-foreground cursor-pointer">
+                      <Checkbox
+                        checked={row.can_view_runsheet}
+                        onCheckedChange={(v) => togglePermission(row.id, "can_view_runsheet", !!v)}
+                        className="h-3.5 w-3.5"
+                      />
+                      Se kjøreplan
+                    </label>
+                    <label className="flex items-center gap-1.5 text-[10px] text-muted-foreground cursor-pointer">
+                      <Checkbox
+                        checked={row.can_operate_runsheet}
+                        onCheckedChange={(v) => togglePermission(row.id, "can_operate_runsheet", !!v)}
+                        className="h-3.5 w-3.5"
+                      />
+                      Operere live
+                    </label>
+                  </div>
                 </div>
 
                 {/* Reorder + delete */}

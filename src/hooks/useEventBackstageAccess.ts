@@ -67,6 +67,17 @@ export function useEventBackstageAccess(eventId: string | undefined) {
     canEditEventRpc === true ||
     (!!eventHostId && hostEntities.some((h) => h.id === eventHostId));
 
+  const { data: canViewRunsheetRpc } = useQuery({
+    queryKey: ["can-view-runsheet-event", eventId],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_view_runsheet_event" as any, { p_event_id: eventId });
+      return !!data;
+    },
+    enabled,
+  });
+
+  const canViewRunsheet = canEdit || canViewRunsheetRpc === true;
+
   const { data: festivalContext } = useQuery({
     queryKey: ["event-festival-context", eventId],
     enabled: !!event && enabled,
@@ -146,5 +157,5 @@ export function useEventBackstageAccess(eventId: string | undefined) {
     },
   });
 
-  return { event, isLoading: eventLoading, canEdit, festivalContext, festivalTeam };
+  return { event, isLoading: eventLoading, canEdit, canViewRunsheet, festivalContext, festivalTeam };
 }
