@@ -243,6 +243,7 @@ export function FestivalParticipantsZoneEditor({
       can_edit_festival_media: false,
       can_view_runsheet: zone === "on_stage" ? true : false,
       can_operate_runsheet: false,
+    });
 
     if (error) {
       toast.error("Kunne ikke legge til");
