@@ -131,10 +131,12 @@ export default function FestivalRunSheetRoom() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <ProductionHealthBar issues={openIssues} />
-          <Button variant="outline" size="sm" onClick={handleSyncRiders} disabled={syncing}>
-            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${syncing ? "animate-spin" : ""}`} />
-            Sjekk ridere
-          </Button>
+          {canOperate && (
+            <Button variant="outline" size="sm" onClick={handleSyncRiders} disabled={syncing}>
+              <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${syncing ? "animate-spin" : ""}`} />
+              Sjekk ridere
+            </Button>
+          )}
         </div>
 
         {myIssues.length > 0 && (
