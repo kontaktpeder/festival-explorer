@@ -316,6 +316,68 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
       toast({ title: "Feil", description: e.message, variant: "destructive" }),
   });
 
+  /* ── Effective timeline (delay propagation) ── */
+  const effectiveTimeline = useMemo(
+    () => computeEffectiveTimeline((data?.slots ?? []) as ExtendedEventProgramSlot[]),
+    [data?.slots]
+  );
+
+  /* ── Live action handler ── */
+  const handleLiveAction = useCallback(
+    (slotId: string, action: LiveAction) => {
+      const allSlots = (data?.slots ?? []) as ExtendedEventProgramSlot[];
+      const slot = allSlots.find((s) => s.id === slotId);
+      if (!slot) return;
+
+      const now = new Date().toISOString();
+
+      if (action === "start") {
+        // Auto-compute delay relative to effective start
+        const et = effectiveTimeline.get(slotId);
+        let newDelay = slot.delay_minutes ?? 0;
+        if (et) {
+          const diffMs = Date.now() - et.effectiveStart.getTime();
+          const diffMin = Math.round(diffMs / 60000);
+          if (diffMin > newDelay) newDelay = diffMin;
+        }
+        liveUpdateSlot.mutate({
+          id: slotId,
+          live_status: "in_progress",
+          actual_started_at: now,
+          delay_minutes: newDelay,
+          completed_at: null,
+        });
+      } else if (action === "complete") {
+        liveUpdateSlot.mutate({
+          id: slotId,
+          live_status: "completed",
+          actual_ended_at: now,
+          completed_at: now,
+        });
+      } else if (action === "cancel") {
+        liveUpdateSlot.mutate({
+          id: slotId,
+          live_status: "cancelled",
+          actual_ended_at: null,
+          completed_at: null,
+        });
+      } else if (action === "delay5") {
+        // Delay +5 for entire parallel group
+        const groupId = slot.parallel_group_id;
+        const targets = groupId
+          ? allSlots.filter((s) => s.parallel_group_id === groupId)
+          : [slot];
+        for (const t of targets) {
+          liveUpdateSlot.mutate({
+            id: t.id,
+            delay_minutes: (t.delay_minutes ?? 0) + 5,
+          });
+        }
+      }
+    },
+    [data?.slots, effectiveTimeline, liveUpdateSlot]
+  );
+
   const createManualSlot = useMutation({
     mutationFn: async ({ sectionType, seq }: { sectionType: "opprigg" | "lydprøve" | "event" | "doors" | "closing" | "stage_talk" | "giggen_info" | "break" | "crew" | "custom"; seq: number }) => {
       const isCustom = sectionType === "custom";
