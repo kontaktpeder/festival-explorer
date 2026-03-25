@@ -26,6 +26,7 @@ interface FestivalParticipantPermissions {
   can_see_revenue: boolean;
   can_edit_festival_media: boolean;
   can_view_runsheet: boolean;
+  can_operate_runsheet: boolean;
 }
 
 type FinanceAccessLevel = "none" | "reader" | "editor" | "admin";
