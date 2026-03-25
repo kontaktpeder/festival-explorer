@@ -13,6 +13,7 @@ export type LiveCardItem = {
   delayMinutes: number;
   actualStartedAt: string | null;
   actualEndedAt: string | null;
+  durationMinutes: number | null;
   badges: {
     visibility?: "internal" | "public";
     hasTechRider?: boolean;
@@ -63,6 +64,7 @@ export function toLiveCardItem(
     delayMinutes: slot.delay_minutes ?? 0,
     actualStartedAt: slot.actual_started_at ?? null,
     actualEndedAt: slot.actual_ended_at ?? null,
+    durationMinutes: slot.duration_minutes ?? null,
     badges: {
       visibility: slot.visibility as "internal" | "public",
       hasTechRider: !!slot.tech_rider_media_id,
