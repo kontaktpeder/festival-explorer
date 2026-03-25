@@ -663,10 +663,10 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
             </div>
             <div>
               <h2 className="text-lg font-bold tracking-tight text-foreground">
-                Kjøreplan{readOnly ? " (kun visning)" : mode === "live" ? " · Live" : ""}
+                Kjøreplan{readOnly ? " (kun visning)" : ""}
               </h2>
               <p className="text-xs text-muted-foreground">
-                {slots.length} punkt{slots.length !== 1 ? "er" : ""} · {mode === "live" ? "Live-modus" : readOnly ? "Lesemodus" : "Produksjonsdokument"}
+                {slots.length} punkt{slots.length !== 1 ? "er" : ""} · {readOnly ? "Lesemodus" : "Produksjonsdokument"}
               </p>
             </div>
           </div>
@@ -916,12 +916,12 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                     slotTypeMap={slotTypeMap}
                     startIndex={startIdx}
                     nowSlotId={nowSlotId}
-                    onEdit={readOnly || mode === "live" ? () => {} : openEdit}
-                    onDelete={readOnly || mode === "live" ? () => {} : handleDelete}
-                    onAddToSection={readOnly || mode === "live" ? undefined : handleAddToSection}
-                    onRenameSection={readOnly || mode === "live" ? undefined : handleRenameSection}
-                    onDeleteSection={readOnly || mode === "live" ? undefined : handleDeleteSection}
-                    onTimeChange={readOnly || mode === "live" ? undefined : handleSingleTimeChange}
+                    onEdit={readOnly ? () => {} : openEdit}
+                    onDelete={readOnly ? () => {} : handleDelete}
+                    onAddToSection={readOnly ? undefined : handleAddToSection}
+                    onRenameSection={readOnly ? undefined : handleRenameSection}
+                    onDeleteSection={readOnly ? undefined : handleDeleteSection}
+                    onTimeChange={readOnly ? undefined : handleSingleTimeChange}
                     mode={mode}
                     canOperate={canOperate}
                     onLiveAction={handleLiveAction}
