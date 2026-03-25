@@ -65,8 +65,8 @@ export function toLiveCardItem(
     actualEndedAt: slot.actual_ended_at ?? null,
     badges: {
       visibility: slot.visibility as "internal" | "public",
-      hasTechRider: !!(slot.tech_rider_asset_id || slot.tech_rider_media_id),
-      hasHospRider: !!(slot.hosp_rider_asset_id || slot.hosp_rider_media_id),
+      hasTechRider: !!slot.tech_rider_media_id,
+      hasHospRider: !!slot.hosp_rider_media_id,
       hasContract: !!slot.contract_media_id,
     },
   };
