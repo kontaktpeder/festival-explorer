@@ -21,6 +21,14 @@ type EventIssueRow = Database["public"]["Tables"]["event_issue"]["Row"];
 
 export default function FestivalRunSheetRoom() {
   const { id } = useParams<{ id: string }>();
+  const { data: canOperate = false } = useQuery({
+    queryKey: ["can-operate-runsheet-festival", id],
+    enabled: !!id,
+    queryFn: async () => {
+      const { data } = await supabase.rpc("can_operate_runsheet_festival" as any, { p_festival_id: id! });
+      return !!data;
+    },
+  });
   const [replaceIssue, setReplaceIssue] = useState<EventIssueRow | null>(null);
   const [syncing, setSyncing] = useState(false);
   const queryClient = useQueryClient();
@@ -151,7 +159,7 @@ export default function FestivalRunSheetRoom() {
           issueContextBySlotId={issueContextBySlotId}
         />
 
-        <FestivalRunSheet festivalId={id!} />
+        <FestivalRunSheet festivalId={id!} canOperate={canOperate} />
       </div>
 
       <FindReplacementModal

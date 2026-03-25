@@ -3,12 +3,11 @@ import { ChevronDown, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
 import type { RunSheetSectionKey } from "@/lib/runsheet-sections";
+import type { EffectiveTime, LiveAction } from "@/lib/runsheet-live";
 import { RunSheetRowCard, type ParallelGroup } from "./RunSheetRowCard";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-
 
 interface RunSheetSectionProps {
   sectionKey: RunSheetSectionKey;
@@ -28,6 +27,11 @@ interface RunSheetSectionProps {
     slotsInSection: ExtendedEventProgramSlot[]
   ) => void;
   onTimeChange?: (slotId: string, startsAt: string, endsAt: string | null) => void;
+  /** Live mode props */
+  mode?: "plan" | "live";
+  canOperate?: boolean;
+  onLiveAction?: (slotId: string, action: LiveAction) => void;
+  effectiveTimeline?: Map<string, EffectiveTime>;
 }
 
 /** Group slots by parallel_group_id; singletons become groups of 1 */
@@ -63,8 +67,6 @@ function fmtTime(iso: string) {
   return format(new Date(iso), "HH:mm");
 }
 
-
-
 export function RunSheetSection({
   sectionKey,
   title,
@@ -80,6 +82,10 @@ export function RunSheetSection({
   onRenameSection,
   onDeleteSection,
   onTimeChange,
+  mode = "plan",
+  canOperate = false,
+  onLiveAction,
+  effectiveTimeline,
 }: RunSheetSectionProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -114,7 +120,6 @@ export function RunSheetSection({
     const last = lastSlot.ends_at || lastSlot.starts_at;
     return { from: fmtTime(first), to: fmtTime(last), firstIso: first };
   }, [slots]);
-
 
   return (
     <div className="runsheet-section space-y-0" data-section={sectionKey} data-print-section>
@@ -210,20 +215,28 @@ export function RunSheetSection({
       {/* Rows */}
       {!collapsed && !isEmpty && (
         <div className="pt-2 space-y-2">
-          {groups.map((group, i) => (
-            <RunSheetRowCard
-              key={group.primary.id}
-              group={group}
-              index={startIndex + i}
-              sectionKey={sectionKey}
-              sectionPrefix={sectionPrefix}
-              slotTypeLabel={group.primary.slot_type ? slotTypeMap.get(group.primary.slot_type)?.label : undefined}
-              isNow={nowSlotId === group.primary.id}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onTimeChange={onTimeChange}
-            />
-          ))}
+          {groups.map((group, i) => {
+            const et = effectiveTimeline?.get(group.primary.id);
+            return (
+              <RunSheetRowCard
+                key={group.primary.id}
+                group={group}
+                index={startIndex + i}
+                sectionKey={sectionKey}
+                sectionPrefix={sectionPrefix}
+                slotTypeLabel={group.primary.slot_type ? slotTypeMap.get(group.primary.slot_type)?.label : undefined}
+                isNow={nowSlotId === group.primary.id}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onTimeChange={onTimeChange}
+                mode={mode}
+                canOperate={canOperate}
+                onLiveAction={onLiveAction}
+                liveEffectiveStart={et?.effectiveStart.toISOString() ?? null}
+                liveEffectiveEnd={et?.effectiveEnd?.toISOString() ?? null}
+              />
+            );
+          })}
         </div>
       )}
 

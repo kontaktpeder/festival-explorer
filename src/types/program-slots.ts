@@ -64,6 +64,14 @@ export interface ExtendedEventProgramSlot {
   created_at: string;
   updated_at: string;
 
+  /** Live fields (run sheet live mode) */
+  live_status: string;
+  actual_started_at: string | null;
+  actual_ended_at: string | null;
+  delay_minutes: number;
+  live_note: string | null;
+  completed_at: string | null;
+
   // Resolved relations
   entity?: { id: string; name: string; slug: string } | null;
   event?: { id: string; title: string; slug: string } | null;
