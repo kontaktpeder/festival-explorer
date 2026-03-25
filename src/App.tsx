@@ -42,6 +42,7 @@ import CreateProfileWizard from "./pages/onboarding/CreateProfileWizard";
 import ResetPassword from "./pages/ResetPassword";
 import FestivalRoom from "./pages/dashboard/FestivalRoom";
 import FestivalProgramRoom from "./pages/dashboard/FestivalProgramRoom";
+import FestivalPlanRoom from "./pages/dashboard/FestivalPlanRoom";
 import FestivalRunSheetRoom from "./pages/dashboard/FestivalRunSheetRoom";
 import FestivalArtistRunSheetRoom from "./pages/dashboard/FestivalArtistRunSheetRoom";
 import FestivalTicketsRoom from "./pages/dashboard/FestivalTicketsRoom";
@@ -60,6 +61,7 @@ import LandingSettingsRoom from "./pages/dashboard/LandingSettingsRoom";
 import DashboardEventsRoom from "./pages/dashboard/DashboardEventsRoom";
 import EventDashboardRoom from "./pages/dashboard/EventDashboardRoom";
 import EventDetailsRoom from "./pages/dashboard/EventDetailsRoom";
+import EventPlanRoom from "./pages/dashboard/EventPlanRoom";
 import EventRunSheetRoom from "./pages/dashboard/EventRunSheetRoom";
 import EventParticipantsRoom from "./pages/dashboard/EventParticipantsRoom";
 import EventLiveRoom from "./pages/dashboard/EventLiveRoom";
@@ -152,6 +154,7 @@ const App = () => (
             <Route path="/dashboard/privacy" element={<Privacy />} />
             <Route path="/dashboard/festival/:id" element={<FestivalRoom />} />
             <Route path="/dashboard/festival/:id/program" element={<FestivalProgramRoom />} />
+            <Route path="/dashboard/festival/:id/plan" element={<FestivalPlanRoom />} />
             <Route path="/dashboard/festival/:id/run-sheet" element={<FestivalRunSheetRoom />} />
             <Route path="/dashboard/festival/:id/runsheet/artist" element={<FestivalArtistRunSheetRoom />} />
             <Route path="/dashboard/festival/:id/tickets" element={<FestivalTicketsRoom />} />
@@ -171,6 +174,7 @@ const App = () => (
             <Route path="/dashboard/events/new" element={<EventFirstGuard><EventRoomPage /></EventFirstGuard>} />
             <Route path="/dashboard/events/:id" element={<EventDashboardRoom />} />
             <Route path="/dashboard/events/:id/details" element={<EventDetailsRoom />} />
+            <Route path="/dashboard/events/:id/plan" element={<EventPlanRoom />} />
             <Route path="/dashboard/events/:id/run-sheet" element={<EventRunSheetRoom />} />
             <Route path="/dashboard/events/:id/participants" element={<EventParticipantsRoom />} />
             <Route path="/dashboard/events/:id/live" element={<EventLiveRoom />} />
