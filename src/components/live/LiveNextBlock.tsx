@@ -30,10 +30,10 @@ export function LiveNextBlock({ items, role, onAction, acting }: Props) {
 
   return (
     <section>
-      <p className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-bold mb-3">
+      <p className="text-[10px] uppercase tracking-[0.2em] text-white/25 font-bold mb-3">
         Neste
       </p>
-      <div className="space-y-1">
+      <div className="space-y-0">
         {items.map((item) => (
           <NextRow
             key={item.id}
@@ -62,9 +62,9 @@ function NextRow({
   const countdown = useMemo(() => minutesUntil(item.timeLabel), [item.timeLabel]);
 
   return (
-    <div className="border-t border-white/5 py-3 md:py-4">
+    <div className="border-t border-white/[0.06] py-3">
       <div className="flex items-center gap-4">
-        <span className="font-mono text-xl md:text-2xl font-semibold text-white/80 tabular-nums w-16 shrink-0">
+        <span className="font-mono text-xl md:text-2xl font-bold text-white/80 tabular-nums w-16 shrink-0">
           {item.timeLabel}
         </span>
         <div className="flex-1 min-w-0">
@@ -84,7 +84,7 @@ function NextRow({
               </span>
             )}
             {countdown && (
-              <span className="text-[10px] text-white/25 font-medium">{countdown}</span>
+              <span className="text-xs text-white/40 font-semibold">{countdown}</span>
             )}
           </div>
           {vm.showNotes && item.shortNote && (
@@ -96,7 +96,7 @@ function NextRow({
         {vm.showActions && onAction && (
           <div className="flex items-center gap-2 shrink-0">
             <button
-              className="min-h-[44px] px-5 rounded-lg border border-white/15 text-white/70 font-semibold text-xs uppercase tracking-wider transition-all active:scale-[0.97] active:bg-white/5 disabled:opacity-30"
+              className="min-h-[48px] px-6 rounded-lg border border-white/15 text-white/70 font-bold text-xs uppercase tracking-wider transition-all duration-150 active:scale-[0.96] active:bg-white/[0.06] active:shadow-[0_0_10px_rgba(255,255,255,0.05)] disabled:opacity-30"
               disabled={acting}
               onClick={() => onAction(item.id, "start")}
             >
@@ -105,7 +105,7 @@ function NextRow({
             </button>
             {vm.showCancel && (
               <button
-                className="min-h-[44px] px-3 rounded-lg text-white/20 text-xs transition-all active:text-red-400 disabled:opacity-30"
+                className="min-h-[48px] px-3 rounded-lg text-white/20 text-xs transition-all duration-150 active:text-red-400 active:shadow-[0_0_8px_rgba(239,68,68,0.15)] disabled:opacity-30"
                 disabled={acting}
                 onClick={() => onAction(item.id, "cancel")}
               >

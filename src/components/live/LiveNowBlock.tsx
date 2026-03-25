@@ -24,6 +24,16 @@ function elapsedProgress(item: LiveCardItem): number | null {
   return pct;
 }
 
+function elapsedMinutes(timeLabel: string): number | null {
+  const now = new Date();
+  const [h, m] = timeLabel.split(":").map(Number);
+  if (isNaN(h) || isNaN(m)) return null;
+  const start = new Date(now);
+  start.setHours(h, m, 0, 0);
+  const diff = Math.round((now.getTime() - start.getTime()) / 60_000);
+  return diff > 0 ? diff : null;
+}
+
 export function LiveNowBlock({ items, role, onAction, acting }: Props) {
   const vm = getLiveViewMode(role);
 
@@ -63,22 +73,37 @@ function NowSlot({
   acting?: boolean;
 }) {
   const progress = useMemo(() => elapsedProgress(item), [item]);
+  const elapsed = useMemo(() => elapsedMinutes(item.timeLabel), [item.timeLabel]);
 
   return (
     <div className="relative">
-      {/* Subtle glow line left */}
+      {/* Vertical glow axis */}
       <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-red-500/80 via-red-500/40 to-transparent rounded-full shadow-[0_0_8px_rgba(239,68,68,0.4)]" />
 
       <div className="pl-5 md:pl-6">
-        {/* Time + Title */}
-        <div className="flex items-baseline gap-4 md:gap-6">
-          <span className="font-mono text-5xl md:text-7xl font-bold text-white tabular-nums tracking-tight leading-none">
+        {/* Time + Title as one block */}
+        <div className="flex items-baseline gap-3 md:gap-5">
+          <span className="font-mono text-6xl md:text-8xl font-black text-white tabular-nums tracking-tighter leading-none">
             {item.timeLabel}
           </span>
           <div className="flex-1 min-w-0">
-            <p className="text-2xl md:text-3xl font-bold text-white truncate leading-tight">
+            <p className="text-2xl md:text-4xl font-bold text-white truncate leading-tight">
               {item.title}
             </p>
+
+            {/* Elapsed / delay context */}
+            <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+              {elapsed && elapsed > 0 && item.delayMinutes <= 0 && (
+                <span className="text-xs text-white/30 font-medium">
+                  Startet for {elapsed} min siden
+                </span>
+              )}
+              {item.delayMinutes > 0 && (
+                <span className="text-xs font-bold text-yellow-400 shadow-[0_0_6px_rgba(250,204,21,0.3)]">
+                  +{item.delayMinutes} min forsinket
+                </span>
+              )}
+            </div>
 
             {/* Context row */}
             {vm.showContext && (
@@ -89,11 +114,6 @@ function NowSlot({
                 {vm.showRichContext && item.slotTypeLabel && (
                   <span className="text-[10px] text-white/30 border border-white/10 rounded px-1.5 py-0.5 uppercase tracking-wider">
                     {item.slotTypeLabel}
-                  </span>
-                )}
-                {item.delayMinutes > 0 && (
-                  <span className="text-xs font-bold text-yellow-400">
-                    +{item.delayMinutes} min forsinket
                   </span>
                 )}
                 {vm.showRichContext && item.badges.hasTechRider && (
@@ -115,21 +135,29 @@ function NowSlot({
           </div>
         </div>
 
-        {/* Progress bar */}
+        {/* Progress bar with glow */}
         {progress !== null && (
-          <div className="mt-4 h-[2px] bg-white/5 rounded-full overflow-hidden">
+          <div className="mt-5 h-[3px] bg-white/[0.04] rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-red-500/60 to-red-400/80 rounded-full transition-all duration-1000 shadow-[0_0_6px_rgba(239,68,68,0.5)]"
-              style={{ width: `${progress}%` }}
+              className="h-full rounded-full transition-all duration-1000"
+              style={{
+                width: `${progress}%`,
+                background: item.delayMinutes > 0
+                  ? 'linear-gradient(90deg, rgba(250,204,21,0.5), rgba(239,68,68,0.8))'
+                  : 'linear-gradient(90deg, rgba(239,68,68,0.4), rgba(239,68,68,0.8))',
+                boxShadow: item.delayMinutes > 0
+                  ? '0 0 10px rgba(250,204,21,0.5)'
+                  : '0 0 8px rgba(239,68,68,0.5)',
+              }}
             />
           </div>
         )}
 
-        {/* Actions */}
+        {/* Action controls */}
         {vm.showActions && onAction && (
-          <div className="flex items-center gap-3 mt-5">
+          <div className="flex items-center gap-4 mt-6">
             <button
-              className="flex-1 md:flex-none min-h-[52px] md:min-h-[48px] px-8 rounded-lg bg-white text-black font-bold text-sm uppercase tracking-wider transition-all active:scale-[0.97] active:bg-white/90 disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+              className="flex-1 md:flex-none min-h-[56px] md:min-h-[52px] px-10 rounded-lg bg-white text-black font-bold text-sm uppercase tracking-wider transition-all duration-150 active:scale-[0.96] active:bg-white/90 disabled:opacity-30 disabled:cursor-not-allowed shadow-[0_0_24px_rgba(255,255,255,0.08)]"
               disabled={acting}
               onClick={() => onAction(item.id, "complete")}
             >
@@ -137,7 +165,7 @@ function NowSlot({
               Ferdig
             </button>
             <button
-              className="min-h-[52px] md:min-h-[48px] px-6 rounded-lg border border-white/15 text-white/70 font-semibold text-sm uppercase tracking-wider transition-all active:scale-[0.97] active:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="min-h-[56px] md:min-h-[52px] px-7 rounded-lg border border-white/15 text-white/70 font-semibold text-sm uppercase tracking-wider transition-all duration-150 active:scale-[0.96] active:bg-white/[0.06] active:shadow-[0_0_12px_rgba(255,255,255,0.06)] disabled:opacity-30 disabled:cursor-not-allowed"
               disabled={acting}
               onClick={() => onAction(item.id, "delay5")}
             >
@@ -146,7 +174,7 @@ function NowSlot({
             </button>
             {vm.showCancel && (
               <button
-                className="min-h-[52px] md:min-h-[48px] px-5 rounded-lg text-white/30 font-medium text-sm uppercase tracking-wider transition-all active:scale-[0.97] active:text-red-400 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="min-h-[56px] md:min-h-[52px] px-5 rounded-lg text-white/25 font-medium text-sm uppercase tracking-wider transition-all duration-150 active:scale-[0.96] active:text-red-400 active:shadow-[0_0_12px_rgba(239,68,68,0.2)] disabled:opacity-30 disabled:cursor-not-allowed"
                 disabled={acting}
                 onClick={() => onAction(item.id, "cancel")}
               >
@@ -163,7 +191,7 @@ function NowSlot({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] uppercase tracking-[0.2em] text-red-500/70 font-bold">
+    <p className="text-[10px] uppercase tracking-[0.2em] text-red-500/50 font-bold">
       {children}
     </p>
   );

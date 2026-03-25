@@ -18,17 +18,16 @@ export function LiveLaterList({ items, role, maxItems = 8 }: Props) {
 
   return (
     <section>
-      <p className="text-[10px] uppercase tracking-[0.2em] text-white/20 font-bold mb-2">
+      <p className="text-[10px] uppercase tracking-[0.2em] text-white/15 font-bold mb-1">
         Kommer ({items.length})
       </p>
       <div>
         {visible.map((item, i) => {
-          // Closer items get more opacity
-          const opacity = Math.max(0.15, 0.5 - i * 0.05);
+          const opacity = Math.max(0.12, 0.45 - i * 0.05);
           return (
             <div
               key={item.id}
-              className="border-t border-white/[0.04] flex items-center gap-3 py-2 md:py-2.5"
+              className="border-t border-white/[0.03] flex items-center gap-3 py-1.5 md:py-2"
             >
               <span
                 className="font-mono text-xs tabular-nums w-10 shrink-0"
@@ -38,17 +37,17 @@ export function LiveLaterList({ items, role, maxItems = 8 }: Props) {
               </span>
               <p
                 className="text-sm truncate flex-1"
-                style={{ color: `rgba(255,255,255,${opacity * 0.9})` }}
+                style={{ color: `rgba(255,255,255,${opacity * 0.85})` }}
               >
                 {item.title}
               </p>
               {vm.showContext && item.areaLabel && (
-                <span className="text-[10px] text-white/15 shrink-0 hidden md:inline">
+                <span className="text-[10px] text-white/10 shrink-0 hidden md:inline">
                   {item.areaLabel}
                 </span>
               )}
               {vm.showRichContext && item.slotTypeLabel && (
-                <span className="text-[10px] text-white/10 border border-white/5 rounded px-1 py-0 shrink-0 hidden md:inline">
+                <span className="text-[10px] text-white/8 border border-white/[0.04] rounded px-1 py-0 shrink-0 hidden md:inline">
                   {item.slotTypeLabel}
                 </span>
               )}
@@ -56,7 +55,7 @@ export function LiveLaterList({ items, role, maxItems = 8 }: Props) {
           );
         })}
         {remaining > 0 && (
-          <p className="text-[10px] text-white/15 py-2">
+          <p className="text-[10px] text-white/10 py-1.5">
             + {remaining} til
           </p>
         )}
