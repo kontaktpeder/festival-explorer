@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEventBackstageAccess } from "@/hooks/useEventBackstageAccess";
+import { useLiveRoleFromParticipants } from "@/hooks/useLiveRole";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { LiveHeader } from "@/components/live/LiveHeader";
 import { LiveNowBlock } from "@/components/live/LiveNowBlock";
@@ -11,7 +12,7 @@ import { LiveLaterList } from "@/components/live/LiveLaterList";
 import { toLiveCardItem } from "@/lib/runsheet-live-view-model";
 import { selectLiveBuckets } from "@/lib/runsheet-live-selection";
 import { computeEffectiveTimeline, type LiveAction } from "@/lib/runsheet-live";
-import { deriveLiveRole, getLivePermissions } from "@/lib/live-permissions";
+import { resolveLiveRole, getLivePermissions, assertLiveAction } from "@/lib/live-permissions";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +25,9 @@ export default function EventLiveRoom() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [acting, setActing] = useState(false);
+
+  // Explicit live_role from event_participants
+  const { data: explicitRole } = useLiveRoleFromParticipants("event", id);
 
   const { data: canOperate = false } = useQuery({
     queryKey: ["can-operate-runsheet-slot", festivalId, id],
@@ -45,7 +49,8 @@ export default function EventLiveRoom() {
     },
   });
 
-  const role = deriveLiveRole({
+  // Resolve: explicit live_role wins, then fallback to derived
+  const role = resolveLiveRole(explicitRole, {
     canViewRunsheet: canViewRunsheet ?? false,
     canOperateRunsheet: canOperate,
     canEdit: canEdit ?? false,
@@ -78,6 +83,14 @@ export default function EventLiveRoom() {
 
   const handleAction = useCallback(
     async (slotId: string, action: LiveAction) => {
+      // Hard guard: check permissions before touching DB
+      try {
+        assertLiveAction(role, action);
+      } catch (e: any) {
+        toast({ title: "Ingen tilgang", description: e.message, variant: "destructive" });
+        return;
+      }
+
       setActing(true);
       try {
         const now = new Date().toISOString();
@@ -104,7 +117,7 @@ export default function EventLiveRoom() {
         setActing(false);
       }
     },
-    [slots, id, queryClient, toast]
+    [slots, id, queryClient, toast, role]
   );
 
   if (isLoading) {
