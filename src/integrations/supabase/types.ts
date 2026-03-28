@@ -3425,6 +3425,14 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_festival_contacts: {
+        Args: never
+        Returns: {
+          email: string
+          name: string
+          source: string
+        }[]
+      }
       get_festival_team_member_display_names: {
         Args: { p_festival_id: string; p_zone?: string }
         Returns: {
