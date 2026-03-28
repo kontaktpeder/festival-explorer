@@ -105,12 +105,20 @@ export default function FestivalLiveRoom() {
     },
   });
 
+  const [planNow, setPlanNow] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setPlanNow(new Date()), 10_000);
+    return () => clearInterval(t);
+  }, []);
+
   const effectiveTimeline = useMemo(() => computeEffectiveTimeline(slots), [slots]);
   const liveItems = useMemo(
     () => slots.map((s) => toLiveCardItem(s, effectiveTimeline.get(s.id))),
     [slots, effectiveTimeline]
   );
   const buckets = useMemo(() => selectLiveBuckets(liveItems), [liveItems]);
+  const plannedBuckets = useMemo(() => selectPlannedBuckets(liveItems, planNow), [liveItems, planNow]);
+  const deviation = useMemo(() => computeLivePlanDeviation(buckets, plannedBuckets, planNow), [buckets, plannedBuckets, planNow]);
 
   const handleAction = useCallback(
     async (slotId: string, action: LiveAction) => {
@@ -178,6 +186,8 @@ export default function FestivalLiveRoom() {
         </Link>
 
         <LiveHeader title={festival.name} role={role} showAdminBadge={perms.showAdminBadge} />
+
+        <LivePlanDeviationStrip deviation={deviation} />
 
         <div className="flex flex-col gap-8 md:gap-10 flex-1">
           <LiveNowBlock
