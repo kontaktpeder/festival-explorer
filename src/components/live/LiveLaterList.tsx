@@ -1,16 +1,62 @@
+import { useMemo } from "react";
 import type { LiveCardItem } from "@/lib/runsheet-live-view-model";
 import type { LiveRolePreset } from "@/types/live-role";
 import { getLiveViewMode } from "@/lib/live-view-mode";
+import { displayRoundedPlanTime, formatMinutesUntil, shouldShowSlotKindTag } from "@/lib/live-display-time";
 
 type Props = {
   items: LiveCardItem[];
   role: LiveRolePreset;
+  wallNow: Date;
   maxItems?: number;
 };
 
-export function LiveLaterList({ items, role, maxItems = 8 }: Props) {
-  const vm = getLiveViewMode(role);
+function LaterRow({
+  item,
+  wallNow,
+  opacity,
+  vm,
+}: {
+  item: LiveCardItem;
+  wallNow: Date;
+  opacity: number;
+  vm: ReturnType<typeof getLiveViewMode>;
+}) {
+  const countdown = useMemo(() => formatMinutesUntil(item.effectiveStartMs, wallNow), [item.effectiveStartMs, wallNow]);
 
+  return (
+    <div className="border-t border-white/[0.03] flex items-center gap-3 py-1.5 md:py-2">
+      <span
+        className="font-mono text-xs tabular-nums w-10 shrink-0"
+        style={{ color: `rgba(255,255,255,${opacity})` }}
+      >
+        {displayRoundedPlanTime(item)}
+      </span>
+      <p
+        className="text-sm truncate flex-1"
+        style={{ color: `rgba(255,255,255,${opacity * 0.85})` }}
+      >
+        {item.title}
+      </p>
+      {countdown && (
+        <span className="text-[10px] text-white/20 shrink-0">{countdown}</span>
+      )}
+      {vm.showContext && item.areaLabel && (
+        <span className="text-[10px] text-white/10 shrink-0 hidden md:inline">
+          {item.areaLabel}
+        </span>
+      )}
+      {vm.showRichContext && shouldShowSlotKindTag(item.slotTypeLabel) && (
+        <span className="text-[10px] text-white/[0.08] border border-white/[0.04] rounded px-1 py-0 shrink-0 hidden md:inline">
+          {item.slotTypeLabel}
+        </span>
+      )}
+    </div>
+  );
+}
+
+export function LiveLaterList({ items, role, wallNow, maxItems = 8 }: Props) {
+  const vm = getLiveViewMode(role);
   if (!items.length) return null;
 
   const visible = items.slice(0, maxItems);
@@ -24,35 +70,7 @@ export function LiveLaterList({ items, role, maxItems = 8 }: Props) {
       <div>
         {visible.map((item, i) => {
           const opacity = Math.max(0.12, 0.45 - i * 0.05);
-          return (
-            <div
-              key={item.id}
-              className="border-t border-white/[0.03] flex items-center gap-3 py-1.5 md:py-2"
-            >
-              <span
-                className="font-mono text-xs tabular-nums w-10 shrink-0"
-                style={{ color: `rgba(255,255,255,${opacity})` }}
-              >
-                {item.timeLabel}
-              </span>
-              <p
-                className="text-sm truncate flex-1"
-                style={{ color: `rgba(255,255,255,${opacity * 0.85})` }}
-              >
-                {item.title}
-              </p>
-              {vm.showContext && item.areaLabel && (
-                <span className="text-[10px] text-white/10 shrink-0 hidden md:inline">
-                  {item.areaLabel}
-                </span>
-              )}
-              {vm.showRichContext && item.slotTypeLabel && (
-                <span className="text-[10px] text-white/8 border border-white/[0.04] rounded px-1 py-0 shrink-0 hidden md:inline">
-                  {item.slotTypeLabel}
-                </span>
-              )}
-            </div>
-          );
+          return <LaterRow key={item.id} item={item} wallNow={wallNow} opacity={opacity} vm={vm} />;
         })}
         {remaining > 0 && (
           <p className="text-[10px] text-white/10 py-1.5">
