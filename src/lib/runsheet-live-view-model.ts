@@ -14,6 +14,9 @@ export type LiveCardItem = {
   actualStartedAt: string | null;
   actualEndedAt: string | null;
   durationMinutes: number | null;
+  effectiveStartMs: number;
+  effectiveEndMs: number | null;
+  isCanceled: boolean;
   badges: {
     visibility?: "internal" | "public";
     hasTechRider?: boolean;
