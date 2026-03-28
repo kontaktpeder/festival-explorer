@@ -1,5 +1,7 @@
 import { useMemo, useCallback, useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useLiveSoundAlerts, type SoundMode } from "@/hooks/useLiveSoundAlerts";
+import { unlockAudio } from "@/lib/live-sound-engine";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLiveRoleFromParticipants } from "@/hooks/useLiveRole";
@@ -24,6 +26,8 @@ export default function FestivalLiveRoom() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [acting, setActing] = useState(false);
+  const [soundMode, setSoundMode] = useState<SoundMode>("off");
+  const [soundUnlocked, setSoundUnlocked] = useState(false);
 
   const { data: explicitRole } = useLiveRoleFromParticipants("festival", id);
 
@@ -120,6 +124,15 @@ export default function FestivalLiveRoom() {
   const plannedBuckets = useMemo(() => selectPlannedBuckets(liveItems, planNow), [liveItems, planNow]);
   const deviation = useMemo(() => computeLivePlanDeviation(buckets, plannedBuckets, planNow), [buckets, plannedBuckets, planNow]);
 
+  useLiveSoundAlerts({
+    scopeKey: `festival:${id}`,
+    mode: soundMode,
+    unlocked: soundUnlocked,
+    liveItems,
+    plannedBuckets,
+    now: planNow,
+  });
+
   const handleAction = useCallback(
     async (slotId: string, action: LiveAction) => {
       try {
@@ -185,7 +198,15 @@ export default function FestivalLiveRoom() {
           Tilbake
         </Link>
 
-        <LiveHeader title={festival.name} role={role} showAdminBadge={perms.showAdminBadge} />
+        <LiveHeader
+          title={festival.name}
+          role={role}
+          showAdminBadge={perms.showAdminBadge}
+          soundMode={soundMode}
+          onSoundModeChange={setSoundMode}
+          soundUnlocked={soundUnlocked}
+          onUnlock={async () => { await unlockAudio(); setSoundUnlocked(true); }}
+        />
 
         <LivePlanDeviationStrip deviation={deviation} />
 

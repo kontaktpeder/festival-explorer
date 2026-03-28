@@ -1,5 +1,7 @@
 import { useMemo, useCallback, useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useLiveSoundAlerts, type SoundMode } from "@/hooks/useLiveSoundAlerts";
+import { unlockAudio } from "@/lib/live-sound-engine";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEventBackstageAccess } from "@/hooks/useEventBackstageAccess";
@@ -27,6 +29,8 @@ export default function EventLiveRoom() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [acting, setActing] = useState(false);
+  const [soundMode, setSoundMode] = useState<SoundMode>("off");
+  const [soundUnlocked, setSoundUnlocked] = useState(false);
 
   const { data: explicitRole } = useLiveRoleFromParticipants("event", id);
 
@@ -88,6 +92,15 @@ export default function EventLiveRoom() {
   const buckets = useMemo(() => selectLiveBuckets(liveItems), [liveItems]);
   const plannedBuckets = useMemo(() => selectPlannedBuckets(liveItems, planNow), [liveItems, planNow]);
   const deviation = useMemo(() => computeLivePlanDeviation(buckets, plannedBuckets, planNow), [buckets, plannedBuckets, planNow]);
+
+  useLiveSoundAlerts({
+    scopeKey: `event:${id}`,
+    mode: soundMode,
+    unlocked: soundUnlocked,
+    liveItems,
+    plannedBuckets,
+    now: planNow,
+  });
 
   const handleAction = useCallback(
     async (slotId: string, action: LiveAction) => {
@@ -155,7 +168,15 @@ export default function EventLiveRoom() {
           Tilbake
         </Link>
 
-        <LiveHeader title={event.title} role={role} showAdminBadge={perms.showAdminBadge} />
+        <LiveHeader
+          title={event.title}
+          role={role}
+          showAdminBadge={perms.showAdminBadge}
+          soundMode={soundMode}
+          onSoundModeChange={setSoundMode}
+          soundUnlocked={soundUnlocked}
+          onUnlock={async () => { await unlockAudio(); setSoundUnlocked(true); }}
+        />
 
         <LivePlanDeviationStrip deviation={deviation} />
         <div className="flex flex-col gap-8 md:gap-10 flex-1">
