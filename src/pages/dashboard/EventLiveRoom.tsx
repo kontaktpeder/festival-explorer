@@ -157,7 +157,7 @@ export default function EventLiveRoom() {
 
         <LiveHeader title={event.title} role={role} showAdminBadge={perms.showAdminBadge} />
 
-        {/* Main content */}
+        <LivePlanDeviationStrip deviation={deviation} />
         <div className="flex flex-col gap-8 md:gap-10 flex-1">
           <LiveNowBlock
             items={buckets.now}
