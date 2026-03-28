@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
 import type { LiveRolePreset } from "@/types/live-role";
+import type { SoundMode } from "@/hooks/useLiveSoundAlerts";
+import { Volume2, VolumeX, Bell } from "lucide-react";
 
 type Props = {
   title: string;
   role: LiveRolePreset;
   showAdminBadge: boolean;
+  soundMode: SoundMode;
+  onSoundModeChange: (m: SoundMode) => void;
+  soundUnlocked: boolean;
+  onUnlock: () => void;
 };
 
 const ROLE_LABELS: Record<string, string> = {
@@ -18,7 +24,12 @@ function hhmmss(d: Date) {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
 }
 
-export function LiveHeader({ title, role, showAdminBadge }: Props) {
+export function LiveHeader({ title, role, showAdminBadge, soundMode, onSoundModeChange, soundUnlocked, onUnlock }: Props) {
+  const MODES: { key: SoundMode; label: string }[] = [
+    { key: "off", label: "Av" },
+    { key: "critical", label: "Kritisk" },
+    { key: "all", label: "Alle" },
+  ];
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -51,6 +62,33 @@ export function LiveHeader({ title, role, showAdminBadge }: Props) {
       </p>
 
       <div className="flex items-center gap-2">
+        {/* Sound controls */}
+        {!soundUnlocked ? (
+          <button
+            onClick={onUnlock}
+            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-400/70 border border-amber-500/25 rounded px-2 py-1 hover:border-amber-500/50 active:bg-amber-500/10 transition-colors"
+          >
+            <VolumeX className="h-3 w-3" />
+            Aktiver lyd
+          </button>
+        ) : (
+          <div className="flex items-center rounded border border-white/10 overflow-hidden">
+            {MODES.map((m) => (
+              <button
+                key={m.key}
+                onClick={() => onSoundModeChange(m.key)}
+                className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 transition-colors ${
+                  soundMode === m.key
+                    ? "bg-white/10 text-white/80"
+                    : "text-white/30 hover:text-white/50"
+                }`}
+              >
+                {m.key === "off" ? <VolumeX className="h-3 w-3" /> : m.key === "all" ? <Volume2 className="h-3 w-3" /> : <Bell className="h-3 w-3" />}
+              </button>
+            ))}
+          </div>
+        )}
+
         {showAdminBadge && (
           <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-red-400 border border-red-500/30 rounded px-2 py-0.5">
             Admin
