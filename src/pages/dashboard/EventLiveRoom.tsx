@@ -2,6 +2,7 @@ import { useMemo, useCallback, useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useLiveSoundAlerts, type SoundMode } from "@/hooks/useLiveSoundAlerts";
 import { unlockAudio } from "@/lib/live-sound-engine";
+import { useLivePlanNow } from "@/hooks/useLivePlanNow";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEventBackstageAccess } from "@/hooks/useEventBackstageAccess";
@@ -15,7 +16,7 @@ import { LivePlanDeviationStrip } from "@/components/live/LivePlanDeviationStrip
 import { toLiveCardItem } from "@/lib/runsheet-live-view-model";
 import { selectLiveBuckets } from "@/lib/runsheet-live-selection";
 import { selectPlannedBuckets } from "@/lib/runsheet-live-planned";
-import { computeLivePlanDeviation } from "@/lib/runsheet-live-plan-deviation";
+import { computeLivePlanDeviation, deviationRequiresPrimaryAck } from "@/lib/runsheet-live-plan-deviation";
 import { computeEffectiveTimeline, type LiveAction } from "@/lib/runsheet-live";
 import { resolveLiveRole, getLivePermissions, assertLiveAction } from "@/lib/live-permissions";
 import { ArrowLeft } from "lucide-react";
@@ -31,6 +32,7 @@ export default function EventLiveRoom() {
   const [acting, setActing] = useState(false);
   const [soundMode, setSoundMode] = useState<SoundMode>("off");
   const [soundUnlocked, setSoundUnlocked] = useState(false);
+  const [planAck, setPlanAck] = useState(false);
 
   const { data: explicitRole } = useLiveRoleFromParticipants("event", id);
 
@@ -78,20 +80,27 @@ export default function EventLiveRoom() {
     },
   });
 
-  const [planNow, setPlanNow] = useState(() => new Date());
-  useEffect(() => {
-    const t = setInterval(() => setPlanNow(new Date()), 10_000);
-    return () => clearInterval(t);
-  }, []);
-
   const effectiveTimeline = useMemo(() => computeEffectiveTimeline(slots), [slots]);
   const liveItems = useMemo(
     () => slots.map((s) => toLiveCardItem(s, effectiveTimeline.get(s.id))),
     [slots, effectiveTimeline]
   );
+
+  const planNow = useLivePlanNow(liveItems);
+
   const buckets = useMemo(() => selectLiveBuckets(liveItems), [liveItems]);
   const plannedBuckets = useMemo(() => selectPlannedBuckets(liveItems, planNow), [liveItems, planNow]);
   const deviation = useMemo(() => computeLivePlanDeviation(buckets, plannedBuckets, planNow), [buckets, plannedBuckets, planNow]);
+
+  useEffect(() => {
+    if (deviation.kind === "none") {
+      const t = window.setTimeout(() => setPlanAck(false), 300);
+      return () => window.clearTimeout(t);
+    }
+  }, [deviation.kind]);
+
+  const primaryActionsUnlocked = !deviationRequiresPrimaryAck(deviation) || planAck;
+  const showAckButtons = deviationRequiresPrimaryAck(deviation) && !planAck;
 
   useLiveSoundAlerts({
     scopeKey: `event:${id}`,
@@ -159,7 +168,6 @@ export default function EventLiveRoom() {
   return (
     <div className="min-h-[100svh] bg-[#050505] text-white">
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-3 md:py-4 flex flex-col min-h-[100svh]">
-        {/* Back link */}
         <Link
           to={`/dashboard/events/${id}`}
           className="inline-flex items-center gap-1 text-white/20 text-xs uppercase tracking-wider mb-2 active:text-white/40 transition-colors w-fit"
@@ -178,11 +186,29 @@ export default function EventLiveRoom() {
           onUnlock={async () => { await unlockAudio(); setSoundUnlocked(true); }}
         />
 
-        <LivePlanDeviationStrip deviation={deviation} />
+        <LivePlanDeviationStrip
+          deviation={deviation}
+          showAckButtons={showAckButtons}
+          acting={acting}
+          onAcknowledge={() => {
+            setPlanAck(true);
+            toast({ title: "Notert", description: "Faktisk live bekreftet." });
+          }}
+          onFollowPlan={() => {
+            setPlanAck(true);
+            toast({
+              title: "Følg plan",
+              description: "Fullfør aktivt punkt (Ferdig), deretter trykk Start på det planen viser under Neste.",
+            });
+          }}
+        />
+
         <div className="flex flex-col gap-8 md:gap-10 flex-1">
           <LiveNowBlock
             items={buckets.now}
             role={role}
+            wallNow={planNow}
+            showPrimaryActions={primaryActionsUnlocked}
             onAction={handleAction}
             acting={acting}
           />
@@ -190,11 +216,12 @@ export default function EventLiveRoom() {
           <LiveNextBlock
             items={buckets.next}
             role={role}
+            wallNow={planNow}
             onAction={handleAction}
             acting={acting}
           />
 
-          <LiveLaterList items={buckets.later} role={role} />
+          <LiveLaterList items={buckets.later} role={role} wallNow={planNow} />
         </div>
       </div>
     </div>
