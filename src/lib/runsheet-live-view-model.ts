@@ -55,6 +55,16 @@ export function toLiveCardItem(
     slot.title_override ||
     "Ukjent";
 
+  const effectiveStartMs = et?.effectiveStart?.getTime() ?? new Date(slot.starts_at).getTime();
+  let effectiveEndMs: number | null = null;
+  if (et?.effectiveEnd) {
+    effectiveEndMs = et.effectiveEnd.getTime();
+  } else if (slot.ends_at) {
+    effectiveEndMs = new Date(slot.ends_at).getTime();
+  } else if (slot.duration_minutes != null && slot.duration_minutes > 0) {
+    effectiveEndMs = effectiveStartMs + slot.duration_minutes * 60_000;
+  }
+
   return {
     id: slot.id,
     parallelGroupId: slot.parallel_group_id ?? null,
@@ -68,6 +78,9 @@ export function toLiveCardItem(
     actualStartedAt: slot.actual_started_at ?? null,
     actualEndedAt: slot.actual_ended_at ?? null,
     durationMinutes: slot.duration_minutes ?? null,
+    effectiveStartMs,
+    effectiveEndMs,
+    isCanceled: !!slot.is_canceled,
     badges: {
       visibility: slot.visibility as "internal" | "public",
       hasTechRider: !!slot.tech_rider_media_id,

@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,8 +9,11 @@ import { LiveHeader } from "@/components/live/LiveHeader";
 import { LiveNowBlock } from "@/components/live/LiveNowBlock";
 import { LiveNextBlock } from "@/components/live/LiveNextBlock";
 import { LiveLaterList } from "@/components/live/LiveLaterList";
+import { LivePlanDeviationStrip } from "@/components/live/LivePlanDeviationStrip";
 import { toLiveCardItem } from "@/lib/runsheet-live-view-model";
 import { selectLiveBuckets } from "@/lib/runsheet-live-selection";
+import { selectPlannedBuckets } from "@/lib/runsheet-live-planned";
+import { computeLivePlanDeviation } from "@/lib/runsheet-live-plan-deviation";
 import { computeEffectiveTimeline, type LiveAction } from "@/lib/runsheet-live";
 import { resolveLiveRole, getLivePermissions, assertLiveAction } from "@/lib/live-permissions";
 import { ArrowLeft } from "lucide-react";
@@ -71,12 +74,20 @@ export default function EventLiveRoom() {
     },
   });
 
+  const [planNow, setPlanNow] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setPlanNow(new Date()), 10_000);
+    return () => clearInterval(t);
+  }, []);
+
   const effectiveTimeline = useMemo(() => computeEffectiveTimeline(slots), [slots]);
   const liveItems = useMemo(
     () => slots.map((s) => toLiveCardItem(s, effectiveTimeline.get(s.id))),
     [slots, effectiveTimeline]
   );
   const buckets = useMemo(() => selectLiveBuckets(liveItems), [liveItems]);
+  const plannedBuckets = useMemo(() => selectPlannedBuckets(liveItems, planNow), [liveItems, planNow]);
+  const deviation = useMemo(() => computeLivePlanDeviation(buckets, plannedBuckets, planNow), [buckets, plannedBuckets, planNow]);
 
   const handleAction = useCallback(
     async (slotId: string, action: LiveAction) => {
