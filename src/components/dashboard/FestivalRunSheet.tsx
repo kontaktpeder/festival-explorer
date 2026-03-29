@@ -429,7 +429,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
       const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean; internal_status: string }> = {
         opprigg: { slot_kind: "rigging", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
         lydprøve: { slot_kind: "soundcheck", title_override: "LYDPRØVE", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
-        event: { slot_kind: "concert", title_override: "", visibility: "public", is_visible_public: true, internal_status: "contract_pending" },
+        event: { slot_kind: "concert", title_override: "", visibility: "internal", is_visible_public: false, internal_status: "confirmed" },
         doors: { slot_kind: "doors", title_override: "", visibility: "public", is_visible_public: true, internal_status: "confirmed" },
         closing: { slot_kind: "closing", title_override: "", visibility: "public", is_visible_public: true, internal_status: "confirmed" },
         stage_talk: { slot_kind: "stage_talk", title_override: "", visibility: "public", is_visible_public: true, internal_status: "confirmed" },

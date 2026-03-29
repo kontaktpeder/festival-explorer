@@ -76,3 +76,12 @@ export function getFieldsForSlotKind(kind: SlotKind): Set<SlotFieldKey> {
   const list = SLOT_KIND_FIELDS[kind] ?? SLOT_KIND_FIELDS.concert;
   return new Set(list);
 }
+
+/** Plan-mode field set: same as full but strips visibilityStatus and toggles
+ *  so the Plan view doesn't show contract status, visibility, or public toggles. */
+const PLAN_EXCLUDED: SlotFieldKey[] = ["visibilityStatus", "toggles"];
+
+export function getPlanFieldsForSlotKind(kind: SlotKind): Set<SlotFieldKey> {
+  const list = SLOT_KIND_FIELDS[kind] ?? SLOT_KIND_FIELDS.concert;
+  return new Set(list.filter((f) => !PLAN_EXCLUDED.includes(f)));
+}

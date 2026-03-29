@@ -5,7 +5,7 @@ import type { RunSheetSectionKey } from "@/lib/runsheet-sections";
 import type { LiveAction, LiveStatus } from "@/lib/runsheet-live";
 import { getLiveStatusLabel } from "@/lib/runsheet-live";
 import { getPerformerDisplay } from "@/lib/program-performers";
-import { getSlotKindConfig, getFieldsForSlotKind } from "@/lib/program-slots";
+import { getSlotKindConfig, getFieldsForSlotKind, getPlanFieldsForSlotKind } from "@/lib/program-slots";
 import { customRowTitle } from "@/lib/runsheet-ux-helpers";
 import type { SlotKind } from "@/types/database";
 import { cn } from "@/lib/utils";
@@ -51,7 +51,9 @@ export function RunSheetRowCard({
   const slot = group.primary;
   const isLive = mode === "live";
   const kindConfig = getSlotKindConfig(slot.slot_kind as any);
-  const showFields = getFieldsForSlotKind(slot.slot_kind as SlotKind);
+  const showFields = mode === "plan"
+    ? getPlanFieldsForSlotKind(slot.slot_kind as SlotKind)
+    : getFieldsForSlotKind(slot.slot_kind as SlotKind);
   const seqNum = index + 1;
   const isParallel = group.items.length > 1;
   const isCritical = isCriticalSlotKind(slot.slot_kind);
