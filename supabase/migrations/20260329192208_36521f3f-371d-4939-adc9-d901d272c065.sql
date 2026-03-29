@@ -1,0 +1,1 @@
+delete from public.event_program_slots where section_id is null;
