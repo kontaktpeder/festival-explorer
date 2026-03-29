@@ -58,7 +58,7 @@ import {
   minutesBetween,
   type TimePairEditSource,
 } from "@/lib/runsheet-time-ui";
-import { Plus, ClipboardList, ChevronDown, Printer, Filter, Download, Settings2, Play, Square, Timer, XCircle } from "lucide-react";
+import { Plus, ClipboardList, ChevronDown, Printer, Filter, Download, Settings2, Play, Square, Timer, XCircle, LayoutList, Clock } from "lucide-react";
 import { suggestionsStorageKey, loadSlotSuggestions, mergeFromSlots, rememberSlotFields, type SlotSuggestionBucket } from "@/lib/runsheet-slot-suggestions";
 import {
   Collapsible,
@@ -79,6 +79,7 @@ import { FestivalMediaPickerDialog } from "./FestivalMediaPickerDialog";
 import { RunSheetSection } from "./runsheet/RunSheetSection";
 import { RunSheetPrintView } from "./runsheet/RunSheetPrintView";
 import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
+import { RunSheetPlanBlock } from "./runsheet/RunSheetPlanBlock";
 import { useEventRunSheetDefault, useEventSceneOptions } from "@/hooks/useEventRunSheetDefault";
 
 /* ── Scope-based props ── */
@@ -107,6 +108,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogInitialAdvanced, setDialogInitialAdvanced] = useState<boolean | null>(null);
   const [sceneFilter, setSceneFilter] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "timeline">("list");
   const [sectionPendingDelete, setSectionPendingDelete] = useState<{
     id: string;
     name: string;
@@ -492,6 +494,27 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     updateSlot.mutate({ id: slotId, starts_at: startsAt, ...(endsAt !== undefined ? { ends_at: endsAt } : {}) } as any);
   };
 
+  /** DnD reorder: batch-update sequence_number for all slots in new order */
+  const handleReorderSlots = useCallback(
+    (orderedIds: string[]) => {
+      const updates = orderedIds.map((id, i) => ({
+        id,
+        sequence_number: i + 1,
+      }));
+      Promise.all(
+        updates.map(({ id, sequence_number }) =>
+          supabase
+            .from("event_program_slots" as any)
+            .update({ sequence_number })
+            .eq("id", id)
+        )
+      ).then(() => {
+        queryClient.invalidateQueries({ queryKey });
+      });
+    },
+    [queryClient, queryKey]
+  );
+
   /** Map section DB id → add slot with correct type and section_id */
   const handleAddToSection = (sectionKey: RunSheetSectionKey) => {
     // Find DB section matching this key
@@ -876,6 +899,40 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
         )}
       </div>
 
+      {/* View mode toggle + Scene filter */}
+      {slots.length > 0 && !readOnly && mode === "plan" && (
+        <div className="flex items-center gap-3 print:hidden">
+          <div className="flex items-center rounded-md border border-border/30 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors",
+                viewMode === "list"
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <LayoutList className="h-3.5 w-3.5" />
+              Liste
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("timeline")}
+              className={cn(
+                "flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors",
+                viewMode === "timeline"
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Clock className="h-3.5 w-3.5" />
+              Tidslinje
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Scene filter bar */}
       {slots.length > 0 && sceneLabels.length > 1 && (
         <div className="flex items-center gap-2 print:hidden flex-wrap">
@@ -944,7 +1001,45 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
             </div>
           )}
         </div>
+      ) : viewMode === "timeline" ? (
+        /* ── Timeline block view ── */
+        <div className="space-y-6 print:hidden">
+          {(() => {
+            let globalIndex = 0;
+            return sectionsWithSlots.map(({ sectionKey, section, slots: sectionSlots }) => {
+              const startIdx = globalIndex;
+              globalIndex += sectionSlots.length;
+              const shownName = section?.display_name?.trim() || sectionKey;
+              const prefix = section ? PHASE_PREFIXES[section.type] : ({ "Opprigg": "O", "Lydprøve": "L", "Event": "E" }[sectionKey]);
+              return (
+                <div key={section?.id ?? sectionKey}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+                      {shownName}
+                    </span>
+                    <span className="text-[9px] text-muted-foreground/40 tabular-nums">
+                      {sectionSlots.length} {sectionSlots.length === 1 ? "punkt" : "punkter"}
+                    </span>
+                  </div>
+                  {sectionSlots.length > 0 ? (
+                    <RunSheetPlanBlock
+                      slots={sectionSlots}
+                      sectionPrefix={prefix}
+                      startIndex={startIdx}
+                      onEdit={readOnly ? () => {} : openEdit}
+                    />
+                  ) : (
+                    <div className="py-6 text-center border border-dashed border-border/20 rounded-lg">
+                      <p className="text-xs text-muted-foreground/40">Ingen punkter ennå</p>
+                    </div>
+                  )}
+                </div>
+              );
+            });
+          })()}
+        </div>
       ) : (
+        /* ── List view (default) ── */
         <div className="runsheet-print space-y-5">
           {(() => {
             let globalIndex = 0;
@@ -969,6 +1064,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                     onRenameSection={readOnly ? undefined : handleRenameSection}
                     onDeleteSection={readOnly ? undefined : handleDeleteSection}
                     onTimeChange={readOnly ? undefined : handleSingleTimeChange}
+                    onReorder={readOnly ? undefined : handleReorderSlots}
                     mode={mode}
                     canOperate={canOperate}
                     onLiveAction={handleLiveAction}

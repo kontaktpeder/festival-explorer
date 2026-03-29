@@ -1,6 +1,22 @@
-import { useState, useMemo, useRef, useEffect } from "react";
-import { ChevronDown, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { ChevronDown, ChevronRight, Plus, Pencil, Trash2, GripVertical } from "lucide-react";
 import { format } from "date-fns";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import type { ExtendedEventProgramSlot, ProgramSlotType } from "@/types/program-slots";
 import type { RunSheetSectionKey } from "@/lib/runsheet-sections";
 import type { EffectiveTime, LiveAction } from "@/lib/runsheet-live";
@@ -27,6 +43,8 @@ interface RunSheetSectionProps {
     slotsInSection: ExtendedEventProgramSlot[]
   ) => void;
   onTimeChange?: (slotId: string, startsAt: string, endsAt: string | null) => void;
+  /** Reorder callback: receives ordered slot IDs after drag */
+  onReorder?: (orderedSlotIds: string[]) => void;
   /** Live mode props */
   mode?: "plan" | "live";
   canOperate?: boolean;
@@ -67,6 +85,91 @@ function fmtTime(iso: string) {
   return format(new Date(iso), "HH:mm");
 }
 
+/* ── Sortable row wrapper ── */
+function SortableRow({
+  group,
+  index,
+  sectionKey,
+  sectionPrefix,
+  slotTypeMap,
+  nowSlotId,
+  onEdit,
+  onDelete,
+  onTimeChange,
+  mode,
+  canOperate,
+  onLiveAction,
+  effectiveTimeline,
+  isDraggable,
+}: {
+  group: ParallelGroup;
+  index: number;
+  sectionKey: RunSheetSectionKey;
+  sectionPrefix?: string;
+  slotTypeMap: Map<string, ProgramSlotType>;
+  nowSlotId?: string | null;
+  onEdit: (slot: ExtendedEventProgramSlot) => void;
+  onDelete: (slot: ExtendedEventProgramSlot) => void;
+  onTimeChange?: (slotId: string, startsAt: string, endsAt: string | null) => void;
+  mode?: "plan" | "live";
+  canOperate?: boolean;
+  onLiveAction?: (slotId: string, action: LiveAction) => void;
+  effectiveTimeline?: Map<string, EffectiveTime>;
+  isDraggable: boolean;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: group.primary.id, disabled: !isDraggable });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    position: "relative" as const,
+    zIndex: isDragging ? 50 : undefined,
+  };
+
+  const et = effectiveTimeline?.get(group.primary.id);
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-stretch gap-0">
+      {isDraggable && (
+        <button
+          type="button"
+          className="flex items-center px-1 cursor-grab active:cursor-grabbing text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors print:hidden touch-none"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+      )}
+      <div className="flex-1 min-w-0">
+        <RunSheetRowCard
+          group={group}
+          index={index}
+          sectionKey={sectionKey}
+          sectionPrefix={sectionPrefix}
+          slotTypeLabel={group.primary.slot_type ? slotTypeMap.get(group.primary.slot_type)?.label : undefined}
+          isNow={nowSlotId === group.primary.id}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onTimeChange={onTimeChange}
+          mode={mode}
+          canOperate={canOperate}
+          onLiveAction={onLiveAction}
+          liveEffectiveStart={et?.effectiveStart.toISOString() ?? null}
+          liveEffectiveEnd={et?.effectiveEnd?.toISOString() ?? null}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function RunSheetSection({
   sectionKey,
   title,
@@ -82,6 +185,7 @@ export function RunSheetSection({
   onRenameSection,
   onDeleteSection,
   onTimeChange,
+  onReorder,
   mode = "plan",
   canOperate = false,
   onLiveAction,
@@ -92,6 +196,12 @@ export function RunSheetSection({
   const [editValue, setEditValue] = useState(displayName || title);
   const inputRef = useRef<HTMLInputElement>(null);
   const groups = useMemo(() => groupParallelSlots(slots), [slots]);
+  const isDraggable = mode === "plan" && !!onReorder;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor)
+  );
 
   useEffect(() => {
     if (editing && inputRef.current) {
@@ -108,6 +218,28 @@ export function RunSheetSection({
     setEditing(false);
   };
 
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id || !onReorder) return;
+
+      const oldIndex = groups.findIndex((g) => g.primary.id === active.id);
+      const newIndex = groups.findIndex((g) => g.primary.id === over.id);
+      if (oldIndex === -1 || newIndex === -1) return;
+
+      const reordered = arrayMove(groups, oldIndex, newIndex);
+      // Collect all slot IDs in new order (flatten parallel groups)
+      const orderedIds: string[] = [];
+      for (const g of reordered) {
+        for (const item of g.items) {
+          orderedIds.push(item.id);
+        }
+      }
+      onReorder(orderedIds);
+    },
+    [groups, onReorder]
+  );
+
   const isEmpty = slots.length === 0;
   const shownName = displayName || title;
 
@@ -120,6 +252,8 @@ export function RunSheetSection({
     const last = lastSlot.ends_at || lastSlot.starts_at;
     return { from: fmtTime(first), to: fmtTime(last), firstIso: first };
   }, [slots]);
+
+  const sortableIds = useMemo(() => groups.map((g) => g.primary.id), [groups]);
 
   return (
     <div className="runsheet-section space-y-0" data-section={sectionKey} data-print-section>
@@ -198,7 +332,7 @@ export function RunSheetSection({
           </Button>
         )}
 
-        {/* Delete section – hidden on mobile */}
+        {/* Delete section */}
         {onDeleteSection && (
           <Button
             variant="ghost"
@@ -212,32 +346,37 @@ export function RunSheetSection({
         )}
       </div>
 
-      {/* Rows */}
+      {/* Rows with DnD */}
       {!collapsed && !isEmpty && (
-        <div className="pt-2 space-y-2">
-          {groups.map((group, i) => {
-            const et = effectiveTimeline?.get(group.primary.id);
-            return (
-              <RunSheetRowCard
-                key={group.primary.id}
-                group={group}
-                index={startIndex + i}
-                sectionKey={sectionKey}
-                sectionPrefix={sectionPrefix}
-                slotTypeLabel={group.primary.slot_type ? slotTypeMap.get(group.primary.slot_type)?.label : undefined}
-                isNow={nowSlotId === group.primary.id}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                onTimeChange={onTimeChange}
-                mode={mode}
-                canOperate={canOperate}
-                onLiveAction={onLiveAction}
-                liveEffectiveStart={et?.effectiveStart.toISOString() ?? null}
-                liveEffectiveEnd={et?.effectiveEnd?.toISOString() ?? null}
-              />
-            );
-          })}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+            <div className="pt-2 space-y-2">
+              {groups.map((group, i) => (
+                <SortableRow
+                  key={group.primary.id}
+                  group={group}
+                  index={startIndex + i}
+                  sectionKey={sectionKey}
+                  sectionPrefix={sectionPrefix}
+                  slotTypeMap={slotTypeMap}
+                  nowSlotId={nowSlotId}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onTimeChange={onTimeChange}
+                  mode={mode}
+                  canOperate={canOperate}
+                  onLiveAction={onLiveAction}
+                  effectiveTimeline={effectiveTimeline}
+                  isDraggable={isDraggable}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       {/* Empty state */}
