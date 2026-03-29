@@ -686,6 +686,12 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     setDialogOpen(true);
   };
 
+  /** Resolve section display name for a slot */
+  const sectionDisplayNameForSlot = (s: ExtendedEventProgramSlot): string => {
+    const sec = s.section_id ? dbSections.find((ds) => ds.id === s.section_id) : undefined;
+    return sec ? displaySectionTitle(sec) : "—";
+  };
+
   const handleDelete = (slot: ExtendedEventProgramSlot) => {
     if (readOnly) return;
     setSlotPendingDelete(slot.id);
