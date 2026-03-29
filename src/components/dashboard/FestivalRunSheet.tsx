@@ -11,10 +11,17 @@ import { computeNextSlotStartsAt, shouldOpenAdvancedInitially } from "@/lib/runs
 import type { SlotKind } from "@/types/database";
 import {
   type RunSheetSectionKey,
-  RUNSHEET_SECTION_KEYS,
   getSectionForSlot,
-  groupSlotsBySection,
 } from "@/lib/runsheet-sections";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useEventProgramSections } from "@/hooks/useEventProgramSections";
 import type { EventProgramSection, EventProgramPhaseType } from "@/types/program-sections";
 import { PHASE_LABELS, PHASE_PREFIXES, displaySectionTitle } from "@/types/program-sections";
@@ -96,6 +103,12 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogInitialAdvanced, setDialogInitialAdvanced] = useState<boolean | null>(null);
   const [sceneFilter, setSceneFilter] = useState<string | null>(null);
+  const [sectionPendingDelete, setSectionPendingDelete] = useState<{
+    id: string;
+    name: string;
+    slotCount: number;
+  } | null>(null);
+  const [slotPendingDelete, setSlotPendingDelete] = useState<string | null>(null);
   const [attachTarget, setAttachTarget] = useState<{
     slotId: string;
     field: "contract_media_id" | "tech_rider_media_id" | "hosp_rider_media_id";
@@ -517,16 +530,15 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
   ) => {
     const phaseType = ({ "Opprigg": "opprigg", "Lydprøve": "lydprove", "Event": "event" } as Record<RunSheetSectionKey, EventProgramPhaseType>)[sectionKey];
     const section = phaseType ? dbSections.find((s) => s.type === phaseType) : null;
-    if (!section) return;
+    if (!section) {
+      toast({ title: "Fant ikke seksjonen", variant: "destructive" });
+      return;
+    }
     const displayName = sectionNames[sectionKey] || sectionKey;
-    if (!window.confirm(`Slette seksjonen «${displayName}» og alle ${slotsToDelete.length} punkter? Dette kan ikke angres.`)) return;
-    // CASCADE will delete associated slots
-    deleteSectionMutation.mutate(section.id, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey });
-        toast({ title: "Seksjon slettet" });
-      },
-      onError: (e: Error) => toast({ title: "Feil", description: e.message, variant: "destructive" }),
+    setSectionPendingDelete({
+      id: section.id,
+      name: displayName,
+      slotCount: slotsToDelete.length,
     });
   };
 
@@ -591,31 +603,21 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     if (sceneFilter) {
       allSlots = allSlots.filter((s) => s.stage_label === sceneFilter);
     }
-    // Group by section_id from DB sections
-    if (dbSections.length > 0) {
-      return dbSections.map((section) => {
-        const slotsInSection = allSlots.filter((s) => (s as any).section_id === section.id);
-        // Sort: sequence_number, then starts_at
-        slotsInSection.sort((a, b) => {
-          const sa = a.sequence_number ?? Infinity;
-          const sb = b.sequence_number ?? Infinity;
-          if (sa !== sb) return sa - sb;
-          return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
-        });
-        return {
-          sectionKey: PHASE_LABELS[section.type] as RunSheetSectionKey,
-          section,
-          slots: slotsInSection,
-        };
+    if (dbSections.length === 0) return [];
+    return dbSections.map((section) => {
+      const slotsInSection = allSlots.filter((s) => (s as any).section_id === section.id);
+      slotsInSection.sort((a, b) => {
+        const sa = a.sequence_number ?? Infinity;
+        const sb = b.sequence_number ?? Infinity;
+        if (sa !== sb) return sa - sb;
+        return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
       });
-    }
-    // Fallback: use client-side grouping if no DB sections exist yet
-    const grouped = groupSlotsBySection(allSlots);
-    return RUNSHEET_SECTION_KEYS.map((key) => ({
-      sectionKey: key,
-      section: null as EventProgramSection | null,
-      slots: grouped[key],
-    }));
+      return {
+        sectionKey: PHASE_LABELS[section.type] as RunSheetSectionKey,
+        section,
+        slots: slotsInSection,
+      };
+    });
   }, [data?.slots, sceneFilter, dbSections]);
 
   /* NOW marker – find the slot that's currently active */
@@ -661,9 +663,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
 
   const handleDelete = (slot: ExtendedEventProgramSlot) => {
     if (readOnly) return;
-    if (window.confirm("Slette denne raden?")) {
-      deleteSlot.mutate(slot.id);
-    }
+    setSlotPendingDelete(slot.id);
   };
 
   const handleSave = (updates: Record<string, unknown>) => {
@@ -959,13 +959,18 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
         </div>
       )}
 
-      {slots.length === 0 && dbSections.length === 0 ? (
+      {dbSections.length === 0 ? (
         <div className="py-16 text-center border border-dashed border-border/30 rounded-xl">
           <ClipboardList className="h-8 w-8 mx-auto text-muted-foreground/20 mb-4" />
-          <p className="text-sm font-medium text-muted-foreground">Ingen programrader ennå.</p>
+          <p className="text-sm font-medium text-muted-foreground">Legg til din første fase</p>
           <p className="text-xs text-muted-foreground/60 mt-1 mb-4">
-            Legg til faser for å komme i gang.
+            Kjøreplanen er organisert i faser (Opprigg, Lydprøve, Event). Uten fase vises ingen seksjoner her.
           </p>
+          {slots.length > 0 && (
+            <p className="text-xs text-amber-500/80 mb-4">
+              {slots.length} {slots.length === 1 ? "programrad mangler" : "programrader mangler"} tilknyttet fase og vises ikke i listen. Opprett en fase under, eller slett utdaterte rader fra programmet.
+            </p>
+          )}
           {!readOnly && (
             <div className="flex items-center justify-center gap-2">
               {(["opprigg", "lydprove", "event"] as EventProgramPhaseType[]).map((phaseType) => (
@@ -1134,6 +1139,68 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
         />
       )}
 
+      {/* Delete section confirmation */}
+      <AlertDialog open={!!sectionPendingDelete} onOpenChange={(open) => { if (!open) setSectionPendingDelete(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Slette fase?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Slette «{sectionPendingDelete?.name}» og{" "}
+              {sectionPendingDelete?.slotCount === 1
+                ? "1 post"
+                : `${sectionPendingDelete?.slotCount ?? 0} poster`}
+              ? Dette kan ikke angres.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (!sectionPendingDelete) return;
+                deleteSectionMutation.mutate(sectionPendingDelete.id, {
+                  onSuccess: () => {
+                    setSectionPendingDelete(null);
+                    queryClient.invalidateQueries({ queryKey });
+                    queryClient.invalidateQueries({ queryKey: sectionsQueryKey });
+                    toast({ title: "Seksjon slettet" });
+                  },
+                  onError: (e: Error) =>
+                    toast({ title: "Feil", description: e.message, variant: "destructive" }),
+                });
+              }}
+            >
+              Slett
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete slot confirmation */}
+      <AlertDialog open={!!slotPendingDelete} onOpenChange={(open) => { if (!open) setSlotPendingDelete(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Slette rad?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Denne programraden slettes permanent. Dette kan ikke angres.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (!slotPendingDelete) return;
+                deleteSlot.mutate(slotPendingDelete, {
+                  onSettled: () => setSlotPendingDelete(null),
+                });
+              }}
+            >
+              Slett
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* ── Clean print view (hidden on screen, shown on print) ── */}
       <RunSheetPrintView
