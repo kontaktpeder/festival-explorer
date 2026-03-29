@@ -6,7 +6,7 @@ import { MediaPicker } from "@/components/admin/MediaPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ExtendedEventProgramSlot, ProgramSlotType, PerformerKind } from "@/types/program-slots";
-import { INTERNAL_STATUS_OPTIONS, SLOT_KIND_OPTIONS, getFieldsForSlotKind } from "@/lib/program-slots";
+import { INTERNAL_STATUS_OPTIONS, SLOT_KIND_OPTIONS, getFieldsForSlotKind, getPlanFieldsForSlotKind } from "@/lib/program-slots";
 import { computeNextSlotStartsAt, shouldOpenAdvancedInitially } from "@/lib/runsheet-ux-helpers";
 import type { SlotKind } from "@/types/database";
 import {
@@ -1647,9 +1647,10 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
     return found?.name || null;
   }, [performerPersonaId, slot.performer_persona, personaResults]);
 
+  const isPlanScope = editScope === "plan";
   const showFields = useMemo(
-    () => getFieldsForSlotKind(slotKind as SlotKind),
-    [slotKind]
+    () => isPlanScope ? getPlanFieldsForSlotKind(slotKind as SlotKind) : getFieldsForSlotKind(slotKind as SlotKind),
+    [slotKind, isPlanScope]
   );
 
   return (
