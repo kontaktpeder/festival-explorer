@@ -81,6 +81,7 @@ import { RunSheetPrintView } from "./runsheet/RunSheetPrintView";
 import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
 import { RunSheetPlanBlock } from "./runsheet/RunSheetPlanBlock";
 import { useEventRunSheetDefault, useEventSceneOptions } from "@/hooks/useEventRunSheetDefault";
+import { computeVisualStartsForSection, sectionAnchorDate } from "@/lib/runsheet-plan-time";
 
 /* ── Scope-based props ── */
 type FestivalRunSheetProps =
