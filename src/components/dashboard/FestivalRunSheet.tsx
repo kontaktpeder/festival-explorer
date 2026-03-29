@@ -647,7 +647,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     return allSlots.filter((s) => s.stage_label === printFilter);
   }, [data?.slots, printFilter]);
 
-  if (isLoading || !data) {
+  if (isLoading || sectionsLoading || !data) {
     return <LoadingState message="Laster kjøreplan..." />;
   }
 
