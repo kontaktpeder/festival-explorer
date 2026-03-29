@@ -3,10 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
-  DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { FocusDialogContent } from "@/components/ui/focus-overlays";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, FileText, Check } from "lucide-react";
@@ -49,7 +49,7 @@ export function FestivalMediaPickerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <FocusDialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-sm">
             Velg fil fra filbanken
@@ -122,7 +122,7 @@ export function FestivalMediaPickerDialog({
             Velg
           </Button>
         </div>
-      </DialogContent>
+      </FocusDialogContent>
     </Dialog>
   );
 }

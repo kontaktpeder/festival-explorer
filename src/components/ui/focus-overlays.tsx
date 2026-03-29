@@ -3,6 +3,10 @@ import { DialogContent } from "@/components/ui/dialog";
 import { AlertDialogContent } from "@/components/ui/alert-dialog";
 import { PopoverContent } from "@/components/ui/popover";
 import { SelectContent } from "@/components/ui/select";
+import {
+  DropdownMenuContent,
+  DropdownMenuSubContent,
+} from "@/components/ui/dropdown-menu";
 import { useFocusTheme } from "@/contexts/FocusThemeContext";
 import { cn } from "@/lib/utils";
 
@@ -65,3 +69,33 @@ export const FocusSelectContent = React.forwardRef<
   );
 });
 FocusSelectContent.displayName = "FocusSelectContent";
+
+export const FocusDropdownMenuContent = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuContent>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuContent>
+>(({ className, ...props }, ref) => {
+  const mode = useFocusTheme();
+  return (
+    <DropdownMenuContent
+      ref={ref}
+      className={cn(mode === "light" && "finance-theme", className)}
+      {...props}
+    />
+  );
+});
+FocusDropdownMenuContent.displayName = "FocusDropdownMenuContent";
+
+export const FocusDropdownMenuSubContent = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuSubContent>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuSubContent>
+>(({ className, ...props }, ref) => {
+  const mode = useFocusTheme();
+  return (
+    <DropdownMenuSubContent
+      ref={ref}
+      className={cn(mode === "light" && "finance-theme", className)}
+      {...props}
+    />
+  );
+});
+FocusDropdownMenuSubContent.displayName = "FocusDropdownMenuSubContent";
