@@ -492,6 +492,27 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     updateSlot.mutate({ id: slotId, starts_at: startsAt, ...(endsAt !== undefined ? { ends_at: endsAt } : {}) } as any);
   };
 
+  /** DnD reorder: batch-update sequence_number for all slots in new order */
+  const handleReorderSlots = useCallback(
+    (orderedIds: string[]) => {
+      const updates = orderedIds.map((id, i) => ({
+        id,
+        sequence_number: i + 1,
+      }));
+      Promise.all(
+        updates.map(({ id, sequence_number }) =>
+          supabase
+            .from("event_program_slots" as any)
+            .update({ sequence_number })
+            .eq("id", id)
+        )
+      ).then(() => {
+        queryClient.invalidateQueries({ queryKey });
+      });
+    },
+    [queryClient, queryKey]
+  );
+
   /** Map section DB id → add slot with correct type and section_id */
   const handleAddToSection = (sectionKey: RunSheetSectionKey) => {
     // Find DB section matching this key
