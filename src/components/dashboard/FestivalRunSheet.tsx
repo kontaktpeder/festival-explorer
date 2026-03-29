@@ -16,6 +16,10 @@ import {
 import {
   AlertDialog,
   AlertDialogCancel,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
   FocusAlertDialogContent,
@@ -1141,7 +1145,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
 
       {/* Delete section confirmation */}
       <AlertDialog open={!!sectionPendingDelete} onOpenChange={(open) => { if (!open) setSectionPendingDelete(null); }}>
-        <AlertDialogContent>
+        <FocusAlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Slette fase?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -1173,12 +1177,12 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               Slett
             </Button>
           </AlertDialogFooter>
-        </AlertDialogContent>
+        </FocusAlertDialogContent>
       </AlertDialog>
 
       {/* Delete slot confirmation */}
       <AlertDialog open={!!slotPendingDelete} onOpenChange={(open) => { if (!open) setSlotPendingDelete(null); }}>
-        <AlertDialogContent>
+        <FocusAlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Slette rad?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -1199,7 +1203,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               Slett
             </Button>
           </AlertDialogFooter>
-        </AlertDialogContent>
+        </FocusAlertDialogContent>
       </AlertDialog>
 
       {/* ── Clean print view (hidden on screen, shown on print) ── */}
