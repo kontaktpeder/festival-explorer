@@ -342,3 +342,36 @@ export interface ContributorKpis {
   withIssues: number;
   ready: number;
 }
+
+// ── Contributor document status (aggregated over linked slots) ──
+
+export interface ContributorDocumentStatus {
+  missingTechRider: boolean;
+  missingHospRider: boolean;
+  missingContract: boolean;
+  allComplete: boolean;
+}
+
+export function contributorDocumentStatus(c: ProductionContributor): ContributorDocumentStatus {
+  const performanceSlots = c.slots.filter(
+    (s) =>
+      !s.slot.is_canceled &&
+      (s.slot.slot_kind === "concert" || s.slot.slot_kind === "soundcheck"),
+  );
+  if (performanceSlots.length === 0) {
+    return { missingTechRider: false, missingHospRider: false, missingContract: false, allComplete: true };
+  }
+  const missingTechRider = performanceSlots.some(
+    (s) => !(s.slot as any).tech_rider_asset_id && !s.slot.tech_rider_media_id,
+  );
+  const missingHospRider = performanceSlots.some(
+    (s) => !(s.slot as any).hosp_rider_asset_id && !s.slot.hosp_rider_media_id,
+  );
+  const missingContract = performanceSlots.some((s) => !s.slot.contract_media_id);
+  return {
+    missingTechRider,
+    missingHospRider,
+    missingContract,
+    allComplete: !missingTechRider && !missingHospRider && !missingContract,
+  };
+}

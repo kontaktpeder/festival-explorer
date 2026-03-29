@@ -1023,6 +1023,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           suggestionTitles={suggestions.titles}
           suggestionAreas={suggestions.areas}
           suggestionStorageKey={sugStorageKey}
+          editScope="plan"
         />
       )}
 
