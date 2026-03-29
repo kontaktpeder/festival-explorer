@@ -1091,6 +1091,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                     canOperate={canOperate}
                     onLiveAction={handleLiveAction}
                     effectiveTimeline={effectiveTimeline}
+                    visualStartMap={section ? visualStartMaps.get(section.id) : undefined}
                    />
               );
             });
