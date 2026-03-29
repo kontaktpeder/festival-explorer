@@ -58,7 +58,7 @@ import {
   minutesBetween,
   type TimePairEditSource,
 } from "@/lib/runsheet-time-ui";
-import { Plus, ClipboardList, ChevronDown, Printer, Filter, Download, Settings2, Play, Square, Timer, XCircle } from "lucide-react";
+import { Plus, ClipboardList, ChevronDown, Printer, Filter, Download, Settings2, Play, Square, Timer, XCircle, LayoutList, Clock } from "lucide-react";
 import { suggestionsStorageKey, loadSlotSuggestions, mergeFromSlots, rememberSlotFields, type SlotSuggestionBucket } from "@/lib/runsheet-slot-suggestions";
 import {
   Collapsible,
@@ -79,6 +79,7 @@ import { FestivalMediaPickerDialog } from "./FestivalMediaPickerDialog";
 import { RunSheetSection } from "./runsheet/RunSheetSection";
 import { RunSheetPrintView } from "./runsheet/RunSheetPrintView";
 import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
+import { RunSheetPlanBlock } from "./runsheet/RunSheetPlanBlock";
 import { useEventRunSheetDefault, useEventSceneOptions } from "@/hooks/useEventRunSheetDefault";
 
 /* ── Scope-based props ── */
@@ -107,6 +108,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogInitialAdvanced, setDialogInitialAdvanced] = useState<boolean | null>(null);
   const [sceneFilter, setSceneFilter] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "timeline">("list");
   const [sectionPendingDelete, setSectionPendingDelete] = useState<{
     id: string;
     name: string;
