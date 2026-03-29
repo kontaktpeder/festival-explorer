@@ -1675,6 +1675,11 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
       <FocusDialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Rediger post</DialogTitle>
+          {isPlanScope && sectionDisplayName && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Seksjon: <span className="font-medium text-foreground">{sectionDisplayName}</span>
+            </p>
+          )}
         </DialogHeader>
         <div className="space-y-4 py-2 max-h-[65vh] overflow-y-auto">
           {/* ── Block A: Essential fields ── */}
