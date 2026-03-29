@@ -2016,6 +2016,11 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                   </div>
                 </div>
               )}
+              {showFields.has("performer") && isPlanScope && (
+                <p className="text-[10px] text-muted-foreground/60 italic px-1">
+                  Dokumenter som rider og kontrakt håndteres i Produksjon.
+                </p>
+              )}
 
               {/* Kategori */}
               {showFields.has("category") && types.length > 0 && (
