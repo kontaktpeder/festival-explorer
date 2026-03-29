@@ -380,7 +380,6 @@ export const RunSheetSection = forwardRef<HTMLDivElement, RunSheetSectionProps>(
                   isDraggable={isDraggable}
                   visualStartAt={visualStartMap?.get(group.primary.id) ?? null}
                 />
-                />
               ))}
             </div>
           </SortableContext>
