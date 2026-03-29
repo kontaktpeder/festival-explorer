@@ -195,6 +195,7 @@ export const RunSheetSection = forwardRef<HTMLDivElement, RunSheetSectionProps>(
   canOperate = false,
   onLiveAction,
   effectiveTimeline,
+  visualStartMap,
 }, ref) {
   const [collapsed, setCollapsed] = useState(false);
   const [editing, setEditing] = useState(false);
