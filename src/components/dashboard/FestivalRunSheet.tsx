@@ -1187,6 +1187,8 @@ interface RunSheetEditDialogProps {
   suggestionStorageKey?: string | null;
   /** "plan" hides documents, visibility/status, toggles. "full" shows everything. */
   editScope?: "plan" | "full";
+  /** Read-only section label shown in plan scope */
+  sectionDisplayName?: string;
 }
 
 interface FestivalEvent {
