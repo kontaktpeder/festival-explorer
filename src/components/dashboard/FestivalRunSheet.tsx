@@ -7,7 +7,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ExtendedEventProgramSlot, ProgramSlotType, PerformerKind } from "@/types/program-slots";
 import { INTERNAL_STATUS_OPTIONS, SLOT_KIND_OPTIONS, getFieldsForSlotKind, getPlanFieldsForSlotKind } from "@/lib/program-slots";
-import { computeNextSlotStartsAt, shouldOpenAdvancedInitially } from "@/lib/runsheet-ux-helpers";
+import { computeNextSlotStartsAt, computeChainNextStart, shouldOpenAdvancedInitially } from "@/lib/runsheet-ux-helpers";
 import type { SlotKind } from "@/types/database";
 import {
   type RunSheetSectionKey,
@@ -81,6 +81,7 @@ import { RunSheetPrintView } from "./runsheet/RunSheetPrintView";
 import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
 import { RunSheetPlanBlock } from "./runsheet/RunSheetPlanBlock";
 import { useEventRunSheetDefault, useEventSceneOptions } from "@/hooks/useEventRunSheetDefault";
+import { computeVisualStartsForSection, sectionAnchorDate } from "@/lib/runsheet-plan-time";
 
 /* ── Scope-based props ── */
 type FestivalRunSheetProps =
@@ -423,11 +424,14 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
       if (!sectionId) {
         throw new Error("Velg fase først — bruk «Legg til post» i seksjonshodet.");
       }
-      // Compute start time scoped to slots in the target section
+      // Compute start time: prefer chain-based calculation with section anchor
       const slotsInSection = sectionId
         ? ((data?.slots ?? []) as ExtendedEventProgramSlot[]).filter((s) => s.section_id === sectionId)
         : (data?.slots ?? []) as ExtendedEventProgramSlot[];
-      const startsAt = computeNextSlotStartsAt(slotsInSection, scopeStartAt);
+      const section = sectionId ? dbSections.find((s) => s.id === sectionId) : null;
+      const startsAt = section && scopeStartAt
+        ? computeChainNextStart(slotsInSection, section, scopeStartAt)
+        : computeNextSlotStartsAt(slotsInSection, scopeStartAt);
       const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean; internal_status: string }> = {
         opprigg: { slot_kind: "rigging", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
         lydprøve: { slot_kind: "soundcheck", title_override: "LYDPRØVE", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
@@ -667,6 +671,27 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
       };
     });
   }, [data?.slots, sceneFilter, dbSections]);
+
+  /** Chain-computed visual start times per section (plan list view) */
+  const visualStartMaps = useMemo(() => {
+    if (!scopeStartAt || !sectionsWithSlots.length) return new Map<string, Map<string, string>>();
+    const result = new Map<string, Map<string, string>>();
+    for (const { section, slots: sectionSlots } of sectionsWithSlots) {
+      if (!section || !sectionSlots.length) continue;
+      const anchor = sectionAnchorDate(scopeStartAt, section.starts_at_local);
+      const slotsById = new Map<string, ExtendedEventProgramSlot>();
+      const orderedIds: string[] = [];
+      for (const s of sectionSlots) {
+        slotsById.set(s.id, s);
+        orderedIds.push(s.id);
+      }
+      const dateMap = computeVisualStartsForSection(anchor, orderedIds, slotsById);
+      const isoMap = new Map<string, string>();
+      for (const [id, d] of dateMap) isoMap.set(id, d.toISOString());
+      result.set(section.id, isoMap);
+    }
+    return result;
+  }, [scopeStartAt, sectionsWithSlots]);
 
   /* NOW marker – find the slot that's currently active */
   const nowSlotId = useMemo(() => {
@@ -1027,6 +1052,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                       sectionPrefix={prefix}
                       startIndex={startIdx}
                       onEdit={readOnly ? () => {} : openEdit}
+                      sectionAnchorIso={section && scopeStartAt ? sectionAnchorDate(scopeStartAt, section.starts_at_local).toISOString() : null}
                     />
                   ) : (
                     <div className="py-6 text-center border border-dashed border-border/20 rounded-lg">
@@ -1069,6 +1095,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                     canOperate={canOperate}
                     onLiveAction={handleLiveAction}
                     effectiveTimeline={effectiveTimeline}
+                    visualStartMap={section ? visualStartMaps.get(section.id) : undefined}
                    />
               );
             });

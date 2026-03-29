@@ -41,12 +41,15 @@ interface RunSheetRowCardProps {
   onLiveAction?: (slotId: string, action: LiveAction) => void;
   liveEffectiveStart?: string | null;
   liveEffectiveEnd?: string | null;
+  /** Chain-computed visual start time (ISO) for plan list view */
+  visualStartAt?: string | null;
 }
 
 export function RunSheetRowCard({
   group, index, sectionKey, sectionPrefix, slotTypeLabel, isNow,
   onEdit, onDelete, onTimeChange,
   mode = "plan", canOperate = false, onLiveAction, liveEffectiveStart, liveEffectiveEnd,
+  visualStartAt,
 }: RunSheetRowCardProps) {
   const slot = group.primary;
   const isLive = mode === "live";
@@ -63,12 +66,14 @@ export function RunSheetRowCard({
 
   const liveStatus = (slot.live_status ?? "not_started") as string;
 
-  // Display times: actual > effective > plan
+  // Display times: plan uses chain-computed visual start when available
+  const planStartsAt = !isLive && visualStartAt ? visualStartAt : slot.starts_at;
+
   const displayStartsAt = useMemo(() => {
-    if (!isLive) return slot.starts_at;
+    if (!isLive) return planStartsAt;
     if (slot.actual_started_at && slot.live_status !== "not_started") return slot.actual_started_at;
     return liveEffectiveStart ?? slot.starts_at;
-  }, [isLive, slot.starts_at, slot.actual_started_at, slot.live_status, liveEffectiveStart]);
+  }, [isLive, planStartsAt, slot.starts_at, slot.actual_started_at, slot.live_status, liveEffectiveStart]);
 
   const displayEndsAt = useMemo(() => {
     if (!isLive) return slot.ends_at;

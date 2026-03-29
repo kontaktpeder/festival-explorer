@@ -50,6 +50,8 @@ interface RunSheetSectionProps {
   canOperate?: boolean;
   onLiveAction?: (slotId: string, action: LiveAction) => void;
   effectiveTimeline?: Map<string, EffectiveTime>;
+  /** Chain-computed visual start times: slotId → ISO string */
+  visualStartMap?: Map<string, string>;
 }
 
 /** Group slots by parallel_group_id; singletons become groups of 1 */
@@ -101,6 +103,7 @@ function SortableRow({
   onLiveAction,
   effectiveTimeline,
   isDraggable,
+  visualStartAt,
 }: {
   group: ParallelGroup;
   index: number;
@@ -116,6 +119,7 @@ function SortableRow({
   onLiveAction?: (slotId: string, action: LiveAction) => void;
   effectiveTimeline?: Map<string, EffectiveTime>;
   isDraggable: boolean;
+  visualStartAt?: string | null;
 }) {
   const {
     attributes,
@@ -164,6 +168,7 @@ function SortableRow({
           onLiveAction={onLiveAction}
           liveEffectiveStart={et?.effectiveStart.toISOString() ?? null}
           liveEffectiveEnd={et?.effectiveEnd?.toISOString() ?? null}
+          visualStartAt={visualStartAt}
         />
       </div>
     </div>
@@ -190,6 +195,7 @@ export const RunSheetSection = forwardRef<HTMLDivElement, RunSheetSectionProps>(
   canOperate = false,
   onLiveAction,
   effectiveTimeline,
+  visualStartMap,
 }, ref) {
   const [collapsed, setCollapsed] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -372,6 +378,7 @@ export const RunSheetSection = forwardRef<HTMLDivElement, RunSheetSectionProps>(
                   onLiveAction={onLiveAction}
                   effectiveTimeline={effectiveTimeline}
                   isDraggable={isDraggable}
+                  visualStartAt={visualStartMap?.get(group.primary.id) ?? null}
                 />
               ))}
             </div>
