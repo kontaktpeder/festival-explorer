@@ -167,7 +167,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
   const scopeStartAt = isFestivalScope ? festivalInfo?.start_at : (eventInfo as any)?.start_at;
   const scopeVenueName = isFestivalScope ? (festivalInfo as any)?.venue?.name : (eventInfo as any)?.venue?.name;
 
-  const [printFilter, setPrintFilter] = useState<"all" | "lydprover" | "event" | string>("all");
+  const [printFilter, setPrintFilter] = useState<"all" | "opprigg" | "lydprove" | "event" | string>("all");
 
   // Subjects: festival uses shared hook, event uses local query
   const { data: festivalSubjects = [] } = useFestivalSubjects(isFestivalScope ? festivalId : null);
@@ -381,9 +381,10 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
   const createManualSlot = useMutation({
     mutationFn: async ({ sectionType, seq }: { sectionType: "opprigg" | "lydprøve" | "event" | "doors" | "closing" | "stage_talk" | "giggen_info" | "break" | "crew" | "custom"; seq: number }) => {
       const isCustom = sectionType === "custom";
-      const startsAt = isCustom
-        ? computeNextSlotStartsAt((data?.slots ?? []) as ExtendedEventProgramSlot[])
-        : new Date();
+      const startsAt = computeNextSlotStartsAt(
+        (data?.slots ?? []) as ExtendedEventProgramSlot[],
+        scopeStartAt
+      );
       const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean; internal_status: string }> = {
         opprigg: { slot_kind: "rigging", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
         lydprøve: { slot_kind: "soundcheck", title_override: "LYDPRØVE", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
@@ -425,7 +426,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
         `)
         .single();
       if (error) throw error;
-      return { inserted: inserted as unknown as ExtendedEventProgramSlot, openEditor: isCustom };
+      return { inserted: inserted as unknown as ExtendedEventProgramSlot, openEditor: sectionType === "custom" };
     },
     onSuccess: async (result) => {
       await queryClient.invalidateQueries({ queryKey });
@@ -452,7 +453,8 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
   /** Map section key → preset type for "add to section" */
   const handleAddToSection = (sectionKey: RunSheetSectionKey) => {
     const map: Record<RunSheetSectionKey, "opprigg" | "lydprøve" | "event"> = {
-      "Lydprøver": "lydprøve",
+      "Opprigg": "opprigg",
+      "Lydprøve": "lydprøve",
       "Event": "event",
     };
     createManualSlot.mutate({ sectionType: map[sectionKey] ?? "event", seq: nextSequenceNumber });
@@ -582,7 +584,8 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
   const printSlots = useMemo(() => {
     const allSlots = data?.slots ?? [];
     if (printFilter === "all") return allSlots;
-    if (printFilter === "lydprover") return allSlots.filter((s) => getSectionForSlot(s) === "Lydprøver");
+    if (printFilter === "opprigg") return allSlots.filter((s) => getSectionForSlot(s) === "Opprigg");
+    if (printFilter === "lydprove") return allSlots.filter((s) => getSectionForSlot(s) === "Lydprøve");
     if (printFilter === "event") return allSlots.filter((s) => getSectionForSlot(s) === "Event");
     return allSlots.filter((s) => s.stage_label === printFilter);
   }, [data?.slots, printFilter]);
@@ -689,7 +692,10 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                 <DropdownMenuItem onClick={() => { setPrintFilter("all"); setTimeout(handleDownloadPdf, 100); }}>
                   Hele kjøreplanen
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => { setPrintFilter("lydprover"); setTimeout(handleDownloadPdf, 100); }}>
+                <DropdownMenuItem onClick={() => { setPrintFilter("opprigg"); setTimeout(handleDownloadPdf, 100); }}>
+                  Kun opprigg
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => { setPrintFilter("lydprove"); setTimeout(handleDownloadPdf, 100); }}>
                   Kun lydprøver
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => { setPrintFilter("event"); setTimeout(handleDownloadPdf, 100); }}>
@@ -720,7 +726,10 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                 <DropdownMenuItem onClick={() => triggerPrint("all")}>
                   Hele kjøreplanen
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => triggerPrint("lydprover")}>
+                <DropdownMenuItem onClick={() => triggerPrint("opprigg")}>
+                  Kun opprigg
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => triggerPrint("lydprove")}>
                   Kun lydprøver
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => triggerPrint("event")}>
@@ -802,7 +811,10 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               <DropdownMenuItem onClick={() => { setPrintFilter("all"); setTimeout(handleDownloadPdf, 100); }}>
                 Hele kjøreplanen
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => { setPrintFilter("lydprover"); setTimeout(handleDownloadPdf, 100); }}>
+              <DropdownMenuItem onClick={() => { setPrintFilter("opprigg"); setTimeout(handleDownloadPdf, 100); }}>
+                Kun opprigg
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setPrintFilter("lydprove"); setTimeout(handleDownloadPdf, 100); }}>
                 Kun lydprøver
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => { setPrintFilter("event"); setTimeout(handleDownloadPdf, 100); }}>
@@ -819,7 +831,8 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center">
               <DropdownMenuItem onClick={() => triggerPrint("all")}>Hele kjøreplanen</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => triggerPrint("lydprover")}>Kun lydprøver</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => triggerPrint("opprigg")}>Kun opprigg</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => triggerPrint("lydprove")}>Kun lydprøver</DropdownMenuItem>
               <DropdownMenuItem onClick={() => triggerPrint("event")}>Kun event</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -900,9 +913,11 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
       ) : (
         <div className="runsheet-print space-y-5">
           {(() => {
-            const sectionPrefixes: Record<string, string> = { "Lydprøver": "L", "Event": "E" };
+            const sectionPrefixes: Record<string, string> = { "Opprigg": "O", "Lydprøve": "L", "Event": "E" };
             let globalIndex = 0;
-            return sectionsWithSlots.map(({ sectionKey, slots: sectionSlots }) => {
+            return sectionsWithSlots
+              .filter(({ slots: s }) => s.length > 0)
+              .map(({ sectionKey, slots: sectionSlots }) => {
               const startIdx = globalIndex;
               globalIndex += sectionSlots.length;
               return (
@@ -910,7 +925,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                     key={sectionKey}
                     sectionKey={sectionKey}
                     title={sectionKey}
-                    displayName={sectionNames[sectionKey] || (sectionKey === "Lydprøver" ? "Lydprøver & Opprigg" : undefined)}
+                    displayName={sectionNames[sectionKey]}
                     sectionPrefix={sectionPrefixes[sectionKey]}
                     slots={sectionSlots}
                     slotTypeMap={slotTypeMap}
@@ -1067,13 +1082,11 @@ interface FestivalEvent {
 }
 
 function getRunSheetSectionFromSlot(kind: string, visibility: string, title?: string | null): RunSheetSectionKey {
+  if (kind === "rigging" || kind === "crew") return "Opprigg";
+  if (kind === "soundcheck") return "Lydprøve";
   const upper = (title ?? "").toUpperCase();
-  if (
-    kind === "soundcheck" ||
-    kind === "rigging" ||
-    kind === "crew" ||
-    (visibility === "internal" && upper.includes("LYDPRØVE"))
-  ) return "Lydprøver";
+  if (visibility === "internal" && upper.includes("LYDPRØVE")) return "Lydprøve";
+  if (visibility === "internal" && (upper.includes("OPPRIGG") || upper.includes("RIGGING"))) return "Opprigg";
   return "Event";
 }
 
@@ -1260,12 +1273,19 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
 
   const handleSectionChange = (value: RunSheetSectionKey) => {
     setEditSection(value);
-    if (value === "Lydprøver") {
-      if (!["soundcheck", "rigging", "crew"].includes(slotKind)) setSlotKind("soundcheck");
+    if (value === "Opprigg") {
+      if (!["rigging", "crew"].includes(slotKind)) setSlotKind("rigging");
       setVisibility("internal");
       setIsVisiblePublic(false);
       return;
     }
+    if (value === "Lydprøve") {
+      if (slotKind !== "soundcheck") setSlotKind("soundcheck");
+      setVisibility("internal");
+      setIsVisiblePublic(false);
+      return;
+    }
+    // Event
     if (["soundcheck", "rigging", "crew"].includes(slotKind)) setSlotKind("concert");
     if (visibility === "internal") setVisibility("public");
     setIsVisiblePublic(true);
@@ -1629,7 +1649,8 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Lydprøver">Lydprøver (L)</SelectItem>
+                    <SelectItem value="Opprigg">Opprigg (O)</SelectItem>
+                    <SelectItem value="Lydprøve">Lydprøve (L)</SelectItem>
                     <SelectItem value="Event">Event (E)</SelectItem>
                   </SelectContent>
                 </Select>

@@ -100,6 +100,15 @@ export default function EventDetailsRoom() {
         cloakroom_available: (event as any).cloakroom_available ?? null,
       });
       setHeroImageSettings(parseImageSettings(event.hero_image_settings) || null);
+
+      // Prefill end_at to start_at + 4h if empty
+      if (!event.end_at && event.start_at) {
+        const defaultEnd = new Date(new Date(event.start_at).getTime() + 4 * 60 * 60 * 1000);
+        setFormData((prev) => ({
+          ...prev,
+          end_at: isoToLocalDatetimeString(defaultEnd.toISOString()),
+        }));
+      }
     }
   }, [event]);
 

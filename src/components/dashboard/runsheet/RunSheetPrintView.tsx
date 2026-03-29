@@ -280,7 +280,8 @@ export function RunSheetPrintView({
   festivalName, festivalDate, venueName, slots, sectionNames,
 }: RunSheetPrintViewProps) {
   const grouped = useMemo(() => groupSlotsBySection(slots), [slots]);
-  const lydBlocks = useMemo(() => groupByTime(grouped["Lydprøver"]), [grouped]);
+  const oppriggBlocks = useMemo(() => groupByTime(grouped["Opprigg"]), [grouped]);
+  const lydBlocks = useMemo(() => groupByTime(grouped["Lydprøve"]), [grouped]);
   const eventBlocks = useMemo(() => groupByTime(grouped["Event"]), [grouped]);
 
   return (
@@ -298,11 +299,23 @@ export function RunSheetPrintView({
         </div>
       </div>
 
-      {/* Lydprøver */}
+      {/* Opprigg */}
+      {oppriggBlocks.length > 0 && (
+        <div style={S.sectionWrap}>
+          <div style={S.sectionTitle}>
+            {sectionNames["Opprigg"] || "Opprigg"}
+          </div>
+          {oppriggBlocks.map((b, i) => (
+            <CueBlock key={i} block={b} />
+          ))}
+        </div>
+      )}
+
+      {/* Lydprøve */}
       {lydBlocks.length > 0 && (
         <div style={S.sectionWrap}>
           <div style={S.sectionTitle}>
-            {sectionNames["Lydprøver"] || "Lydprøver & Opprigg"}
+            {sectionNames["Lydprøve"] || "Lydprøve"}
           </div>
           {lydBlocks.map((b, i) => (
             <CueBlock key={i} block={b} />

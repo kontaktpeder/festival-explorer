@@ -1,14 +1,38 @@
+import { useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { useEventBackstageAccess } from "@/hooks/useEventBackstageAccess";
 import { FestivalRunSheet } from "@/components/dashboard/FestivalRunSheet";
 import { LoadingState } from "@/components/ui/LoadingState";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 
 const NAV_ITEMS = [
   { label: "Plan", suffix: "/plan" },
   { label: "Produksjon", suffix: "/run-sheet" },
   { label: "Live", suffix: "/live" },
 ] as const;
+
+function PlanIntro() {
+  const key = "giggen:plan-intro-dismissed";
+  const [open, setOpen] = useState(() => localStorage.getItem(key) !== "1");
+  if (!open) return null;
+  return (
+    <div className="relative rounded-lg border border-border/30 bg-muted/30 px-4 py-3 text-xs text-muted-foreground leading-relaxed">
+      <p>
+        Her bygger du kjøreplanen for eventet — rekkefølge, tider og interne poster.
+        Klokkeslett følger eventdatoen. Legg til seksjon eller post fra verktøylinjen.
+      </p>
+      <button
+        className="absolute top-2 right-2 text-muted-foreground/50 hover:text-foreground transition-colors"
+        onClick={() => {
+          localStorage.setItem(key, "1");
+          setOpen(false);
+        }}
+      >
+        <X className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  );
+}
 
 export default function EventPlanRoom() {
   const { id } = useParams<{ id: string }>();
@@ -74,6 +98,8 @@ export default function EventPlanRoom() {
             })}
           </div>
         </div>
+
+        <PlanIntro />
 
         <FestivalRunSheet
           eventId={id!}

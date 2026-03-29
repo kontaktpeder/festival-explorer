@@ -1,34 +1,33 @@
 import type { ExtendedEventProgramSlot } from "@/types/program-slots";
 
-/** Kun to seksjoner – Opprigg & intern er blandet inn i Lydprøver og Event */
-export const RUNSHEET_SECTION_KEYS = ["Lydprøver", "Event"] as const;
+/** Tre seksjoner: Opprigg, Lydprøve, Event */
+export const RUNSHEET_SECTION_KEYS = ["Opprigg", "Lydprøve", "Event"] as const;
 export type RunSheetSectionKey = (typeof RUNSHEET_SECTION_KEYS)[number];
 
 export function getSectionForSlot(slot: ExtendedEventProgramSlot): RunSheetSectionKey {
   const kind = slot.slot_kind;
+  if (kind === "rigging") return "Opprigg";
+  if (kind === "soundcheck") return "Lydprøve";
+  if (kind === "crew") return "Opprigg";
   const title = (slot.title_override ?? "").toUpperCase();
-  if (
-    kind === "soundcheck" ||
-    kind === "rigging" ||
-    kind === "crew" ||
-    (slot.visibility === "internal" && title.includes("LYDPRØVE"))
-  ) return "Lydprøver";
+  if (slot.visibility === "internal" && title.includes("LYDPRØVE")) return "Lydprøve";
+  if (slot.visibility === "internal" && (title.includes("OPPRIGG") || title.includes("RIGGING"))) return "Opprigg";
   return "Event";
 }
 
-/** Kind sort priority within Lydprøver section: soundcheck first, then rigging, then crew */
-const KIND_SORT_ORDER: Record<string, number> = {
-  soundcheck: 0,
-  rigging: 1,
-  crew: 2,
+/** Kind sort priority within Opprigg section: rigging first, then crew */
+const OPPRIGG_SORT: Record<string, number> = {
+  rigging: 0,
+  crew: 1,
 };
 
-/** Slots gruppert i Lydprøver og Event */
+/** Slots gruppert i Opprigg, Lydprøve og Event */
 export function groupSlotsBySection(
   slots: ExtendedEventProgramSlot[]
 ): Record<RunSheetSectionKey, ExtendedEventProgramSlot[]> {
   const out: Record<RunSheetSectionKey, ExtendedEventProgramSlot[]> = {
-    Lydprøver: [],
+    Opprigg: [],
+    Lydprøve: [],
     Event: [],
   };
   for (const slot of slots) {
@@ -37,10 +36,9 @@ export function groupSlotsBySection(
   }
   RUNSHEET_SECTION_KEYS.forEach((key) => {
     out[key].sort((a, b) => {
-      // Within Lydprøver: soundcheck first, rigging second, crew last
-      if (key === "Lydprøver") {
-        const ka = KIND_SORT_ORDER[a.slot_kind] ?? 9;
-        const kb = KIND_SORT_ORDER[b.slot_kind] ?? 9;
+      if (key === "Opprigg") {
+        const ka = OPPRIGG_SORT[a.slot_kind] ?? 9;
+        const kb = OPPRIGG_SORT[b.slot_kind] ?? 9;
         if (ka !== kb) return ka - kb;
       }
       return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
