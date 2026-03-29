@@ -1189,7 +1189,7 @@ function getRunSheetSectionFromSlot(kind: string, visibility: string, title?: st
   return "Event";
 }
 
-function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, anchorDateIso, suggestedSequenceNumber, open, initialAdvancedOpen, onOpenChange, onSave, onParallelCreated, types, festivalEntities, onPickMedia }: RunSheetEditDialogProps) {
+function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, anchorDateIso, suggestedSequenceNumber, open, initialAdvancedOpen, onOpenChange, onSave, onParallelCreated, types, festivalEntities, onPickMedia, suggestionTitles = [], suggestionAreas = [], suggestionStorageKey: sugStorageKey }: RunSheetEditDialogProps) {
   const { toast } = useToast();
   const anchor = anchorDateIso || slot.starts_at;
   const [eventId, setEventId] = useState(slot.event_id ?? "");
@@ -1677,7 +1677,10 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
           {showFields.has("title") && (
             <div className="space-y-1.5">
               <Label className="text-xs">Tittel</Label>
-              <Input placeholder="F.eks. Dører åpner" value={titleOverride} onChange={(e) => setTitleOverride(e.target.value)} className="h-9 text-sm" />
+              <datalist id={`runsheet-title-${slot.id}`}>
+                {suggestionTitles.map((t) => <option key={t} value={t} />)}
+              </datalist>
+              <Input list={`runsheet-title-${slot.id}`} placeholder="F.eks. Dører åpner" value={titleOverride} onChange={(e) => setTitleOverride(e.target.value)} className="h-9 text-sm" />
             </div>
           )}
 
