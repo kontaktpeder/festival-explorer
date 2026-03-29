@@ -468,47 +468,66 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     updateSlot.mutate({ id: slotId, starts_at: startsAt, ...(endsAt !== undefined ? { ends_at: endsAt } : {}) } as any);
   };
 
-  /** Map section key → preset type for "add to section" */
+  /** Map section DB id → add slot with correct type and section_id */
   const handleAddToSection = (sectionKey: RunSheetSectionKey) => {
-    const map: Record<RunSheetSectionKey, "opprigg" | "lydprøve" | "event"> = {
+    // Find DB section matching this key
+    const PHASE_MAP: Record<RunSheetSectionKey, EventProgramPhaseType> = {
+      "Opprigg": "opprigg",
+      "Lydprøve": "lydprove",
+      "Event": "event",
+    };
+    const phaseType = PHASE_MAP[sectionKey];
+    const section = dbSections.find((s) => s.type === phaseType);
+    const sectionTypeMap: Record<RunSheetSectionKey, "opprigg" | "lydprøve" | "event"> = {
       "Opprigg": "opprigg",
       "Lydprøve": "lydprøve",
       "Event": "event",
     };
-    createManualSlot.mutate({ sectionType: map[sectionKey] ?? "event", seq: nextSequenceNumber });
+    createManualSlot.mutate({
+      sectionType: sectionTypeMap[sectionKey] ?? "event",
+      seq: nextSequenceNumber,
+      sectionId: section?.id ?? null,
+    });
   };
 
-  /** Custom section display names (stored in state) */
-  const [sectionNames, setSectionNames] = useState<Record<string, string>>({});
+  /** Section display names come from DB now */
+  const sectionNames = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const s of dbSections) {
+      if (s.display_name) {
+        map[PHASE_LABELS[s.type]] = s.display_name;
+      }
+    }
+    return map;
+  }, [dbSections]);
+
   const handleRenameSection = (sectionKey: string, newName: string) => {
-    setSectionNames((prev) => ({ ...prev, [sectionKey]: newName }));
+    // Find the DB section by matching phase label
+    const phaseType = (Object.entries(PHASE_LABELS) as [EventProgramPhaseType, string][])
+      .find(([, label]) => label === sectionKey)?.[0];
+    const section = phaseType ? dbSections.find((s) => s.type === phaseType) : null;
+    if (section) {
+      renameSectionMutation.mutate({ sectionId: section.id, displayName: newName });
+    }
   };
-
-  /** Delete all slots in a section – only deletes the slots passed in */
-  const deleteSection = useMutation({
-    mutationFn: async (slotIds: string[]) => {
-      const { error } = await supabase
-        .from("event_program_slots" as any)
-        .delete()
-        .in("id", slotIds);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
-      toast({ title: "Seksjon slettet" });
-    },
-    onError: (e: Error) =>
-      toast({ title: "Feil", description: e.message, variant: "destructive" }),
-  });
 
   const handleDeleteSection = (
     sectionKey: RunSheetSectionKey,
     slotsToDelete: ExtendedEventProgramSlot[]
   ) => {
-    if (slotsToDelete.length === 0) return;
+    const phaseType = ({ "Opprigg": "opprigg", "Lydprøve": "lydprove", "Event": "event" } as Record<RunSheetSectionKey, EventProgramPhaseType>)[sectionKey];
+    const section = phaseType ? dbSections.find((s) => s.type === phaseType) : null;
+    if (!section) return;
     const displayName = sectionNames[sectionKey] || sectionKey;
     if (!window.confirm(`Slette seksjonen «${displayName}» og alle ${slotsToDelete.length} punkter? Dette kan ikke angres.`)) return;
-    deleteSection.mutate(slotsToDelete.map((s) => s.id));
+    // CASCADE will delete associated slots
+    deleteSectionMutation.mutate(section.id, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey });
+        toast({ title: "Seksjon slettet" });
+      },
+      onError: (e: Error) => toast({ title: "Feil", description: e.message, variant: "destructive" }),
+    });
   };
 
   const deleteSlot = useMutation({
