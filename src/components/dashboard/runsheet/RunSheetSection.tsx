@@ -170,7 +170,7 @@ function SortableRow({
   );
 }
 
-export function RunSheetSection({
+export const RunSheetSection = forwardRef<HTMLDivElement, RunSheetSectionProps>(function RunSheetSection({
   sectionKey,
   title,
   displayName,
@@ -190,7 +190,7 @@ export function RunSheetSection({
   canOperate = false,
   onLiveAction,
   effectiveTimeline,
-}: RunSheetSectionProps) {
+}, ref) {
   const [collapsed, setCollapsed] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(displayName || title);
