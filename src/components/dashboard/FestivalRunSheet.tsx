@@ -1613,6 +1613,7 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
 
   const handleSubmit = () => {
     const timeIso = buildStartsEndsIso();
+    const shouldClearPerformer = isPlanScope && !linkPerformer;
     onSave({
       event_id: eventId || null,
       starts_at: timeIso.starts_at,
@@ -1628,10 +1629,10 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
       internal_status: internalStatus,
       is_visible_public: isVisiblePublic,
       is_canceled: isCanceled,
-      performer_kind: performerKind,
-      performer_entity_id: performerKind === "entity" ? performerEntityId || null : null,
-      performer_persona_id: performerKind === "persona" ? performerPersonaId || null : null,
-      performer_name_override: performerKind === "text" ? nameOverride || null : null,
+      performer_kind: shouldClearPerformer ? "entity" : performerKind,
+      performer_entity_id: shouldClearPerformer ? null : (performerKind === "entity" ? performerEntityId || null : null),
+      performer_persona_id: shouldClearPerformer ? null : (performerKind === "persona" ? performerPersonaId || null : null),
+      performer_name_override: shouldClearPerformer ? null : (performerKind === "text" ? nameOverride || null : null),
       contract_media_id: contractMediaId || null,
       tech_rider_asset_id: techRiderAssetId || null,
       hosp_rider_asset_id: hospRiderAssetId || null,
