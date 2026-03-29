@@ -1,4 +1,6 @@
 import type { ExtendedEventProgramSlot } from "@/types/program-slots";
+import { resolveDuration, sectionAnchorDate, snapTo5Min } from "@/lib/runsheet-plan-time";
+import type { EventProgramSection } from "@/types/program-sections";
 
 /** Neste starttid for ny post: etter forrige slutt, eller +15 min, eller scopeStartAt, eller avrundet nå. */
 export function computeNextSlotStartsAt(
@@ -22,6 +24,33 @@ export function computeNextSlotStartsAt(
     return new Date(start + last.duration_minutes * 60000);
   }
   return new Date(start + 15 * 60000);
+}
+
+/**
+ * Chain-based next start: compute end of last slot in section using
+ * section anchor + cumulative durations, snapped to 5-min boundary.
+ */
+export function computeChainNextStart(
+  slotsInSection: ExtendedEventProgramSlot[],
+  section: EventProgramSection,
+  scopeStartAt: string
+): Date {
+  const anchor = sectionAnchorDate(scopeStartAt, section.starts_at_local);
+  if (!slotsInSection.length) return anchor;
+
+  const sorted = [...slotsInSection].sort((a, b) => {
+    const sa = a.sequence_number ?? Infinity;
+    const sb = b.sequence_number ?? Infinity;
+    if (sa !== sb) return sa - sb;
+    return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
+  });
+
+  let t = anchor.getTime();
+  for (const s of sorted) {
+    const dur = resolveDuration(s, 15);
+    t += dur * 60000;
+  }
+  return snapTo5Min(new Date(t));
 }
 
 /** Should the "Advanced" collapsible be open initially for this slot? */
