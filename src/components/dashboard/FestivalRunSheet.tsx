@@ -2051,7 +2051,7 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
             <Button onClick={handleSubmit}>Lagre</Button>
           </div>
         </DialogFooter>
-      </DialogContent>
+      </FocusDialogContent>
     </Dialog>
   );
 }
