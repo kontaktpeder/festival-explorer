@@ -110,7 +110,7 @@ export default function EventDashboardRoom() {
         <div className="w-full px-4 sm:px-8 lg:px-12 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <button
-              onClick={() => navigate("/dashboard/events")}
+              onClick={() => navigate("/dashboard")}
               className="text-muted-foreground hover:text-foreground shrink-0 transition-colors"
             >
               <ArrowLeft className="h-5 w-5" />
