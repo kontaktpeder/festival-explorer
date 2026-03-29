@@ -600,6 +600,13 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     return map;
   }, [data?.types]);
 
+  /** Map section DB id → phase type for getSectionForSlot */
+  const sectionTypeById = useMemo(() => {
+    const m = new Map<string, EventProgramPhaseType>();
+    for (const s of dbSections) m.set(s.id, s.type);
+    return m;
+  }, [dbSections]);
+
   // Merge slot titles/areas into localStorage suggestions
   useEffect(() => {
     if (!sugStorageKey || !data?.slots?.length) return;
@@ -623,7 +630,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     }
     if (dbSections.length === 0) return [];
     return dbSections.map((section) => {
-      const slotsInSection = allSlots.filter((s) => (s as any).section_id === section.id);
+      const slotsInSection = allSlots.filter((s) => s.section_id === section.id);
       slotsInSection.sort((a, b) => {
         const sa = a.sequence_number ?? Infinity;
         const sb = b.sequence_number ?? Infinity;
@@ -661,11 +668,11 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
   const printSlots = useMemo(() => {
     const allSlots = data?.slots ?? [];
     if (printFilter === "all") return allSlots;
-    if (printFilter === "opprigg") return allSlots.filter((s) => getSectionForSlot(s) === "Opprigg");
-    if (printFilter === "lydprove") return allSlots.filter((s) => getSectionForSlot(s) === "Lydprøve");
-    if (printFilter === "event") return allSlots.filter((s) => getSectionForSlot(s) === "Event");
+    if (printFilter === "opprigg") return allSlots.filter((s) => getSectionForSlot(s, sectionTypeById) === "Opprigg");
+    if (printFilter === "lydprove") return allSlots.filter((s) => getSectionForSlot(s, sectionTypeById) === "Lydprøve");
+    if (printFilter === "event") return allSlots.filter((s) => getSectionForSlot(s, sectionTypeById) === "Event");
     return allSlots.filter((s) => s.stage_label === printFilter);
-  }, [data?.slots, printFilter]);
+  }, [data?.slots, printFilter, sectionTypeById]);
 
   if (isLoading || sectionsLoading || !data) {
     return <LoadingState message="Laster kjøreplan..." />;
