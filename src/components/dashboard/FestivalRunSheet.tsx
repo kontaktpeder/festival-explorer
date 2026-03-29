@@ -396,12 +396,12 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
   );
 
   const createManualSlot = useMutation({
-    mutationFn: async ({ sectionType, seq }: { sectionType: "opprigg" | "lydprøve" | "event" | "doors" | "closing" | "stage_talk" | "giggen_info" | "break" | "crew" | "custom"; seq: number }) => {
-      const isCustom = sectionType === "custom";
-      const startsAt = computeNextSlotStartsAt(
-        (data?.slots ?? []) as ExtendedEventProgramSlot[],
-        scopeStartAt
-      );
+    mutationFn: async ({ sectionType, seq, sectionId }: { sectionType: "opprigg" | "lydprøve" | "event" | "doors" | "closing" | "stage_talk" | "giggen_info" | "break" | "crew" | "custom"; seq: number; sectionId?: string | null }) => {
+      // Compute start time scoped to slots in the target section
+      const slotsInSection = sectionId
+        ? ((data?.slots ?? []) as ExtendedEventProgramSlot[]).filter((s) => (s as any).section_id === sectionId)
+        : (data?.slots ?? []) as ExtendedEventProgramSlot[];
+      const startsAt = computeNextSlotStartsAt(slotsInSection, scopeStartAt);
       const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean; internal_status: string }> = {
         opprigg: { slot_kind: "rigging", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
         lydprøve: { slot_kind: "soundcheck", title_override: "LYDPRØVE", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
@@ -434,6 +434,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           is_canceled: false,
           is_visible_public: preset.is_visible_public,
           title_override: preset.title_override || null,
+          section_id: sectionId || null,
         } as any)
         .select(`
           *,
