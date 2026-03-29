@@ -256,7 +256,7 @@ export const RunSheetSection = forwardRef<HTMLDivElement, RunSheetSectionProps>(
   const sortableIds = useMemo(() => groups.map((g) => g.primary.id), [groups]);
 
   return (
-    <div className="runsheet-section space-y-0" data-section={sectionKey} data-print-section>
+    <div ref={ref} className="runsheet-section space-y-0" data-section={sectionKey} data-print-section>
       {/* Section header */}
       <div className="flex items-center gap-1">
         <button
