@@ -498,6 +498,24 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     updateSlot.mutate({ id: slotId, starts_at: startsAt, ...(endsAt !== undefined ? { ends_at: endsAt } : {}) } as any);
   };
 
+  /** Timeline DnD: move a block to a new time position */
+  const handleBlockMove = useCallback(
+    (payload: { slotId: string; newStartsAtIso: string; newEndsAtIso: string | null; newStageLabel: string | null }) => {
+      const update: Record<string, unknown> = {
+        id: payload.slotId,
+        starts_at: payload.newStartsAtIso,
+      };
+      if (payload.newEndsAtIso !== null) {
+        update.ends_at = payload.newEndsAtIso;
+      }
+      if (payload.newStageLabel !== undefined) {
+        update.stage_label = payload.newStageLabel;
+      }
+      updateSlot.mutate(update as any);
+    },
+    [updateSlot]
+  );
+
   /** DnD reorder: batch-update sequence_number for all slots in new order */
   const handleReorderSlots = useCallback(
     (orderedIds: string[]) => {
