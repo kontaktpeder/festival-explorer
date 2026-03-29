@@ -3,6 +3,7 @@ import { useParams, Link, useLocation } from "react-router-dom";
 import { useEventBackstageAccess } from "@/hooks/useEventBackstageAccess";
 import { FestivalRunSheet } from "@/components/dashboard/FestivalRunSheet";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { FocusThemeProvider } from "@/contexts/FocusThemeContext";
 import { ArrowLeft, X } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -57,6 +58,7 @@ export default function EventPlanRoom() {
   }
 
   return (
+    <FocusThemeProvider value="light">
     <div className="finance-theme min-h-[100svh]">
       <div className="max-w-[1400px] mx-auto px-3 py-4 md:px-6 md:py-8 space-y-6">
         <Link
@@ -108,5 +110,6 @@ export default function EventPlanRoom() {
         />
       </div>
     </div>
+    </FocusThemeProvider>
   );
 }

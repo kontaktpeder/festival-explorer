@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { FocusThemeProvider } from "@/contexts/FocusThemeContext";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -171,6 +172,7 @@ export default function FestivalSettlementRoom() {
   }
 
   return (
+    <FocusThemeProvider value="light">
     <div className="finance-theme min-h-[100svh]">
       <div className="max-w-[1400px] mx-auto px-3 py-4 md:px-6 md:py-8 space-y-6">
         <Link to={`/dashboard/festival/${festivalId}/finance`} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2">
@@ -307,5 +309,6 @@ export default function FestivalSettlementRoom() {
         </Card>
       </div>
     </div>
+    </FocusThemeProvider>
   );
 }

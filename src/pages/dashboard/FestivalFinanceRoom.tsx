@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect, Fragment } from "react";
+import { FocusThemeProvider } from "@/contexts/FocusThemeContext";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -985,6 +986,7 @@ export default function FestivalFinanceRoom() {
   };
 
   return (
+    <FocusThemeProvider value="light">
     <div className="finance-theme min-h-[100svh]">
       <div className="max-w-[1400px] mx-auto px-3 py-4 md:px-6 md:py-8 space-y-6">
         <Link to={`/dashboard/festival/${festivalId}`} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2">
@@ -1284,6 +1286,7 @@ export default function FestivalFinanceRoom() {
         )}
       </div>
     </div>
+    </FocusThemeProvider>
   );
 }
 

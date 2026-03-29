@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ProductionBoard } from "@/components/production/ProductionBoard";
 import { syncRiderMissingForScope } from "@/lib/eventIssues";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { FocusThemeProvider } from "@/contexts/FocusThemeContext";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -60,6 +61,7 @@ export default function FestivalRunSheetRoom() {
   }
 
   return (
+    <FocusThemeProvider value="light">
     <div className="finance-theme min-h-[100svh]">
       <div className="max-w-[1400px] mx-auto px-3 py-4 md:px-6 md:py-8 space-y-6">
         <Link
@@ -94,5 +96,6 @@ export default function FestivalRunSheetRoom() {
         />
       </div>
     </div>
+    </FocusThemeProvider>
   );
 }

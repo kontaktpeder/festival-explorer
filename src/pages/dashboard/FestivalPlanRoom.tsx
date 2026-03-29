@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { FestivalRunSheet } from "@/components/dashboard/FestivalRunSheet";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { FocusThemeProvider } from "@/contexts/FocusThemeContext";
 import { ArrowLeft } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -38,6 +39,7 @@ export default function FestivalPlanRoom() {
   }
 
   return (
+    <FocusThemeProvider value="light">
     <div className="finance-theme min-h-[100svh]">
       <div className="max-w-[1400px] mx-auto px-3 py-4 md:px-6 md:py-8 space-y-6">
         <Link
@@ -86,5 +88,6 @@ export default function FestivalPlanRoom() {
         />
       </div>
     </div>
+    </FocusThemeProvider>
   );
 }

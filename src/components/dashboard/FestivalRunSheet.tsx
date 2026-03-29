@@ -16,12 +16,16 @@ import {
 import {
   AlertDialog,
   AlertDialogCancel,
-  AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  FocusAlertDialogContent,
+  FocusDialogContent,
+  FocusSelectContent,
+} from "@/components/ui/focus-overlays";
 import { useEventProgramSections } from "@/hooks/useEventProgramSections";
 import type { EventProgramSection, EventProgramPhaseType } from "@/types/program-sections";
 import { PHASE_LABELS, PHASE_PREFIXES, displaySectionTitle } from "@/types/program-sections";
@@ -55,6 +59,7 @@ import {
   type TimePairEditSource,
 } from "@/lib/runsheet-time-ui";
 import { Plus, ClipboardList, ChevronDown, Printer, Filter, Download, Settings2, Play, Square, Timer, XCircle } from "lucide-react";
+import { suggestionsStorageKey, loadSlotSuggestions, mergeFromSlots, rememberSlotFields, type SlotSuggestionBucket } from "@/lib/runsheet-slot-suggestions";
 import {
   Collapsible,
   CollapsibleContent,
@@ -113,6 +118,10 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     slotId: string;
     field: "contract_media_id" | "tech_rider_media_id" | "hosp_rider_media_id";
   } | null>(null);
+
+  // Slot suggestions (localStorage-backed)
+  const sugStorageKey = suggestionsStorageKey(eventId, festivalId);
+  const [suggestions, setSuggestions] = useState<SlotSuggestionBucket>({ titles: [], areas: [] });
 
   /* ── Data ── */
   const { data, isLoading } = useQuery({
@@ -410,6 +419,9 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
 
   const createManualSlot = useMutation({
     mutationFn: async ({ sectionType, seq, sectionId }: { sectionType: "opprigg" | "lydprøve" | "event" | "doors" | "closing" | "stage_talk" | "giggen_info" | "break" | "crew" | "custom"; seq: number; sectionId?: string | null }) => {
+      if (!sectionId) {
+        throw new Error("Velg fase først — bruk «Legg til post» i seksjonshodet.");
+      }
       // Compute start time scoped to slots in the target section
       const slotsInSection = sectionId
         ? ((data?.slots ?? []) as ExtendedEventProgramSlot[]).filter((s) => (s as any).section_id === sectionId)
@@ -588,6 +600,13 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     (data?.types ?? []).forEach((t) => map.set(t.code, t));
     return map;
   }, [data?.types]);
+
+  // Merge slot titles/areas into localStorage suggestions
+  useEffect(() => {
+    if (!sugStorageKey || !data?.slots?.length) return;
+    const merged = mergeFromSlots(sugStorageKey, data.slots);
+    setSuggestions(merged);
+  }, [sugStorageKey, data?.slots]);
 
   /* Collect unique scene labels for filter */
   const sceneLabels = useMemo(() => {
@@ -799,55 +818,6 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button
-              size="sm"
-              className="h-8 text-xs gap-1.5"
-              onClick={() => createManualSlot.mutate({ sectionType: "custom", seq: nextSequenceNumber })}
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Ny post
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 text-xs gap-1.5 border-border/30 hover:border-accent/40"
-                >
-                  Mer
-                  <ChevronDown className="h-3 w-3 opacity-50" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "opprigg", seq: nextSequenceNumber })}>
-                  Opprigg
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "lydprøve", seq: nextSequenceNumber })}>
-                  Lydprøve
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "event", seq: nextSequenceNumber })}>
-                  Konsert
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "doors", seq: nextSequenceNumber })}>
-                  Dører
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "closing", seq: nextSequenceNumber })}>
-                  Stenging
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "stage_talk", seq: nextSequenceNumber })}>
-                  Snakk fra scenen
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "giggen_info", seq: nextSequenceNumber })}>
-                  Hva er GIGGEN
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "break", seq: nextSequenceNumber })}>
-                  Pause
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "crew", seq: nextSequenceNumber })}>
-                  Crew
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
             </div>
           )}
         </div>
@@ -891,32 +861,6 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               <DropdownMenuItem onClick={() => triggerPrint("opprigg")}>Kun opprigg</DropdownMenuItem>
               <DropdownMenuItem onClick={() => triggerPrint("lydprove")}>Kun lydprøver</DropdownMenuItem>
               <DropdownMenuItem onClick={() => triggerPrint("event")}>Kun event</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button
-            size="sm"
-            className="h-9 text-xs gap-1 flex-1"
-            onClick={() => createManualSlot.mutate({ sectionType: "custom", seq: nextSequenceNumber })}
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Ny post
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 text-xs gap-1 border-border/30">
-                Mer
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "opprigg", seq: nextSequenceNumber })}>Opprigg</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "lydprøve", seq: nextSequenceNumber })}>Lydprøve</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "event", seq: nextSequenceNumber })}>Konsert</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "doors", seq: nextSequenceNumber })}>Dører</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "closing", seq: nextSequenceNumber })}>Stenging</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "stage_talk", seq: nextSequenceNumber })}>Snakk fra scenen</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "giggen_info", seq: nextSequenceNumber })}>Hva er GIGGEN</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "break", seq: nextSequenceNumber })}>Pause</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => createManualSlot.mutate({ sectionType: "crew", seq: nextSequenceNumber })}>Crew</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -1077,6 +1021,9 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           types={types}
           festivalEntities={festivalEntities}
           onPickMedia={(slotId, field) => setAttachTarget({ slotId, field })}
+          suggestionTitles={suggestions.titles}
+          suggestionAreas={suggestions.areas}
+          suggestionStorageKey={sugStorageKey}
         />
       )}
 
@@ -1141,7 +1088,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
 
       {/* Delete section confirmation */}
       <AlertDialog open={!!sectionPendingDelete} onOpenChange={(open) => { if (!open) setSectionPendingDelete(null); }}>
-        <AlertDialogContent>
+        <FocusAlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Slette fase?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -1173,12 +1120,12 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               Slett
             </Button>
           </AlertDialogFooter>
-        </AlertDialogContent>
+        </FocusAlertDialogContent>
       </AlertDialog>
 
       {/* Delete slot confirmation */}
       <AlertDialog open={!!slotPendingDelete} onOpenChange={(open) => { if (!open) setSlotPendingDelete(null); }}>
-        <AlertDialogContent>
+        <FocusAlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Slette rad?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -1199,7 +1146,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               Slett
             </Button>
           </AlertDialogFooter>
-        </AlertDialogContent>
+        </FocusAlertDialogContent>
       </AlertDialog>
 
       {/* ── Clean print view (hidden on screen, shown on print) ── */}
@@ -1231,6 +1178,9 @@ interface RunSheetEditDialogProps {
   types: ProgramSlotType[];
   festivalEntities: { id: string; name: string; slug: string }[];
   onPickMedia: (slotId: string, field: "contract_media_id" | "tech_rider_media_id" | "hosp_rider_media_id") => void;
+  suggestionTitles?: string[];
+  suggestionAreas?: string[];
+  suggestionStorageKey?: string | null;
 }
 
 interface FestivalEvent {
@@ -1253,7 +1203,7 @@ function getRunSheetSectionFromSlot(kind: string, visibility: string, title?: st
   return "Event";
 }
 
-function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, anchorDateIso, suggestedSequenceNumber, open, initialAdvancedOpen, onOpenChange, onSave, onParallelCreated, types, festivalEntities, onPickMedia }: RunSheetEditDialogProps) {
+function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, anchorDateIso, suggestedSequenceNumber, open, initialAdvancedOpen, onOpenChange, onSave, onParallelCreated, types, festivalEntities, onPickMedia, suggestionTitles = [], suggestionAreas = [], suggestionStorageKey: sugStorageKey }: RunSheetEditDialogProps) {
   const { toast } = useToast();
   const anchor = anchorDateIso || slot.starts_at;
   const [eventId, setEventId] = useState(slot.event_id ?? "");
@@ -1685,6 +1635,7 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
       tech_rider_asset_id: techRiderAssetId || null,
       hosp_rider_asset_id: hospRiderAssetId || null,
     });
+    rememberSlotFields(sugStorageKey ?? null, titleOverride, stageLabel);
   };
 
   // Selected persona display name
@@ -1702,7 +1653,7 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <FocusDialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Rediger post</DialogTitle>
         </DialogHeader>
@@ -1741,7 +1692,10 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
           {showFields.has("title") && (
             <div className="space-y-1.5">
               <Label className="text-xs">Tittel</Label>
-              <Input placeholder="F.eks. Dører åpner" value={titleOverride} onChange={(e) => setTitleOverride(e.target.value)} className="h-9 text-sm" />
+              <datalist id={`runsheet-title-${slot.id}`}>
+                {suggestionTitles.map((t) => <option key={t} value={t} />)}
+              </datalist>
+              <Input list={`runsheet-title-${slot.id}`} placeholder="F.eks. Dører åpner" value={titleOverride} onChange={(e) => setTitleOverride(e.target.value)} className="h-9 text-sm" />
             </div>
           )}
 
@@ -1775,10 +1729,20 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                   </SelectContent>
                 </Select>
               ) : (
-                <Input placeholder="F.eks. 1ETG, FOH" value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm" />
+                <>
+                  <datalist id={`runsheet-area-${slot.id}`}>
+                    {suggestionAreas.map((a) => <option key={a} value={a} />)}
+                  </datalist>
+                  <Input list={`runsheet-area-${slot.id}`} placeholder="F.eks. 1ETG, FOH" value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm" />
+                </>
               )}
               {sceneOptions.length > 0 && stageLabel && !sceneOptions.find((s) => s.name === stageLabel) && (
-                <Input placeholder="Fritekst område..." value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm mt-1" />
+                <>
+                  <datalist id={`runsheet-area-custom-${slot.id}`}>
+                    {suggestionAreas.map((a) => <option key={a} value={a} />)}
+                  </datalist>
+                  <Input list={`runsheet-area-custom-${slot.id}`} placeholder="Fritekst område..." value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm mt-1" />
+                </>
               )}
             </div>
           )}
@@ -2122,7 +2086,7 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
             <Button onClick={handleSubmit}>Lagre</Button>
           </div>
         </DialogFooter>
-      </DialogContent>
+      </FocusDialogContent>
     </Dialog>
   );
 }
