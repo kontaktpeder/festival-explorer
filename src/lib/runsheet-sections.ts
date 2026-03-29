@@ -1,10 +1,27 @@
 import type { ExtendedEventProgramSlot } from "@/types/program-slots";
+import type { EventProgramPhaseType } from "@/types/program-sections";
+import { PHASE_LABELS } from "@/types/program-sections";
 
 /** Tre seksjoner: Opprigg, Lydprøve, Event */
 export const RUNSHEET_SECTION_KEYS = ["Opprigg", "Lydprøve", "Event"] as const;
 export type RunSheetSectionKey = (typeof RUNSHEET_SECTION_KEYS)[number];
 
-export function getSectionForSlot(slot: ExtendedEventProgramSlot): RunSheetSectionKey {
+/**
+ * Resolve section for a slot.
+ * Primary: use section_id + sectionById map.
+ * Fallback: legacy slot_kind / title heuristic.
+ */
+export function getSectionForSlot(
+  slot: ExtendedEventProgramSlot,
+  sectionById?: Map<string, EventProgramPhaseType>
+): RunSheetSectionKey {
+  const sid = slot.section_id;
+  if (sid && sectionById?.has(sid)) {
+    const t = sectionById.get(sid)!;
+    return PHASE_LABELS[t] as RunSheetSectionKey;
+  }
+
+  // Legacy fallback
   const kind = slot.slot_kind;
   if (kind === "rigging") return "Opprigg";
   if (kind === "soundcheck") return "Lydprøve";
@@ -23,7 +40,8 @@ const OPPRIGG_SORT: Record<string, number> = {
 
 /** Slots gruppert i Opprigg, Lydprøve og Event */
 export function groupSlotsBySection(
-  slots: ExtendedEventProgramSlot[]
+  slots: ExtendedEventProgramSlot[],
+  sectionById?: Map<string, EventProgramPhaseType>
 ): Record<RunSheetSectionKey, ExtendedEventProgramSlot[]> {
   const out: Record<RunSheetSectionKey, ExtendedEventProgramSlot[]> = {
     Opprigg: [],
@@ -31,7 +49,7 @@ export function groupSlotsBySection(
     Event: [],
   };
   for (const slot of slots) {
-    const key = getSectionForSlot(slot);
+    const key = getSectionForSlot(slot, sectionById);
     out[key].push(slot);
   }
   RUNSHEET_SECTION_KEYS.forEach((key) => {

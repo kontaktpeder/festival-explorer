@@ -46,6 +46,9 @@ export interface ExtendedEventProgramSlot {
   tech_rider_media_id: string | null;
   hosp_rider_media_id: string | null;
 
+  /** Section reference */
+  section_id: string | null;
+
   /** Run sheet fields */
   title_override: string | null;
   stage_label: string | null;

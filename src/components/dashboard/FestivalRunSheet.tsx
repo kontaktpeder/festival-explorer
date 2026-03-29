@@ -423,7 +423,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
       }
       // Compute start time scoped to slots in the target section
       const slotsInSection = sectionId
-        ? ((data?.slots ?? []) as ExtendedEventProgramSlot[]).filter((s) => (s as any).section_id === sectionId)
+        ? ((data?.slots ?? []) as ExtendedEventProgramSlot[]).filter((s) => s.section_id === sectionId)
         : (data?.slots ?? []) as ExtendedEventProgramSlot[];
       const startsAt = computeNextSlotStartsAt(slotsInSection, scopeStartAt);
       const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean; internal_status: string }> = {
@@ -600,6 +600,13 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     return map;
   }, [data?.types]);
 
+  /** Map section DB id → phase type for getSectionForSlot */
+  const sectionTypeById = useMemo(() => {
+    const m = new Map<string, EventProgramPhaseType>();
+    for (const s of dbSections) m.set(s.id, s.type);
+    return m;
+  }, [dbSections]);
+
   // Merge slot titles/areas into localStorage suggestions
   useEffect(() => {
     if (!sugStorageKey || !data?.slots?.length) return;
@@ -623,7 +630,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     }
     if (dbSections.length === 0) return [];
     return dbSections.map((section) => {
-      const slotsInSection = allSlots.filter((s) => (s as any).section_id === section.id);
+      const slotsInSection = allSlots.filter((s) => s.section_id === section.id);
       slotsInSection.sort((a, b) => {
         const sa = a.sequence_number ?? Infinity;
         const sb = b.sequence_number ?? Infinity;
@@ -661,11 +668,11 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
   const printSlots = useMemo(() => {
     const allSlots = data?.slots ?? [];
     if (printFilter === "all") return allSlots;
-    if (printFilter === "opprigg") return allSlots.filter((s) => getSectionForSlot(s) === "Opprigg");
-    if (printFilter === "lydprove") return allSlots.filter((s) => getSectionForSlot(s) === "Lydprøve");
-    if (printFilter === "event") return allSlots.filter((s) => getSectionForSlot(s) === "Event");
+    if (printFilter === "opprigg") return allSlots.filter((s) => getSectionForSlot(s, sectionTypeById) === "Opprigg");
+    if (printFilter === "lydprove") return allSlots.filter((s) => getSectionForSlot(s, sectionTypeById) === "Lydprøve");
+    if (printFilter === "event") return allSlots.filter((s) => getSectionForSlot(s, sectionTypeById) === "Event");
     return allSlots.filter((s) => s.stage_label === printFilter);
-  }, [data?.slots, printFilter]);
+  }, [data?.slots, printFilter, sectionTypeById]);
 
   if (isLoading || sectionsLoading || !data) {
     return <LoadingState message="Laster kjøreplan..." />;
@@ -677,6 +684,12 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     if (readOnly) return;
     setEditingSlot(slot);
     setDialogOpen(true);
+  };
+
+  /** Resolve section display name for a slot */
+  const sectionDisplayNameForSlot = (s: ExtendedEventProgramSlot): string => {
+    const sec = s.section_id ? dbSections.find((ds) => ds.id === s.section_id) : undefined;
+    return sec ? displaySectionTitle(sec) : "—";
   };
 
   const handleDelete = (slot: ExtendedEventProgramSlot) => {
@@ -1021,6 +1034,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           suggestionAreas={suggestions.areas}
           suggestionStorageKey={sugStorageKey}
           editScope="plan"
+          sectionDisplayName={editingSlot ? sectionDisplayNameForSlot(editingSlot) : undefined}
         />
       )}
 
@@ -1180,6 +1194,8 @@ interface RunSheetEditDialogProps {
   suggestionStorageKey?: string | null;
   /** "plan" hides documents, visibility/status, toggles. "full" shows everything. */
   editScope?: "plan" | "full";
+  /** Read-only section label shown in plan scope */
+  sectionDisplayName?: string;
 }
 
 interface FestivalEvent {
@@ -1202,7 +1218,7 @@ function getRunSheetSectionFromSlot(kind: string, visibility: string, title?: st
   return "Event";
 }
 
-function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, anchorDateIso, suggestedSequenceNumber, open, initialAdvancedOpen, onOpenChange, onSave, onParallelCreated, types, festivalEntities, onPickMedia, suggestionTitles = [], suggestionAreas = [], suggestionStorageKey: sugStorageKey, editScope = "plan" }: RunSheetEditDialogProps) {
+function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, anchorDateIso, suggestedSequenceNumber, open, initialAdvancedOpen, onOpenChange, onSave, onParallelCreated, types, festivalEntities, onPickMedia, suggestionTitles = [], suggestionAreas = [], suggestionStorageKey: sugStorageKey, editScope = "plan", sectionDisplayName }: RunSheetEditDialogProps) {
   const { toast } = useToast();
   const anchor = anchorDateIso || slot.starts_at;
   const [eventId, setEventId] = useState(slot.event_id ?? "");
@@ -1659,6 +1675,11 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
       <FocusDialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Rediger post</DialogTitle>
+          {isPlanScope && sectionDisplayName && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Seksjon: <span className="font-medium text-foreground">{sectionDisplayName}</span>
+            </p>
+          )}
         </DialogHeader>
         <div className="space-y-4 py-2 max-h-[65vh] overflow-y-auto">
           {/* ── Block A: Essential fields ── */}
@@ -1767,45 +1788,49 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
               >
                 <Settings2 className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium text-foreground">Utvidet post</span>
-                  <span className="block text-xs text-muted-foreground">Seksjon, type, løpenummer og andre innstillinger</span>
+                  <span className="text-sm font-medium text-foreground">{isPlanScope ? "Innstillinger" : "Utvidet post"}</span>
+                  <span className="block text-xs text-muted-foreground">{isPlanScope ? "Event-kobling, kategori og synlighet" : "Seksjon, type, løpenummer og andre innstillinger"}</span>
                 </div>
                 <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", showAdvanced && "rotate-180")} />
               </button>
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-4 pt-2">
-              {/* Section */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Seksjon</Label>
-                <Select value={editSection} onValueChange={(v) => handleSectionChange(v as RunSheetSectionKey)}>
-                  <SelectTrigger className="h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <FocusSelectContent>
-                    <SelectItem value="Opprigg">Opprigg (O)</SelectItem>
-                    <SelectItem value="Lydprøve">Lydprøve (L)</SelectItem>
-                    <SelectItem value="Event">Event (E)</SelectItem>
-                  </FocusSelectContent>
-                </Select>
-              </div>
+              {/* Section – hidden in plan scope (shown as read-only in header) */}
+              {!isPlanScope && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold">Seksjon</Label>
+                  <Select value={editSection} onValueChange={(v) => handleSectionChange(v as RunSheetSectionKey)}>
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <FocusSelectContent>
+                      <SelectItem value="Opprigg">Opprigg (O)</SelectItem>
+                      <SelectItem value="Lydprøve">Lydprøve (L)</SelectItem>
+                      <SelectItem value="Event">Event (E)</SelectItem>
+                    </FocusSelectContent>
+                  </Select>
+                </div>
+              )}
 
-              {/* Type */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Hva slags post er dette?</Label>
-                <Select value={slotKind} onValueChange={setSlotKind}>
-                  <SelectTrigger className="h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <FocusSelectContent>
-                    {SLOT_KIND_OPTIONS.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                    ))}
-                  </FocusSelectContent>
-                </Select>
-              </div>
+              {/* Type – hidden in plan scope */}
+              {!isPlanScope && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold">Hva slags post er dette?</Label>
+                  <Select value={slotKind} onValueChange={setSlotKind}>
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <FocusSelectContent>
+                      {SLOT_KIND_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      ))}
+                    </FocusSelectContent>
+                  </Select>
+                </div>
+              )}
 
-              {/* Sequence number */}
-              {showFields.has("sequence") && (
+              {/* Sequence number – hidden in plan scope */}
+              {!isPlanScope && showFields.has("sequence") && (
                 <div className="space-y-1.5">
                   <Label className="text-xs">Løpenummer</Label>
                   <Input type="number" placeholder="#" value={sequenceNumber} onChange={(e) => setSequenceNumber(e.target.value)} className="h-9 w-24" />
