@@ -107,6 +107,7 @@ export function useProductionBoardData({
     allItems,
     filtered,
     issues,
+    slots,
     contributors,
     contributorSections,
     contributorKpis,
