@@ -54,10 +54,19 @@ export function resolveDuration(
 
 /**
  * Build section anchor Date from event start_at + section starts_at_local (HH:mm:ss).
+ * If startsAtLocal is null/empty, falls back to the event start_at directly.
  */
-export function sectionAnchorDate(eventStartAtIso: string, startsAtLocal: string): Date {
+export function sectionAnchorDate(eventStartAtIso: string, startsAtLocal: string | null | undefined): Date {
   const d = new Date(eventStartAtIso);
+  if (!startsAtLocal || !startsAtLocal.trim()) {
+    console.warn("[sectionAnchorDate] starts_at_local is empty — using event start_at as anchor");
+    return d;
+  }
   const parts = startsAtLocal.split(":").map(Number);
+  if (parts.some(isNaN)) {
+    console.warn("[sectionAnchorDate] Invalid starts_at_local:", startsAtLocal, "— using event start_at");
+    return d;
+  }
   d.setHours(parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0, 0);
   return d;
 }
