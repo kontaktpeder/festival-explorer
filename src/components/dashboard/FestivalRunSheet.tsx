@@ -959,31 +959,48 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
         </div>
       )}
 
-      {slots.length === 0 ? (
+      {slots.length === 0 && dbSections.length === 0 ? (
         <div className="py-16 text-center border border-dashed border-border/30 rounded-xl">
           <ClipboardList className="h-8 w-8 mx-auto text-muted-foreground/20 mb-4" />
           <p className="text-sm font-medium text-muted-foreground">Ingen programrader ennå.</p>
-          <p className="text-xs text-muted-foreground/60 mt-1">
-            Legg til rader via «Ny rad» eller via event‑program.
+          <p className="text-xs text-muted-foreground/60 mt-1 mb-4">
+            Legg til faser for å komme i gang.
           </p>
+          {!readOnly && (
+            <div className="flex items-center justify-center gap-2">
+              {(["opprigg", "lydprove", "event"] as EventProgramPhaseType[]).map((phaseType) => (
+                <Button
+                  key={phaseType}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs gap-1.5"
+                  onClick={() => createSection.mutate({
+                    type: phaseType,
+                    sortOrder: phaseType === "opprigg" ? 0 : phaseType === "lydprove" ? 1 : 2,
+                  })}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  {PHASE_LABELS[phaseType]}
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <div className="runsheet-print space-y-5">
           {(() => {
-            const sectionPrefixes: Record<string, string> = { "Opprigg": "O", "Lydprøve": "L", "Event": "E" };
             let globalIndex = 0;
             return sectionsWithSlots
-              .filter(({ slots: s }) => s.length > 0)
-              .map(({ sectionKey, slots: sectionSlots }) => {
+              .map(({ sectionKey, section, slots: sectionSlots }) => {
               const startIdx = globalIndex;
               globalIndex += sectionSlots.length;
               return (
                 <RunSheetSection
-                    key={sectionKey}
+                    key={section?.id ?? sectionKey}
                     sectionKey={sectionKey}
                     title={sectionKey}
-                    displayName={sectionNames[sectionKey]}
-                    sectionPrefix={sectionPrefixes[sectionKey]}
+                    displayName={section ? displaySectionTitle(section) !== PHASE_LABELS[section.type] ? section.display_name ?? undefined : undefined : sectionNames[sectionKey]}
+                    sectionPrefix={section ? PHASE_PREFIXES[section.type] : ({ "Opprigg": "O", "Lydprøve": "L", "Event": "E" }[sectionKey])}
                     slots={sectionSlots}
                     slotTypeMap={slotTypeMap}
                     startIndex={startIdx}
@@ -1002,6 +1019,28 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               );
             });
           })()}
+          {/* Add phase button when some phases don't exist yet */}
+          {!readOnly && existingSectionTypes.size < 3 && (
+            <div className="flex items-center gap-2 pt-2 print:hidden">
+              {(["opprigg", "lydprove", "event"] as EventProgramPhaseType[])
+                .filter((t) => !existingSectionTypes.has(t))
+                .map((phaseType) => (
+                  <Button
+                    key={phaseType}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs gap-1.5 border-dashed border-border/30"
+                    onClick={() => createSection.mutate({
+                      type: phaseType,
+                      sortOrder: phaseType === "opprigg" ? 0 : phaseType === "lydprove" ? 1 : 2,
+                    })}
+                  >
+                    <Plus className="h-3 w-3" />
+                    {PHASE_LABELS[phaseType]}
+                  </Button>
+                ))}
+            </div>
+          )}
         </div>
       )}
 
