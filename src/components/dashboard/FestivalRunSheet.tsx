@@ -1729,10 +1729,20 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                   </SelectContent>
                 </Select>
               ) : (
-                <Input placeholder="F.eks. 1ETG, FOH" value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm" />
+                <>
+                  <datalist id={`runsheet-area-${slot.id}`}>
+                    {suggestionAreas.map((a) => <option key={a} value={a} />)}
+                  </datalist>
+                  <Input list={`runsheet-area-${slot.id}`} placeholder="F.eks. 1ETG, FOH" value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm" />
+                </>
               )}
               {sceneOptions.length > 0 && stageLabel && !sceneOptions.find((s) => s.name === stageLabel) && (
-                <Input placeholder="Fritekst område..." value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm mt-1" />
+                <>
+                  <datalist id={`runsheet-area-custom-${slot.id}`}>
+                    {suggestionAreas.map((a) => <option key={a} value={a} />)}
+                  </datalist>
+                  <Input list={`runsheet-area-custom-${slot.id}`} placeholder="Fritekst område..." value={stageLabel} onChange={(e) => setStageLabel(e.target.value)} className="h-9 text-sm mt-1" />
+                </>
               )}
             </div>
           )}
