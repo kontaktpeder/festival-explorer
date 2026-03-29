@@ -203,7 +203,7 @@ export function RunSheetSection({
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 shrink-0 text-destructive/30 active:text-destructive hover:text-destructive hover:bg-muted/70 print:hidden hidden md:flex"
+            className="h-9 w-9 shrink-0 text-destructive/30 active:text-destructive hover:text-destructive hover:bg-muted/70 print:hidden"
             onClick={() => onDeleteSection(sectionKey, slots)}
             title={`Slett ${shownName} (${slots.length} punkt)`}
           >
