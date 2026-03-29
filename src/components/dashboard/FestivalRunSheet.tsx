@@ -81,7 +81,7 @@ import { RunSheetPrintView } from "./runsheet/RunSheetPrintView";
 import { useFestivalSubjects } from "@/hooks/useFestivalSubjects";
 import { RunSheetPlanBlock } from "./runsheet/RunSheetPlanBlock";
 import { useEventRunSheetDefault, useEventSceneOptions } from "@/hooks/useEventRunSheetDefault";
-import { computeVisualStartsForSection, sectionAnchorDate } from "@/lib/runsheet-plan-time";
+import { sectionAnchorDate } from "@/lib/runsheet-plan-time";
 
 /* ── Scope-based props ── */
 type FestivalRunSheetProps =
@@ -690,26 +690,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     });
   }, [data?.slots, sceneFilter, dbSections]);
 
-  /** Chain-computed visual start times per section (plan list view) */
-  const visualStartMaps = useMemo(() => {
-    if (!scopeStartAt || !sectionsWithSlots.length) return new Map<string, Map<string, string>>();
-    const result = new Map<string, Map<string, string>>();
-    for (const { section, slots: sectionSlots } of sectionsWithSlots) {
-      if (!section || !sectionSlots.length) continue;
-      const anchor = sectionAnchorDate(scopeStartAt, section.starts_at_local);
-      const slotsById = new Map<string, ExtendedEventProgramSlot>();
-      const orderedIds: string[] = [];
-      for (const s of sectionSlots) {
-        slotsById.set(s.id, s);
-        orderedIds.push(s.id);
-      }
-      const dateMap = computeVisualStartsForSection(anchor, orderedIds, slotsById);
-      const isoMap = new Map<string, string>();
-      for (const [id, d] of dateMap) isoMap.set(id, d.toISOString());
-      result.set(section.id, isoMap);
-    }
-    return result;
-  }, [scopeStartAt, sectionsWithSlots]);
+  // visualStartMaps removed — list view uses stored starts_at directly
 
   /* NOW marker – find the slot that's currently active */
   const nowSlotId = useMemo(() => {
@@ -1114,7 +1095,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                     canOperate={canOperate}
                     onLiveAction={handleLiveAction}
                     effectiveTimeline={effectiveTimeline}
-                    visualStartMap={section ? visualStartMaps.get(section.id) : undefined}
+                    
                    />
               );
             });
