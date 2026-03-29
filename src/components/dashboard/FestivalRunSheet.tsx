@@ -1788,8 +1788,8 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
               >
                 <Settings2 className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium text-foreground">Utvidet post</span>
-                  <span className="block text-xs text-muted-foreground">Seksjon, type, løpenummer og andre innstillinger</span>
+                  <span className="text-sm font-medium text-foreground">{isPlanScope ? "Innstillinger" : "Utvidet post"}</span>
+                  <span className="block text-xs text-muted-foreground">{isPlanScope ? "Event-kobling, kategori og synlighet" : "Seksjon, type, løpenummer og andre innstillinger"}</span>
                 </div>
                 <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", showAdvanced && "rotate-180")} />
               </button>
