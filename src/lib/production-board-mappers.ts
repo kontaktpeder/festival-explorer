@@ -343,7 +343,54 @@ export interface ContributorKpis {
   ready: number;
 }
 
-// ── Contributor document status (aggregated over linked slots) ──
+// ── Performer link helpers (v1: no new slots, only UPDATE existing) ──
+
+// TODO: When DB has e.g. event_program_slots.contributor_role (Artist|Gjest|…),
+// show type badge in Production. v1: only name (persona/entity/text).
+
+/** Check if a slot already has a performer linked */
+export function slotHasPerformer(slot: ExtendedEventProgramSlot): boolean {
+  return !!(
+    slot.performer_entity_id ||
+    slot.performer_persona_id ||
+    (slot.performer_name_override?.trim())
+  );
+}
+
+/** Candidates for "Add performer": existing non-canceled slots without a performer */
+export function slotsEligibleForPerformerLink(
+  slots: ExtendedEventProgramSlot[],
+): ExtendedEventProgramSlot[] {
+  return slots.filter((s) => !slotHasPerformer(s) && !s.is_canceled);
+}
+
+/** Contributor-specific bucket counts for the chips bar */
+export interface ContributorBucketCounts {
+  missingDocs: number;
+  pendingContract: number;
+  ready: number;
+}
+
+export function countContributorBuckets(
+  contributors: ProductionContributor[],
+): ContributorBucketCounts {
+  let missingDocs = 0;
+  let pendingContract = 0;
+  let ready = 0;
+
+  for (const c of contributors) {
+    const anyMissing = c.slots.some(
+      (s) => s.signals.missingTechRider || s.signals.missingContract,
+    );
+    const anyPending = c.slots.some(
+      (s) => s.slot.internal_status === "contract_pending" && !s.slot.is_canceled,
+    );
+    if (anyMissing) missingDocs++;
+    else if (anyPending) pendingContract++;
+    else ready++;
+  }
+  return { missingDocs, pendingContract, ready };
+}
 
 export interface ContributorDocumentStatus {
   missingTechRider: boolean;

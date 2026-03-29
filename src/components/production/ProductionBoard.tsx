@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useProductionBoardData } from "@/hooks/useProductionBoardData";
+import { countContributorBuckets } from "@/lib/production-board-mappers";
 import { ProductionKpiBar } from "./ProductionKpiBar";
 import { ProductionFilters } from "./ProductionFilters";
 import { ProductionSection } from "./ProductionSection";
 import { ContributorSection } from "./ContributorSection";
+import { AddPerformerToSlotDialog } from "./AddPerformerToSlotDialog";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { Button } from "@/components/ui/button";
-import { Radio, LayoutList, Users } from "lucide-react";
+import { Radio, LayoutList, Users, Plus, FileWarning, Clock, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ProductionFilter, ProductionSectionKey } from "@/lib/production-board-mappers";
 
@@ -24,15 +28,47 @@ const SECTION_ORDER: ProductionSectionKey[] = ["requires_action", "unclear", "re
 export function ProductionBoard({ festivalId, eventId, liveBasePath }: Props) {
   const [filter, setFilter] = useState<ProductionFilter>("all");
   const [tab, setTab] = useState<ViewTab>("contributors");
+  const [addPerformerOpen, setAddPerformerOpen] = useState(false);
 
   const {
-    isLoading, kpis, sections, sceneLabels,
-    contributorSections, contributorKpis,
+    isLoading, kpis, sections, sceneLabels, slots,
+    contributors, contributorSections, contributorKpis,
   } = useProductionBoardData({
     festivalId,
     eventId,
     filter,
   });
+
+  // Fetch festival entities for the performer picker
+  const { data: festivalEntities = [] } = useQuery({
+    queryKey: ["production-festival-entities", festivalId],
+    enabled: !!festivalId,
+    queryFn: async () => {
+      const { data: feRows } = await supabase
+        .from("festival_events")
+        .select("event_id")
+        .eq("festival_id", festivalId!);
+      if (!feRows?.length) return [];
+      const eventIds = feRows.map((r) => r.event_id);
+      const { data: eeRows } = await supabase
+        .from("event_entities")
+        .select("entity_id")
+        .in("event_id", eventIds);
+      if (!eeRows?.length) return [];
+      const entityIds = [...new Set(eeRows.map((r) => r.entity_id))];
+      const { data: entities } = await supabase
+        .from("entities")
+        .select("id, name, slug")
+        .in("id", entityIds)
+        .order("name");
+      return (entities ?? []) as { id: string; name: string; slug: string }[];
+    },
+  });
+
+  const buckets = useMemo(
+    () => countContributorBuckets(contributors),
+    [contributors],
+  );
 
   if (isLoading) {
     return <LoadingState message="Laster produksjonsdata..." />;
@@ -75,16 +111,53 @@ export function ProductionBoard({ festivalId, eventId, liveBasePath }: Props) {
           </button>
         </div>
 
-        <Button asChild variant="outline" size="sm" className="text-xs">
-          <Link to={liveBasePath}>
-            <Radio className="h-3.5 w-3.5 mr-1.5" />
-            Åpne Live
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          {tab === "contributors" && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs gap-1.5"
+              onClick={() => setAddPerformerOpen(true)}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Legg til medvirkende
+            </Button>
+          )}
+          <Button asChild variant="outline" size="sm" className="text-xs">
+            <Link to={liveBasePath}>
+              <Radio className="h-3.5 w-3.5 mr-1.5" />
+              Åpne Live
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* KPIs */}
       <ProductionKpiBar kpis={kpis} />
+
+      {/* Contributor bucket chips (contributor tab only) */}
+      {tab === "contributors" && contributors.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {buckets.missingDocs > 0 && (
+            <span className="inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-destructive/20 bg-destructive/8 text-destructive font-medium">
+              <FileWarning className="h-3 w-3" />
+              {buckets.missingDocs} mangler dokumenter
+            </span>
+          )}
+          {buckets.pendingContract > 0 && (
+            <span className="inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-amber-500/20 bg-amber-500/8 text-amber-600 font-medium">
+              <Clock className="h-3 w-3" />
+              {buckets.pendingContract} venter bekreftelse
+            </span>
+          )}
+          {buckets.ready > 0 && (
+            <span className="inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-emerald-500/20 bg-emerald-500/8 text-emerald-600 font-medium">
+              <CheckCircle2 className="h-3 w-3" />
+              {buckets.ready} klar
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Filters (slot view only) */}
       {tab === "slots" && (
@@ -126,6 +199,17 @@ export function ProductionBoard({ festivalId, eventId, liveBasePath }: Props) {
           </>
         )}
       </div>
+
+      {/* Add performer dialog */}
+      <AddPerformerToSlotDialog
+        open={addPerformerOpen}
+        onOpenChange={setAddPerformerOpen}
+        candidateSlots={slots}
+        festivalEntities={festivalEntities}
+        festivalId={festivalId}
+        eventId={eventId}
+        onSaved={() => {}}
+      />
     </div>
   );
 }
