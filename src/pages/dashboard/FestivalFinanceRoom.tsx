@@ -14,8 +14,9 @@ import {
   Table, TableHeader, TableRow, TableHead, TableBody, TableCell,
 } from "@/components/ui/table";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { FocusSelectContent } from "@/components/ui/focus-overlays";
 import {
   Collapsible, CollapsibleContent, CollapsibleTrigger,
 } from "@/components/ui/collapsible";

@@ -24,6 +24,7 @@ import {
 import {
   FocusAlertDialogContent,
   FocusDialogContent,
+  FocusDropdownMenuContent,
   FocusSelectContent,
 } from "@/components/ui/focus-overlays";
 import { useEventProgramSections } from "@/hooks/useEventProgramSections";
@@ -36,7 +37,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
-  SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -68,7 +68,6 @@ import {
 import { getSceneColor } from "@/lib/runsheet-scene-colors";
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
