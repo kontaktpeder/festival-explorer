@@ -59,6 +59,7 @@ import {
   type TimePairEditSource,
 } from "@/lib/runsheet-time-ui";
 import { Plus, ClipboardList, ChevronDown, Printer, Filter, Download, Settings2, Play, Square, Timer, XCircle } from "lucide-react";
+import { suggestionsStorageKey, loadSlotSuggestions, mergeFromSlots, rememberSlotFields, type SlotSuggestionBucket } from "@/lib/runsheet-slot-suggestions";
 import {
   Collapsible,
   CollapsibleContent,
@@ -1163,6 +1164,9 @@ interface RunSheetEditDialogProps {
   types: ProgramSlotType[];
   festivalEntities: { id: string; name: string; slug: string }[];
   onPickMedia: (slotId: string, field: "contract_media_id" | "tech_rider_media_id" | "hosp_rider_media_id") => void;
+  suggestionTitles?: string[];
+  suggestionAreas?: string[];
+  suggestionStorageKey?: string | null;
 }
 
 interface FestivalEvent {
