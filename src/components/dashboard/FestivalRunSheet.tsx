@@ -429,7 +429,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
       const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean; internal_status: string }> = {
         opprigg: { slot_kind: "rigging", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
         lydprøve: { slot_kind: "soundcheck", title_override: "LYDPRØVE", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
-        event: { slot_kind: "concert", title_override: "", visibility: "internal", is_visible_public: false, internal_status: "confirmed" },
+        event: { slot_kind: "custom", title_override: "", visibility: "internal", is_visible_public: false, internal_status: "confirmed" },
         doors: { slot_kind: "doors", title_override: "", visibility: "public", is_visible_public: true, internal_status: "confirmed" },
         closing: { slot_kind: "closing", title_override: "", visibility: "public", is_visible_public: true, internal_status: "confirmed" },
         stage_talk: { slot_kind: "stage_talk", title_override: "", visibility: "public", is_visible_public: true, internal_status: "confirmed" },
@@ -468,7 +468,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
         `)
         .single();
       if (error) throw error;
-      return { inserted: inserted as unknown as ExtendedEventProgramSlot, openEditor: sectionType === "custom" };
+      return { inserted: inserted as unknown as ExtendedEventProgramSlot, openEditor: sectionType === "custom" || sectionType === "event" };
     },
     onSuccess: async (result) => {
       await queryClient.invalidateQueries({ queryKey });
@@ -740,12 +740,9 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               <ClipboardList className="h-5 w-5 text-muted-foreground" />
             </div>
             <div>
-              <h2 className="text-lg font-bold tracking-tight text-foreground">
+              <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
                 Kjøreplan{readOnly ? " (kun visning)" : ""}
               </h2>
-              <p className="text-xs text-muted-foreground">
-                {slots.length} punkt{slots.length !== 1 ? "er" : ""} · {readOnly ? "Lesemodus" : "Produksjonsdokument"}
-              </p>
             </div>
           </div>
           {/* Desktop: all buttons inline – hidden in readOnly and live mode */}
