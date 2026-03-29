@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback, forwardRef } from "react";
 import { ChevronDown, ChevronRight, Plus, Pencil, Trash2, GripVertical } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -170,7 +170,7 @@ function SortableRow({
   );
 }
 
-export function RunSheetSection({
+export const RunSheetSection = forwardRef<HTMLDivElement, RunSheetSectionProps>(function RunSheetSection({
   sectionKey,
   title,
   displayName,
@@ -190,7 +190,7 @@ export function RunSheetSection({
   canOperate = false,
   onLiveAction,
   effectiveTimeline,
-}: RunSheetSectionProps) {
+}, ref) {
   const [collapsed, setCollapsed] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(displayName || title);
@@ -256,7 +256,7 @@ export function RunSheetSection({
   const sortableIds = useMemo(() => groups.map((g) => g.primary.id), [groups]);
 
   return (
-    <div className="runsheet-section space-y-0" data-section={sectionKey} data-print-section>
+    <div ref={ref} className="runsheet-section space-y-0" data-section={sectionKey} data-print-section>
       {/* Section header */}
       <div className="flex items-center gap-1">
         <button
@@ -387,4 +387,4 @@ export function RunSheetSection({
       )}
     </div>
   );
-}
+});
