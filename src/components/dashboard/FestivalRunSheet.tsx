@@ -1243,6 +1243,7 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   const [performerPersonaId, setPerformerPersonaId] = useState(slot.performer_persona_id || "");
   const [personaQuery, setPersonaQuery] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [linkPerformer, setLinkPerformer] = useState(false);
 
   // Sync state when dialog opens
   useEffect(() => {
