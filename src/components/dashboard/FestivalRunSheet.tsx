@@ -1139,6 +1139,68 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
         />
       )}
 
+      {/* Delete section confirmation */}
+      <AlertDialog open={!!sectionPendingDelete} onOpenChange={(open) => { if (!open) setSectionPendingDelete(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Slette fase?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Slette «{sectionPendingDelete?.name}» og{" "}
+              {sectionPendingDelete?.slotCount === 1
+                ? "1 post"
+                : `${sectionPendingDelete?.slotCount ?? 0} poster`}
+              ? Dette kan ikke angres.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (!sectionPendingDelete) return;
+                deleteSectionMutation.mutate(sectionPendingDelete.id, {
+                  onSuccess: () => {
+                    setSectionPendingDelete(null);
+                    queryClient.invalidateQueries({ queryKey });
+                    queryClient.invalidateQueries({ queryKey: sectionsQueryKey });
+                    toast({ title: "Seksjon slettet" });
+                  },
+                  onError: (e: Error) =>
+                    toast({ title: "Feil", description: e.message, variant: "destructive" }),
+                });
+              }}
+            >
+              Slett
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete slot confirmation */}
+      <AlertDialog open={!!slotPendingDelete} onOpenChange={(open) => { if (!open) setSlotPendingDelete(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Slette rad?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Denne programraden slettes permanent. Dette kan ikke angres.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (!slotPendingDelete) return;
+                deleteSlot.mutate(slotPendingDelete, {
+                  onSettled: () => setSlotPendingDelete(null),
+                });
+              }}
+            >
+              Slett
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* ── Clean print view (hidden on screen, shown on print) ── */}
       <RunSheetPrintView
