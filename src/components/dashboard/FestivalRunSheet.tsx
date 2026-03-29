@@ -1763,11 +1763,14 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
             <CollapsibleTrigger asChild>
               <button
                 type="button"
-                className="flex items-center gap-2 w-full py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-2 w-full rounded-md border border-border/60 bg-muted/30 px-3 py-2.5 text-left hover:bg-muted/60 transition-colors"
               >
-                <Settings2 className="h-3.5 w-3.5" />
-                Avansert
-                <ChevronDown className={cn("h-3 w-3 ml-auto transition-transform", showAdvanced && "rotate-180")} />
+                <Settings2 className="h-4 w-4 text-muted-foreground" />
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-medium text-foreground">Utvidet post</span>
+                  <span className="block text-xs text-muted-foreground">Seksjon, type, løpenummer og andre innstillinger</span>
+                </div>
+                <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", showAdvanced && "rotate-180")} />
               </button>
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-4 pt-2">
