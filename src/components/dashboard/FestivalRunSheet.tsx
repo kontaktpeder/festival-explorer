@@ -899,6 +899,40 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
         )}
       </div>
 
+      {/* View mode toggle + Scene filter */}
+      {slots.length > 0 && !readOnly && mode === "plan" && (
+        <div className="flex items-center gap-3 print:hidden">
+          <div className="flex items-center rounded-md border border-border/30 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors",
+                viewMode === "list"
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <LayoutList className="h-3.5 w-3.5" />
+              Liste
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("timeline")}
+              className={cn(
+                "flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium transition-colors",
+                viewMode === "timeline"
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Clock className="h-3.5 w-3.5" />
+              Tidslinje
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Scene filter bar */}
       {slots.length > 0 && sceneLabels.length > 1 && (
         <div className="flex items-center gap-2 print:hidden flex-wrap">
