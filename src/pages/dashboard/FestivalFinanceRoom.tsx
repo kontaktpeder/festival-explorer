@@ -561,10 +561,10 @@ export default function FestivalFinanceRoom() {
       expenseMutation.mutate({ id: entry.id, paid_by_kind: selected ? "persona" : "other", paid_by_id: selected?.id ?? null, paid_by_label: selected?.name ?? null });
     }}>
       <SelectTrigger className="h-8 text-xs w-full"><SelectValue placeholder="Velg betaler" /></SelectTrigger>
-      <SelectContent>
+      <FocusSelectContent>
         <SelectItem value="__none__">Ingen valgt</SelectItem>
         {payers.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-      </SelectContent>
+      </FocusSelectContent>
     </Select>
   );
 
@@ -604,12 +604,12 @@ export default function FestivalFinanceRoom() {
     <div className="flex items-center gap-1">
       <Select value={entry.payment_status ?? "unpaid"} onValueChange={(v) => onFieldChange(entry, "payment_status" as any, v)}>
         <SelectTrigger className="h-7 text-xs w-[90px]"><SelectValue /></SelectTrigger>
-        <SelectContent>
+        <FocusSelectContent>
           <SelectItem value="unpaid">Ubetalt</SelectItem>
           <SelectItem value="paid">Betalt</SelectItem>
           <SelectItem value="partial">Delvis</SelectItem>
           <SelectItem value="cancelled">Kansellert</SelectItem>
-        </SelectContent>
+        </FocusSelectContent>
       </Select>
       {entry.payment_status === "partial" && (
         <Input type="text" inputMode="decimal" className="h-7 text-xs w-[80px] tabular-nums" placeholder="kr"
@@ -623,11 +623,11 @@ export default function FestivalFinanceRoom() {
   const InvoiceStatusSelect = ({ entry, onFieldChange }: { entry: FestivalFinanceEntry; onFieldChange: typeof onExpenseFieldChange }) => (
     <Select value={(entry as any).invoice_status ?? "pending"} onValueChange={(v) => onFieldChange(entry, "invoice_status" as any, v)}>
       <SelectTrigger className="h-7 text-xs w-[110px]"><SelectValue /></SelectTrigger>
-      <SelectContent>
+      <FocusSelectContent>
         <SelectItem value="pending">Avventer</SelectItem>
         <SelectItem value="received">Mottatt</SelectItem>
         <SelectItem value="not_required">Ikke relevant</SelectItem>
-      </SelectContent>
+      </FocusSelectContent>
     </Select>
   );
   const renderExpenseTable = (items: FestivalFinanceEntry[]) => (
@@ -1003,9 +1003,9 @@ export default function FestivalFinanceRoom() {
             {books && books.length > 0 && (
               <Select value={activeBookId || ""} onValueChange={(v) => setSelectedBookId(v)}>
                 <SelectTrigger className="w-[180px] md:w-[220px]"><SelectValue /></SelectTrigger>
-                <SelectContent>
+                <FocusSelectContent>
                   {books.map((b) => <SelectItem key={b.id} value={b.id}>{b.name} ({b.type})</SelectItem>)}
-                </SelectContent>
+                </FocusSelectContent>
               </Select>
             )}
             <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={!entries || entries.length === 0}>

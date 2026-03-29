@@ -49,7 +49,7 @@ export function FestivalMediaPickerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <FocusDialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-sm">
             Velg fil fra filbanken
@@ -122,7 +122,7 @@ export function FestivalMediaPickerDialog({
             Velg
           </Button>
         </div>
-      </DialogContent>
+      </FocusDialogContent>
     </Dialog>
   );
 }

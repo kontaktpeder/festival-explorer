@@ -763,7 +763,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                   <ChevronDown className="h-3 w-3 opacity-50" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <FocusDropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => { setPrintFilter("all"); setTimeout(handleDownloadPdf, 100); }}>
                   Hele kjøreplanen
                 </DropdownMenuItem>
@@ -781,7 +781,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                     Kun {label}
                   </DropdownMenuItem>
                 ))}
-              </DropdownMenuContent>
+              </FocusDropdownMenuContent>
             </DropdownMenu>
 
             {/* Print dropdown */}
@@ -797,7 +797,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                   <ChevronDown className="h-3 w-3 opacity-50" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <FocusDropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => triggerPrint("all")}>
                   Hele kjøreplanen
                 </DropdownMenuItem>
@@ -815,7 +815,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                     Kun {label}
                   </DropdownMenuItem>
                 ))}
-              </DropdownMenuContent>
+              </FocusDropdownMenuContent>
             </DropdownMenu>
             </div>
           )}
@@ -833,7 +833,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                 PDF
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
+            <FocusDropdownMenuContent align="start">
               <DropdownMenuItem onClick={() => { setPrintFilter("all"); setTimeout(handleDownloadPdf, 100); }}>
                 Hele kjøreplanen
               </DropdownMenuItem>
@@ -846,7 +846,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               <DropdownMenuItem onClick={() => { setPrintFilter("event"); setTimeout(handleDownloadPdf, 100); }}>
                 Kun event
               </DropdownMenuItem>
-            </DropdownMenuContent>
+            </FocusDropdownMenuContent>
           </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -855,12 +855,12 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                 Print
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="center">
+            <FocusDropdownMenuContent align="center">
               <DropdownMenuItem onClick={() => triggerPrint("all")}>Hele kjøreplanen</DropdownMenuItem>
               <DropdownMenuItem onClick={() => triggerPrint("opprigg")}>Kun opprigg</DropdownMenuItem>
               <DropdownMenuItem onClick={() => triggerPrint("lydprove")}>Kun lydprøver</DropdownMenuItem>
               <DropdownMenuItem onClick={() => triggerPrint("event")}>Kun event</DropdownMenuItem>
-            </DropdownMenuContent>
+            </FocusDropdownMenuContent>
           </DropdownMenu>
         </div>
         )}
@@ -1720,12 +1720,12 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                   <SelectTrigger className="h-9">
                     <SelectValue placeholder="Velg område..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <FocusSelectContent>
                     {sceneOptions.map((s) => (
                       <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                     ))}
                     <SelectItem value="__custom__">Annet (fritekst)</SelectItem>
-                  </SelectContent>
+                  </FocusSelectContent>
                 </Select>
               ) : (
                 <>
@@ -1774,11 +1774,11 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                   <SelectTrigger className="h-9">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <FocusSelectContent>
                     <SelectItem value="Opprigg">Opprigg (O)</SelectItem>
                     <SelectItem value="Lydprøve">Lydprøve (L)</SelectItem>
                     <SelectItem value="Event">Event (E)</SelectItem>
-                  </SelectContent>
+                  </FocusSelectContent>
                 </Select>
               </div>
 
@@ -1789,11 +1789,11 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                   <SelectTrigger className="h-9">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <FocusSelectContent>
                     {SLOT_KIND_OPTIONS.map((o) => (
                       <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                     ))}
-                  </SelectContent>
+                  </FocusSelectContent>
                 </Select>
               </div>
 
@@ -1813,14 +1813,14 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                     <SelectTrigger className="h-9">
                       <SelectValue placeholder="Velg event..." />
                     </SelectTrigger>
-                    <SelectContent>
+                    <FocusSelectContent>
                       <SelectItem value="__none__">Ingen (manuell rad)</SelectItem>
                       {festivalEvents.map((ev) => (
                         <SelectItem key={ev.id} value={ev.id}>
                           {ev.title}
                         </SelectItem>
                       ))}
-                    </SelectContent>
+                    </FocusSelectContent>
                   </Select>
                   <p className="text-[10px] text-muted-foreground">Velg event for å fylle ut tid, sted og varighet automatisk</p>
                 </div>
@@ -1862,14 +1862,14 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                         <SelectTrigger className="h-9">
                           <SelectValue placeholder="Velg prosjekt..." />
                         </SelectTrigger>
-                        <SelectContent>
+                        <FocusSelectContent>
                           <SelectItem value="__none__">Ingen prosjekt</SelectItem>
                           {festivalEntities.map((e) => (
                             <SelectItem key={e.id} value={e.id}>
                               {e.name}
                             </SelectItem>
                           ))}
-                        </SelectContent>
+                        </FocusSelectContent>
                       </Select>
                     </div>
                   )}
@@ -2020,11 +2020,11 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                   <Label className="text-xs">Kategori</Label>
                   <Select value={slotType} onValueChange={setSlotType}>
                     <SelectTrigger className="h-9"><SelectValue placeholder="—" /></SelectTrigger>
-                    <SelectContent>
+                    <FocusSelectContent>
                       {types.map((t) => (
                         <SelectItem key={t.code} value={t.code}>{t.label}</SelectItem>
                       ))}
-                    </SelectContent>
+                    </FocusSelectContent>
                   </Select>
                 </div>
               )}
@@ -2036,21 +2036,21 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                     <Label className="text-xs">Synlighet</Label>
                     <Select value={visibility} onValueChange={(v) => setVisibility(v as any)}>
                       <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                      <SelectContent>
+                      <FocusSelectContent>
                         <SelectItem value="public">Publikum</SelectItem>
                         <SelectItem value="internal">Intern</SelectItem>
-                      </SelectContent>
+                      </FocusSelectContent>
                     </Select>
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs">Status</Label>
                     <Select value={internalStatus} onValueChange={setInternalStatus}>
                       <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                      <SelectContent>
+                      <FocusSelectContent>
                         {INTERNAL_STATUS_OPTIONS.map((o) => (
                           <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                         ))}
-                      </SelectContent>
+                      </FocusSelectContent>
                     </Select>
                   </div>
                 </div>
