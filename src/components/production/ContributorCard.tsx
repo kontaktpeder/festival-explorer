@@ -1,8 +1,9 @@
 import { useState } from "react";
 import type { ProductionContributor } from "@/lib/production-board-mappers";
+import { contributorDocumentStatus } from "@/lib/production-board-mappers";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { ChevronRight, Music, User, Type } from "lucide-react";
+import { ChevronRight, Music, User, Type, FileText, CheckCircle2, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
@@ -28,6 +29,7 @@ function badgeVariant(badge: string) {
 export function ContributorCard({ contributor }: Props) {
   const [expanded, setExpanded] = useState(false);
   const Icon = kindIcon[contributor.kind];
+  const docStatus = contributorDocumentStatus(contributor);
 
   return (
     <div className={cn("transition-colors", expanded && "bg-muted/20")}>
@@ -68,7 +70,38 @@ export function ContributorCard({ contributor }: Props) {
       </button>
 
       {expanded && (
-        <div className="px-4 pb-3 pl-11 space-y-2">
+        <div className="px-4 pb-3 pl-11 space-y-3">
+          {/* Document status summary */}
+          {(docStatus.missingTechRider || docStatus.missingContract || docStatus.missingHospRider) ? (
+            <div className="flex flex-wrap gap-1.5 items-center">
+              <FileText className="h-3 w-3 text-muted-foreground/50" />
+              {docStatus.missingTechRider && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-destructive/10 text-destructive border border-destructive/20 inline-flex items-center gap-1">
+                  <AlertCircle className="h-2.5 w-2.5" />
+                  Mangler tech rider
+                </span>
+              )}
+              {docStatus.missingHospRider && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20 inline-flex items-center gap-1">
+                  <AlertCircle className="h-2.5 w-2.5" />
+                  Mangler hosp rider
+                </span>
+              )}
+              {docStatus.missingContract && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-destructive/10 text-destructive border border-destructive/20 inline-flex items-center gap-1">
+                  <AlertCircle className="h-2.5 w-2.5" />
+                  Mangler kontrakt
+                </span>
+              )}
+            </div>
+          ) : docStatus.allComplete && contributor.slots.some(s => s.slot.slot_kind === "concert" || s.slot.slot_kind === "soundcheck") ? (
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+              <span className="text-[10px] text-emerald-600">Alle dokumenter på plass</span>
+            </div>
+          ) : null}
+
+          {/* Linked slots */}
           {contributor.slots.map((item) => {
             const { slot, signals } = item;
             const time = slot.starts_at
