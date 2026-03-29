@@ -103,6 +103,7 @@ function SortableRow({
   onLiveAction,
   effectiveTimeline,
   isDraggable,
+  visualStartAt,
 }: {
   group: ParallelGroup;
   index: number;
@@ -118,6 +119,7 @@ function SortableRow({
   onLiveAction?: (slotId: string, action: LiveAction) => void;
   effectiveTimeline?: Map<string, EffectiveTime>;
   isDraggable: boolean;
+  visualStartAt?: string | null;
 }) {
   const {
     attributes,
