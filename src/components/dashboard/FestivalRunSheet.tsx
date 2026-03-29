@@ -1071,6 +1071,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                       startIndex={startIdx}
                       onEdit={readOnly ? () => {} : openEdit}
                       sectionAnchorIso={section && scopeStartAt ? sectionAnchorDate(scopeStartAt, section.starts_at_local).toISOString() : null}
+                      onBlockMove={readOnly ? undefined : handleBlockMove}
                     />
                   ) : (
                     <div className="py-6 text-center border border-dashed border-border/20 rounded-lg">
