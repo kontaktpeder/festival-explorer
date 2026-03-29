@@ -585,18 +585,38 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     return Array.from(labels).sort();
   }, [data?.slots]);
 
-  /* Group into the fixed sections, applying scene filter */
+  /* Group slots by DB sections, applying scene filter */
   const sectionsWithSlots = useMemo(() => {
     let allSlots = data?.slots ?? [];
     if (sceneFilter) {
       allSlots = allSlots.filter((s) => s.stage_label === sceneFilter);
     }
+    // Group by section_id from DB sections
+    if (dbSections.length > 0) {
+      return dbSections.map((section) => {
+        const slotsInSection = allSlots.filter((s) => (s as any).section_id === section.id);
+        // Sort: sequence_number, then starts_at
+        slotsInSection.sort((a, b) => {
+          const sa = a.sequence_number ?? Infinity;
+          const sb = b.sequence_number ?? Infinity;
+          if (sa !== sb) return sa - sb;
+          return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
+        });
+        return {
+          sectionKey: PHASE_LABELS[section.type] as RunSheetSectionKey,
+          section,
+          slots: slotsInSection,
+        };
+      });
+    }
+    // Fallback: use client-side grouping if no DB sections exist yet
     const grouped = groupSlotsBySection(allSlots);
     return RUNSHEET_SECTION_KEYS.map((key) => ({
       sectionKey: key,
+      section: null as EventProgramSection | null,
       slots: grouped[key],
     }));
-  }, [data?.slots, sceneFilter]);
+  }, [data?.slots, sceneFilter, dbSections]);
 
   /* NOW marker – find the slot that's currently active */
   const nowSlotId = useMemo(() => {
