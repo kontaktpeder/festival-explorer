@@ -1935,8 +1935,8 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                 </div>
               )}
 
-              {/* Dokumenter (rider/kontrakt) – both scopes via asset_handles */}
-              {showFields.has("performer") && (
+              {/* Dokumenter (rider/kontrakt) – hidden in plan scope, managed via Produksjon */}
+              {showFields.has("performer") && !isPlanScope && (
                 <div className="space-y-2 rounded-lg border border-border/20 p-3">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-semibold">Dokumenter</Label>

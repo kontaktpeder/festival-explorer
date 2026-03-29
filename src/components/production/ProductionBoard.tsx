@@ -23,7 +23,7 @@ const SECTION_ORDER: ProductionSectionKey[] = ["requires_action", "unclear", "re
 
 export function ProductionBoard({ festivalId, eventId, liveBasePath }: Props) {
   const [filter, setFilter] = useState<ProductionFilter>("all");
-  const [tab, setTab] = useState<ViewTab>("slots");
+  const [tab, setTab] = useState<ViewTab>("contributors");
 
   const {
     isLoading, kpis, sections, sceneLabels,
