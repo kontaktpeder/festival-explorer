@@ -429,7 +429,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
       const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean; internal_status: string }> = {
         opprigg: { slot_kind: "rigging", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
         lydprøve: { slot_kind: "soundcheck", title_override: "LYDPRØVE", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
-        event: { slot_kind: "concert", title_override: "", visibility: "internal", is_visible_public: false, internal_status: "confirmed" },
+        event: { slot_kind: "custom", title_override: "", visibility: "internal", is_visible_public: false, internal_status: "confirmed" },
         doors: { slot_kind: "doors", title_override: "", visibility: "public", is_visible_public: true, internal_status: "confirmed" },
         closing: { slot_kind: "closing", title_override: "", visibility: "public", is_visible_public: true, internal_status: "confirmed" },
         stage_talk: { slot_kind: "stage_talk", title_override: "", visibility: "public", is_visible_public: true, internal_status: "confirmed" },
@@ -468,7 +468,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
         `)
         .single();
       if (error) throw error;
-      return { inserted: inserted as unknown as ExtendedEventProgramSlot, openEditor: sectionType === "custom" };
+      return { inserted: inserted as unknown as ExtendedEventProgramSlot, openEditor: sectionType === "custom" || sectionType === "event" };
     },
     onSuccess: async (result) => {
       await queryClient.invalidateQueries({ queryKey });
@@ -740,12 +740,9 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               <ClipboardList className="h-5 w-5 text-muted-foreground" />
             </div>
             <div>
-              <h2 className="text-lg font-bold tracking-tight text-foreground">
+              <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
                 Kjøreplan{readOnly ? " (kun visning)" : ""}
               </h2>
-              <p className="text-xs text-muted-foreground">
-                {slots.length} punkt{slots.length !== 1 ? "er" : ""} · {readOnly ? "Lesemodus" : "Produksjonsdokument"}
-              </p>
             </div>
           </div>
           {/* Desktop: all buttons inline – hidden in readOnly and live mode */}
@@ -1246,6 +1243,7 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
   const [performerPersonaId, setPerformerPersonaId] = useState(slot.performer_persona_id || "");
   const [personaQuery, setPersonaQuery] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [linkPerformer, setLinkPerformer] = useState(false);
 
   // Sync state when dialog opens
   useEffect(() => {
@@ -1262,6 +1260,7 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
     setHospRiderAssetId((slot as any).hosp_rider_asset_id ?? null);
     setTechInherited(false);
     setHospInherited(false);
+    setLinkPerformer(!!(slot.performer_entity_id || slot.performer_persona_id || slot.performer_name_override?.trim()));
   }, [open, slot.id, initialAdvancedOpen]);
 
   // Sync rider fields when slot prop updates (e.g. after picker saves while dialog is open)
@@ -1614,6 +1613,7 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
 
   const handleSubmit = () => {
     const timeIso = buildStartsEndsIso();
+    const shouldClearPerformer = isPlanScope && !linkPerformer;
     onSave({
       event_id: eventId || null,
       starts_at: timeIso.starts_at,
@@ -1629,10 +1629,10 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
       internal_status: internalStatus,
       is_visible_public: isVisiblePublic,
       is_canceled: isCanceled,
-      performer_kind: performerKind,
-      performer_entity_id: performerKind === "entity" ? performerEntityId || null : null,
-      performer_persona_id: performerKind === "persona" ? performerPersonaId || null : null,
-      performer_name_override: performerKind === "text" ? nameOverride || null : null,
+      performer_kind: shouldClearPerformer ? "entity" : performerKind,
+      performer_entity_id: shouldClearPerformer ? null : (performerKind === "entity" ? performerEntityId || null : null),
+      performer_persona_id: shouldClearPerformer ? null : (performerKind === "persona" ? performerPersonaId || null : null),
+      performer_name_override: shouldClearPerformer ? null : (performerKind === "text" ? nameOverride || null : null),
       contract_media_id: contractMediaId || null,
       tech_rider_asset_id: techRiderAssetId || null,
       hosp_rider_asset_id: hospRiderAssetId || null,
@@ -1830,8 +1830,8 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                 </div>
               )}
 
-              {/* Performer */}
-              {showFields.has("performer") && (
+              {/* Performer – in plan scope: shown as separate toggle outside Advanced */}
+              {showFields.has("performer") && !isPlanScope && (
                 <div className="space-y-2 rounded-lg border border-border/20 p-3">
                   <Label className="text-xs font-semibold">På scenen</Label>
                   <RadioGroup value={performerKind} onValueChange={handlePerformerKindChange} className="flex gap-4">
@@ -2017,10 +2017,120 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                   </div>
                 </div>
               )}
+              {/* Plan-mode: dedicated performer toggle section */}
               {showFields.has("performer") && isPlanScope && (
-                <p className="text-[10px] text-muted-foreground/60 italic px-1">
-                  Dokumenter som rider og kontrakt håndteres i Produksjon.
-                </p>
+                <Collapsible open={linkPerformer} onOpenChange={setLinkPerformer}>
+                  <div className="flex items-center justify-between rounded-lg border border-border/20 p-3">
+                    <div>
+                      <Label className="text-xs font-semibold">Koble til medvirkende</Label>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        Velg dette hvis posten er knyttet til en artist, gjest eller gruppe.
+                      </p>
+                    </div>
+                    <Switch checked={linkPerformer} onCheckedChange={setLinkPerformer} />
+                  </div>
+                  <CollapsibleContent className="space-y-3 pt-3">
+                    <RadioGroup value={performerKind} onValueChange={handlePerformerKindChange} className="flex gap-4">
+                      <div className="flex items-center gap-1.5">
+                        <RadioGroupItem value="entity" id="pk-entity-plan" />
+                        <Label htmlFor="pk-entity-plan" className="text-xs cursor-pointer">Prosjekt</Label>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <RadioGroupItem value="persona" id="pk-persona-plan" />
+                        <Label htmlFor="pk-persona-plan" className="text-xs cursor-pointer">Persona</Label>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <RadioGroupItem value="text" id="pk-text-plan" />
+                        <Label htmlFor="pk-text-plan" className="text-xs cursor-pointer">Fri tekst</Label>
+                      </div>
+                    </RadioGroup>
+
+                    {performerKind === "entity" && (
+                      <Select
+                        value={performerEntityId || "__none__"}
+                        onValueChange={async (v) => {
+                          const newId = v === "__none__" ? "" : v;
+                          const selected = festivalEntities.find((e) => e.id === newId);
+                          const prevName = getCurrentPerformerName();
+                          setPerformerEntityId(newId);
+                          if (!titleOverride || titleOverride === prevName) {
+                            setTitleOverride(selected?.name ?? "");
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Velg prosjekt..." />
+                        </SelectTrigger>
+                        <FocusSelectContent>
+                          <SelectItem value="__none__">Ingen prosjekt</SelectItem>
+                          {festivalEntities.map((e) => (
+                            <SelectItem key={e.id} value={e.id}>
+                              {e.name}
+                            </SelectItem>
+                          ))}
+                        </FocusSelectContent>
+                      </Select>
+                    )}
+
+                    {performerKind === "persona" && (
+                      <div className="space-y-1.5">
+                        <Input
+                          placeholder="Søk persona..."
+                          value={personaQuery}
+                          onChange={(e) => setPersonaQuery(e.target.value)}
+                          className="h-9 text-sm"
+                        />
+                        {selectedPersonaName && (
+                          <p className="text-xs text-accent font-medium">
+                            Valgt: {selectedPersonaName}
+                          </p>
+                        )}
+                        {personaResults.length > 0 && (
+                          <div className="max-h-32 overflow-y-auto border border-border/20 rounded-md">
+                            {personaResults.map((p) => (
+                              <button
+                                key={p.id}
+                                type="button"
+                                className={cn(
+                                  "w-full text-left px-3 py-1.5 text-sm hover:bg-muted/50 transition-colors",
+                                  p.id === performerPersonaId && "bg-accent/10 font-medium"
+                                )}
+                                onClick={() => {
+                                  const prevName = getCurrentPerformerName();
+                                  setPerformerPersonaId(p.id);
+                                  setPersonaQuery("");
+                                  if (!titleOverride || titleOverride === prevName) {
+                                    setTitleOverride(p.name);
+                                  }
+                                }}
+                              >
+                                {p.name}
+                                {p.category_tags?.length ? (
+                                  <span className="text-[10px] text-muted-foreground ml-2">
+                                    {p.category_tags.slice(0, 2).join(", ")}
+                                  </span>
+                                ) : null}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {performerKind === "text" && (
+                      <Input
+                        placeholder="Navn på scenen"
+                        value={nameOverride}
+                        onChange={(e) => setNameOverride(e.target.value)}
+                        className="h-9 text-sm"
+                      />
+                    )}
+
+                    <p className="text-[10px] text-muted-foreground/60 italic">
+                      Dokumenter som rider og kontrakt håndteres i Produksjon.
+                    </p>
+                  </CollapsibleContent>
+                </Collapsible>
               )}
 
               {/* Kategori */}
