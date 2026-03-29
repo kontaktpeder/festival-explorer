@@ -1621,6 +1621,7 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
       tech_rider_asset_id: techRiderAssetId || null,
       hosp_rider_asset_id: hospRiderAssetId || null,
     });
+    rememberSlotFields(sugStorageKey ?? null, titleOverride, stageLabel);
   };
 
   // Selected persona display name
