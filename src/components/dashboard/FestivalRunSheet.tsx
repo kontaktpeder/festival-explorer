@@ -119,6 +119,10 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     field: "contract_media_id" | "tech_rider_media_id" | "hosp_rider_media_id";
   } | null>(null);
 
+  // Slot suggestions (localStorage-backed)
+  const sugStorageKey = suggestionsStorageKey(eventId, festivalId);
+  const [suggestions, setSuggestions] = useState<SlotSuggestionBucket>({ titles: [], areas: [] });
+
   /* ── Data ── */
   const { data, isLoading } = useQuery({
     queryKey,
