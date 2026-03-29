@@ -1001,7 +1001,45 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
             </div>
           )}
         </div>
+      ) : viewMode === "timeline" ? (
+        /* ── Timeline block view ── */
+        <div className="space-y-6 print:hidden">
+          {(() => {
+            let globalIndex = 0;
+            return sectionsWithSlots.map(({ sectionKey, section, slots: sectionSlots }) => {
+              const startIdx = globalIndex;
+              globalIndex += sectionSlots.length;
+              const shownName = section?.display_name?.trim() || sectionKey;
+              const prefix = section ? PHASE_PREFIXES[section.type] : ({ "Opprigg": "O", "Lydprøve": "L", "Event": "E" }[sectionKey]);
+              return (
+                <div key={section?.id ?? sectionKey}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+                      {shownName}
+                    </span>
+                    <span className="text-[9px] text-muted-foreground/40 tabular-nums">
+                      {sectionSlots.length} {sectionSlots.length === 1 ? "punkt" : "punkter"}
+                    </span>
+                  </div>
+                  {sectionSlots.length > 0 ? (
+                    <RunSheetPlanBlock
+                      slots={sectionSlots}
+                      sectionPrefix={prefix}
+                      startIndex={startIdx}
+                      onEdit={readOnly ? () => {} : openEdit}
+                    />
+                  ) : (
+                    <div className="py-6 text-center border border-dashed border-border/20 rounded-lg">
+                      <p className="text-xs text-muted-foreground/40">Ingen punkter ennå</p>
+                    </div>
+                  )}
+                </div>
+              );
+            });
+          })()}
+        </div>
       ) : (
+        /* ── List view (default) ── */
         <div className="runsheet-print space-y-5">
           {(() => {
             let globalIndex = 0;
