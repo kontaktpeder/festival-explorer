@@ -23,7 +23,7 @@ const SECTION_ORDER: ProductionSectionKey[] = ["requires_action", "unclear", "re
 
 export function ProductionBoard({ festivalId, eventId, liveBasePath }: Props) {
   const [filter, setFilter] = useState<ProductionFilter>("all");
-  const [tab, setTab] = useState<ViewTab>("slots");
+  const [tab, setTab] = useState<ViewTab>("contributors");
 
   const {
     isLoading, kpis, sections, sceneLabels,
@@ -45,21 +45,9 @@ export function ProductionBoard({ festivalId, eventId, liveBasePath }: Props) {
         {/* Tab toggle */}
         <div className="flex rounded-md border border-border overflow-hidden bg-card">
           <button
-            onClick={() => setTab("slots")}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
-              tab === "slots"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted/30",
-            )}
-          >
-            <LayoutList className="h-3.5 w-3.5" />
-            Poster
-          </button>
-          <button
             onClick={() => setTab("contributors")}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors border-l border-border",
+              "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
               tab === "contributors"
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-muted/30",
@@ -72,6 +60,18 @@ export function ProductionBoard({ festivalId, eventId, liveBasePath }: Props) {
                 {contributorKpis.withIssues}
               </span>
             )}
+          </button>
+          <button
+            onClick={() => setTab("slots")}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors border-l border-border",
+              tab === "slots"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-muted/30",
+            )}
+          >
+            <LayoutList className="h-3.5 w-3.5" />
+            Poster
           </button>
         </div>
 

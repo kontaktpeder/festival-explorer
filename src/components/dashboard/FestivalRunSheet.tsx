@@ -6,7 +6,7 @@ import { MediaPicker } from "@/components/admin/MediaPicker";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ExtendedEventProgramSlot, ProgramSlotType, PerformerKind } from "@/types/program-slots";
-import { INTERNAL_STATUS_OPTIONS, SLOT_KIND_OPTIONS, getFieldsForSlotKind } from "@/lib/program-slots";
+import { INTERNAL_STATUS_OPTIONS, SLOT_KIND_OPTIONS, getFieldsForSlotKind, getPlanFieldsForSlotKind } from "@/lib/program-slots";
 import { computeNextSlotStartsAt, shouldOpenAdvancedInitially } from "@/lib/runsheet-ux-helpers";
 import type { SlotKind } from "@/types/database";
 import {
@@ -429,7 +429,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
       const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean; internal_status: string }> = {
         opprigg: { slot_kind: "rigging", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
         lydprøve: { slot_kind: "soundcheck", title_override: "LYDPRØVE", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
-        event: { slot_kind: "concert", title_override: "", visibility: "public", is_visible_public: true, internal_status: "contract_pending" },
+        event: { slot_kind: "concert", title_override: "", visibility: "internal", is_visible_public: false, internal_status: "confirmed" },
         doors: { slot_kind: "doors", title_override: "", visibility: "public", is_visible_public: true, internal_status: "confirmed" },
         closing: { slot_kind: "closing", title_override: "", visibility: "public", is_visible_public: true, internal_status: "confirmed" },
         stage_talk: { slot_kind: "stage_talk", title_override: "", visibility: "public", is_visible_public: true, internal_status: "confirmed" },
@@ -1023,6 +1023,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           suggestionTitles={suggestions.titles}
           suggestionAreas={suggestions.areas}
           suggestionStorageKey={sugStorageKey}
+          editScope="plan"
         />
       )}
 
@@ -1180,6 +1181,8 @@ interface RunSheetEditDialogProps {
   suggestionTitles?: string[];
   suggestionAreas?: string[];
   suggestionStorageKey?: string | null;
+  /** "plan" hides documents, visibility/status, toggles. "full" shows everything. */
+  editScope?: "plan" | "full";
 }
 
 interface FestivalEvent {
@@ -1202,7 +1205,7 @@ function getRunSheetSectionFromSlot(kind: string, visibility: string, title?: st
   return "Event";
 }
 
-function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, anchorDateIso, suggestedSequenceNumber, open, initialAdvancedOpen, onOpenChange, onSave, onParallelCreated, types, festivalEntities, onPickMedia, suggestionTitles = [], suggestionAreas = [], suggestionStorageKey: sugStorageKey }: RunSheetEditDialogProps) {
+function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, anchorDateIso, suggestedSequenceNumber, open, initialAdvancedOpen, onOpenChange, onSave, onParallelCreated, types, festivalEntities, onPickMedia, suggestionTitles = [], suggestionAreas = [], suggestionStorageKey: sugStorageKey, editScope = "plan" }: RunSheetEditDialogProps) {
   const { toast } = useToast();
   const anchor = anchorDateIso || slot.starts_at;
   const [eventId, setEventId] = useState(slot.event_id ?? "");
@@ -1645,9 +1648,10 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
     return found?.name || null;
   }, [performerPersonaId, slot.performer_persona, personaResults]);
 
+  const isPlanScope = editScope === "plan";
   const showFields = useMemo(
-    () => getFieldsForSlotKind(slotKind as SlotKind),
-    [slotKind]
+    () => isPlanScope ? getPlanFieldsForSlotKind(slotKind as SlotKind) : getFieldsForSlotKind(slotKind as SlotKind),
+    [slotKind, isPlanScope]
   );
 
   return (
@@ -1932,8 +1936,8 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                 </div>
               )}
 
-              {/* Dokumenter (rider/kontrakt) – both scopes via asset_handles */}
-              {showFields.has("performer") && (
+              {/* Dokumenter (rider/kontrakt) – hidden in plan scope, managed via Produksjon */}
+              {showFields.has("performer") && !isPlanScope && (
                 <div className="space-y-2 rounded-lg border border-border/20 p-3">
                   <div className="flex items-center justify-between">
                     <Label className="text-xs font-semibold">Dokumenter</Label>
@@ -2012,6 +2016,11 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                     )}
                   </div>
                 </div>
+              )}
+              {showFields.has("performer") && isPlanScope && (
+                <p className="text-[10px] text-muted-foreground/60 italic px-1">
+                  Dokumenter som rider og kontrakt håndteres i Produksjon.
+                </p>
               )}
 
               {/* Kategori */}
