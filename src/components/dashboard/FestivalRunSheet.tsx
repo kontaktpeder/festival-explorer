@@ -1021,6 +1021,9 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           types={types}
           festivalEntities={festivalEntities}
           onPickMedia={(slotId, field) => setAttachTarget({ slotId, field })}
+          suggestionTitles={suggestions.titles}
+          suggestionAreas={suggestions.areas}
+          suggestionStorageKey={sugStorageKey}
         />
       )}
 
