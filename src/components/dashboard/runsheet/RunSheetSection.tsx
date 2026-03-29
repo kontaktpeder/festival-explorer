@@ -378,6 +378,8 @@ export const RunSheetSection = forwardRef<HTMLDivElement, RunSheetSectionProps>(
                   onLiveAction={onLiveAction}
                   effectiveTimeline={effectiveTimeline}
                   isDraggable={isDraggable}
+                  visualStartAt={visualStartMap?.get(group.primary.id) ?? null}
+                />
                 />
               ))}
             </div>
