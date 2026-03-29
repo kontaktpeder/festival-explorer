@@ -424,11 +424,14 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
       if (!sectionId) {
         throw new Error("Velg fase først — bruk «Legg til post» i seksjonshodet.");
       }
-      // Compute start time scoped to slots in the target section
+      // Compute start time: prefer chain-based calculation with section anchor
       const slotsInSection = sectionId
         ? ((data?.slots ?? []) as ExtendedEventProgramSlot[]).filter((s) => s.section_id === sectionId)
         : (data?.slots ?? []) as ExtendedEventProgramSlot[];
-      const startsAt = computeNextSlotStartsAt(slotsInSection, scopeStartAt);
+      const section = sectionId ? dbSections.find((s) => s.id === sectionId) : null;
+      const startsAt = section && scopeStartAt
+        ? computeChainNextStart(slotsInSection, section, scopeStartAt)
+        : computeNextSlotStartsAt(slotsInSection, scopeStartAt);
       const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean; internal_status: string }> = {
         opprigg: { slot_kind: "rigging", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
         lydprøve: { slot_kind: "soundcheck", title_override: "LYDPRØVE", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
