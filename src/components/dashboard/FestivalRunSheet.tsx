@@ -1830,8 +1830,8 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
                 </div>
               )}
 
-              {/* Performer */}
-              {showFields.has("performer") && (
+              {/* Performer – in plan scope: shown as separate toggle outside Advanced */}
+              {showFields.has("performer") && !isPlanScope && (
                 <div className="space-y-2 rounded-lg border border-border/20 p-3">
                   <Label className="text-xs font-semibold">På scenen</Label>
                   <RadioGroup value={performerKind} onValueChange={handlePerformerKindChange} className="flex gap-4">
