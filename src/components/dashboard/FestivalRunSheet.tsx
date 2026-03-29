@@ -601,6 +601,13 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     return map;
   }, [data?.types]);
 
+  // Merge slot titles/areas into localStorage suggestions
+  useEffect(() => {
+    if (!sugStorageKey || !data?.slots?.length) return;
+    const merged = mergeFromSlots(sugStorageKey, data.slots);
+    setSuggestions(merged);
+  }, [sugStorageKey, data?.slots]);
+
   /* Collect unique scene labels for filter */
   const sceneLabels = useMemo(() => {
     const allSlots = data?.slots ?? [];
