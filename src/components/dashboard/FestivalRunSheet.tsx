@@ -1180,6 +1180,8 @@ interface RunSheetEditDialogProps {
   suggestionTitles?: string[];
   suggestionAreas?: string[];
   suggestionStorageKey?: string | null;
+  /** "plan" hides documents, visibility/status, toggles. "full" shows everything. */
+  editScope?: "plan" | "full";
 }
 
 interface FestivalEvent {
@@ -1202,7 +1204,7 @@ function getRunSheetSectionFromSlot(kind: string, visibility: string, title?: st
   return "Event";
 }
 
-function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, anchorDateIso, suggestedSequenceNumber, open, initialAdvancedOpen, onOpenChange, onSave, onParallelCreated, types, festivalEntities, onPickMedia, suggestionTitles = [], suggestionAreas = [], suggestionStorageKey: sugStorageKey }: RunSheetEditDialogProps) {
+function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestivalScope, festivalVenueId, anchorDateIso, suggestedSequenceNumber, open, initialAdvancedOpen, onOpenChange, onSave, onParallelCreated, types, festivalEntities, onPickMedia, suggestionTitles = [], suggestionAreas = [], suggestionStorageKey: sugStorageKey, editScope = "plan" }: RunSheetEditDialogProps) {
   const { toast } = useToast();
   const anchor = anchorDateIso || slot.starts_at;
   const [eventId, setEventId] = useState(slot.event_id ?? "");
