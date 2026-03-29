@@ -1795,38 +1795,42 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
               </button>
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-4 pt-2">
-              {/* Section */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Seksjon</Label>
-                <Select value={editSection} onValueChange={(v) => handleSectionChange(v as RunSheetSectionKey)}>
-                  <SelectTrigger className="h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <FocusSelectContent>
-                    <SelectItem value="Opprigg">Opprigg (O)</SelectItem>
-                    <SelectItem value="Lydprøve">Lydprøve (L)</SelectItem>
-                    <SelectItem value="Event">Event (E)</SelectItem>
-                  </FocusSelectContent>
-                </Select>
-              </div>
+              {/* Section – hidden in plan scope (shown as read-only in header) */}
+              {!isPlanScope && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold">Seksjon</Label>
+                  <Select value={editSection} onValueChange={(v) => handleSectionChange(v as RunSheetSectionKey)}>
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <FocusSelectContent>
+                      <SelectItem value="Opprigg">Opprigg (O)</SelectItem>
+                      <SelectItem value="Lydprøve">Lydprøve (L)</SelectItem>
+                      <SelectItem value="Event">Event (E)</SelectItem>
+                    </FocusSelectContent>
+                  </Select>
+                </div>
+              )}
 
-              {/* Type */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold">Hva slags post er dette?</Label>
-                <Select value={slotKind} onValueChange={setSlotKind}>
-                  <SelectTrigger className="h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <FocusSelectContent>
-                    {SLOT_KIND_OPTIONS.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                    ))}
-                  </FocusSelectContent>
-                </Select>
-              </div>
+              {/* Type – hidden in plan scope */}
+              {!isPlanScope && (
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold">Hva slags post er dette?</Label>
+                  <Select value={slotKind} onValueChange={setSlotKind}>
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <FocusSelectContent>
+                      {SLOT_KIND_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      ))}
+                    </FocusSelectContent>
+                  </Select>
+                </div>
+              )}
 
-              {/* Sequence number */}
-              {showFields.has("sequence") && (
+              {/* Sequence number – hidden in plan scope */}
+              {!isPlanScope && showFields.has("sequence") && (
                 <div className="space-y-1.5">
                   <Label className="text-xs">Løpenummer</Label>
                   <Input type="number" placeholder="#" value={sequenceNumber} onChange={(e) => setSequenceNumber(e.target.value)} className="h-9 w-24" />
