@@ -414,6 +414,9 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
 
   const createManualSlot = useMutation({
     mutationFn: async ({ sectionType, seq, sectionId }: { sectionType: "opprigg" | "lydprøve" | "event" | "doors" | "closing" | "stage_talk" | "giggen_info" | "break" | "crew" | "custom"; seq: number; sectionId?: string | null }) => {
+      if (!sectionId) {
+        throw new Error("Velg fase først — bruk «Legg til post» i seksjonshodet.");
+      }
       // Compute start time scoped to slots in the target section
       const slotsInSection = sectionId
         ? ((data?.slots ?? []) as ExtendedEventProgramSlot[]).filter((s) => (s as any).section_id === sectionId)
