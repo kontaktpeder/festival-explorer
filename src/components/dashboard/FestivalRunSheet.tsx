@@ -15,6 +15,9 @@ import {
   getSectionForSlot,
   groupSlotsBySection,
 } from "@/lib/runsheet-sections";
+import { useEventProgramSections } from "@/hooks/useEventProgramSections";
+import type { EventProgramSection, EventProgramPhaseType } from "@/types/program-sections";
+import { PHASE_LABELS, PHASE_PREFIXES, displaySectionTitle } from "@/types/program-sections";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
