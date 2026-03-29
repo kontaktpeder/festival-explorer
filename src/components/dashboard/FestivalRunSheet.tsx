@@ -1034,7 +1034,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           suggestionAreas={suggestions.areas}
           suggestionStorageKey={sugStorageKey}
           editScope="plan"
-        />
+          sectionDisplayName={editingSlot ? sectionDisplayNameForSlot(editingSlot) : undefined}
       )}
 
       {/* Media picker for documents – festival scope uses FestivalMediaPickerDialog */}
