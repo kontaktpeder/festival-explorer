@@ -165,6 +165,20 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     },
   });
 
+  // Sections from DB
+  const {
+    sections: dbSections,
+    isLoading: sectionsLoading,
+    createSection,
+    deleteSection: deleteSectionMutation,
+    renameSection: renameSectionMutation,
+    existingTypes: existingSectionTypes,
+    queryKey: sectionsQueryKey,
+  } = useEventProgramSections(
+    isFestivalScope ? null : eventId,
+    isFestivalScope ? festivalId : null
+  );
+
   const scopeVenueId = isFestivalScope ? (festivalInfo?.venue_id ?? null) : ((eventInfo as any)?.venue_id ?? null);
   const scopeName = isFestivalScope ? festivalInfo?.name : (eventInfo as any)?.title;
   const scopeStartAt = isFestivalScope ? festivalInfo?.start_at : (eventInfo as any)?.start_at;
