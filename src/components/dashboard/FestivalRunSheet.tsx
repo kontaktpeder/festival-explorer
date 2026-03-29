@@ -990,6 +990,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                     onRenameSection={readOnly ? undefined : handleRenameSection}
                     onDeleteSection={readOnly ? undefined : handleDeleteSection}
                     onTimeChange={readOnly ? undefined : handleSingleTimeChange}
+                    onReorder={readOnly ? undefined : handleReorderSlots}
                     mode={mode}
                     canOperate={canOperate}
                     onLiveAction={handleLiveAction}
