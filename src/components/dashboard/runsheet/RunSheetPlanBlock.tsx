@@ -55,15 +55,13 @@ function usesFallbackDuration(slot: ExtendedEventProgramSlot): boolean {
   return true;
 }
 
-function quarterMarkers(startMin: number, totalMin: number): { offsetMin: number; label: string }[] {
+function quarterMarkers(anchorMs: number, totalMin: number): { offsetMin: number; label: string }[] {
   const markers: { offsetMin: number; label: string }[] = [];
-  const firstQ = Math.ceil(startMin / 15) * 15;
-  for (let m = firstQ; m <= startMin + totalMin; m += 15) {
-    const h = Math.floor(m / 60) % 24;
-    const mm = m % 60;
+  // Start from 0 and generate markers every 15 minutes
+  for (let m = 0; m <= totalMin; m += 15) {
     markers.push({
-      offsetMin: m - startMin,
-      label: `${String(h).padStart(2, "0")}:${String(mm).padStart(2, "0")}`,
+      offsetMin: m,
+      label: format(new Date(anchorMs + m * 60000), "HH:mm"),
     });
   }
   return markers;
@@ -87,7 +85,6 @@ type BlockItem = {
   durationMin: number;
   isFallback: boolean;
   columnKey: string;
-  chainStartIso: string;
 };
 
 /* ── Draggable block wrapper ── */
@@ -175,7 +172,7 @@ function DraggableBlock({
       {showDuration && (
         <div className="flex items-center justify-between mt-auto">
           <span className="text-[10px] text-muted-foreground/50 font-mono tabular-nums">
-            {fmtTime(item.chainStartIso)}
+            {fmtTime(item.slot.starts_at)}
           </span>
           <span className="text-[10px] text-muted-foreground/40">
             {fmtDurationLabel(item.durationMin)}
@@ -199,7 +196,7 @@ export function RunSheetPlanBlock({
   );
 
   const computed = useMemo(() => {
-    if (!slots.length) return { items: [], totalPx: 0, markers: [], startMinOfDay: 0, columns: [""], anchorMs: 0 };
+    if (!slots.length) return { items: [], totalPx: 0, markers: [], columns: [""], anchorMs: 0 };
 
     const sorted = [...slots].sort((a, b) => {
       const sa = a.sequence_number ?? Infinity;
@@ -208,16 +205,16 @@ export function RunSheetPlanBlock({
       return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
     });
 
+    // Anchor = section anchor or earliest slot
     const anchorMs = sectionAnchorIso
       ? new Date(sectionAnchorIso).getTime()
       : new Date(sorted[0].starts_at).getTime();
 
-    const anchorDate = new Date(anchorMs);
-    const startMinOfDay = anchorDate.getHours() * 60 + anchorDate.getMinutes();
-
-    let chainMs = anchorMs;
-    const items: BlockItem[] = [];
     const columns = getColumnKeys(sorted);
+    const items: BlockItem[] = [];
+
+    // Find span for total height: from anchor to latest end
+    let latestEndMs = anchorMs;
 
     for (let i = 0; i < sorted.length; i++) {
       const slot = sorted[i];
@@ -225,9 +222,13 @@ export function RunSheetPlanBlock({
       const isFallback = usesFallbackDuration(slot);
       const heightPx = Math.max(dur * PX_PER_MIN, MIN_BLOCK_PX);
 
-      const offsetMin = (chainMs - anchorMs) / 60000;
+      // Position based on stored starts_at relative to anchor
+      const slotStartMs = new Date(slot.starts_at).getTime();
+      const offsetMin = Math.max(0, (slotStartMs - anchorMs) / 60000);
       const topPx = Math.round(offsetMin * PX_PER_MIN);
-      const chainStartIso = new Date(chainMs).toISOString();
+
+      const slotEndMs = slotStartMs + dur * 60000;
+      if (slotEndMs > latestEndMs) latestEndMs = slotEndMs;
 
       items.push({
         slot,
@@ -237,35 +238,32 @@ export function RunSheetPlanBlock({
         durationMin: dur,
         isFallback,
         columnKey: slot.stage_label?.trim() || "",
-        chainStartIso,
       });
-
-      chainMs += dur * 60000;
     }
 
-    const totalPx = items.length
-      ? items[items.length - 1].topPx + items[items.length - 1].heightPx
-      : 0;
+    // Total height covers anchor to latest end
+    const totalMinCovered = Math.max(Math.ceil((latestEndMs - anchorMs) / 60000), 15);
+    const totalPx = totalMinCovered * PX_PER_MIN;
 
-    const totalMinCovered = Math.ceil(totalPx / PX_PER_MIN);
-    const markers = quarterMarkers(startMinOfDay, totalMinCovered);
+    // Quarter markers from anchor time
+    const markers = quarterMarkers(anchorMs, totalMinCovered);
 
-    return { items, totalPx, markers, startMinOfDay, columns, anchorMs };
+    return { items, totalPx, markers, columns, anchorMs };
   }, [slots, startIndex, sectionAnchorIso]);
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       if (!onBlockMove || !computed.anchorMs) return;
       const { active, delta } = event;
-      if (Math.abs(delta.y) < 2) return; // ignore micro-drags
+      if (Math.abs(delta.y) < 2) return;
 
       const slotId = active.id as string;
       const item = computed.items.find((i) => i.slot.id === slotId);
       if (!item) return;
 
       // Calculate new position in minutes from anchor
-      const newTopPx = item.topPx + delta.y;
-      const newOffsetMin = Math.max(0, newTopPx / PX_PER_MIN);
+      const newTopPx = Math.max(0, item.topPx + delta.y);
+      const newOffsetMin = newTopPx / PX_PER_MIN;
       const newStartMs = computed.anchorMs + newOffsetMin * 60000;
       const snapped = snapTo5Min(new Date(newStartMs));
 
@@ -290,8 +288,6 @@ export function RunSheetPlanBlock({
   const multiColumn = computed.columns.length > 1;
   const colCount = computed.columns.length;
   const isDraggable = !!onBlockMove;
-
-  const sortableIds = computed.items.map((i) => i.slot.id);
 
   return (
     <div className="relative mt-2 print:hidden">

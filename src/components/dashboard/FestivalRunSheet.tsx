@@ -1672,13 +1672,20 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
     if (!titleOverride) setTitleOverride(ev.title);
   };
 
-  // When defaults load (async after eventId changes), apply time from defaults
+  // When defaults load (async after eventId changes), apply time from defaults — once per dialog session
+  const runSheetDefaultsAppliedRef = useRef(false);
   useEffect(() => {
+    if (!open) {
+      runSheetDefaultsAppliedRef.current = false;
+      return;
+    }
     if (!runSheetDefault) return;
+    if (runSheetDefaultsAppliedRef.current) return;
+    runSheetDefaultsAppliedRef.current = true;
     setStartTime(isoToLocalTimeHHmm(runSheetDefault.starts_at));
     if (runSheetDefault.ends_at) setEndTime(isoToLocalTimeHHmm(runSheetDefault.ends_at));
     if (runSheetDefault.duration_minutes != null) setDurationMinutes(String(runSheetDefault.duration_minutes));
-  }, [runSheetDefault?.id]);
+  }, [open, runSheetDefault]);
 
   const handlePerformerKindChange = (v: string) => {
     const kind = v as PerformerKind;
