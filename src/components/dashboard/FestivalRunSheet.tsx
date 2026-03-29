@@ -1260,6 +1260,7 @@ function RunSheetEditDialog({ slot, festivalId, eventId: scopeEventId, isFestiva
     setHospRiderAssetId((slot as any).hosp_rider_asset_id ?? null);
     setTechInherited(false);
     setHospInherited(false);
+    setLinkPerformer(!!(slot.performer_entity_id || slot.performer_persona_id || slot.performer_name_override?.trim()));
   }, [open, slot.id, initialAdvancedOpen]);
 
   // Sync rider fields when slot prop updates (e.g. after picker saves while dialog is open)
