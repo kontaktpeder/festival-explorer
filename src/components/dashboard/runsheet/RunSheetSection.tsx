@@ -168,6 +168,7 @@ function SortableRow({
           onLiveAction={onLiveAction}
           liveEffectiveStart={et?.effectiveStart.toISOString() ?? null}
           liveEffectiveEnd={et?.effectiveEnd?.toISOString() ?? null}
+          visualStartAt={visualStartAt}
         />
       </div>
     </div>
