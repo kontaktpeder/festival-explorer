@@ -16,12 +16,12 @@ import {
 import {
   AlertDialog,
   AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  FocusAlertDialogContent,
+  FocusDialogContent,
+  FocusSelectContent,
+} from "@/components/ui/focus-overlays";
 import { useEventProgramSections } from "@/hooks/useEventProgramSections";
 import type { EventProgramSection, EventProgramPhaseType } from "@/types/program-sections";
 import { PHASE_LABELS, PHASE_PREFIXES, displaySectionTitle } from "@/types/program-sections";
