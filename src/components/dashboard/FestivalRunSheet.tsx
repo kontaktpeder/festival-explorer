@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import { syncArtistCancelledIssueForSlot, syncRiderMissingIssueForSlot } from "@/lib/eventIssues";
 import { ensureAssetHandle } from "@/lib/assetHandles";
 import { computeEffectiveTimeline, type LiveAction } from "@/lib/runsheet-live";
