@@ -423,7 +423,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
       }
       // Compute start time scoped to slots in the target section
       const slotsInSection = sectionId
-        ? ((data?.slots ?? []) as ExtendedEventProgramSlot[]).filter((s) => (s as any).section_id === sectionId)
+        ? ((data?.slots ?? []) as ExtendedEventProgramSlot[]).filter((s) => s.section_id === sectionId)
         : (data?.slots ?? []) as ExtendedEventProgramSlot[];
       const startsAt = computeNextSlotStartsAt(slotsInSection, scopeStartAt);
       const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean; internal_status: string }> = {
