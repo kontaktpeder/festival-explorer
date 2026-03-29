@@ -15,6 +15,9 @@ import {
   getSectionForSlot,
   groupSlotsBySection,
 } from "@/lib/runsheet-sections";
+import { useEventProgramSections } from "@/hooks/useEventProgramSections";
+import type { EventProgramSection, EventProgramPhaseType } from "@/types/program-sections";
+import { PHASE_LABELS, PHASE_PREFIXES, displaySectionTitle } from "@/types/program-sections";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -161,6 +164,20 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
       return data;
     },
   });
+
+  // Sections from DB
+  const {
+    sections: dbSections,
+    isLoading: sectionsLoading,
+    createSection,
+    deleteSection: deleteSectionMutation,
+    renameSection: renameSectionMutation,
+    existingTypes: existingSectionTypes,
+    queryKey: sectionsQueryKey,
+  } = useEventProgramSections(
+    isFestivalScope ? null : eventId,
+    isFestivalScope ? festivalId : null
+  );
 
   const scopeVenueId = isFestivalScope ? (festivalInfo?.venue_id ?? null) : ((eventInfo as any)?.venue_id ?? null);
   const scopeName = isFestivalScope ? festivalInfo?.name : (eventInfo as any)?.title;
@@ -379,12 +396,12 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
   );
 
   const createManualSlot = useMutation({
-    mutationFn: async ({ sectionType, seq }: { sectionType: "opprigg" | "lydprøve" | "event" | "doors" | "closing" | "stage_talk" | "giggen_info" | "break" | "crew" | "custom"; seq: number }) => {
-      const isCustom = sectionType === "custom";
-      const startsAt = computeNextSlotStartsAt(
-        (data?.slots ?? []) as ExtendedEventProgramSlot[],
-        scopeStartAt
-      );
+    mutationFn: async ({ sectionType, seq, sectionId }: { sectionType: "opprigg" | "lydprøve" | "event" | "doors" | "closing" | "stage_talk" | "giggen_info" | "break" | "crew" | "custom"; seq: number; sectionId?: string | null }) => {
+      // Compute start time scoped to slots in the target section
+      const slotsInSection = sectionId
+        ? ((data?.slots ?? []) as ExtendedEventProgramSlot[]).filter((s) => (s as any).section_id === sectionId)
+        : (data?.slots ?? []) as ExtendedEventProgramSlot[];
+      const startsAt = computeNextSlotStartsAt(slotsInSection, scopeStartAt);
       const presets: Record<string, { slot_kind: string; title_override: string; visibility: string; is_visible_public: boolean; internal_status: string }> = {
         opprigg: { slot_kind: "rigging", title_override: "OPPRIGG", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
         lydprøve: { slot_kind: "soundcheck", title_override: "LYDPRØVE", visibility: "internal", is_visible_public: false, internal_status: "contract_pending" },
@@ -417,6 +434,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
           is_canceled: false,
           is_visible_public: preset.is_visible_public,
           title_override: preset.title_override || null,
+          section_id: sectionId || null,
         } as any)
         .select(`
           *,
@@ -450,47 +468,66 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     updateSlot.mutate({ id: slotId, starts_at: startsAt, ...(endsAt !== undefined ? { ends_at: endsAt } : {}) } as any);
   };
 
-  /** Map section key → preset type for "add to section" */
+  /** Map section DB id → add slot with correct type and section_id */
   const handleAddToSection = (sectionKey: RunSheetSectionKey) => {
-    const map: Record<RunSheetSectionKey, "opprigg" | "lydprøve" | "event"> = {
+    // Find DB section matching this key
+    const PHASE_MAP: Record<RunSheetSectionKey, EventProgramPhaseType> = {
+      "Opprigg": "opprigg",
+      "Lydprøve": "lydprove",
+      "Event": "event",
+    };
+    const phaseType = PHASE_MAP[sectionKey];
+    const section = dbSections.find((s) => s.type === phaseType);
+    const sectionTypeMap: Record<RunSheetSectionKey, "opprigg" | "lydprøve" | "event"> = {
       "Opprigg": "opprigg",
       "Lydprøve": "lydprøve",
       "Event": "event",
     };
-    createManualSlot.mutate({ sectionType: map[sectionKey] ?? "event", seq: nextSequenceNumber });
+    createManualSlot.mutate({
+      sectionType: sectionTypeMap[sectionKey] ?? "event",
+      seq: nextSequenceNumber,
+      sectionId: section?.id ?? null,
+    });
   };
 
-  /** Custom section display names (stored in state) */
-  const [sectionNames, setSectionNames] = useState<Record<string, string>>({});
+  /** Section display names come from DB now */
+  const sectionNames = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const s of dbSections) {
+      if (s.display_name) {
+        map[PHASE_LABELS[s.type]] = s.display_name;
+      }
+    }
+    return map;
+  }, [dbSections]);
+
   const handleRenameSection = (sectionKey: string, newName: string) => {
-    setSectionNames((prev) => ({ ...prev, [sectionKey]: newName }));
+    // Find the DB section by matching phase label
+    const phaseType = (Object.entries(PHASE_LABELS) as [EventProgramPhaseType, string][])
+      .find(([, label]) => label === sectionKey)?.[0];
+    const section = phaseType ? dbSections.find((s) => s.type === phaseType) : null;
+    if (section) {
+      renameSectionMutation.mutate({ sectionId: section.id, displayName: newName });
+    }
   };
-
-  /** Delete all slots in a section – only deletes the slots passed in */
-  const deleteSection = useMutation({
-    mutationFn: async (slotIds: string[]) => {
-      const { error } = await supabase
-        .from("event_program_slots" as any)
-        .delete()
-        .in("id", slotIds);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
-      toast({ title: "Seksjon slettet" });
-    },
-    onError: (e: Error) =>
-      toast({ title: "Feil", description: e.message, variant: "destructive" }),
-  });
 
   const handleDeleteSection = (
     sectionKey: RunSheetSectionKey,
     slotsToDelete: ExtendedEventProgramSlot[]
   ) => {
-    if (slotsToDelete.length === 0) return;
+    const phaseType = ({ "Opprigg": "opprigg", "Lydprøve": "lydprove", "Event": "event" } as Record<RunSheetSectionKey, EventProgramPhaseType>)[sectionKey];
+    const section = phaseType ? dbSections.find((s) => s.type === phaseType) : null;
+    if (!section) return;
     const displayName = sectionNames[sectionKey] || sectionKey;
     if (!window.confirm(`Slette seksjonen «${displayName}» og alle ${slotsToDelete.length} punkter? Dette kan ikke angres.`)) return;
-    deleteSection.mutate(slotsToDelete.map((s) => s.id));
+    // CASCADE will delete associated slots
+    deleteSectionMutation.mutate(section.id, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey });
+        toast({ title: "Seksjon slettet" });
+      },
+      onError: (e: Error) => toast({ title: "Feil", description: e.message, variant: "destructive" }),
+    });
   };
 
   const deleteSlot = useMutation({
@@ -548,18 +585,38 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     return Array.from(labels).sort();
   }, [data?.slots]);
 
-  /* Group into the fixed sections, applying scene filter */
+  /* Group slots by DB sections, applying scene filter */
   const sectionsWithSlots = useMemo(() => {
     let allSlots = data?.slots ?? [];
     if (sceneFilter) {
       allSlots = allSlots.filter((s) => s.stage_label === sceneFilter);
     }
+    // Group by section_id from DB sections
+    if (dbSections.length > 0) {
+      return dbSections.map((section) => {
+        const slotsInSection = allSlots.filter((s) => (s as any).section_id === section.id);
+        // Sort: sequence_number, then starts_at
+        slotsInSection.sort((a, b) => {
+          const sa = a.sequence_number ?? Infinity;
+          const sb = b.sequence_number ?? Infinity;
+          if (sa !== sb) return sa - sb;
+          return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
+        });
+        return {
+          sectionKey: PHASE_LABELS[section.type] as RunSheetSectionKey,
+          section,
+          slots: slotsInSection,
+        };
+      });
+    }
+    // Fallback: use client-side grouping if no DB sections exist yet
     const grouped = groupSlotsBySection(allSlots);
     return RUNSHEET_SECTION_KEYS.map((key) => ({
       sectionKey: key,
+      section: null as EventProgramSection | null,
       slots: grouped[key],
     }));
-  }, [data?.slots, sceneFilter]);
+  }, [data?.slots, sceneFilter, dbSections]);
 
   /* NOW marker – find the slot that's currently active */
   const nowSlotId = useMemo(() => {
@@ -590,7 +647,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
     return allSlots.filter((s) => s.stage_label === printFilter);
   }, [data?.slots, printFilter]);
 
-  if (isLoading || !data) {
+  if (isLoading || sectionsLoading || !data) {
     return <LoadingState message="Laster kjøreplan..." />;
   }
 
@@ -902,31 +959,48 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
         </div>
       )}
 
-      {slots.length === 0 ? (
+      {slots.length === 0 && dbSections.length === 0 ? (
         <div className="py-16 text-center border border-dashed border-border/30 rounded-xl">
           <ClipboardList className="h-8 w-8 mx-auto text-muted-foreground/20 mb-4" />
           <p className="text-sm font-medium text-muted-foreground">Ingen programrader ennå.</p>
-          <p className="text-xs text-muted-foreground/60 mt-1">
-            Legg til rader via «Ny rad» eller via event‑program.
+          <p className="text-xs text-muted-foreground/60 mt-1 mb-4">
+            Legg til faser for å komme i gang.
           </p>
+          {!readOnly && (
+            <div className="flex items-center justify-center gap-2">
+              {(["opprigg", "lydprove", "event"] as EventProgramPhaseType[]).map((phaseType) => (
+                <Button
+                  key={phaseType}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs gap-1.5"
+                  onClick={() => createSection.mutate({
+                    type: phaseType,
+                    sortOrder: phaseType === "opprigg" ? 0 : phaseType === "lydprove" ? 1 : 2,
+                  })}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  {PHASE_LABELS[phaseType]}
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <div className="runsheet-print space-y-5">
           {(() => {
-            const sectionPrefixes: Record<string, string> = { "Opprigg": "O", "Lydprøve": "L", "Event": "E" };
             let globalIndex = 0;
             return sectionsWithSlots
-              .filter(({ slots: s }) => s.length > 0)
-              .map(({ sectionKey, slots: sectionSlots }) => {
+              .map(({ sectionKey, section, slots: sectionSlots }) => {
               const startIdx = globalIndex;
               globalIndex += sectionSlots.length;
               return (
                 <RunSheetSection
-                    key={sectionKey}
+                    key={section?.id ?? sectionKey}
                     sectionKey={sectionKey}
                     title={sectionKey}
-                    displayName={sectionNames[sectionKey]}
-                    sectionPrefix={sectionPrefixes[sectionKey]}
+                    displayName={section ? displaySectionTitle(section) !== PHASE_LABELS[section.type] ? section.display_name ?? undefined : undefined : sectionNames[sectionKey]}
+                    sectionPrefix={section ? PHASE_PREFIXES[section.type] : ({ "Opprigg": "O", "Lydprøve": "L", "Event": "E" }[sectionKey])}
                     slots={sectionSlots}
                     slotTypeMap={slotTypeMap}
                     startIndex={startIdx}
@@ -945,6 +1019,28 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
               );
             });
           })()}
+          {/* Add phase button when some phases don't exist yet */}
+          {!readOnly && existingSectionTypes.size < 3 && (
+            <div className="flex items-center gap-2 pt-2 print:hidden">
+              {(["opprigg", "lydprove", "event"] as EventProgramPhaseType[])
+                .filter((t) => !existingSectionTypes.has(t))
+                .map((phaseType) => (
+                  <Button
+                    key={phaseType}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs gap-1.5 border-dashed border-border/30"
+                    onClick={() => createSection.mutate({
+                      type: phaseType,
+                      sortOrder: phaseType === "opprigg" ? 0 : phaseType === "lydprove" ? 1 : 2,
+                    })}
+                  >
+                    <Plus className="h-3 w-3" />
+                    {PHASE_LABELS[phaseType]}
+                  </Button>
+                ))}
+            </div>
+          )}
         </div>
       )}
 

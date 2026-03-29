@@ -970,6 +970,57 @@ export type Database = {
           },
         ]
       }
+      event_program_sections: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          event_id: string | null
+          festival_id: string | null
+          id: string
+          sort_order: number
+          starts_at_local: string
+          type: Database["public"]["Enums"]["event_program_phase_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          event_id?: string | null
+          festival_id?: string | null
+          id?: string
+          sort_order?: number
+          starts_at_local?: string
+          type: Database["public"]["Enums"]["event_program_phase_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          event_id?: string | null
+          festival_id?: string | null
+          id?: string
+          sort_order?: number
+          starts_at_local?: string
+          type?: Database["public"]["Enums"]["event_program_phase_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_program_sections_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_program_sections_festival_id_fkey"
+            columns: ["festival_id"]
+            isOneToOne: false
+            referencedRelation: "festivals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_program_slots: {
         Row: {
           actual_ended_at: string | null
@@ -997,6 +1048,7 @@ export type Database = {
           performer_kind: string
           performer_name_override: string | null
           performer_persona_id: string | null
+          section_id: string | null
           sequence_number: number | null
           slot_kind: string
           slot_type: string | null
@@ -1035,6 +1087,7 @@ export type Database = {
           performer_kind?: string
           performer_name_override?: string | null
           performer_persona_id?: string | null
+          section_id?: string | null
           sequence_number?: number | null
           slot_kind?: string
           slot_type?: string | null
@@ -1073,6 +1126,7 @@ export type Database = {
           performer_kind?: string
           performer_name_override?: string | null
           performer_persona_id?: string | null
+          section_id?: string | null
           sequence_number?: number | null
           slot_kind?: string
           slot_type?: string | null
@@ -1140,6 +1194,13 @@ export type Database = {
             columns: ["performer_persona_id"]
             isOneToOne: false
             referencedRelation: "personas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_program_slots_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "event_program_sections"
             referencedColumns: ["id"]
           },
           {
@@ -3603,6 +3664,7 @@ export type Database = {
       credit_scope: "landing" | "festival_case"
       entity_type: "venue" | "solo" | "band"
       entity_visibility: "public" | "unlisted" | "private"
+      event_program_phase_type: "opprigg" | "lydprove" | "event"
       finance_access_level: "none" | "reader" | "editor" | "admin"
       live_role_level: "viewer" | "crew" | "editor" | "admin"
       location_type: "city" | "region" | "country" | "address"
@@ -3744,6 +3806,7 @@ export const Constants = {
       credit_scope: ["landing", "festival_case"],
       entity_type: ["venue", "solo", "band"],
       entity_visibility: ["public", "unlisted", "private"],
+      event_program_phase_type: ["opprigg", "lydprove", "event"],
       finance_access_level: ["none", "reader", "editor", "admin"],
       live_role_level: ["viewer", "crew", "editor", "admin"],
       location_type: ["city", "region", "country", "address"],
