@@ -1,8 +1,12 @@
 import type { ExtendedEventProgramSlot } from "@/types/program-slots";
 
-/** Neste starttid for ny post: etter forrige slutt, eller +15 min, eller avrundet nå. */
-export function computeNextSlotStartsAt(slots: ExtendedEventProgramSlot[]): Date {
+/** Neste starttid for ny post: etter forrige slutt, eller +15 min, eller scopeStartAt, eller avrundet nå. */
+export function computeNextSlotStartsAt(
+  slots: ExtendedEventProgramSlot[],
+  scopeStartAt?: string | null
+): Date {
   if (!slots.length) {
+    if (scopeStartAt) return new Date(scopeStartAt);
     const d = new Date();
     const m = d.getMinutes();
     d.setMinutes(Math.ceil(m / 5) * 5, 0, 0);
