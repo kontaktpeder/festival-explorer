@@ -50,6 +50,8 @@ interface RunSheetSectionProps {
   canOperate?: boolean;
   onLiveAction?: (slotId: string, action: LiveAction) => void;
   effectiveTimeline?: Map<string, EffectiveTime>;
+  /** Chain-computed visual start times: slotId → ISO string */
+  visualStartMap?: Map<string, string>;
 }
 
 /** Group slots by parallel_group_id; singletons become groups of 1 */
