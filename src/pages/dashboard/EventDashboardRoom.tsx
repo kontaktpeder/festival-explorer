@@ -207,7 +207,8 @@ export default function EventDashboardRoom() {
     .filter((stage) => stage.modules.length > 0);
 
   return (
-    <div className="min-h-[100svh] bg-background">
+    <FocusThemeProvider value="light">
+    <div className="finance-theme min-h-[100svh]">
       {/* Header */}
       <header
         className="sticky top-0 z-50 bg-background/60 backdrop-blur-xl border-b border-border/20"
