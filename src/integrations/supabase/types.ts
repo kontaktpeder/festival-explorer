@@ -3544,6 +3544,7 @@ export type Database = {
       get_my_events: {
         Args: never
         Returns: {
+          archived_at: string
           can_edit: boolean
           city: string
           id: string
