@@ -277,6 +277,7 @@ export default function FestivalRoom() {
         year: "numeric",
       })
     : null;
+  const isArchived = !!(festival as any).archived_at;
 
   return (
     <div className="min-h-[100svh] bg-background">
