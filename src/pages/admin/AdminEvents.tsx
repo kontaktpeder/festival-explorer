@@ -108,10 +108,6 @@ export default function AdminEvents() {
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-2xl md:text-3xl font-bold text-foreground">Events</h1>
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-            <Switch checked={showArchived} onCheckedChange={setShowArchived} className="scale-75" />
-            Vis arkiverte
-          </label>
           {canCreateEvent && (
             <Button asChild size="sm" className="md:size-default">
               <Link to="/admin/events/new">
