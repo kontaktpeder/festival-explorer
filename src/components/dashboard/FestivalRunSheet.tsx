@@ -208,6 +208,13 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
   const scopeStartAt = isFestivalScope ? festivalInfo?.start_at : (eventInfo as any)?.start_at;
   const scopeVenueName = isFestivalScope ? (festivalInfo as any)?.venue?.name : (eventInfo as any)?.venue?.name;
 
+  /** Nye faser får starts_at_local fra event/festival start (ikke hardkodet 12:00). */
+  const defaultSectionStartsAtLocal = useMemo(() => {
+    if (!scopeStartAt) return "12:00:00";
+    const d = new Date(scopeStartAt as string);
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
+  }, [scopeStartAt]);
+
   const [printFilter, setPrintFilter] = useState<"all" | "opprigg" | "lydprove" | "event" | string>("all");
 
   // Subjects: festival uses shared hook, event uses local query
