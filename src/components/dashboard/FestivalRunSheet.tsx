@@ -211,8 +211,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
   /** Nye faser får starts_at_local fra event/festival start (ikke hardkodet 12:00). */
   const defaultSectionStartsAtLocal = useMemo(() => {
     if (!scopeStartAt) return "12:00:00";
-    const d = new Date(scopeStartAt as string);
-    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
+    return isoToLocalTimeHHmmss(scopeStartAt as string);
   }, [scopeStartAt]);
 
   const [printFilter, setPrintFilter] = useState<"all" | "opprigg" | "lydprove" | "event" | string>("all");
