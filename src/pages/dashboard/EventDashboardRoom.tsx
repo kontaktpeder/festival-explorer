@@ -11,7 +11,27 @@ import { toast } from "sonner";
 export default function EventDashboardRoom() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { event, isLoading, canEdit, canViewRunsheet, festivalContext } = useEventBackstageAccess(id);
+
+  const isArchived = !!(event as any)?.archived_at;
+
+  const archiveEvent = useMutation({
+    mutationFn: async ({ archive }: { archive: boolean }) => {
+      const { error } = await supabase.rpc("archive_event", {
+        p_event_id: id!,
+        p_archive: archive,
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_, { archive }) => {
+      queryClient.invalidateQueries({ queryKey: ["event-backstage"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-events-list"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-events"] });
+      toast.success(archive ? "Event arkivert" : "Event gjenopprettet");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
 
   if (isLoading) {
     return (
