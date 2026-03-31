@@ -13,7 +13,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { useEventBackstageAccess } from "@/hooks/useEventBackstageAccess";
 import { useEventActors } from "@/hooks/useEventActors";
 import { toast } from "sonner";
-import liveIllustration from "@/assets/live-illustration.png";
+import { LiveIllustration } from "@/components/dashboard/LiveIllustration";
 
 // ─── Types & helpers ───
 

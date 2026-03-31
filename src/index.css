@@ -716,3 +716,36 @@
     break-inside: avoid;
   }
 }
+
+/* ── Live module animations ── */
+@keyframes live-play-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.08); }
+}
+@keyframes live-signal-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.15; }
+}
+@keyframes live-screen-glow {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.25; }
+}
+
+.live-play-pulse {
+  animation: live-play-pulse 3s ease-in-out infinite;
+  transform-origin: center;
+}
+.live-signal-pulse {
+  animation: live-signal-pulse 2.5s ease-in-out infinite;
+}
+.live-screen-glow {
+  animation: live-screen-glow 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-play-pulse,
+  .live-signal-pulse,
+  .live-screen-glow {
+    animation: none;
+  }
+}
