@@ -359,6 +359,7 @@ export default function EventDashboardRoom() {
         </div>
       </main>
     </div>
+    </FocusThemeProvider>
   );
 }
 
