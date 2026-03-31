@@ -95,7 +95,7 @@ export default function Dashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("festivals")
-        .select("id, name, slug, status, start_at, end_at")
+        .select("id, name, slug, status, start_at, end_at, archived_at")
         .order("start_at", { ascending: false });
       return data || [];
     },
@@ -108,7 +108,7 @@ export default function Dashboard() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc("get_my_events" as any);
       if (error) throw error;
-      return (data ?? []) as Array<{ id: string; title: string; slug: string; status: string; start_at: string | null; city: string | null; can_edit: boolean }>;
+      return (data ?? []) as Array<{ id: string; title: string; slug: string; status: string; start_at: string | null; city: string | null; can_edit: boolean; archived_at: string | null }>;
     },
     enabled: !!currentUser?.id,
   });
