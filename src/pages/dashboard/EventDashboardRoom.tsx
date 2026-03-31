@@ -1,6 +1,7 @@
+import React from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import {
-  FileText, ClipboardList, ChevronRight, ExternalLink, ArrowLeft, Radio, Wrench, UserCheck,
+  FileText, ClipboardList, ChevronRight, ChevronDown, ExternalLink, ArrowLeft, Radio, Wrench, UserCheck,
   Archive, ArchiveRestore, CheckCircle2, AlertTriangle, CircleX, Lock,
 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
