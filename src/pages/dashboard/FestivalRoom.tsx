@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft,
@@ -18,10 +18,13 @@ import {
   ClipboardList,
   Wrench,
   Radio,
+  Archive,
+  ArchiveRestore,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { toast } from "sonner";
 import gIcon from "@/assets/giggen-g-icon-red.png";
 
 interface ModuleCard {
@@ -36,6 +39,24 @@ interface ModuleCard {
 export default function FestivalRoom() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const archiveFestival = useMutation({
+    mutationFn: async ({ archive }: { archive: boolean }) => {
+      const { error } = await supabase.rpc("archive_festival_with_events", {
+        p_festival_id: id!,
+        p_archive: archive,
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_, { archive }) => {
+      queryClient.invalidateQueries({ queryKey: ["festival-room", id] });
+      queryClient.invalidateQueries({ queryKey: ["admin-festivals"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-events"] });
+      toast.success(archive ? "Festival og events arkivert" : "Festival og events gjenopprettet");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
 
   const { data: festival, isLoading } = useQuery({
     queryKey: ["festival-room", id],
@@ -256,6 +277,7 @@ export default function FestivalRoom() {
         year: "numeric",
       })
     : null;
+  const isArchived = !!(festival as any).archived_at;
 
   return (
     <div className="min-h-[100svh] bg-background">
@@ -303,13 +325,34 @@ export default function FestivalRoom() {
               >
                 {festival.status === "published" ? "Publisert" : "Utkast"}
               </Badge>
+              {isArchived && (
+                <Badge variant="outline" className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Arkivert
+                </Badge>
+              )}
               {dateStr && (
                 <span className="text-xs text-muted-foreground">{dateStr}</span>
               )}
             </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.1]">
-              {festival.name}
-            </h1>
+            <div className="flex items-center gap-4">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.1]">
+                {festival.name}
+              </h1>
+              {p?.can_edit_festival && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs shrink-0"
+                  onClick={() => archiveFestival.mutate({ archive: !isArchived })}
+                >
+                  {isArchived ? (
+                    <><ArchiveRestore className="h-3.5 w-3.5 mr-1" />Gjenopprett</>
+                  ) : (
+                    <><Archive className="h-3.5 w-3.5 mr-1" />Arkiver</>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </section>

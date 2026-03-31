@@ -1336,6 +1336,7 @@ export type Database = {
       events: {
         Row: {
           age_limit: string | null
+          archived_at: string | null
           city: string | null
           cloakroom_available: boolean | null
           created_at: string
@@ -1356,6 +1357,7 @@ export type Database = {
         }
         Insert: {
           age_limit?: string | null
+          archived_at?: string | null
           city?: string | null
           cloakroom_available?: boolean | null
           created_at?: string
@@ -1376,6 +1378,7 @@ export type Database = {
         }
         Update: {
           age_limit?: string | null
+          archived_at?: string | null
           city?: string | null
           cloakroom_available?: boolean | null
           created_at?: string
@@ -2028,6 +2031,7 @@ export type Database = {
       }
       festivals: {
         Row: {
+          archived_at: string | null
           contract_media_id: string | null
           created_at: string
           created_by: string
@@ -2049,6 +2053,7 @@ export type Database = {
           venue_id: string | null
         }
         Insert: {
+          archived_at?: string | null
           contract_media_id?: string | null
           created_at?: string
           created_by: string
@@ -2070,6 +2075,7 @@ export type Database = {
           venue_id?: string | null
         }
         Update: {
+          archived_at?: string | null
           contract_media_id?: string | null
           created_at?: string
           created_by?: string
@@ -3434,6 +3440,14 @@ export type Database = {
         Args: { p_persona_id: string }
         Returns: number
       }
+      archive_event: {
+        Args: { p_archive?: boolean; p_event_id: string }
+        Returns: undefined
+      }
+      archive_festival_with_events: {
+        Args: { p_archive?: boolean; p_festival_id: string }
+        Returns: undefined
+      }
       can_access_media_any: { Args: never; Returns: boolean }
       can_admin_finance_book: { Args: { p_book_id: string }; Returns: boolean }
       can_create_internal_ticket_any: { Args: never; Returns: boolean }
@@ -3542,6 +3556,7 @@ export type Database = {
       get_my_festivals_as_team: {
         Args: never
         Returns: {
+          archived_at: string | null
           contract_media_id: string | null
           created_at: string
           created_by: string
