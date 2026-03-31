@@ -178,8 +178,8 @@ export function ActorCard({
             </DropdownMenuSub>
           )}
 
-          {/* Change live role */}
-          {isParticipant && onChangeLiveRole && (
+          {/* Change live role — not for offline actors */}
+          {isParticipant && onChangeLiveRole && item.data.participant_kind !== "offline" && (
             <DropdownMenuSub>
               <DropdownMenuSubTrigger className="text-xs">
                 <Shield className="h-3.5 w-3.5 mr-2" />
