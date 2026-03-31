@@ -473,48 +473,56 @@ export default function Dashboard() {
           })()}
 
           {/* Festival-team */}
-          {hasFestivalAccess && (
-            <section className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
-                  Festival-team
-                </h2>
-                <span className="text-[11px] text-muted-foreground/50">
-                  {displayedFestivals.length} festival{displayedFestivals.length !== 1 ? "er" : ""}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
-                {displayedFestivals.map((festival) => (
-                  <Link
-                    key={festival.id}
-                    to={`/dashboard/festival/${festival.id}`}
-                    className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
-                        <Calendar className="h-5 w-5 text-accent" />
+          {hasFestivalAccess && (() => {
+            const activeFests = displayedFestivals.filter((f: any) => !f.archived_at);
+            const archivedFests = displayedFestivals.filter((f: any) => !!f.archived_at);
+            return (
+              <section className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Festival-team</h2>
+                  <span className="text-[11px] text-muted-foreground/50">{activeFests.length} aktiv{activeFests.length !== 1 ? "e" : ""}</span>
+                </div>
+                {activeFests.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+                    {activeFests.map((festival: any) => (
+                      <Link key={festival.id} to={`/dashboard/festival/${festival.id}`} className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300"><Calendar className="h-5 w-5 text-accent" /></div>
+                          <div className="flex items-center gap-1.5">
+                            <Badge variant={festival.status === "published" ? "default" : "secondary"} className="text-[10px]">{festival.status === "published" ? "Publisert" : "Utkast"}</Badge>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                          </div>
+                        </div>
+                        <h3 className="text-sm font-semibold text-foreground mb-1">{festival.name}</h3>
+                        {festival.start_at && <p className="text-[10px] text-muted-foreground/60">{new Date(festival.start_at).toLocaleDateString("nb-NO", { day: "numeric", month: "short", year: "numeric" })}</p>}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+                {archivedFests.length > 0 && (
+                  <Collapsible>
+                    <CollapsibleTrigger className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                      <Archive className="h-3.5 w-3.5" /><span className="font-medium">Arkiv</span><span className="text-muted-foreground/50">({archivedFests.length})</span>
+                      <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="mt-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+                        {archivedFests.map((festival: any) => (
+                          <Link key={festival.id} to={`/dashboard/festival/${festival.id}`} className="group relative rounded-xl border border-border/30 bg-card/40 p-5 opacity-60 hover:border-accent/30 hover:bg-card/70 transition-all duration-300">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="h-9 w-9 rounded-lg bg-muted/50 flex items-center justify-center"><Calendar className="h-5 w-5 text-muted-foreground" /></div>
+                              <Badge variant="outline" className="text-[10px] text-muted-foreground">Arkivert</Badge>
+                            </div>
+                            <h3 className="text-sm font-semibold text-foreground mb-1">{festival.name}</h3>
+                          </Link>
+                        ))}
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <Badge
-                          variant={festival.status === "published" ? "default" : "secondary"}
-                          className="text-[10px]"
-                        >
-                          {festival.status === "published" ? "Publisert" : "Utkast"}
-                        </Badge>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
-                      </div>
-                    </div>
-                    <h3 className="text-sm font-semibold text-foreground mb-1">{festival.name}</h3>
-                    {festival.start_at && (
-                      <p className="text-[10px] text-muted-foreground/60">
-                        {new Date(festival.start_at).toLocaleDateString("nb-NO", { day: "numeric", month: "short", year: "numeric" })}
-                      </p>
-                    )}
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
+                    </CollapsibleContent>
+                  </Collapsible>
+                )}
+              </section>
+            );
+          })()}
 
           {/* Venues */}
           {hasVenueAccess && (
