@@ -39,6 +39,24 @@ interface ModuleCard {
 export default function FestivalRoom() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const archiveFestival = useMutation({
+    mutationFn: async ({ archive }: { archive: boolean }) => {
+      const { error } = await supabase.rpc("archive_festival_with_events", {
+        p_festival_id: id!,
+        p_archive: archive,
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_, { archive }) => {
+      queryClient.invalidateQueries({ queryKey: ["festival-room", id] });
+      queryClient.invalidateQueries({ queryKey: ["admin-festivals"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-events"] });
+      toast.success(archive ? "Festival og events arkivert" : "Festival og events gjenopprettet");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
 
   const { data: festival, isLoading } = useQuery({
     queryKey: ["festival-room", id],
