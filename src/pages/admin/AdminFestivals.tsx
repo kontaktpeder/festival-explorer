@@ -84,10 +84,8 @@ export default function AdminFestivals() {
     },
   });
 
-  const filtered = (festivals ?? []).filter((f) => {
-    const isArchived = !!(f as any).archived_at;
-    return showArchived ? true : !isArchived;
-  });
+  const activeList = (festivals ?? []).filter((f) => !(f as any).archived_at);
+  const archivedList = (festivals ?? []).filter((f) => !!(f as any).archived_at);
 
   if (isLoading) {
     return <div className="text-muted-foreground">Laster festivaler...</div>;
