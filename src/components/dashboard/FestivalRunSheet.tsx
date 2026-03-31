@@ -1122,6 +1122,7 @@ export function FestivalRunSheet(props: FestivalRunSheetProps) {
                     onClick={() => createSection.mutate({
                       type: phaseType,
                       sortOrder: phaseType === "opprigg" ? 0 : phaseType === "lydprove" ? 1 : 2,
+                      startsAtLocal: defaultSectionStartsAtLocal,
                     })}
                   >
                     <Plus className="h-3 w-3" />

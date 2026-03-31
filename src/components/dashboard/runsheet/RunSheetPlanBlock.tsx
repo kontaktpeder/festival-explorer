@@ -242,7 +242,8 @@ export function RunSheetPlanBlock({
     }
 
     // Total height covers anchor to latest end
-    const totalMinCovered = Math.max(Math.ceil((latestEndMs - anchorMs) / 60000), 15);
+    const rawSpanMin = Math.max(0, Math.ceil((latestEndMs - anchorMs) / 60000));
+    const totalMinCovered = Math.max(Math.ceil(rawSpanMin / 15) * 15, 15);
     const totalPx = totalMinCovered * PX_PER_MIN;
 
     // Quarter markers from anchor time
