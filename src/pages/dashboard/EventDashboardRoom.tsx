@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { FocusThemeProvider } from "@/contexts/FocusThemeContext";
 import {
   FileText, ClipboardList, ChevronRight, ExternalLink, ArrowLeft, Radio, Wrench, UserCheck,
-  Archive, ArchiveRestore, CheckCircle2, Circle, Lock, X, Play,
+  Archive, ArchiveRestore, CheckCircle2, Circle, Lock, X, Play, Radio as RadioIcon,
 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
