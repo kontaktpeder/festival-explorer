@@ -140,9 +140,16 @@ export default function EventDashboardRoom() {
               <ArrowLeft className="h-5 w-5" />
             </button>
             <div className="min-w-0">
-              <h1 className="text-sm font-semibold text-foreground truncate">
-                {event.title}
-              </h1>
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-sm font-semibold text-foreground truncate">
+                  {event.title}
+                </h1>
+                {isArchived && (
+                  <Badge variant="outline" className="text-[10px] text-muted-foreground shrink-0">
+                    Arkivert
+                  </Badge>
+                )}
+              </div>
               <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                 {[dateStr, event.city].filter(Boolean).join(" · ")}
                 {festivalContext?.festival && (
