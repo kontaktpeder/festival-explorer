@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft,
@@ -18,10 +18,13 @@ import {
   ClipboardList,
   Wrench,
   Radio,
+  Archive,
+  ArchiveRestore,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { toast } from "sonner";
 import gIcon from "@/assets/giggen-g-icon-red.png";
 
 interface ModuleCard {
