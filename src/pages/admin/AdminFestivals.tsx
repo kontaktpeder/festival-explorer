@@ -98,10 +98,6 @@ export default function AdminFestivals() {
           {isAdmin ? "Festivaler" : "Mine festivaler"}
         </h1>
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-            <Switch checked={showArchived} onCheckedChange={setShowArchived} className="scale-75" />
-            Vis arkiverte
-          </label>
           {isAdmin && (
             <Button asChild size="sm" className="md:size-default">
               <Link to="/admin/festivals/new">
