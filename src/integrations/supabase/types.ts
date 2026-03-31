@@ -939,7 +939,8 @@ export type Database = {
           id: string
           is_public: boolean
           live_role: Database["public"]["Enums"]["live_role_level"]
-          participant_id: string
+          offline_name: string | null
+          participant_id: string | null
           participant_kind: string
           role_label: string | null
           sort_order: number
@@ -955,7 +956,8 @@ export type Database = {
           id?: string
           is_public?: boolean
           live_role?: Database["public"]["Enums"]["live_role_level"]
-          participant_id: string
+          offline_name?: string | null
+          participant_id?: string | null
           participant_kind: string
           role_label?: string | null
           sort_order?: number
@@ -971,7 +973,8 @@ export type Database = {
           id?: string
           is_public?: boolean
           live_role?: Database["public"]["Enums"]["live_role_level"]
-          participant_id?: string
+          offline_name?: string | null
+          participant_id?: string | null
           participant_kind?: string
           role_label?: string | null
           sort_order?: number
