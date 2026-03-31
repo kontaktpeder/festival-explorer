@@ -64,6 +64,7 @@ import EventDetailsRoom from "./pages/dashboard/EventDetailsRoom";
 import EventPlanRoom from "./pages/dashboard/EventPlanRoom";
 import EventRunSheetRoom from "./pages/dashboard/EventRunSheetRoom";
 import EventParticipantsRoom from "./pages/dashboard/EventParticipantsRoom";
+import EventActorsRoom from "./pages/dashboard/EventActorsRoom";
 import EventLiveRoom from "./pages/dashboard/EventLiveRoom";
 import FestivalLiveRoom from "./pages/dashboard/FestivalLiveRoom";
 import { EventFirstGuard } from "@/components/auth/EventFirstGuard";
