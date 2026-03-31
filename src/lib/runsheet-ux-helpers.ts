@@ -2,6 +2,15 @@ import type { ExtendedEventProgramSlot } from "@/types/program-slots";
 import { resolveDuration, sectionAnchorDate, snapTo5Min } from "@/lib/runsheet-plan-time";
 import type { EventProgramSection } from "@/types/program-sections";
 
+/** DB-default for `starts_at_local` (12:00); behandles som «ikke satt» slik at første post kan følge eventstart. */
+function isLegacyDefaultSectionNoon(startsAtLocal: string | null | undefined): boolean {
+  if (!startsAtLocal?.trim()) return false;
+  const p = startsAtLocal.trim().split(":");
+  const h = parseInt(p[0], 10);
+  const m = parseInt(p[1] ?? "0", 10);
+  return !Number.isNaN(h) && !Number.isNaN(m) && h === 12 && m === 0;
+}
+
 /** Neste starttid for ny post: etter forrige slutt, eller +15 min, eller scopeStartAt, eller avrundet nå. */
 export function computeNextSlotStartsAt(
   slots: ExtendedEventProgramSlot[],
@@ -36,7 +45,12 @@ export function computeChainNextStart(
   scopeStartAt: string
 ): Date {
   const anchor = sectionAnchorDate(scopeStartAt, section.starts_at_local);
-  if (!slotsInSection.length) return anchor;
+  if (!slotsInSection.length) {
+    if (isLegacyDefaultSectionNoon(section.starts_at_local)) {
+      return snapTo5Min(new Date(scopeStartAt));
+    }
+    return anchor;
+  }
 
   const sorted = [...slotsInSection].sort((a, b) => {
     const sa = a.sequence_number ?? Infinity;
