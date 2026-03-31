@@ -91,10 +91,10 @@ export default function EventDashboardRoom() {
     ...(canEdit
       ? [
           {
-            title: "Medvirkende",
-            description: "Invitasjoner og deltakere i soner",
-            icon: Users,
-            to: `${base}/participants`,
+            title: "Aktører",
+            description: "Lineup, crew, teknikk og invitasjoner",
+            icon: UserCheck,
+            to: `${base}/actors`,
           },
         ]
       : []),

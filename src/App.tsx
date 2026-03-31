@@ -178,6 +178,7 @@ const App = () => (
             <Route path="/dashboard/events/:id/plan" element={<EventPlanRoom />} />
             <Route path="/dashboard/events/:id/run-sheet" element={<EventRunSheetRoom />} />
             <Route path="/dashboard/events/:id/participants" element={<EventParticipantsRoom />} />
+            <Route path="/dashboard/events/:id/actors" element={<EventActorsRoom />} />
             <Route path="/dashboard/events/:id/live" element={<EventLiveRoom />} />
             <Route path="/dashboard/festival/:id/live" element={<FestivalLiveRoom />} />
 
