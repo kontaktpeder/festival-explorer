@@ -96,10 +96,8 @@ export default function AdminEvents() {
     },
   });
 
-  const filtered = (events ?? []).filter((e) => {
-    const isArchived = !!(e as any).archived_at;
-    return showArchived ? true : !isArchived;
-  });
+  const activeList = (events ?? []).filter((e) => !(e as any).archived_at);
+  const archivedList = (events ?? []).filter((e) => !!(e as any).archived_at);
 
   if (isLoading) {
     return <div className="text-muted-foreground">Laster events...</div>;

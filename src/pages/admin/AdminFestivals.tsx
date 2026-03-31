@@ -12,7 +12,13 @@ import { toast } from "sonner";
 
 export default function AdminFestivals() {
   const queryClient = useQueryClient();
-  const [showArchived, setShowArchived] = useState(false);
+  const [showArchived, setShowArchived] = useState(() => {
+    try { return localStorage.getItem("showArchivedFestivals") === "true"; } catch { return false; }
+  });
+  const toggleShowArchived = (v: boolean) => {
+    setShowArchived(v);
+    try { localStorage.setItem("showArchivedFestivals", String(v)); } catch {}
+  };
 
   const { data: isAdmin } = useQuery({
     queryKey: ["is-admin"],
