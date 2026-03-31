@@ -20,6 +20,7 @@ export function getEffectiveZone(zone: string | null | undefined): ActorZoneKey 
   // Legacy mapping
   if (zone === "on_stage") return "lineup";
   if (zone === "backstage") return "crew";
+  if (zone === "host") return "other";
   return "other";
 }
 
@@ -39,13 +40,14 @@ export interface ActorParticipant {
   event_id: string;
   zone: string | null;
   participant_kind: string;
-  participant_id: string;
+  participant_id: string | null;
   role_label: string | null;
   sort_order: number;
   live_role: string;
   can_view_runsheet: boolean;
   can_operate_runsheet: boolean;
   is_public: boolean;
+  offline_name?: string | null;
   // Resolved
   name?: string;
   slug?: string | null;
@@ -93,9 +95,13 @@ export function useEventActors(eventId: string | undefined) {
 
       const participants = (pRows || []) as ActorParticipant[];
 
-      // Resolve names
-      const personaIds = participants.filter(p => p.participant_kind === "persona").map(p => p.participant_id);
-      const entityIds = participants.filter(p => p.participant_kind === "entity").map(p => p.participant_id);
+      // Resolve names for non-offline participants
+      const personaIds = participants
+        .filter(p => p.participant_kind === "persona" && p.participant_id)
+        .map(p => p.participant_id!);
+      const entityIds = participants
+        .filter(p => p.participant_kind === "entity" && p.participant_id)
+        .map(p => p.participant_id!);
 
       const [personasRes, entitiesRes] = await Promise.all([
         personaIds.length > 0
@@ -111,6 +117,11 @@ export function useEventActors(eventId: string | undefined) {
       (entitiesRes.data || []).forEach((e: any) => refMap.set(e.id, e));
 
       participants.forEach(p => {
+        if (p.participant_kind === "offline") {
+          p.name = (p as any).offline_name || p.role_label || "Offline";
+          return;
+        }
+        if (!p.participant_id) return;
         const ref = refMap.get(p.participant_id);
         if (ref) {
           p.name = ref.name;
@@ -194,9 +205,6 @@ export function useEventActors(eventId: string | undefined) {
       zone: ActorZoneKey;
       roleLabel?: string;
     }) => {
-      // For offline actors without accounts, we create a minimal participant
-      // Using a generated UUID as participant_id with participant_kind = "offline"
-      const offlineId = crypto.randomUUID();
       const maxSort = Math.max(0, ...(data?.participants || [])
         .filter(p => getEffectiveZone(p.zone) === zone)
         .map(p => p.sort_order || 0));
@@ -204,13 +212,16 @@ export function useEventActors(eventId: string | undefined) {
       const { error } = await supabase.from("event_participants").insert({
         event_id: eventId!,
         zone,
-        participant_kind: "persona", // Store as persona kind but with a name override via role_label
-        participant_id: offlineId,
-        role_label: roleLabel || name,
+        participant_kind: "offline",
+        participant_id: null,
+        offline_name: name,
+        role_label: roleLabel || null,
         sort_order: maxSort + 1,
-        live_role: defaultLiveRoleForZone(zone) as any,
+        live_role: "viewer" as any,
+        can_view_runsheet: false,
+        can_operate_runsheet: false,
         is_public: false,
-      });
+      } as any);
       if (error) throw error;
     },
     onSuccess: invalidate,
@@ -325,17 +336,18 @@ export function useEventActors(eventId: string | undefined) {
   // Add participants
   participants.forEach(p => {
     const zone = getEffectiveZone(p.zone);
-    const hasAccount = !!p.name; // resolved name means we found the persona/entity
+    const isOffline = p.participant_kind === "offline";
+    const hasAccount = !isOffline && !!p.name;
     actorsByZone[zone].push({
       type: "participant",
       data: p,
-      status: hasAccount ? "active" : "offline",
+      status: isOffline ? "offline" : hasAccount ? "active" : "offline",
     });
   });
 
-  // Add pending/declined invitations
+  // Add pending/declined/revoked invitations
   invitations
-    .filter(i => i.status === "pending" || i.status === "declined")
+    .filter(i => i.status === "pending" || i.status === "declined" || i.status === "revoked")
     .forEach(i => {
       const zone = getEffectiveZone(i.zone);
       actorsByZone[zone].push({
