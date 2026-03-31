@@ -160,14 +160,30 @@ export default function EventDashboardRoom() {
               </div>
             </div>
           </div>
-          {event.slug && (
-            <Button asChild variant="outline" size="sm" className="text-xs border-border/30 hover:border-accent/40 shrink-0">
-              <Link to={`/event/${event.slug}`} target="_blank">
-                <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                Se live
-              </Link>
-            </Button>
-          )}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {canEdit && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs border-border/30"
+                onClick={() => archiveEvent.mutate({ archive: !isArchived })}
+              >
+                {isArchived ? (
+                  <><ArchiveRestore className="h-3.5 w-3.5 mr-1" />Gjenopprett</>
+                ) : (
+                  <><Archive className="h-3.5 w-3.5 mr-1" />Arkiver</>
+                )}
+              </Button>
+            )}
+            {event.slug && (
+              <Button asChild variant="outline" size="sm" className="text-xs border-border/30 hover:border-accent/40">
+                <Link to={`/event/${event.slug}`} target="_blank">
+                  <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                  Se live
+                </Link>
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
