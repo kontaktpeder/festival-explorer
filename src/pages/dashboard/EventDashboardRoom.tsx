@@ -1,5 +1,5 @@
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { FileText, ClipboardList, Users, ChevronRight, ExternalLink, ArrowLeft, Radio, Wrench, ListChecks } from "lucide-react";
+import { FileText, ClipboardList, Users, ChevronRight, ExternalLink, ArrowLeft, Radio, Wrench, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useEventBackstageAccess } from "@/hooks/useEventBackstageAccess";
@@ -91,10 +91,10 @@ export default function EventDashboardRoom() {
     ...(canEdit
       ? [
           {
-            title: "Medvirkende",
-            description: "Invitasjoner og deltakere i soner",
-            icon: Users,
-            to: `${base}/participants`,
+            title: "Aktører",
+            description: "Lineup, crew, teknikk og invitasjoner",
+            icon: UserCheck,
+            to: `${base}/actors`,
           },
         ]
       : []),

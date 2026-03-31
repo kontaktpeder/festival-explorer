@@ -64,6 +64,7 @@ import EventDetailsRoom from "./pages/dashboard/EventDetailsRoom";
 import EventPlanRoom from "./pages/dashboard/EventPlanRoom";
 import EventRunSheetRoom from "./pages/dashboard/EventRunSheetRoom";
 import EventParticipantsRoom from "./pages/dashboard/EventParticipantsRoom";
+import EventActorsRoom from "./pages/dashboard/EventActorsRoom";
 import EventLiveRoom from "./pages/dashboard/EventLiveRoom";
 import FestivalLiveRoom from "./pages/dashboard/FestivalLiveRoom";
 import { EventFirstGuard } from "@/components/auth/EventFirstGuard";
@@ -177,6 +178,7 @@ const App = () => (
             <Route path="/dashboard/events/:id/plan" element={<EventPlanRoom />} />
             <Route path="/dashboard/events/:id/run-sheet" element={<EventRunSheetRoom />} />
             <Route path="/dashboard/events/:id/participants" element={<EventParticipantsRoom />} />
+            <Route path="/dashboard/events/:id/actors" element={<EventActorsRoom />} />
             <Route path="/dashboard/events/:id/live" element={<EventLiveRoom />} />
             <Route path="/dashboard/festival/:id/live" element={<FestivalLiveRoom />} />
 

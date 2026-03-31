@@ -775,40 +775,58 @@ export type Database = {
       }
       event_invitations: {
         Row: {
+          accepted_by_user_id: string | null
           access_on_accept: string
           created_at: string
-          entity_id: string
+          email: string | null
+          entity_id: string | null
           event_id: string
+          expires_at: string | null
           id: string
           invited_by: string
           message: string | null
+          name: string | null
           responded_at: string | null
           status: string
+          token: string | null
           updated_at: string
+          zone: string | null
         }
         Insert: {
+          accepted_by_user_id?: string | null
           access_on_accept?: string
           created_at?: string
-          entity_id: string
+          email?: string | null
+          entity_id?: string | null
           event_id: string
+          expires_at?: string | null
           id?: string
           invited_by: string
           message?: string | null
+          name?: string | null
           responded_at?: string | null
           status?: string
+          token?: string | null
           updated_at?: string
+          zone?: string | null
         }
         Update: {
+          accepted_by_user_id?: string | null
           access_on_accept?: string
           created_at?: string
-          entity_id?: string
+          email?: string | null
+          entity_id?: string | null
           event_id?: string
+          expires_at?: string | null
           id?: string
           invited_by?: string
           message?: string | null
+          name?: string | null
           responded_at?: string | null
           status?: string
+          token?: string | null
           updated_at?: string
+          zone?: string | null
         }
         Relationships: [
           {
