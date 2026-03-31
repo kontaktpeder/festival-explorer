@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import { FocusThemeProvider } from "@/contexts/FocusThemeContext";
 import {
   FileText, ClipboardList, ChevronRight, ExternalLink, ArrowLeft, Radio, Wrench, UserCheck,
   Archive, ArchiveRestore, CheckCircle2, CircleDot, Lock, X,
