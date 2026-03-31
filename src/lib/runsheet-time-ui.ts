@@ -14,6 +14,12 @@ export function isoToLocalTimeHHmm(iso: string): string {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
+/** HH:mm:ss for Postgres `time` / `starts_at_local` (lokal tid fra ISO) */
+export function isoToLocalTimeHHmmss(iso: string): string {
+  const d = new Date(iso);
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
+}
+
 /** Hvis slutt ≤ start på samme kalenderdag → anta neste dag (overnight) */
 export function adjustOvernightEnd(start: Date, end: Date): Date {
   if (end.getTime() > start.getTime()) return end;
