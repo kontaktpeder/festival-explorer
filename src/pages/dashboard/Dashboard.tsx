@@ -95,7 +95,7 @@ export default function Dashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("festivals")
-        .select("id, name, slug, status, start_at, end_at")
+        .select("id, name, slug, status, start_at, end_at, archived_at")
         .order("start_at", { ascending: false });
       return data || [];
     },
