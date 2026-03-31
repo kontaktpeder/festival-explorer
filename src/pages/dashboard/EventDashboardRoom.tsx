@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import { FocusThemeProvider } from "@/contexts/FocusThemeContext";
 import {
   FileText, ClipboardList, ChevronRight, ExternalLink, ArrowLeft, Radio, Wrench, UserCheck,
   Archive, ArchiveRestore, CheckCircle2, CircleDot, Lock, X,
@@ -206,7 +207,8 @@ export default function EventDashboardRoom() {
     .filter((stage) => stage.modules.length > 0);
 
   return (
-    <div className="min-h-[100svh] bg-background">
+    <FocusThemeProvider value="light">
+    <div className="finance-theme min-h-[100svh]">
       {/* Header */}
       <header
         className="sticky top-0 z-50 bg-background/60 backdrop-blur-xl border-b border-border/20"
@@ -357,6 +359,7 @@ export default function EventDashboardRoom() {
         </div>
       </main>
     </div>
+    </FocusThemeProvider>
   );
 }
 
