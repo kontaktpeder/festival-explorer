@@ -27,7 +27,13 @@ export default function AdminEvents() {
   const queryClient = useQueryClient();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteTitle, setDeleteTitle] = useState<string>("");
-  const [showArchived, setShowArchived] = useState(false);
+  const [showArchived, setShowArchived] = useState(() => {
+    try { return localStorage.getItem("showArchivedAdminEvents") === "true"; } catch { return false; }
+  });
+  const toggleShowArchived = (v: boolean) => {
+    setShowArchived(v);
+    try { localStorage.setItem("showArchivedAdminEvents", String(v)); } catch {}
+  };
 
   const { data: myEntities } = useMyEntities();
   const hostEntities = (myEntities ?? []).filter((e) => inferEntityKind(e) === "host");
