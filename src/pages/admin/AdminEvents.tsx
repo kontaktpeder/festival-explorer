@@ -2,13 +2,13 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { Plus, ExternalLink, Settings, Music, Trash2, Info, Archive, ArchiveRestore } from "lucide-react";
+import { Plus, ExternalLink, Settings, Music, Trash2, Info, Archive, ArchiveRestore, ChevronDown } from "lucide-react";
 import { useMyEntities } from "@/hooks/useEntity";
 import { inferEntityKind } from "@/lib/role-model-helpers";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
@@ -27,7 +27,13 @@ export default function AdminEvents() {
   const queryClient = useQueryClient();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteTitle, setDeleteTitle] = useState<string>("");
-  const [showArchived, setShowArchived] = useState(false);
+  const [showArchived, setShowArchived] = useState(() => {
+    try { return localStorage.getItem("showArchivedAdminEvents") === "true"; } catch { return false; }
+  });
+  const toggleShowArchived = (v: boolean) => {
+    setShowArchived(v);
+    try { localStorage.setItem("showArchivedAdminEvents", String(v)); } catch {}
+  };
 
   const { data: myEntities } = useMyEntities();
   const hostEntities = (myEntities ?? []).filter((e) => inferEntityKind(e) === "host");
@@ -90,10 +96,8 @@ export default function AdminEvents() {
     },
   });
 
-  const filtered = (events ?? []).filter((e) => {
-    const isArchived = !!(e as any).archived_at;
-    return showArchived ? true : !isArchived;
-  });
+  const activeList = (events ?? []).filter((e) => !(e as any).archived_at);
+  const archivedList = (events ?? []).filter((e) => !!(e as any).archived_at);
 
   if (isLoading) {
     return <div className="text-muted-foreground">Laster events...</div>;
@@ -104,10 +108,6 @@ export default function AdminEvents() {
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-2xl md:text-3xl font-bold text-foreground">Events</h1>
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-            <Switch checked={showArchived} onCheckedChange={setShowArchived} className="scale-75" />
-            Vis arkiverte
-          </label>
           {canCreateEvent && (
             <Button asChild size="sm" className="md:size-default">
               <Link to="/admin/events/new">
@@ -130,7 +130,7 @@ export default function AdminEvents() {
       )}
 
       <div className="space-y-3">
-        {filtered.map((event) => {
+        {activeList.map((event) => {
           const isArchived = !!(event as any).archived_at;
           return (
             <div
@@ -225,17 +225,83 @@ export default function AdminEvents() {
           );
         })}
 
-        {filtered.length === 0 && (
+        {activeList.length === 0 && archivedList.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
-            <p>{showArchived ? "Ingen events funnet." : "Ingen aktive events."}</p>
-            {!showArchived && canCreateEvent && (
+            <p>Ingen events.</p>
+            {canCreateEvent && (
               <Button asChild className="mt-4">
                 <Link to="/admin/events/new">Opprett din første event</Link>
               </Button>
             )}
           </div>
         )}
+
+        {activeList.length === 0 && archivedList.length > 0 && (
+          <p className="text-sm text-muted-foreground text-center py-8">Ingen aktive events.</p>
+        )}
       </div>
+
+      {/* Archived section */}
+      {archivedList.length > 0 && (
+        <Collapsible open={showArchived} onOpenChange={toggleShowArchived}>
+          <CollapsibleTrigger className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer w-full">
+            <Archive className="h-3.5 w-3.5" />
+            <span className="font-medium">Arkiv</span>
+            <span className="text-muted-foreground/50">({archivedList.length})</span>
+            <ChevronDown className={`h-3.5 w-3.5 ml-auto transition-transform duration-200 ${showArchived ? "rotate-180" : ""}`} />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-3">
+            <div className="space-y-3">
+              {archivedList.map((event) => (
+                <div
+                  key={event.id}
+                  className="bg-card border border-border rounded-lg p-3 md:p-6 opacity-60"
+                >
+                  <div className="flex flex-col gap-3">
+                    <div className="space-y-1.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <Music className="h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground shrink-0" />
+                          <h2 className="text-base md:text-xl font-semibold text-foreground truncate">
+                            {event.title}
+                          </h2>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Badge variant="outline" className="text-[10px] md:text-xs text-muted-foreground">
+                            Arkivert
+                          </Badge>
+                          <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                            <Link to={`/event/${event.slug}`} target="_blank">
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="text-xs md:text-sm text-muted-foreground">
+                        {format(new Date(event.start_at), "d. MMM yyyy 'kl.' HH:mm", { locale: nb })}
+                        {event.venue && ` · ${event.venue.name}`}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 md:gap-2">
+                      <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
+                        <Link to={`/dashboard/events/${event.id}`}>Åpne</Link>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs md:text-sm"
+                        onClick={() => archiveEvent.mutate({ id: event.id, archive: false })}
+                      >
+                        <ArchiveRestore className="h-3.5 w-3.5 mr-1" />Gjenopprett
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>

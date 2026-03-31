@@ -2,17 +2,23 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { Plus, ExternalLink, Settings, Calendar, Archive, ArchiveRestore } from "lucide-react";
+import { Plus, ExternalLink, Settings, Calendar, Archive, ArchiveRestore, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
 
 export default function AdminFestivals() {
   const queryClient = useQueryClient();
-  const [showArchived, setShowArchived] = useState(false);
+  const [showArchived, setShowArchived] = useState(() => {
+    try { return localStorage.getItem("showArchivedFestivals") === "true"; } catch { return false; }
+  });
+  const toggleShowArchived = (v: boolean) => {
+    setShowArchived(v);
+    try { localStorage.setItem("showArchivedFestivals", String(v)); } catch {}
+  };
 
   const { data: isAdmin } = useQuery({
     queryKey: ["is-admin"],
@@ -78,10 +84,8 @@ export default function AdminFestivals() {
     },
   });
 
-  const filtered = (festivals ?? []).filter((f) => {
-    const isArchived = !!(f as any).archived_at;
-    return showArchived ? true : !isArchived;
-  });
+  const activeList = (festivals ?? []).filter((f) => !(f as any).archived_at);
+  const archivedList = (festivals ?? []).filter((f) => !!(f as any).archived_at);
 
   if (isLoading) {
     return <div className="text-muted-foreground">Laster festivaler...</div>;
@@ -94,10 +98,6 @@ export default function AdminFestivals() {
           {isAdmin ? "Festivaler" : "Mine festivaler"}
         </h1>
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
-            <Switch checked={showArchived} onCheckedChange={setShowArchived} className="scale-75" />
-            Vis arkiverte
-          </label>
           {isAdmin && (
             <Button asChild size="sm" className="md:size-default">
               <Link to="/admin/festivals/new">
@@ -111,104 +111,155 @@ export default function AdminFestivals() {
       </div>
 
       <div className="space-y-3">
-        {filtered.map((festival) => {
-          const isArchived = !!(festival as any).archived_at;
-          return (
-            <div
-              key={festival.id}
-              className={`bg-card border border-border rounded-lg p-3 md:p-6 ${isArchived ? "opacity-60" : ""}`}
-            >
-              <div className="flex flex-col gap-3">
-                <div className="space-y-1.5">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <h2 className="text-base md:text-xl font-semibold text-foreground truncate">
-                        {festival.name}
-                      </h2>
-                      <Badge variant={festival.status === "published" ? "default" : "secondary"} className="text-[10px] md:text-xs shrink-0">
-                        {festival.status === "published" ? "Publisert" : "Utkast"}
-                      </Badge>
-                      {isArchived && (
-                        <Badge variant="outline" className="text-[10px] md:text-xs shrink-0 text-muted-foreground">
-                          Arkivert
-                        </Badge>
-                      )}
-                    </div>
-                    <Button asChild variant="ghost" size="icon" className="shrink-0 h-8 w-8">
-                      <Link to={`/festival/${festival.slug}`} target="_blank">
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </Link>
-                    </Button>
+        {activeList.map((festival) => (
+          <div
+            key={festival.id}
+            className="bg-card border border-border rounded-lg p-3 md:p-6"
+          >
+            <div className="flex flex-col gap-3">
+              <div className="space-y-1.5">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <h2 className="text-base md:text-xl font-semibold text-foreground truncate">
+                      {festival.name}
+                    </h2>
+                    <Badge variant={festival.status === "published" ? "default" : "secondary"} className="text-[10px] md:text-xs shrink-0">
+                      {festival.status === "published" ? "Publisert" : "Utkast"}
+                    </Badge>
                   </div>
-                  
-                  {festival.start_at && (
-                    <p className="text-xs md:text-sm text-muted-foreground">
-                      {format(new Date(festival.start_at), "d. MMM yyyy", { locale: nb })}
-                      {festival.end_at && ` – ${format(new Date(festival.end_at), "d. MMM yyyy", { locale: nb })}`}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex flex-wrap gap-1.5 md:gap-2">
-                  <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
-                    <Link to={`/admin/festivals/${festival.id}/program`}>
-                      <Calendar className="h-3.5 w-3.5 mr-1" />
-                      Program
+                  <Button asChild variant="ghost" size="icon" className="shrink-0 h-8 w-8">
+                    <Link to={`/festival/${festival.slug}`} target="_blank">
+                      <ExternalLink className="h-3.5 w-3.5" />
                     </Link>
                   </Button>
-                  {canEdit(festival.id) && (
-                    <Button asChild size="sm" className="h-auto px-3 py-1.5 text-xs md:text-sm bg-accent hover:bg-accent/90 text-accent-foreground border-accent">
-                      <Link to={`/admin/festivals/${festival.id}/workspace`}>
-                        <Settings className="h-3.5 w-3.5 mr-1" />
-                        Åpne festivalrom
-                      </Link>
-                    </Button>
-                  )}
-                  {canEdit(festival.id) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 text-xs md:text-sm"
-                      onClick={() => archiveFestival.mutate({ id: festival.id, archive: !isArchived })}
-                    >
-                      {isArchived ? (
-                        <><ArchiveRestore className="h-3.5 w-3.5 mr-1" />Gjenopprett</>
-                      ) : (
-                        <><Archive className="h-3.5 w-3.5 mr-1" />Arkiver</>
-                      )}
-                    </Button>
-                  )}
                 </div>
-
-                <div className="pt-2 border-t border-border">
+                {festival.start_at && (
+                  <p className="text-xs md:text-sm text-muted-foreground">
+                    {format(new Date(festival.start_at), "d. MMM yyyy", { locale: nb })}
+                    {festival.end_at && ` – ${format(new Date(festival.end_at), "d. MMM yyyy", { locale: nb })}`}
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5 md:gap-2">
+                <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
+                  <Link to={`/admin/festivals/${festival.id}/program`}>
+                    <Calendar className="h-3.5 w-3.5 mr-1" />
+                    Program
+                  </Link>
+                </Button>
+                {canEdit(festival.id) && (
+                  <Button asChild size="sm" className="h-auto px-3 py-1.5 text-xs md:text-sm bg-accent hover:bg-accent/90 text-accent-foreground border-accent">
+                    <Link to={`/admin/festivals/${festival.id}/workspace`}>
+                      <Settings className="h-3.5 w-3.5 mr-1" />
+                      Åpne festivalrom
+                    </Link>
+                  </Button>
+                )}
+                {canEdit(festival.id) && (
                   <Button
-                    variant={festival.status === "published" ? "outline" : "default"}
+                    variant="outline"
                     size="sm"
                     className="h-8 text-xs md:text-sm"
-                    onClick={() => toggleStatus.mutate({
-                      id: festival.id,
-                      status: festival.status === "published" ? "draft" : "published"
-                    })}
+                    onClick={() => archiveFestival.mutate({ id: festival.id, archive: true })}
                   >
-                    {festival.status === "published" ? "Gjør til utkast" : "Publiser"}
+                    <Archive className="h-3.5 w-3.5 mr-1" />Arkiver
                   </Button>
-                </div>
+                )}
+              </div>
+              <div className="pt-2 border-t border-border">
+                <Button
+                  variant={festival.status === "published" ? "outline" : "default"}
+                  size="sm"
+                  className="h-8 text-xs md:text-sm"
+                  onClick={() => toggleStatus.mutate({
+                    id: festival.id,
+                    status: festival.status === "published" ? "draft" : "published"
+                  })}
+                >
+                  {festival.status === "published" ? "Gjør til utkast" : "Publiser"}
+                </Button>
               </div>
             </div>
-          );
-        })}
+          </div>
+        ))}
 
-        {filtered.length === 0 && (
+        {activeList.length === 0 && archivedList.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
-            <p>{showArchived ? "Ingen festivaler funnet." : "Ingen aktive festivaler."}</p>
-            {!showArchived && isAdmin && (
+            <p>Ingen festivaler.</p>
+            {isAdmin && (
               <Button asChild className="mt-4">
                 <Link to="/admin/festivals/new">Opprett din første festival</Link>
               </Button>
             )}
           </div>
         )}
+
+        {activeList.length === 0 && archivedList.length > 0 && (
+          <p className="text-sm text-muted-foreground text-center py-8">Ingen aktive festivaler.</p>
+        )}
       </div>
+
+      {/* Archived section */}
+      {archivedList.length > 0 && (
+        <Collapsible open={showArchived} onOpenChange={toggleShowArchived}>
+          <CollapsibleTrigger className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer w-full">
+            <Archive className="h-3.5 w-3.5" />
+            <span className="font-medium">Arkiv</span>
+            <span className="text-muted-foreground/50">({archivedList.length})</span>
+            <ChevronDown className={`h-3.5 w-3.5 ml-auto transition-transform duration-200 ${showArchived ? "rotate-180" : ""}`} />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-3">
+            <div className="space-y-3">
+              {archivedList.map((festival) => (
+                <div
+                  key={festival.id}
+                  className="bg-card border border-border rounded-lg p-3 md:p-6 opacity-60"
+                >
+                  <div className="flex flex-col gap-3">
+                    <div className="space-y-1.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <h2 className="text-base md:text-xl font-semibold text-foreground truncate">
+                            {festival.name}
+                          </h2>
+                          <Badge variant="outline" className="text-[10px] md:text-xs shrink-0 text-muted-foreground">
+                            Arkivert
+                          </Badge>
+                        </div>
+                        <Button asChild variant="ghost" size="icon" className="shrink-0 h-8 w-8">
+                          <Link to={`/festival/${festival.slug}`} target="_blank">
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </Link>
+                        </Button>
+                      </div>
+                      {festival.start_at && (
+                        <p className="text-xs md:text-sm text-muted-foreground">
+                          {format(new Date(festival.start_at), "d. MMM yyyy", { locale: nb })}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 md:gap-2">
+                      <Button asChild variant="outline" size="sm" className="h-8 text-xs md:text-sm">
+                        <Link to={`/dashboard/festival/${festival.id}`}>Åpne</Link>
+                      </Button>
+                      {canEdit(festival.id) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs md:text-sm"
+                          onClick={() => archiveFestival.mutate({ id: festival.id, archive: false })}
+                        >
+                          <ArchiveRestore className="h-3.5 w-3.5 mr-1" />Gjenopprett
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
     </div>
   );
 }
