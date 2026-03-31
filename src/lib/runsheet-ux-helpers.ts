@@ -45,7 +45,12 @@ export function computeChainNextStart(
   scopeStartAt: string
 ): Date {
   const anchor = sectionAnchorDate(scopeStartAt, section.starts_at_local);
-  if (!slotsInSection.length) return anchor;
+  if (!slotsInSection.length) {
+    if (isLegacyDefaultSectionNoon(section.starts_at_local)) {
+      return snapTo5Min(new Date(scopeStartAt));
+    }
+    return anchor;
+  }
 
   const sorted = [...slotsInSection].sort((a, b) => {
     const sa = a.sequence_number ?? Infinity;
