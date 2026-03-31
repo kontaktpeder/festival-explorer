@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import {
-  FileText, ClipboardList, ChevronRight, ChevronDown, ExternalLink, ArrowLeft, Radio, Wrench, UserCheck,
-  Archive, ArchiveRestore, CheckCircle2, AlertTriangle, CircleX, Lock,
+  FileText, ClipboardList, ChevronRight, ExternalLink, ArrowLeft, Radio, Wrench, UserCheck,
+  Archive, ArchiveRestore, CheckCircle2, AlertTriangle, CircleDot, Lock, X,
 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 // ─── Types & helpers ───
 
-type ModuleKey = "details" | "plan" | "actors" | "production" | "live";
+type ModuleKey = "details" | "program" | "actors" | "production" | "live";
 type ModuleStatus = "done" | "warning" | "empty" | "locked";
 
 interface ModuleHealth {
@@ -28,27 +28,50 @@ interface ModuleHealth {
   secondary: string;
 }
 
-interface NextStep {
-  id: string;
-  label: string;
-  to: string;
-  priority: number;
+type StageKey = "forbered" | "gjennomfor" | "grunnlag";
+
+interface Stage {
+  key: StageKey;
+  title: string;
+  description: string;
+  moduleKeys: ModuleKey[];
 }
+
+const STAGES: Stage[] = [
+  {
+    key: "forbered",
+    title: "Forbered",
+    description: "Før eventet — få alt klart",
+    moduleKeys: ["program", "production"],
+  },
+  {
+    key: "gjennomfor",
+    title: "Gjennomfør",
+    description: "Under eventet — styr det live",
+    moduleKeys: ["live"],
+  },
+  {
+    key: "grunnlag",
+    title: "Grunnlag",
+    description: "Grunnlag og tilgang",
+    moduleKeys: ["details", "actors"],
+  },
+];
 
 function hasCoreDetails(event: any): boolean {
   return !!event?.title && !!event?.start_at && (!!event?.venue_id || !!event?.city);
 }
 
-function statusBadge(status: ModuleStatus) {
+function statusPresentation(status: ModuleStatus) {
   switch (status) {
     case "done":
-      return { label: "Ferdig", icon: CheckCircle2, className: "text-emerald-500" };
+      return { label: "Klar", icon: CheckCircle2, className: "text-emerald-400" };
     case "warning":
-      return { label: "Mangler", icon: AlertTriangle, className: "text-amber-500" };
+      return { label: "Pågår", icon: AlertTriangle, className: "text-amber-400" };
     case "empty":
-      return { label: "Tom", icon: CircleX, className: "text-destructive" };
+      return { label: "Ikke startet", icon: CircleDot, className: "text-muted-foreground" };
     case "locked":
-      return { label: "Låst", icon: Lock, className: "text-muted-foreground" };
+      return { label: "Låst", icon: Lock, className: "text-muted-foreground/50" };
   }
 }
 
@@ -60,6 +83,7 @@ export default function EventDashboardRoom() {
   const queryClient = useQueryClient();
   const { event, isLoading, canEdit, canViewRunsheet, festivalContext } = useEventBackstageAccess(id);
   const { participants, invitations } = useEventActors(id);
+  const [showIntro, setShowIntro] = useState(true);
 
   const isArchived = !!(event as any)?.archived_at;
 
@@ -159,16 +183,6 @@ export default function EventDashboardRoom() {
   const productionStatus: ModuleStatus = canEdit || canViewRunsheet ? "warning" : "locked";
   const productionSecondary = canEdit || canViewRunsheet ? "Sjekk status og mangler" : "Ingen tilgang";
 
-  // ─── Next steps ───
-  const nextSteps: NextStep[] = [];
-  if (!detailsDone) nextSteps.push({ id: "details", label: "Fullfør grunninfo", to: `${base}/details`, priority: 1 });
-  if (slotCount === 0) nextSteps.push({ id: "plan", label: "Sett opp kjøreplan", to: `${base}/plan`, priority: 2 });
-  if (activeActorCount === 0 && invitationTotalCount === 0) nextSteps.push({ id: "actors", label: "Legg til aktører", to: `${base}/actors`, priority: 3 });
-  if (invitationPendingCount > 0) nextSteps.push({ id: "invite", label: "Følg opp invitasjoner", to: `${base}/actors`, priority: 4 });
-  if ((canEdit || canViewRunsheet) && slotCount > 0) nextSteps.push({ id: "prod", label: "Gå gjennom produksjon", to: `${base}/run-sheet`, priority: 5 });
-  if (!(slotCount > 0 && activeActorCount > 0)) nextSteps.push({ id: "live", label: "Klargjør live-visning", to: `${base}/live`, priority: 6 });
-  const prioritizedSteps = nextSteps.sort((a, b) => a.priority - b.priority).slice(0, 3);
-
   // ─── Module health ───
   const moduleHealth: ModuleHealth[] = [
     {
@@ -177,17 +191,17 @@ export default function EventDashboardRoom() {
       icon: FileText,
       to: `${base}/details`,
       status: detailsDone ? "done" : "warning",
-      primaryCta: "Fullfør grunninfo",
+      primaryCta: "Rediger info, tid, sted",
       secondary: detailsDone ? "Grunninfo er satt" : "Mangler tittel/tid/sted",
     },
     {
-      key: "plan",
-      title: "Plan",
+      key: "program",
+      title: "Program",
       icon: ClipboardList,
       to: `${base}/plan`,
       status: slotCount === 0 ? "empty" : slotsWithStartCount > 0 ? "done" : "warning",
-      primaryCta: "Sett opp kjøreplan",
-      secondary: `${slotCount} poster`,
+      primaryCta: `${slotCount} poster`,
+      secondary: slotCount === 0 ? "Ingen poster ennå" : `${slotsWithStartCount} med tidspunkt`,
     },
     {
       key: "actors",
@@ -200,8 +214,10 @@ export default function EventDashboardRoom() {
           : activeActorCount === 0
           ? "warning"
           : "done",
-      primaryCta: "Legg til folk og invitasjoner",
-      secondary: `${activeActorCount} aktive · ${invitationPendingCount} invitert`,
+      primaryCta: "Administrer deltakere og invitasjoner",
+      secondary: activeActorCount > 0 || invitationPendingCount > 0
+        ? `${activeActorCount} aktive · ${invitationPendingCount} invitert`
+        : "Ingen aktører ennå",
     },
     {
       key: "production",
@@ -209,7 +225,7 @@ export default function EventDashboardRoom() {
       icon: Wrench,
       to: `${base}/run-sheet`,
       status: productionStatus,
-      primaryCta: "Avklar mangler",
+      primaryCta: "Gå gjennom",
       secondary: productionSecondary,
     },
     {
@@ -218,16 +234,26 @@ export default function EventDashboardRoom() {
       icon: Radio,
       to: `${base}/live`,
       status: slotCount > 0 && activeActorCount > 0 ? "done" : "warning",
-      primaryCta: "Klargjør gjennomføring",
-      secondary: slotCount > 0 && activeActorCount > 0 ? "Klar for gjennomføring" : "Krever plan + aktører",
+      primaryCta: slotCount > 0 && activeActorCount > 0 ? "Åpne live" : "Klargjør gjennomføring",
+      secondary: slotCount > 0 && activeActorCount > 0 ? "Klar for gjennomføring" : "Krever program + aktører",
     },
   ];
 
-  const visibleModules = moduleHealth.filter((m) => {
-    if (m.key === "details" || m.key === "plan" || m.key === "actors") return canEdit;
-    if (m.key === "production" || m.key === "live") return canEdit || canViewRunsheet;
+  const canSeeModule = (key: ModuleKey) => {
+    if (key === "details" || key === "program" || key === "actors") return canEdit;
+    if (key === "production" || key === "live") return canEdit || canViewRunsheet;
     return false;
-  });
+  };
+
+  // Build stages with visible modules only
+  const visibleStages = STAGES
+    .map((stage) => ({
+      ...stage,
+      modules: stage.moduleKeys
+        .map((k) => moduleHealth.find((m) => m.key === k)!)
+        .filter((m) => m && canSeeModule(m.key)),
+    }))
+    .filter((stage) => stage.modules.length > 0);
 
   return (
     <div className="min-h-[100svh] bg-background">
@@ -292,110 +318,156 @@ export default function EventDashboardRoom() {
         </div>
       </header>
 
-      {/* Main content */}
-      <main className="w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-8 space-y-8">
-        {/* Next steps — compact */}
-        {prioritizedSteps.length > 0 && (
-          <div className="rounded-lg border border-border/20 bg-card/30 px-4 py-3">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <div className="shrink-0">
-                <p className="text-xs font-medium text-foreground leading-none">Neste steg</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">Dette bør du gjøre nå</p>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {prioritizedSteps.map((s) => (
-                  <Link
-                    key={s.id}
-                    to={s.to}
-                    className="inline-flex items-center gap-1 rounded-full bg-accent/10 hover:bg-accent/20 text-accent text-[11px] font-medium px-2.5 py-1 transition-colors"
-                  >
-                    <ChevronRight className="h-2.5 w-2.5" />
-                    {s.label}
-                  </Link>
-                ))}
-              </div>
+      {/* Main content — timeline journey */}
+      <main className="w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-8 lg:py-10">
+
+        {/* Intro block */}
+        {showIntro && (
+          <div className="mb-8 lg:mb-10 flex items-start gap-3 max-w-2xl">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Sett opp program og folk først — så er du klar til å kjøre live.
+            </p>
+            <button
+              onClick={() => setShowIntro(false)}
+              className="text-muted-foreground/40 hover:text-muted-foreground transition-colors shrink-0 mt-0.5"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* ── Desktop: horizontal timeline (lg+) ── */}
+        <div className="hidden lg:block">
+          {/* Timeline rail */}
+          <div className="relative">
+            {/* Horizontal connector line */}
+            <div className="absolute top-[18px] left-0 right-0 h-px bg-border/20" />
+
+            <div className="grid" style={{ gridTemplateColumns: `repeat(${visibleStages.length}, 1fr)` }}>
+              {visibleStages.map((stage, stageIdx) => {
+                const isLast = stageIdx === visibleStages.length - 1;
+                const isGrunnlag = stage.key === "grunnlag";
+
+                return (
+                  <div key={stage.key} className="relative">
+                    {/* Stage dot + connector */}
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className={`relative z-10 h-[10px] w-[10px] rounded-full border-2 shrink-0 ${
+                        isGrunnlag
+                          ? "border-muted-foreground/30 bg-muted"
+                          : "border-accent/60 bg-accent/20"
+                      }`} />
+                      {!isLast && (
+                        <ChevronRight className="h-3 w-3 text-muted-foreground/20 shrink-0" />
+                      )}
+                    </div>
+
+                    {/* Stage heading */}
+                    <div className="mb-5 pr-6">
+                      <h2 className={`text-lg font-semibold tracking-tight ${
+                        isGrunnlag ? "text-muted-foreground/70" : "text-foreground"
+                      }`}>
+                        {stage.title}
+                      </h2>
+                      <p className="text-xs text-muted-foreground/60 mt-0.5">
+                        {stage.description}
+                      </p>
+                    </div>
+
+                    {/* Module items */}
+                    <div className="space-y-2 pr-6">
+                      {stage.modules.map((mod) => (
+                        <TimelineModuleItem key={mod.key} mod={mod} />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        )}
+        </div>
 
-        {prioritizedSteps.length === 0 && (
-          <div className="rounded-lg border border-border/20 bg-card/30 px-4 py-3">
-            <p className="text-xs font-medium text-foreground">
-              ✓ Alt ser bra ut. Du er klar for gjennomføring.
-            </p>
-          </div>
-        )}
+        {/* ── Mobile: vertical timeline (< lg) ── */}
+        <div className="lg:hidden space-y-0">
+          {visibleStages.map((stage, stageIdx) => {
+            const isLast = stageIdx === visibleStages.length - 1;
+            const isGrunnlag = stage.key === "grunnlag";
 
-        {/* Grouped sections */}
-        {(() => {
-          const setupModules = visibleModules.filter((m) => m.key === "details" || m.key === "plan" || m.key === "actors");
-          const driftModules = visibleModules.filter((m) => m.key === "production" || m.key === "live");
-
-          const renderCard = (mod: ModuleHealth, isProminent = false) => {
-            const Icon = mod.icon;
-            const badge = statusBadge(mod.status);
-            const StatusIcon = badge.icon;
             return (
-              <Link
-                key={mod.key}
-                to={mod.to}
-                className={`group relative rounded-xl border border-border/30 bg-card/40 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300 ${isProminent ? "p-6" : "p-5"}`}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <div className={`rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center shrink-0 transition-colors duration-300 ${isProminent ? "h-8 w-8" : "h-7 w-7"}`}>
-                    <Icon className={`text-accent ${isProminent ? "h-4 w-4" : "h-3.5 w-3.5"}`} />
-                  </div>
-                  <h3 className="text-sm font-medium text-foreground">{mod.title}</h3>
+              <div key={stage.key} className="relative flex gap-4">
+                {/* Vertical rail */}
+                <div className="flex flex-col items-center shrink-0 w-5">
+                  <div className={`h-[10px] w-[10px] rounded-full border-2 shrink-0 mt-1 ${
+                    isGrunnlag
+                      ? "border-muted-foreground/30 bg-muted"
+                      : "border-accent/60 bg-accent/20"
+                  }`} />
+                  {!isLast && (
+                    <div className="flex-1 w-px bg-border/15 mt-2 mb-2" />
+                  )}
                 </div>
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <StatusIcon className={`h-3.5 w-3.5 ${badge.className}`} />
-                  <span className={`text-[11px] font-medium ${badge.className}`}>{badge.label}</span>
-                </div>
-                <p className="text-xs text-accent/80">{mod.primaryCta}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">{mod.secondary}</p>
-              </Link>
-            );
-          };
 
-          return (
-            <>
-              {setupModules.length > 0 && (
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 mb-3">Steg · Setup</p>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                    {setupModules.find((m) => m.key === "details") && (
-                      <div className="lg:col-span-2">
-                        {renderCard(setupModules.find((m) => m.key === "details")!, true)}
-                      </div>
-                    )}
-                    {setupModules.find((m) => m.key === "details") && setupModules.some((m) => m.key === "plan" || m.key === "actors") && (
-                      <div className="hidden lg:flex lg:col-span-2 items-center justify-center py-0.5">
-                        <ChevronDown className="h-3 w-3 text-muted-foreground/25" />
-                      </div>
-                    )}
-                    {setupModules.filter((m) => m.key === "plan" || m.key === "actors").map((mod) => (
-                      <React.Fragment key={mod.key}>{renderCard(mod)}</React.Fragment>
+                {/* Stage content */}
+                <div className={`flex-1 ${isLast ? "pb-0" : "pb-8"}`}>
+                  <div className="mb-3">
+                    <h2 className={`text-base font-semibold tracking-tight ${
+                      isGrunnlag ? "text-muted-foreground/70" : "text-foreground"
+                    }`}>
+                      {stage.title}
+                    </h2>
+                    <p className="text-xs text-muted-foreground/60 mt-0.5">
+                      {stage.description}
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    {stage.modules.map((mod) => (
+                      <TimelineModuleItem key={mod.key} mod={mod} />
                     ))}
                   </div>
                 </div>
-              )}
-
-              {setupModules.length > 0 && driftModules.length > 0 && (
-                <div className="border-t border-border/10" />
-              )}
-
-              {driftModules.length > 0 && (
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 mb-3">Steg · Drift</p>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                    {driftModules.map((mod) => renderCard(mod))}
-                  </div>
-                </div>
-              )}
-            </>
-          );
-        })()}
+              </div>
+            );
+          })}
+        </div>
       </main>
     </div>
+  );
+}
+
+// ─── Module item (shared between desktop + mobile) ───
+
+function TimelineModuleItem({ mod }: { mod: ModuleHealth }) {
+  const badge = statusPresentation(mod.status);
+  const StatusIcon = badge.icon;
+  const Icon = mod.icon;
+
+  return (
+    <Link
+      to={mod.to}
+      className="group flex items-center gap-4 rounded-lg border border-border/10 bg-card/20 hover:bg-card/50 hover:border-border/25 px-4 py-3.5 transition-all duration-200"
+    >
+      {/* Icon */}
+      <div className="h-8 w-8 rounded-md bg-secondary/60 flex items-center justify-center shrink-0">
+        <Icon className="h-4 w-4 text-muted-foreground/70" />
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-foreground">{mod.title}</span>
+          <span className={`inline-flex items-center gap-1 text-[10px] font-medium ${badge.className}`}>
+            <StatusIcon className="h-3 w-3" />
+            {badge.label}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground/60 mt-0.5 truncate">{mod.primaryCta}</p>
+      </div>
+
+      {/* Action hint */}
+      <span className="text-[11px] text-muted-foreground/40 group-hover:text-accent transition-colors shrink-0 hidden sm:inline">
+        Åpne
+      </span>
+      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/20 group-hover:text-accent/60 transition-colors shrink-0" />
+    </Link>
   );
 }
