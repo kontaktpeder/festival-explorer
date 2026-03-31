@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { FocusThemeProvider } from "@/contexts/FocusThemeContext";
 import {
   FileText, ClipboardList, ChevronRight, ExternalLink, ArrowLeft, Radio, Wrench, UserCheck,
-  Archive, ArchiveRestore, CheckCircle2, Circle, Lock, X, Play,
+  Archive, ArchiveRestore, CheckCircle2, Circle, Lock, X, Play, Radio as RadioIcon,
 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +13,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { useEventBackstageAccess } from "@/hooks/useEventBackstageAccess";
 import { useEventActors } from "@/hooks/useEventActors";
 import { toast } from "sonner";
-import liveIllustration from "@/assets/live-illustration.png";
+import { LiveIllustration } from "@/components/dashboard/LiveIllustration";
 
 // ─── Types & helpers ───
 
@@ -382,42 +382,40 @@ function LiveModule({ mod }: { mod: ModuleHealth }) {
   return (
     <Link
       to={mod.to}
-      className="group relative block rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg"
+      className="group relative block rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-lg"
       style={{
-        background: "linear-gradient(135deg, hsl(220 50% 97%) 0%, hsl(230 40% 94%) 100%)",
+        background: "linear-gradient(135deg, hsl(220 50% 97%) 0%, hsl(235 40% 95%) 100%)",
         border: "1px solid hsl(225 30% 88%)",
       }}
     >
-      {/* Illustration background */}
-      <img
-        src={liveIllustration}
-        alt=""
-        loading="lazy"
-        width={960}
-        height={512}
-        className="absolute inset-0 w-full h-full object-cover opacity-[0.08] pointer-events-none select-none"
-      />
-
-      {/* Content */}
-      <div className="relative z-10 p-6 sm:p-7">
-        <div className="flex items-center gap-2.5 mb-3">
-          <div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{ background: "hsl(225 50% 92%)" }}>
-            <Radio className="h-4 w-4 text-blue-600" />
+      <div className="relative z-10 p-6 sm:p-7 grid grid-cols-1 sm:grid-cols-[1.2fr_1fr] gap-4 items-center">
+        {/* Left: content */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="h-7 w-7 rounded-md flex items-center justify-center" style={{ background: "hsl(225 50% 90%)" }}>
+              <RadioIcon className="h-3.5 w-3.5 text-blue-600" />
+            </div>
+            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Live-visning</span>
+            <span className={`inline-flex items-center gap-1 text-[11px] font-medium ml-auto sm:ml-2 ${sp.color}`}>
+              {sp.icon}
+              {sp.label}
+            </span>
           </div>
-          <span className="text-lg font-semibold text-gray-900">{mod.title}</span>
-          <span className={`inline-flex items-center gap-1 text-xs font-medium ml-auto ${sp.color}`}>
-            {sp.icon}
-            {sp.label}
+
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">{mod.title}</h3>
+          <p className="text-sm text-gray-500 mb-5">{mod.secondary}</p>
+
+          <span className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 group-hover:text-blue-700 transition-colors">
+            <Play className="h-3.5 w-3.5" />
+            {mod.primaryCta}
+            <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
           </span>
         </div>
 
-        <p className="text-sm text-gray-600 mb-5">{mod.secondary}</p>
-
-        <span className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 group-hover:text-blue-700 transition-colors">
-          <Play className="h-3.5 w-3.5" />
-          {mod.primaryCta}
-          <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
-        </span>
+        {/* Right: programmatic illustration */}
+        <div className="hidden sm:flex items-center justify-center">
+          <LiveIllustration className="w-full max-w-[220px] h-auto opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+        </div>
       </div>
 
       {/* Subtle left accent */}
