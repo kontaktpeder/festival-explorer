@@ -325,13 +325,34 @@ export default function FestivalRoom() {
               >
                 {festival.status === "published" ? "Publisert" : "Utkast"}
               </Badge>
+              {isArchived && (
+                <Badge variant="outline" className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Arkivert
+                </Badge>
+              )}
               {dateStr && (
                 <span className="text-xs text-muted-foreground">{dateStr}</span>
               )}
             </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.1]">
-              {festival.name}
-            </h1>
+            <div className="flex items-center gap-4">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.1]">
+                {festival.name}
+              </h1>
+              {p?.can_edit_festival && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs shrink-0"
+                  onClick={() => archiveFestival.mutate({ archive: !isArchived })}
+                >
+                  {isArchived ? (
+                    <><ArchiveRestore className="h-3.5 w-3.5 mr-1" />Gjenopprett</>
+                  ) : (
+                    <><Archive className="h-3.5 w-3.5 mr-1" />Arkiver</>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </section>
