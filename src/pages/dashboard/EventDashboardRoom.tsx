@@ -1,8 +1,12 @@
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { FileText, ClipboardList, Users, ChevronRight, ExternalLink, ArrowLeft, Radio, Wrench, UserCheck } from "lucide-react";
+import { FileText, ClipboardList, Users, ChevronRight, ExternalLink, ArrowLeft, Radio, Wrench, UserCheck, Archive, ArchiveRestore } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { useEventBackstageAccess } from "@/hooks/useEventBackstageAccess";
+import { toast } from "sonner";
 
 export default function EventDashboardRoom() {
   const { id } = useParams<{ id: string }>();
