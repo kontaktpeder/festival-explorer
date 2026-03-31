@@ -1,6 +1,7 @@
+import React from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import {
-  FileText, ClipboardList, ChevronRight, ExternalLink, ArrowLeft, Radio, Wrench, UserCheck,
+  FileText, ClipboardList, ChevronRight, ChevronDown, ExternalLink, ArrowLeft, Radio, Wrench, UserCheck,
   Archive, ArchiveRestore, CheckCircle2, AlertTriangle, CircleX, Lock,
 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -292,70 +293,108 @@ export default function EventDashboardRoom() {
       </header>
 
       {/* Main content */}
-      <main className="w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-8 space-y-6">
-        {/* Next steps panel */}
+      <main className="w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-8 space-y-8">
+        {/* Next steps — compact */}
         {prioritizedSteps.length > 0 && (
-          <div className="rounded-xl border border-border/30 bg-card/40 p-5">
-            <div className="mb-3">
-              <p className="text-xs font-medium text-foreground">Neste steg</p>
-              <p className="text-[11px] text-muted-foreground">Dette bør du gjøre nå</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {prioritizedSteps.map((s) => (
-                <Link
-                  key={s.id}
-                  to={s.to}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 hover:bg-accent/20 text-accent text-xs font-medium px-3 py-1.5 transition-colors"
-                >
-                  <ChevronRight className="h-3 w-3" />
-                  {s.label}
-                </Link>
-              ))}
+          <div className="rounded-lg border border-border/20 bg-card/30 px-4 py-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+              <div className="shrink-0">
+                <p className="text-xs font-medium text-foreground leading-none">Neste steg</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Dette bør du gjøre nå</p>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {prioritizedSteps.map((s) => (
+                  <Link
+                    key={s.id}
+                    to={s.to}
+                    className="inline-flex items-center gap-1 rounded-full bg-accent/10 hover:bg-accent/20 text-accent text-[11px] font-medium px-2.5 py-1 transition-colors"
+                  >
+                    <ChevronRight className="h-2.5 w-2.5" />
+                    {s.label}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
         {prioritizedSteps.length === 0 && (
-          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-5">
-            <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+          <div className="rounded-lg border border-border/20 bg-card/30 px-4 py-3">
+            <p className="text-xs font-medium text-foreground">
               ✓ Alt ser bra ut. Du er klar for gjennomføring.
             </p>
           </div>
         )}
 
-        {/* Module grid */}
-        <div>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 mb-4">
-            Moduler
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {visibleModules.map((mod) => {
-              const Icon = mod.icon;
-              const badge = statusBadge(mod.status);
-              const StatusIcon = badge.icon;
-              return (
-                <Link
-                  key={mod.key}
-                  to={mod.to}
-                  className="group relative rounded-xl border border-border/30 bg-card/40 p-5 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
-                      <Icon className="h-4 w-4 text-accent" />
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <StatusIcon className={`h-3.5 w-3.5 ${badge.className}`} />
-                      <span className={`text-[10px] font-medium ${badge.className}`}>{badge.label}</span>
-                    </div>
+        {/* Grouped sections */}
+        {(() => {
+          const setupModules = visibleModules.filter((m) => m.key === "details" || m.key === "plan" || m.key === "actors");
+          const driftModules = visibleModules.filter((m) => m.key === "production" || m.key === "live");
+
+          const renderCard = (mod: ModuleHealth, isProminent = false) => {
+            const Icon = mod.icon;
+            const badge = statusBadge(mod.status);
+            const StatusIcon = badge.icon;
+            return (
+              <Link
+                key={mod.key}
+                to={mod.to}
+                className={`group relative rounded-xl border border-border/30 bg-card/40 hover:border-accent/30 hover:bg-card/70 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300 ${isProminent ? "p-6" : "p-5"}`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={`rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center shrink-0 transition-colors duration-300 ${isProminent ? "h-8 w-8" : "h-7 w-7"}`}>
+                    <Icon className={`text-accent ${isProminent ? "h-4 w-4" : "h-3.5 w-3.5"}`} />
                   </div>
                   <h3 className="text-sm font-medium text-foreground">{mod.title}</h3>
-                  <p className="text-xs text-accent/80 mt-0.5">{mod.primaryCta}</p>
-                  <p className="text-[11px] text-muted-foreground mt-1">{mod.secondary}</p>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+                </div>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <StatusIcon className={`h-3.5 w-3.5 ${badge.className}`} />
+                  <span className={`text-[11px] font-medium ${badge.className}`}>{badge.label}</span>
+                </div>
+                <p className="text-xs text-accent/80">{mod.primaryCta}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{mod.secondary}</p>
+              </Link>
+            );
+          };
+
+          return (
+            <>
+              {setupModules.length > 0 && (
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 mb-3">Steg · Setup</p>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                    {setupModules.find((m) => m.key === "details") && (
+                      <div className="lg:col-span-2">
+                        {renderCard(setupModules.find((m) => m.key === "details")!, true)}
+                      </div>
+                    )}
+                    {setupModules.find((m) => m.key === "details") && setupModules.some((m) => m.key === "plan" || m.key === "actors") && (
+                      <div className="hidden lg:flex lg:col-span-2 items-center justify-center py-0.5">
+                        <ChevronDown className="h-3 w-3 text-muted-foreground/25" />
+                      </div>
+                    )}
+                    {setupModules.filter((m) => m.key === "plan" || m.key === "actors").map((mod) => (
+                      <React.Fragment key={mod.key}>{renderCard(mod)}</React.Fragment>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {setupModules.length > 0 && driftModules.length > 0 && (
+                <div className="border-t border-border/10" />
+              )}
+
+              {driftModules.length > 0 && (
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 mb-3">Steg · Drift</p>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                    {driftModules.map((mod) => renderCard(mod))}
+                  </div>
+                </div>
+              )}
+            </>
+          );
+        })()}
       </main>
     </div>
   );
