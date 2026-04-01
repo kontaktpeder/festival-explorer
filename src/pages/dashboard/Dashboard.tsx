@@ -457,7 +457,7 @@ export default function Dashboard() {
               <section className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Festival-team</h2>
-                  <span className="text-[11px] text-muted-foreground/50">{activeFests.length} aktiv{activeFests.length !== 1 ? "e" : ""}</span>
+                  <Link to="/dashboard/festivals" className="text-[11px] text-muted-foreground/50 hover:text-foreground transition-colors">Vis alle →</Link>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
                   {activeFests.map((festival: any) => (
