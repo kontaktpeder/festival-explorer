@@ -542,6 +542,20 @@ export default function Dashboard() {
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
               {isAdmin && (
+                <Link to="/dashboard/festivals">
+                  <div className="group relative rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm p-4 hover:border-accent/30 hover:bg-card/80 hover:shadow-lg hover:shadow-accent/5 cursor-pointer transition-all duration-300">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
+                        <Sparkles className="h-5 w-5 text-accent" />
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-foreground mb-1">Festivaler</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">Alle festivaler og events</p>
+                  </div>
+                </Link>
+              )}
+              {isAdmin && (
                 <Link to="/dashboard/events">
                   <div className="group relative rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm p-4 hover:border-accent/30 hover:bg-card/80 hover:shadow-lg hover:shadow-accent/5 cursor-pointer transition-all duration-300">
                     <div className="flex items-start justify-between mb-3">
