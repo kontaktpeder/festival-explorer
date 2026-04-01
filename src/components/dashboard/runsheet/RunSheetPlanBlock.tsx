@@ -297,7 +297,7 @@ export function RunSheetPlanBlock({
           {computed.columns.map((col) => (
             <div
               key={col || "__none__"}
-              className="flex-1 text-center text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40"
+              className="flex-1 text-center text-[9px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground/40"
             >
               {col || "Ingen scene"}
             </div>
