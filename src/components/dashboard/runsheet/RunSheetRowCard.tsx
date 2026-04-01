@@ -242,10 +242,10 @@ export function RunSheetRowCard({
         )}
 
         {/* ── Sequence number (hidden on mobile) ── */}
-        <div className="hidden md:flex w-[56px] shrink-0 items-center justify-center border-r border-border/10">
+        <div className="hidden md:flex w-[56px] shrink-0 items-center justify-center border-r border-gray-100 dark:border-border/10">
           <span className={cn(
             "text-xl md:text-2xl font-bold tabular-nums",
-            isCritical ? "text-accent/40" : "text-muted-foreground/12"
+            isCritical ? "text-accent/40" : "text-gray-200 dark:text-muted-foreground/12"
           )}>
             {sectionPrefix || ""}{String(seqNum).padStart(2, "0")}
           </span>
