@@ -175,8 +175,8 @@ export function RunSheetRowCard({
         "group relative rounded-xl transition-all duration-200",
         isCritical
           ? "border-2 border-accent/40 bg-accent/5"
-          : "border border-border/20 bg-card/80 hover:border-border/40",
-        isCanceled && "opacity-50 bg-muted/40 border-destructive/20 pointer-events-auto",
+          : "border border-gray-200 dark:border-border/20 bg-white dark:bg-card/80 hover:border-gray-300 dark:hover:border-border/40",
+        isCanceled && "opacity-50 bg-gray-50 dark:bg-muted/40 border-destructive/20 pointer-events-auto",
         slot.visibility === "internal" && !isCritical && !isCanceled && "border-l-2 border-l-amber-500/30",
         isNow && !isCanceled && "ring-2 ring-accent/60 ring-offset-1 ring-offset-background",
         isLive && liveStatus === "in_progress" && !isCanceled && "ring-2 ring-accent/40",

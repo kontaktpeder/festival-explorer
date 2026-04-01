@@ -34,20 +34,20 @@ export function RunSheetTimeBlock({ startsAt, endsAt, durationMinutes, isCritica
   return (
     <div className="flex flex-col items-center h-full tabular-nums font-mono py-1 gap-0.5">
       {/* Start time */}
-      <span className={`text-lg md:text-xl font-extrabold tracking-tight leading-none ${isCritical ? 'text-accent' : 'text-foreground'}`}>
+      <span className={`text-lg md:text-xl font-extrabold tracking-tight leading-none ${isCritical ? 'text-accent' : 'text-gray-900 dark:text-foreground'}`}>
         {fmtTime(startsAt)}
       </span>
 
       {/* Duration label */}
       {dur && (
-        <span className="text-[10px] text-muted-foreground/50 leading-tight">
+        <span className="text-[10px] text-gray-400 dark:text-muted-foreground/50 leading-tight">
           {fmtDurationLabel(dur)}
         </span>
       )}
 
       {/* End time */}
       {hasEnd && (
-        <span className="text-xs text-muted-foreground/60 leading-none">
+        <span className="text-xs text-gray-500 dark:text-muted-foreground/60 leading-none">
           {endsAt ? fmtTime(endsAt) : dur ? fmtTime(new Date(new Date(startsAt).getTime() + dur * 60000).toISOString()) : ""}
         </span>
       )}
