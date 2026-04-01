@@ -85,6 +85,22 @@ export default function DashboardEventsRoom() {
     },
   });
 
+  // Exclude events that belong to a festival
+  const { data: festivalEventIds } = useQuery({
+    queryKey: ["festival-event-ids"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("festival_events")
+        .select("event_id");
+      if (error) throw error;
+      return new Set((data ?? []).map((r) => r.event_id));
+    },
+  });
+
+  const standaloneEvents = (events ?? []).filter(
+    (e) => !festivalEventIds || !festivalEventIds.has(e.id)
+  );
+
   const applyFilters = (list: typeof events) =>
     (list ?? []).filter((e) => {
       if (statusFilter !== "all" && e.status !== statusFilter) return false;
