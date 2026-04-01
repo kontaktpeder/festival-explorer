@@ -368,10 +368,10 @@ export function RunSheetRowCard({
               <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
                 {kindConfig && (
                   <div className="flex items-center gap-1 shrink-0">
-                    <kindConfig.icon className={cn("h-3 w-3", isCritical ? "text-accent" : "text-muted-foreground/50")} />
+                    <kindConfig.icon className={cn("h-3 w-3", isCritical ? "text-accent" : "text-gray-400 dark:text-muted-foreground/50")} />
                     <span className={cn(
                       "text-[9px] md:text-[10px] font-bold uppercase tracking-wider",
-                      isCritical ? "text-accent" : "text-muted-foreground/60"
+                      isCritical ? "text-accent" : "text-gray-500 dark:text-muted-foreground/60"
                     )}>
                       {kindConfig.label}
                     </span>
