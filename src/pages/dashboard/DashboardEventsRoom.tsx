@@ -114,7 +114,7 @@ export default function DashboardEventsRoom() {
   return (
     <BackstageShell
       title="Events"
-      subtitle="Alle arrangementer"
+      subtitle="Arrangementer uten festival"
       backTo="/dashboard"
       actions={
         <Button asChild size="sm">

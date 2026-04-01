@@ -173,6 +173,7 @@ const App = () => (
             <Route path="/dashboard/venue/:id/settings" element={<VenueSettingsRoom />} />
             <Route path="/dashboard/landing" element={<LandingSettingsRoom />} />
             <Route path="/dashboard/events" element={<EventFirstGuard><DashboardEventsRoom /></EventFirstGuard>} />
+            <Route path="/dashboard/festivals" element={<DashboardFestivalsRoom />} />
             <Route path="/dashboard/events/new" element={<EventFirstGuard><EventRoomPage /></EventFirstGuard>} />
             <Route path="/dashboard/events/:id" element={<EventDashboardRoom />} />
             <Route path="/dashboard/events/:id/details" element={<EventDetailsRoom />} />
