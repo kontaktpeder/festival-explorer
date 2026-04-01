@@ -211,8 +211,8 @@ export function RunSheetRowCard({
                 type="button"
                 onClick={openTimePop}
                 className={cn(
-                  "w-[64px] md:w-[110px] shrink-0 px-2 md:px-3 py-3 md:py-4 border-r flex items-center justify-center cursor-pointer active:bg-muted/60 hover:bg-muted/40 transition-colors rounded-l-xl print:cursor-default",
-                  isCritical ? "border-accent/20" : "border-border/10"
+                  "w-[64px] md:w-[110px] shrink-0 px-2 md:px-3 py-3 md:py-4 border-r flex items-center justify-center cursor-pointer active:bg-gray-100 dark:active:bg-muted/60 hover:bg-gray-50 dark:hover:bg-muted/40 transition-colors rounded-l-xl print:cursor-default",
+                  isCritical ? "border-accent/20" : "border-gray-100 dark:border-border/10"
                 )}
                 title="Endre tidspunkt"
               >
