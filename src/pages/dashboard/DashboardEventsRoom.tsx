@@ -108,8 +108,8 @@ export default function DashboardEventsRoom() {
       return true;
     });
 
-  const activeEvents = applyFilters(events).filter((e) => !e.archived_at);
-  const archivedEvents = applyFilters(events).filter((e) => !!e.archived_at);
+  const activeEvents = applyFilters(standaloneEvents).filter((e) => !e.archived_at);
+  const archivedEvents = applyFilters(standaloneEvents).filter((e) => !!e.archived_at);
 
   return (
     <BackstageShell
