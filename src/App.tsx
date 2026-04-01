@@ -59,6 +59,7 @@ import VenueTeamRoom from "./pages/dashboard/VenueTeamRoom";
 import VenueSettingsRoom from "./pages/dashboard/VenueSettingsRoom";
 import LandingSettingsRoom from "./pages/dashboard/LandingSettingsRoom";
 import DashboardEventsRoom from "./pages/dashboard/DashboardEventsRoom";
+import DashboardFestivalsRoom from "./pages/dashboard/DashboardFestivalsRoom";
 import EventDashboardRoom from "./pages/dashboard/EventDashboardRoom";
 import EventDetailsRoom from "./pages/dashboard/EventDetailsRoom";
 import EventPlanRoom from "./pages/dashboard/EventPlanRoom";
