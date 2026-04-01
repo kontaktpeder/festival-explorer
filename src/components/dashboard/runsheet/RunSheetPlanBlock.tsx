@@ -317,10 +317,10 @@ export function RunSheetPlanBlock({
                 className="absolute left-0 right-0 flex items-center pointer-events-none"
                 style={{ top: yPx }}
               >
-                <span className="text-[9px] text-muted-foreground/30 font-mono tabular-nums w-10 text-right pr-1.5 shrink-0">
+                <span className="text-[9px] text-gray-400 dark:text-muted-foreground/30 font-mono tabular-nums w-10 text-right pr-1.5 shrink-0">
                   {m.label}
                 </span>
-                <div className="flex-1 border-t border-border/10" />
+                <div className="flex-1 border-t border-gray-200 dark:border-border/10" />
               </div>
             );
           })}
