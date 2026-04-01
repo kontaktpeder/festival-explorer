@@ -85,6 +85,22 @@ export default function DashboardEventsRoom() {
     },
   });
 
+  // Exclude events that belong to a festival
+  const { data: festivalEventIds } = useQuery({
+    queryKey: ["festival-event-ids"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("festival_events")
+        .select("event_id");
+      if (error) throw error;
+      return new Set((data ?? []).map((r) => r.event_id));
+    },
+  });
+
+  const standaloneEvents = (events ?? []).filter(
+    (e) => !festivalEventIds || !festivalEventIds.has(e.id)
+  );
+
   const applyFilters = (list: typeof events) =>
     (list ?? []).filter((e) => {
       if (statusFilter !== "all" && e.status !== statusFilter) return false;
@@ -92,13 +108,13 @@ export default function DashboardEventsRoom() {
       return true;
     });
 
-  const activeEvents = applyFilters(events).filter((e) => !e.archived_at);
-  const archivedEvents = applyFilters(events).filter((e) => !!e.archived_at);
+  const activeEvents = applyFilters(standaloneEvents).filter((e) => !e.archived_at);
+  const archivedEvents = applyFilters(standaloneEvents).filter((e) => !!e.archived_at);
 
   return (
     <BackstageShell
       title="Events"
-      subtitle="Alle arrangementer"
+      subtitle="Arrangementer uten festival"
       backTo="/dashboard"
       actions={
         <Button asChild size="sm">

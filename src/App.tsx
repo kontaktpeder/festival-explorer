@@ -59,6 +59,7 @@ import VenueTeamRoom from "./pages/dashboard/VenueTeamRoom";
 import VenueSettingsRoom from "./pages/dashboard/VenueSettingsRoom";
 import LandingSettingsRoom from "./pages/dashboard/LandingSettingsRoom";
 import DashboardEventsRoom from "./pages/dashboard/DashboardEventsRoom";
+import DashboardFestivalsRoom from "./pages/dashboard/DashboardFestivalsRoom";
 import EventDashboardRoom from "./pages/dashboard/EventDashboardRoom";
 import EventDetailsRoom from "./pages/dashboard/EventDetailsRoom";
 import EventPlanRoom from "./pages/dashboard/EventPlanRoom";
@@ -172,6 +173,7 @@ const App = () => (
             <Route path="/dashboard/venue/:id/settings" element={<VenueSettingsRoom />} />
             <Route path="/dashboard/landing" element={<LandingSettingsRoom />} />
             <Route path="/dashboard/events" element={<EventFirstGuard><DashboardEventsRoom /></EventFirstGuard>} />
+            <Route path="/dashboard/festivals" element={<DashboardFestivalsRoom />} />
             <Route path="/dashboard/events/new" element={<EventFirstGuard><EventRoomPage /></EventFirstGuard>} />
             <Route path="/dashboard/events/:id" element={<EventDashboardRoom />} />
             <Route path="/dashboard/events/:id/details" element={<EventDetailsRoom />} />

@@ -416,9 +416,10 @@ export default function Dashboard() {
             </section>
           )}
 
-          {/* Mine events — only active, archive at /dashboard/events */}
+          {/* Mine events — only active standalone (not festival-linked) */}
           {hasEventAccess && (() => {
             const activeEvts = myEvents!.filter((e: any) => !e.archived_at);
+            // Festival-linked events are shown under festivals, not here
             if (activeEvts.length === 0) return null;
             return (
               <section className="space-y-3">
@@ -456,7 +457,7 @@ export default function Dashboard() {
               <section className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">Festival-team</h2>
-                  <span className="text-[11px] text-muted-foreground/50">{activeFests.length} aktiv{activeFests.length !== 1 ? "e" : ""}</span>
+                  <Link to="/dashboard/festivals" className="text-[11px] text-muted-foreground/50 hover:text-foreground transition-colors">Vis alle →</Link>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
                   {activeFests.map((festival: any) => (
@@ -540,6 +541,20 @@ export default function Dashboard() {
                 {isAdmin ? "Admin & Crew" : "Crew-verktøy"}
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
+              {isAdmin && (
+                <Link to="/dashboard/festivals">
+                  <div className="group relative rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm p-4 hover:border-accent/30 hover:bg-card/80 hover:shadow-lg hover:shadow-accent/5 cursor-pointer transition-all duration-300">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="h-9 w-9 rounded-lg bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors duration-300">
+                        <Sparkles className="h-5 w-5 text-accent" />
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-foreground mb-1">Festivaler</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">Alle festivaler og events</p>
+                  </div>
+                </Link>
+              )}
               {isAdmin && (
                 <Link to="/dashboard/events">
                   <div className="group relative rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm p-4 hover:border-accent/30 hover:bg-card/80 hover:shadow-lg hover:shadow-accent/5 cursor-pointer transition-all duration-300">
