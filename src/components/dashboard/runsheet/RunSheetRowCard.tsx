@@ -404,7 +404,7 @@ export function RunSheetRowCard({
 
           {/* Internal note */}
           {slot.internal_note && (
-            <p className="text-[11px] text-muted-foreground/50 leading-relaxed line-clamp-2 italic">
+            <p className="text-[11px] text-gray-500 dark:text-muted-foreground/50 leading-relaxed line-clamp-2 italic">
               {slot.internal_note}
             </p>
           )}
