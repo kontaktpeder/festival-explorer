@@ -17,13 +17,13 @@ function PlanIntro() {
   const [open, setOpen] = useState(() => localStorage.getItem(key) !== "1");
   if (!open) return null;
   return (
-    <div className="relative rounded-lg border border-border/30 bg-muted/30 px-4 py-3 text-xs text-muted-foreground leading-relaxed">
+    <div className="relative rounded-lg border border-gray-200 dark:border-border/30 bg-gray-50 dark:bg-muted/30 px-4 py-3 text-xs text-gray-600 dark:text-muted-foreground leading-relaxed">
       <p>
         Her bygger du kjøreplanen for eventet — rekkefølge, tider og interne poster.
         Klokkeslett følger eventdatoen. Legg til seksjon eller post fra verktøylinjen.
       </p>
       <button
-        className="absolute top-2 right-2 text-muted-foreground/50 hover:text-foreground transition-colors"
+        className="absolute top-2 right-2 text-gray-400 dark:text-muted-foreground/50 hover:text-gray-700 dark:hover:text-foreground transition-colors"
         onClick={() => {
           localStorage.setItem(key, "1");
           setOpen(false);

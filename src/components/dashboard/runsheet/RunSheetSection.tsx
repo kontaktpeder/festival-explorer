@@ -388,8 +388,8 @@ export const RunSheetSection = forwardRef<HTMLDivElement, RunSheetSectionProps>(
 
       {/* Empty state */}
       {!collapsed && isEmpty && (
-        <div className="py-6 text-center border border-dashed border-border/20 rounded-lg mt-2">
-          <p className="text-xs text-muted-foreground/40">Ingen punkter ennå</p>
+        <div className="py-6 text-center border border-dashed border-gray-200 dark:border-border/20 rounded-lg mt-2">
+          <p className="text-xs text-gray-400 dark:text-muted-foreground/40">Ingen punkter ennå</p>
         </div>
       )}
     </div>
