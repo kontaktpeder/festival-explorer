@@ -136,7 +136,7 @@ function DraggableBlock({
     <div
       ref={setNodeRef}
       className={cn(
-        "absolute rounded-md border border-border/30 bg-card px-3 py-1.5 text-left transition-colors",
+        "absolute rounded-md border border-gray-200 dark:border-border/30 bg-white dark:bg-card px-3 py-1.5 text-left transition-colors",
         "hover:border-accent/40 hover:bg-accent/5",
         "flex flex-col justify-between overflow-hidden",
         item.isFallback && "border-amber-500/30",
@@ -148,19 +148,19 @@ function DraggableBlock({
         {isDraggable && (
           <button
             type="button"
-            className="flex items-center cursor-grab active:cursor-grabbing text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors touch-none shrink-0"
+            className="flex items-center cursor-grab active:cursor-grabbing text-gray-300 dark:text-muted-foreground/30 hover:text-gray-500 dark:hover:text-muted-foreground/60 transition-colors touch-none shrink-0"
             {...attributes}
             {...listeners}
           >
             <GripVertical className="h-3.5 w-3.5" />
           </button>
         )}
-        <span className="text-[10px] font-bold text-muted-foreground/50 shrink-0">
+        <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground/50 shrink-0">
           {label}
         </span>
         <button
           type="button"
-          className="text-sm font-medium text-foreground truncate text-left hover:underline"
+          className="text-sm font-medium text-gray-900 dark:text-foreground truncate text-left hover:underline"
           onClick={() => onEdit(item.slot)}
         >
           {title}
@@ -171,10 +171,10 @@ function DraggableBlock({
       </div>
       {showDuration && (
         <div className="flex items-center justify-between mt-auto">
-          <span className="text-[10px] text-muted-foreground/50 font-mono tabular-nums">
+          <span className="text-[10px] text-gray-500 dark:text-muted-foreground/50 font-mono tabular-nums">
             {fmtTime(item.slot.starts_at)}
           </span>
-          <span className="text-[10px] text-muted-foreground/40">
+          <span className="text-[10px] text-gray-400 dark:text-muted-foreground/40">
             {fmtDurationLabel(item.durationMin)}
           </span>
         </div>
@@ -297,7 +297,7 @@ export function RunSheetPlanBlock({
           {computed.columns.map((col) => (
             <div
               key={col || "__none__"}
-              className="flex-1 text-center text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40"
+              className="flex-1 text-center text-[9px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground/40"
             >
               {col || "Ingen scene"}
             </div>
@@ -317,10 +317,10 @@ export function RunSheetPlanBlock({
                 className="absolute left-0 right-0 flex items-center pointer-events-none"
                 style={{ top: yPx }}
               >
-                <span className="text-[9px] text-muted-foreground/30 font-mono tabular-nums w-10 text-right pr-1.5 shrink-0">
+                <span className="text-[9px] text-gray-400 dark:text-muted-foreground/30 font-mono tabular-nums w-10 text-right pr-1.5 shrink-0">
                   {m.label}
                 </span>
-                <div className="flex-1 border-t border-border/10" />
+                <div className="flex-1 border-t border-gray-200 dark:border-border/10" />
               </div>
             );
           })}

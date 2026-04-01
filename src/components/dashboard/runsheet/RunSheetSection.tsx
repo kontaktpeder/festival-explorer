@@ -270,13 +270,13 @@ export const RunSheetSection = forwardRef<HTMLDivElement, RunSheetSectionProps>(
           onClick={() => setCollapsed(!collapsed)}
           className={cn(
             "flex-1 min-w-0 flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2.5 rounded-lg transition-colors",
-            "bg-muted/50 active:bg-muted/80 hover:bg-muted/70 border border-border/20"
+            "bg-gray-100 dark:bg-muted/50 active:bg-gray-200 dark:active:bg-muted/80 hover:bg-gray-150 dark:hover:bg-muted/70 border border-gray-200 dark:border-border/20"
           )}
         >
           {collapsed ? (
-            <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+            <ChevronRight className="h-4 w-4 text-gray-400 dark:text-muted-foreground/50 shrink-0" />
           ) : (
-            <ChevronDown className="h-4 w-4 text-muted-foreground/50 shrink-0" />
+            <ChevronDown className="h-4 w-4 text-gray-400 dark:text-muted-foreground/50 shrink-0" />
           )}
           {editing ? (
             <Input
@@ -289,24 +289,24 @@ export const RunSheetSection = forwardRef<HTMLDivElement, RunSheetSectionProps>(
                 if (e.key === "Escape") { setEditValue(shownName); setEditing(false); }
               }}
               onClick={(e) => e.stopPropagation()}
-              className="h-6 text-[11px] font-bold uppercase tracking-[0.2em] bg-transparent border-none p-0 focus-visible:ring-0 text-muted-foreground"
+              className="h-6 text-[11px] font-bold uppercase tracking-[0.2em] bg-transparent border-none p-0 focus-visible:ring-0 text-gray-700 dark:text-muted-foreground"
             />
           ) : (
-            <span className="text-[11px] font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] text-muted-foreground truncate">
+            <span className="text-[11px] font-bold uppercase tracking-[0.15em] md:tracking-[0.2em] text-gray-600 dark:text-muted-foreground truncate">
               {shownName}
             </span>
           )}
           {/* Time range + count */}
           <div className="flex items-center gap-1.5 md:gap-2 ml-auto shrink-0">
             {timeRange && (
-              <span className="text-[9px] md:text-[10px] text-muted-foreground/50 tabular-nums font-mono">
+              <span className="text-[9px] md:text-[10px] text-gray-500 dark:text-muted-foreground/50 tabular-nums font-mono">
                 {timeRange.from}–{timeRange.to}
               </span>
             )}
-            <span className="text-[9px] md:text-[10px] text-muted-foreground/40 tabular-nums hidden md:inline">
+            <span className="text-[9px] md:text-[10px] text-gray-400 dark:text-muted-foreground/40 tabular-nums hidden md:inline">
               {slots.length} {slots.length === 1 ? "punkt" : "punkter"}
             </span>
-            <span className="text-[9px] text-muted-foreground/40 tabular-nums md:hidden">
+            <span className="text-[9px] text-gray-400 dark:text-muted-foreground/40 tabular-nums md:hidden">
               {slots.length}
             </span>
           </div>
@@ -388,8 +388,8 @@ export const RunSheetSection = forwardRef<HTMLDivElement, RunSheetSectionProps>(
 
       {/* Empty state */}
       {!collapsed && isEmpty && (
-        <div className="py-6 text-center border border-dashed border-border/20 rounded-lg mt-2">
-          <p className="text-xs text-muted-foreground/40">Ingen punkter ennå</p>
+        <div className="py-6 text-center border border-dashed border-gray-200 dark:border-border/20 rounded-lg mt-2">
+          <p className="text-xs text-gray-400 dark:text-muted-foreground/40">Ingen punkter ennå</p>
         </div>
       )}
     </div>

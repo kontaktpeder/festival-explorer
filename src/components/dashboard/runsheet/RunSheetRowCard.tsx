@@ -175,8 +175,8 @@ export function RunSheetRowCard({
         "group relative rounded-xl transition-all duration-200",
         isCritical
           ? "border-2 border-accent/40 bg-accent/5"
-          : "border border-border/20 bg-card/80 hover:border-border/40",
-        isCanceled && "opacity-50 bg-muted/40 border-destructive/20 pointer-events-auto",
+          : "border border-gray-200 dark:border-border/20 bg-white dark:bg-card/80 hover:border-gray-300 dark:hover:border-border/40",
+        isCanceled && "opacity-50 bg-gray-50 dark:bg-muted/40 border-destructive/20 pointer-events-auto",
         slot.visibility === "internal" && !isCritical && !isCanceled && "border-l-2 border-l-amber-500/30",
         isNow && !isCanceled && "ring-2 ring-accent/60 ring-offset-1 ring-offset-background",
         isLive && liveStatus === "in_progress" && !isCanceled && "ring-2 ring-accent/40",
@@ -200,7 +200,7 @@ export function RunSheetRowCard({
         {isLive ? (
           <div className={cn(
             "w-[64px] md:w-[110px] shrink-0 px-2 md:px-3 py-3 md:py-4 border-r flex items-center justify-center rounded-l-xl",
-            isCritical ? "border-accent/20" : "border-border/10"
+            isCritical ? "border-accent/20" : "border-gray-100 dark:border-border/10"
           )}>
             <RunSheetTimeBlock startsAt={displayStartsAt} endsAt={displayEndsAt} durationMinutes={slot.duration_minutes} isCritical={isCritical} />
           </div>
@@ -211,8 +211,8 @@ export function RunSheetRowCard({
                 type="button"
                 onClick={openTimePop}
                 className={cn(
-                  "w-[64px] md:w-[110px] shrink-0 px-2 md:px-3 py-3 md:py-4 border-r flex items-center justify-center cursor-pointer active:bg-muted/60 hover:bg-muted/40 transition-colors rounded-l-xl print:cursor-default",
-                  isCritical ? "border-accent/20" : "border-border/10"
+                  "w-[64px] md:w-[110px] shrink-0 px-2 md:px-3 py-3 md:py-4 border-r flex items-center justify-center cursor-pointer active:bg-gray-100 dark:active:bg-muted/60 hover:bg-gray-50 dark:hover:bg-muted/40 transition-colors rounded-l-xl print:cursor-default",
+                  isCritical ? "border-accent/20" : "border-gray-100 dark:border-border/10"
                 )}
                 title="Endre tidspunkt"
               >
@@ -242,10 +242,10 @@ export function RunSheetRowCard({
         )}
 
         {/* ── Sequence number (hidden on mobile) ── */}
-        <div className="hidden md:flex w-[56px] shrink-0 items-center justify-center border-r border-border/10">
+        <div className="hidden md:flex w-[56px] shrink-0 items-center justify-center border-r border-gray-100 dark:border-border/10">
           <span className={cn(
             "text-xl md:text-2xl font-bold tabular-nums",
-            isCritical ? "text-accent/40" : "text-muted-foreground/12"
+            isCritical ? "text-accent/40" : "text-gray-200 dark:text-muted-foreground/12"
           )}>
             {sectionPrefix || ""}{String(seqNum).padStart(2, "0")}
           </span>
@@ -368,10 +368,10 @@ export function RunSheetRowCard({
               <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
                 {kindConfig && (
                   <div className="flex items-center gap-1 shrink-0">
-                    <kindConfig.icon className={cn("h-3 w-3", isCritical ? "text-accent" : "text-muted-foreground/50")} />
+                    <kindConfig.icon className={cn("h-3 w-3", isCritical ? "text-accent" : "text-gray-400 dark:text-muted-foreground/50")} />
                     <span className={cn(
                       "text-[9px] md:text-[10px] font-bold uppercase tracking-wider",
-                      isCritical ? "text-accent" : "text-muted-foreground/60"
+                      isCritical ? "text-accent" : "text-gray-500 dark:text-muted-foreground/60"
                     )}>
                       {kindConfig.label}
                     </span>
@@ -404,7 +404,7 @@ export function RunSheetRowCard({
 
           {/* Internal note */}
           {slot.internal_note && (
-            <p className="text-[11px] text-muted-foreground/50 leading-relaxed line-clamp-2 italic">
+            <p className="text-[11px] text-gray-500 dark:text-muted-foreground/50 leading-relaxed line-clamp-2 italic">
               {slot.internal_note}
             </p>
           )}
