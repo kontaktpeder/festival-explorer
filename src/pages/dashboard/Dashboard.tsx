@@ -416,9 +416,10 @@ export default function Dashboard() {
             </section>
           )}
 
-          {/* Mine events — only active, archive at /dashboard/events */}
+          {/* Mine events — only active standalone (not festival-linked) */}
           {hasEventAccess && (() => {
             const activeEvts = myEvents!.filter((e: any) => !e.archived_at);
+            // Festival-linked events are shown under festivals, not here
             if (activeEvts.length === 0) return null;
             return (
               <section className="space-y-3">
