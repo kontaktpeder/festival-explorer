@@ -177,6 +177,9 @@ export function ContactRequestModal({ open, onOpenChange, persona, avatarUrl }: 
             </div>
           </div>
           <p className="text-sm text-muted-foreground">
+            Send en uforpliktende forespørsel om å bli kjent eller utforske samarbeid — profesjonelt nettverk, ikke privat dating.
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
             Dette åpner en e-post. Du sender fra din egen e-postklient.
           </p>
         </DialogHeader>

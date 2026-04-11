@@ -245,13 +245,20 @@ export default function PersonaPage() {
 
           {/* Contact button */}
           {showContactButton && (
-            <button
-              onClick={() => setContactModalOpen(true)}
-              className="mt-6 inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-accent text-accent-foreground font-medium text-base hover:bg-accent/90 transition-colors duration-300"
-            >
-              <Mail className="w-5 h-5" />
-              Book / samarbeid
-            </button>
+            <div className="mt-6 flex flex-col items-center gap-2 max-w-md">
+              <button
+                onClick={() => setContactModalOpen(true)}
+                aria-label="Send uforpliktende forespørsel om å bli kjent"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-accent text-accent-foreground font-medium text-base hover:bg-accent/90 transition-colors duration-300"
+              >
+                <Mail className="w-5 h-5" aria-hidden />
+                Bli kjent
+                <span className="text-base opacity-90" aria-hidden>☕</span>
+              </button>
+              <p className="text-center text-sm text-muted-foreground px-2">
+                Send en uforpliktende forespørsel om å bli kjent og utforske samarbeid.
+              </p>
+            </div>
           )}
         </section>
 

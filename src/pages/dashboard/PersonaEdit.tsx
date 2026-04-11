@@ -571,7 +571,7 @@ export default function PersonaEdit() {
               <div>
                 <p className="text-sm font-medium">Vis kontaktknapp på offentlig side</p>
                 <p className="text-xs text-muted-foreground">
-                  Aktiverer «Book / samarbeid»-knappen på personasiden
+                  Aktiverer «Bli kjent»-knappen på den offentlige profilen (uforpliktende forespørsel).
                 </p>
               </div>
               <Switch checked={showEmail} onCheckedChange={setShowEmail} />
