@@ -340,14 +340,14 @@ export default function Dashboard() {
               {activePersona.type === "organizer" && (
                 <div className="space-y-2 pt-1">
                   <p className="text-xs text-muted-foreground">
-                    For å lage events må du ha en scene tilknyttet GIGGEN.
+                    Du kan starte et arrangement med én gang. Sted og detaljer kan du legge til senere.
                   </p>
-                  <a
-                    href="mailto:giggen.main@gmail.com"
+                  <Link
+                    to="/dashboard/events/new"
                     className="inline-flex items-center justify-center rounded-md border border-accent/30 bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent/20 transition-colors"
                   >
-                    Ta kontakt
-                  </a>
+                    Start arrangement
+                  </Link>
                 </div>
               )}
             </section>

@@ -10,16 +10,16 @@ interface EventFirstAccess {
 
 /**
  * Centralised gate for Event-first features.
- * Phase 1: admin-only.  Change EVENT_FIRST_ACCESS to broaden.
+ * Phase 2 (MVP): all authenticated dashboard users can access.
  */
 export function useEventFirstAccess(): EventFirstAccess {
-  const { data: isAdmin, isLoading } = useQuery({
-    queryKey: ["is-admin-event-first"],
+  const { data: sessionInfo, isLoading } = useQuery({
+    queryKey: ["event-first-access-session"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+      if (!user) return { user: null as const, isAdmin: false };
       const { data } = await supabase.rpc("is_admin");
-      return !!data;
+      return { user, isAdmin: !!data };
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -32,17 +32,17 @@ export function useEventFirstAccess(): EventFirstAccess {
     return { isLoading: true, canAccess: false };
   }
 
-  if (isAdmin === null) {
+  if (!sessionInfo?.user) {
     return { isLoading: false, canAccess: false, reason: "not_authenticated" };
   }
 
+  // MVP: alle innloggede brukere med dashboard-tilgang kan bruke event-først-flyt
   if (EVENT_FIRST_ACCESS === "all_dashboard_users") {
-    // TODO phase 2: check has_backstage_access or similar
     return { isLoading: false, canAccess: true };
   }
 
   // admin_only
-  if (!isAdmin) {
+  if (!sessionInfo.isAdmin) {
     return { isLoading: false, canAccess: false, reason: "not_admin" };
   }
 
