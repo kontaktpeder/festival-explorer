@@ -17,7 +17,7 @@ export function useEventFirstAccess(): EventFirstAccess {
     queryKey: ["event-first-access-session"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { user: null as const, isAdmin: false };
+      if (!user) return { user: null, isAdmin: false } as { user: null; isAdmin: false };
       const { data } = await supabase.rpc("is_admin");
       return { user, isAdmin: !!data };
     },
