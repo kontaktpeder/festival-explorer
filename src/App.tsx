@@ -40,6 +40,8 @@ import RequestAccess from "./pages/RequestAccess";
 import VerifyAccessEmail from "./pages/VerifyAccessEmail";
 import CreateProfileWizard from "./pages/onboarding/CreateProfileWizard";
 import ResetPassword from "./pages/ResetPassword";
+import JoinArtistPage from "./pages/onboarding/JoinArtistPage";
+import AuthCallbackPage from "./pages/auth/AuthCallbackPage";
 import FestivalRoom from "./pages/dashboard/FestivalRoom";
 import FestivalProgramRoom from "./pages/dashboard/FestivalProgramRoom";
 import FestivalPlanRoom from "./pages/dashboard/FestivalPlanRoom";
@@ -142,6 +144,8 @@ const App = () => (
           <Route path="/accept-invitation" element={<PublicChrome footerVariant="giggen"><AcceptInvitation /></PublicChrome>} />
           <Route path="/i" element={<PublicChrome footerVariant="giggen"><AcceptInvitation /></PublicChrome>} />
           <Route path="/onboarding/create-profile" element={<CreateProfileWizard />} />
+          <Route path="/join/artist" element={<JoinArtistPage />} />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/entities/:id/edit" element={<EntityEdit />} />
