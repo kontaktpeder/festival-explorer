@@ -249,11 +249,15 @@ export default function Dashboard() {
     );
   }
 
-  // Simple onboarding: redirect new users (0 personas AND no display name) to wizard
-  // Existing users who already completed onboarding should never be redirected here
-  const isNewUser = !currentUser.displayName && personas?.length === 0;
+  // Simple onboarding: redirect new users (no solo/band project AND no personas AND no display name)
+  // to the new artist join flow. Existing users with any onboarding artifact must never be redirected.
+  const hasArtistProject = (entities ?? []).some(
+    (e) => e.type === "solo" || e.type === "band",
+  );
+  const isNewUser =
+    !currentUser.displayName && personas?.length === 0 && !hasArtistProject;
   if (USE_SIMPLE_ONBOARDING && !isLoadingPersonas && personas && isNewUser) {
-    return <Navigate to="/onboarding/create-profile" replace />;
+    return <Navigate to="/join/artist" replace />;
   }
 
   // Simple onboarding layout for users with personas
@@ -314,15 +318,22 @@ export default function Dashboard() {
                 Dette er din profesjonelle profil på GIGGEN. Du kan når som helst endre den fra dashbordet.
               </p>
 
-              {activePersona.type === "musician" && (
+              {activePersona.type === "musician" && !hasProjectAccess && (
                 <div className="space-y-2 pt-1">
                   <p className="text-xs text-muted-foreground">
-                    <strong className="text-foreground">Neste steg:</strong> Vent på invitasjon fra festival eller arrangør – eller be om tilgang til et prosjekt.
+                    <strong className="text-foreground">Neste steg:</strong> Sett opp din egen artistprofil eller vent på invitasjon fra festival eller arrangør.
                   </p>
-                  <Button asChild size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold">
-                    <Link to="/request-access">Be om tilgang</Link>
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold">
+                      <Link to="/join/artist">Lag artistprofil</Link>
+                    </Button>
+                  </div>
                 </div>
+              )}
+              {activePersona.type === "musician" && hasProjectAccess && (
+                <p className="text-xs text-muted-foreground">
+                  Profilen din er klar. Du finner prosjektene dine under.
+                </p>
               )}
 
               {activePersona.type === "photographer" && (

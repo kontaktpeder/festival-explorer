@@ -143,7 +143,9 @@ const App = () => (
           <Route path="/verify-access-email" element={<PublicChrome footerVariant="giggen"><VerifyAccessEmail /></PublicChrome>} />
           <Route path="/accept-invitation" element={<PublicChrome footerVariant="giggen"><AcceptInvitation /></PublicChrome>} />
           <Route path="/i" element={<PublicChrome footerVariant="giggen"><AcceptInvitation /></PublicChrome>} />
-          <Route path="/onboarding/create-profile" element={<CreateProfileWizard />} />
+          {/* Legacy onboarding URL — redirected to the new join flow.
+              CreateProfileWizard is kept in source temporarily for rollback. */}
+          <Route path="/onboarding/create-profile" element={<Navigate to="/join/artist" replace />} />
           <Route path="/join/artist" element={<JoinArtistPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/reset-password" element={<ResetPassword />} />
