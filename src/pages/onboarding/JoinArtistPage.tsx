@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowRight, Check, Mail, Music, Users } from "lucide-react";
+import { ArrowRight, Check, ExternalLink, Mail, Music, Pencil, Users } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ export default function JoinArtistPage() {
   const [step, setStep] = useState<Step>("intro");
   const [sessionChecked, setSessionChecked] = useState(false);
   const [hasSession, setHasSession] = useState(false);
+  const [resolving, setResolving] = useState(false);
 
   // Auth form
   const [authMode, setAuthMode] = useState<AuthMode>("signup");
@@ -49,21 +50,47 @@ export default function JoinArtistPage() {
   const [heroSettings, setHeroSettings] = useState<ImageSettings | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<CompleteArtistJoinResult | null>(null);
+  // When the resolver finds an existing artist project, we surface it in the
+  // success panel without forcing a new creation. This makes /join/artist a
+  // safe "smart resume" entrypoint for ads / shared links.
+  const [resumed, setResumed] = useState(false);
 
   // Detect session, listen for changes (covers OAuth redirect / magic link).
   useEffect(() => {
     let cancelled = false;
-    const apply = (loggedIn: boolean) => {
+    const apply = async (loggedIn: boolean) => {
       if (cancelled) return;
       setHasSession(loggedIn);
       setSessionChecked(true);
       if (loggedIn) {
-        setStep((prev) => (prev === "intro" || prev === "auth" ? "create" : prev));
+        // Smart resume: if the user already has a solo/band project, jump to
+        // the success panel instead of forcing them through "create" again.
+        setResolving(true);
+        try {
+          const existing = await findExistingArtistProject();
+          if (cancelled) return;
+          if (existing) {
+            setKind(existing.type);
+            setName(existing.name);
+            setHeroUrl(existing.heroImageUrl ?? "");
+            setResult({
+              entityId: existing.id,
+              entitySlug: existing.slug,
+              personaId: "",
+            });
+            setResumed(true);
+            setStep("done");
+          } else {
+            setStep((prev) => (prev === "intro" || prev === "auth" ? "create" : prev));
+          }
+        } finally {
+          if (!cancelled) setResolving(false);
+        }
       }
     };
-    supabase.auth.getSession().then(({ data }) => apply(!!data.session));
+    supabase.auth.getSession().then(({ data }) => void apply(!!data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      apply(!!session);
+      void apply(!!session);
     });
     return () => {
       cancelled = true;
@@ -155,7 +182,7 @@ export default function JoinArtistPage() {
     }
   };
 
-  if (!sessionChecked) {
+  if (!sessionChecked || resolving) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingState />
