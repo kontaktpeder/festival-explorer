@@ -1,0 +1,75 @@
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { OnboardingBackground } from "./OnboardingBackground";
+
+type Intensity = "light" | "medium" | "heavy";
+
+interface Props {
+  stepKey: string;
+  overlayIntensity?: Intensity;
+  progress?: { current: number; total: number };
+  children: React.ReactNode;
+}
+
+/**
+ * Wraps an onboarding step with the cinematic background and an animated
+ * step-level transition. The background is rendered once at the shell level
+ * so the Vimeo iframe never re-mounts between steps.
+ */
+export const OnboardingShell: React.FC<Props> = ({
+  stepKey,
+  overlayIntensity = "medium",
+  progress,
+  children,
+}) => {
+  return (
+    <div className="relative min-h-[100dvh] w-full overflow-hidden text-foreground">
+      <OnboardingBackground intensity={overlayIntensity} />
+
+      <div
+        className="relative z-10 flex min-h-[100dvh] flex-col"
+        style={{
+          paddingTop: "max(env(safe-area-inset-top), 1rem)",
+          paddingBottom: "max(env(safe-area-inset-bottom), 1rem)",
+        }}
+      >
+        {/* Top bar */}
+        <header className="flex items-center justify-between px-5 pt-2">
+          <span className="font-display text-sm tracking-[0.25em] text-foreground/80 uppercase">
+            giggen
+          </span>
+          {progress && (
+            <div className="flex items-center gap-1.5">
+              {Array.from({ length: progress.total }).map((_, i) => (
+                <span
+                  key={i}
+                  className={`h-1 rounded-full transition-all duration-500 ${
+                    i < progress.current
+                      ? "w-6 bg-accent"
+                      : "w-3 bg-foreground/20"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+        </header>
+
+        {/* Animated step content */}
+        <main className="relative flex-1 flex flex-col">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={stepKey}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className="flex-1 flex flex-col w-full max-w-md mx-auto px-5"
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
+    </div>
+  );
+};
