@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowRight, Check, Mail, Music, Users } from "lucide-react";
+import { ArrowRight, Check, ExternalLink, Mail, Music, Pencil, Users } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,51 @@ import type { ImageSettings } from "@/types/database";
 type Step = "intro" | "auth" | "create" | "done";
 type AuthMode = "signup" | "signin";
 
+interface ExistingArtistProject {
+  id: string;
+  slug: string;
+  name: string;
+  type: ArtistJoinKind;
+  heroImageUrl: string | null;
+}
+
+/**
+ * Looks up the user's existing solo/band project, if any. Used by the join
+ * flow to skip "create" and jump straight to the success panel ("smart
+ * resume"). Returns null if the user has no qualifying project.
+ */
+async function findExistingArtistProject(): Promise<ExistingArtistProject | null> {
+  const { data: rows, error: rpcError } = await supabase.rpc("get_user_entities");
+  if (rpcError) {
+    console.warn("findExistingArtistProject: get_user_entities", rpcError);
+    return null;
+  }
+  const ids = (rows ?? [])
+    .map((r: { entity_id?: string | null }) => r?.entity_id)
+    .filter((v): v is string => typeof v === "string" && v.length > 0);
+  if (ids.length === 0) return null;
+  const { data: entities, error: entityError } = await supabase
+    .from("entities")
+    .select("id, slug, name, type, hero_image_url, created_at")
+    .in("id", ids)
+    .in("type", ["solo", "band"])
+    .order("created_at", { ascending: false })
+    .limit(1);
+  if (entityError) {
+    console.warn("findExistingArtistProject: entities", entityError);
+    return null;
+  }
+  const first = entities?.[0];
+  if (!first) return null;
+  return {
+    id: first.id,
+    slug: first.slug,
+    name: first.name,
+    type: first.type as ArtistJoinKind,
+    heroImageUrl: first.hero_image_url ?? null,
+  };
+}
+
 export default function JoinArtistPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -33,6 +78,7 @@ export default function JoinArtistPage() {
   const [step, setStep] = useState<Step>("intro");
   const [sessionChecked, setSessionChecked] = useState(false);
   const [hasSession, setHasSession] = useState(false);
+  const [resolving, setResolving] = useState(false);
 
   // Auth form
   const [authMode, setAuthMode] = useState<AuthMode>("signup");
@@ -49,21 +95,47 @@ export default function JoinArtistPage() {
   const [heroSettings, setHeroSettings] = useState<ImageSettings | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<CompleteArtistJoinResult | null>(null);
+  // When the resolver finds an existing artist project, we surface it in the
+  // success panel without forcing a new creation. This makes /join/artist a
+  // safe "smart resume" entrypoint for ads / shared links.
+  const [resumed, setResumed] = useState(false);
 
   // Detect session, listen for changes (covers OAuth redirect / magic link).
   useEffect(() => {
     let cancelled = false;
-    const apply = (loggedIn: boolean) => {
+    const apply = async (loggedIn: boolean) => {
       if (cancelled) return;
       setHasSession(loggedIn);
       setSessionChecked(true);
       if (loggedIn) {
-        setStep((prev) => (prev === "intro" || prev === "auth" ? "create" : prev));
+        // Smart resume: if the user already has a solo/band project, jump to
+        // the success panel instead of forcing them through "create" again.
+        setResolving(true);
+        try {
+          const existing = await findExistingArtistProject();
+          if (cancelled) return;
+          if (existing) {
+            setKind(existing.type);
+            setName(existing.name);
+            setHeroUrl(existing.heroImageUrl ?? "");
+            setResult({
+              entityId: existing.id,
+              entitySlug: existing.slug,
+              personaId: "",
+            });
+            setResumed(true);
+            setStep("done");
+          } else {
+            setStep((prev) => (prev === "intro" || prev === "auth" ? "create" : prev));
+          }
+        } finally {
+          if (!cancelled) setResolving(false);
+        }
       }
     };
-    supabase.auth.getSession().then(({ data }) => apply(!!data.session));
+    supabase.auth.getSession().then(({ data }) => void apply(!!data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      apply(!!session);
+      void apply(!!session);
     });
     return () => {
       cancelled = true;
@@ -155,7 +227,7 @@ export default function JoinArtistPage() {
     }
   };
 
-  if (!sessionChecked) {
+  if (!sessionChecked || resolving) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingState />
@@ -389,9 +461,13 @@ export default function JoinArtistPage() {
         {step === "done" && result && (
           <section className="space-y-6">
             <div className="space-y-2">
-              <h1 className="text-2xl font-semibold">Profilen er klar 🎉</h1>
+              <h1 className="text-2xl font-semibold">
+                {resumed ? "Velkommen tilbake 👋" : "Profilen er klar 🎉"}
+              </h1>
               <p className="text-sm text-muted-foreground">
-                Del lenken eller fortsett å fylle ut detaljer.
+                {resumed
+                  ? `Du har allerede ${kind === "band" ? "en bandprofil" : "en artistprofil"}. Fortsett der du slapp.`
+                  : "Neste steg: legg til bio, sosiale lenker og publiser. Du kan også dele profilen med en gang."}
               </p>
             </div>
 
@@ -420,36 +496,52 @@ export default function JoinArtistPage() {
               </div>
             </div>
 
-            <ShareButton
-              config={{
-                pageType: "project",
-                title: name,
-                slug: result.entitySlug,
-                shareTitle: name,
-                shareText: `Sjekk ut ${name} på giggen.org`,
-                heroImageUrl: heroUrl || null,
-              }}
-            />
+            {/* Primary CTA — "complete profile" is the one action that moves
+                the journey forward. Keep it visually dominant. */}
+            <Button asChild size="lg" className="w-full gap-2">
+              <Link to={`/dashboard/entities/${result.entityId}/edit`}>
+                <Pencil className="h-4 w-4" />
+                {kind === "band" ? "Fullfør bandprofil" : "Fullfør artistprofil"}
+              </Link>
+            </Button>
 
+            <p className="text-xs text-muted-foreground -mt-2">
+              Legg til bio, bilder, sosiale lenker og rider for å gjøre profilen klar for booking.
+            </p>
+
+            {/* Secondary actions */}
             <div className="grid gap-2 sm:grid-cols-2">
-              <Button asChild variant="default">
-                <Link to={`/dashboard/entities/${result.entityId}/edit`}>
-                  Fullfør profil
+              <ShareButton
+                config={{
+                  pageType: "project",
+                  title: name,
+                  slug: result.entitySlug,
+                  shareTitle: name,
+                  shareText: `Sjekk ut ${name} på giggen.org`,
+                  heroImageUrl: heroUrl || null,
+                }}
+              />
+              <Button asChild variant="outline" className="gap-2">
+                <a href={publicProjectUrl} target="_blank" rel="noreferrer">
+                  <ExternalLink className="h-4 w-4" />
+                  Se offentlig side
+                </a>
+              </Button>
+            </div>
+
+            {kind === "band" && (
+              <Button asChild variant="outline" className="w-full gap-2">
+                <Link to={`/dashboard/entities/${result.entityId}/invite`}>
+                  <Users className="h-4 w-4" />
+                  Inviter bandmedlemmer
                 </Link>
               </Button>
-              {kind === "band" && (
-                <Button asChild variant="outline">
-                  <Link to={`/dashboard/entities/${result.entityId}/invite`}>
-                    Inviter bandmedlemmer
-                  </Link>
-                </Button>
-              )}
-            </div>
+            )}
 
             <Button
               variant="ghost"
               className="w-full"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/dashboard?from=onboarding")}
             >
               Gå til dashbordet
             </Button>

@@ -313,15 +313,60 @@ export default function Dashboard() {
           {/* Onboarding confirmation */}
           {fromOnboarding && (
             <section className="rounded-xl border border-accent/20 bg-accent/5 p-4 sm:p-6 space-y-3">
-              <h3 className="text-sm font-semibold text-accent">Profil opprettet</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Dette er din profesjonelle profil på GIGGEN. Du kan når som helst endre den fra dashbordet.
-              </p>
+              {activePersona.type === "musician" && hasProjectAccess ? (
+                (() => {
+                  const firstArtist = (entities ?? []).find(
+                    (e) => e.type === "solo" || e.type === "band",
+                  );
+                  return (
+                    <>
+                      <h3 className="text-sm font-semibold text-accent">
+                        Dette er prosjektet ditt
+                      </h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Profilen er opprettet. Fullfør den med bio, bilder og lenker så er du klar for booking.
+                      </p>
+                      {firstArtist && (
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          <Button asChild size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold">
+                            <Link to={`/dashboard/entities/${firstArtist.id}/edit`}>
+                              Fullfør artistprofil
+                            </Link>
+                          </Button>
+                          <Button asChild size="sm" variant="outline">
+                            <a
+                              href={`/project/${firstArtist.slug}`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Se offentlig side
+                            </a>
+                          </Button>
+                          {firstArtist.type === "band" && (
+                            <Button asChild size="sm" variant="outline">
+                              <Link to={`/dashboard/entities/${firstArtist.id}/invite`}>
+                                Inviter medlemmer
+                              </Link>
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()
+              ) : (
+                <>
+                  <h3 className="text-sm font-semibold text-accent">Profil opprettet</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Dette er din profesjonelle profil på GIGGEN. Du kan når som helst endre den fra dashbordet.
+                  </p>
+                </>
+              )}
 
               {activePersona.type === "musician" && !hasProjectAccess && (
                 <div className="space-y-2 pt-1">
                   <p className="text-xs text-muted-foreground">
-                    <strong className="text-foreground">Neste steg:</strong> Sett opp din egen artistprofil eller vent på invitasjon fra festival eller arrangør.
+                    <strong className="text-foreground">Neste steg:</strong> Sett opp din egen artistprofil for å bli synlig for arrangører.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <Button asChild size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90 font-semibold">
@@ -329,11 +374,6 @@ export default function Dashboard() {
                     </Button>
                   </div>
                 </div>
-              )}
-              {activePersona.type === "musician" && hasProjectAccess && (
-                <p className="text-xs text-muted-foreground">
-                  Profilen din er klar. Du finner prosjektene dine under.
-                </p>
               )}
 
               {activePersona.type === "photographer" && (
