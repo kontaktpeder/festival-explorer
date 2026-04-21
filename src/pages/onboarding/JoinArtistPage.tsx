@@ -160,7 +160,10 @@ export default function JoinArtistPage() {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: getAuthCallbackUrl("/join/artist") },
+        options: {
+          redirectTo: getAuthCallbackUrl(),
+          queryParams: { next: "/join/artist" },
+        },
       });
       if (error) throw error;
     } catch (err) {
@@ -178,7 +181,9 @@ export default function JoinArtistPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: getAuthCallbackUrl("/join/artist") },
+          options: {
+            emailRedirectTo: `${getAuthCallbackUrl()}?next=${encodeURIComponent("/join/artist")}`,
+          },
         });
         if (error) throw error;
         // If email confirmation is required, no session yet.
