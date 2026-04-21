@@ -461,9 +461,13 @@ export default function JoinArtistPage() {
         {step === "done" && result && (
           <section className="space-y-6">
             <div className="space-y-2">
-              <h1 className="text-2xl font-semibold">Profilen er klar 🎉</h1>
+              <h1 className="text-2xl font-semibold">
+                {resumed ? "Velkommen tilbake 👋" : "Profilen er klar 🎉"}
+              </h1>
               <p className="text-sm text-muted-foreground">
-                Del lenken eller fortsett å fylle ut detaljer.
+                {resumed
+                  ? `Du har allerede ${kind === "band" ? "en bandprofil" : "en artistprofil"}. Fortsett der du slapp.`
+                  : "Neste steg: legg til bio, sosiale lenker og publiser. Du kan også dele profilen med en gang."}
               </p>
             </div>
 
@@ -492,36 +496,52 @@ export default function JoinArtistPage() {
               </div>
             </div>
 
-            <ShareButton
-              config={{
-                pageType: "project",
-                title: name,
-                slug: result.entitySlug,
-                shareTitle: name,
-                shareText: `Sjekk ut ${name} på giggen.org`,
-                heroImageUrl: heroUrl || null,
-              }}
-            />
+            {/* Primary CTA — "complete profile" is the one action that moves
+                the journey forward. Keep it visually dominant. */}
+            <Button asChild size="lg" className="w-full gap-2">
+              <Link to={`/dashboard/entities/${result.entityId}/edit`}>
+                <Pencil className="h-4 w-4" />
+                {kind === "band" ? "Fullfør bandprofil" : "Fullfør artistprofil"}
+              </Link>
+            </Button>
 
+            <p className="text-xs text-muted-foreground -mt-2">
+              Legg til bio, bilder, sosiale lenker og rider for å gjøre profilen klar for booking.
+            </p>
+
+            {/* Secondary actions */}
             <div className="grid gap-2 sm:grid-cols-2">
-              <Button asChild variant="default">
-                <Link to={`/dashboard/entities/${result.entityId}/edit`}>
-                  Fullfør profil
+              <ShareButton
+                config={{
+                  pageType: "project",
+                  title: name,
+                  slug: result.entitySlug,
+                  shareTitle: name,
+                  shareText: `Sjekk ut ${name} på giggen.org`,
+                  heroImageUrl: heroUrl || null,
+                }}
+              />
+              <Button asChild variant="outline" className="gap-2">
+                <a href={publicProjectUrl} target="_blank" rel="noreferrer">
+                  <ExternalLink className="h-4 w-4" />
+                  Se offentlig side
+                </a>
+              </Button>
+            </div>
+
+            {kind === "band" && (
+              <Button asChild variant="outline" className="w-full gap-2">
+                <Link to={`/dashboard/entities/${result.entityId}/invite`}>
+                  <Users className="h-4 w-4" />
+                  Inviter bandmedlemmer
                 </Link>
               </Button>
-              {kind === "band" && (
-                <Button asChild variant="outline">
-                  <Link to={`/dashboard/entities/${result.entityId}/invite`}>
-                    Inviter bandmedlemmer
-                  </Link>
-                </Button>
-              )}
-            </div>
+            )}
 
             <Button
               variant="ghost"
               className="w-full"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/dashboard?from=onboarding")}
             >
               Gå til dashbordet
             </Button>
