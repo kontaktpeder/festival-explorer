@@ -71,7 +71,7 @@ import { LOCATION_TYPE_OPTIONS, type LocationType } from "@/types/location";
 
 const TYPE_LABELS: Record<EntityType, string> = {
   venue: "Scene",
-  solo: "Artistprosjekt",
+  solo: "Artistprofil",
   band: "Band",
 };
 
@@ -381,10 +381,10 @@ export default function EntityEdit() {
   const hasOtherMembers = otherMembers.length > 0;
 
   const modules: { key: ActivePanel; title: string; description: string; icon: React.ElementType; danger?: boolean }[] = [
-    { key: "basic", title: "Grunnleggende", description: "Navn, bio, bilder og logo", icon: Building2 },
-    { key: "location", title: "Lokasjon", description: locationName || "Sted og type", icon: MapPin },
+    { key: "basic", title: "Profilinnhold", description: "Navn, bio, bilder og logo", icon: Building2 },
+    { key: "location", title: isVenue ? "Lokasjon" : "Hjemmebase", description: locationName || "Sted og type", icon: MapPin },
     { key: "social", title: "Sosiale lenker", description: `${socialLinks.length} lenke${socialLinks.length !== 1 ? "r" : ""}`, icon: Link2 },
-    { key: "technical", title: "Teknisk", description: techRiderAssetId || techRiderMediaId || hospRiderAssetId || hospRiderMediaId ? "Rider lastet opp" : "Tech rider, hospitality rider", icon: Wrench },
+    { key: "technical", title: "Rider og praktisk", description: techRiderAssetId || techRiderMediaId || hospRiderAssetId || hospRiderMediaId ? "Rider lastet opp" : "Tech rider og hospitality rider", icon: Wrench },
     { key: "timeline", title: isVenue ? "Historien" : "Min reise", description: "Viktige hendelser og milepæler", icon: Clock },
     { key: "danger" as ActivePanel, title: "Farlig sone", description: isOwner ? "Eierskap, slett" : "Forlat prosjektet", icon: AlertTriangle, danger: true },
   ];
@@ -663,7 +663,7 @@ export default function EntityEdit() {
         {/* Module grid */}
         <section className="space-y-3">
           <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
-            Innstillinger
+            {isVenue ? "Innstillinger" : "Profilinnhold"}
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-3">
             {modules.map((mod) => {
