@@ -149,11 +149,18 @@ export async function completeArtistJoin(
   };
 }
 
-export function getAuthCallbackUrl(nextPath: string = "/join/artist"): string {
+/**
+ * Returns the OAuth callback URL.
+ *
+ * OAuth providers (Google/Apple) require a clean origin + path, with NO
+ * query string and NO trailing slash, otherwise they reject the redirect
+ * with "Invalid Origin". For email-link signups (`emailRedirectTo`) the
+ * same clean URL works fine — pass `next` via `queryParams` instead.
+ */
+export function getAuthCallbackUrl(): string {
   const origin =
     typeof window !== "undefined"
       ? window.location.origin
       : "https://giggen.org";
-  const safe = nextPath.startsWith("/") ? nextPath : `/${nextPath}`;
-  return `${origin}/auth/callback?next=${encodeURIComponent(safe)}`;
+  return `${origin}/auth/callback`;
 }
