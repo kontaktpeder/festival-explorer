@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowRight, Check, ExternalLink, Mail, Music, Pencil, Users } from "lucide-react";
+import { ArrowRight, Check, ExternalLink, Mail, Music, Pencil, Sparkles, Users } from "lucide-react";
+import { motion } from "framer-motion";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,8 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { CroppedImage } from "@/components/ui/CroppedImage";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { ShareButton } from "@/components/share/ShareButton";
+import { OnboardingShell } from "@/components/onboarding/OnboardingShell";
+import { CinematicCTA } from "@/components/onboarding/CinematicCTA";
 import {
   completeArtistJoin,
   getAuthCallbackUrl,
