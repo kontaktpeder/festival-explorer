@@ -25,6 +25,51 @@ import type { ImageSettings } from "@/types/database";
 type Step = "intro" | "auth" | "create" | "done";
 type AuthMode = "signup" | "signin";
 
+interface ExistingArtistProject {
+  id: string;
+  slug: string;
+  name: string;
+  type: ArtistJoinKind;
+  heroImageUrl: string | null;
+}
+
+/**
+ * Looks up the user's existing solo/band project, if any. Used by the join
+ * flow to skip "create" and jump straight to the success panel ("smart
+ * resume"). Returns null if the user has no qualifying project.
+ */
+async function findExistingArtistProject(): Promise<ExistingArtistProject | null> {
+  const { data: rows, error: rpcError } = await supabase.rpc("get_user_entities");
+  if (rpcError) {
+    console.warn("findExistingArtistProject: get_user_entities", rpcError);
+    return null;
+  }
+  const ids = (rows ?? [])
+    .map((r: { entity_id?: string | null }) => r?.entity_id)
+    .filter((v): v is string => typeof v === "string" && v.length > 0);
+  if (ids.length === 0) return null;
+  const { data: entities, error: entityError } = await supabase
+    .from("entities")
+    .select("id, slug, name, type, hero_image_url, created_at")
+    .in("id", ids)
+    .in("type", ["solo", "band"])
+    .order("created_at", { ascending: false })
+    .limit(1);
+  if (entityError) {
+    console.warn("findExistingArtistProject: entities", entityError);
+    return null;
+  }
+  const first = entities?.[0];
+  if (!first) return null;
+  return {
+    id: first.id,
+    slug: first.slug,
+    name: first.name,
+    type: first.type as ArtistJoinKind,
+    heroImageUrl: first.hero_image_url ?? null,
+  };
+}
+
 export default function JoinArtistPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
