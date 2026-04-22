@@ -158,9 +158,17 @@ export async function completeArtistJoin(
  * same clean URL works fine — pass `next` via `queryParams` instead.
  */
 export function getAuthCallbackUrl(): string {
-  const origin =
-    typeof window !== "undefined"
-      ? window.location.origin
-      : "https://giggen.org";
-  return `${origin}/auth/callback`;
+  const fallbackOrigin = "https://giggen.org";
+
+  if (typeof window === "undefined") {
+    return `${fallbackOrigin}/auth/callback`;
+  }
+
+  const { origin, hostname } = window.location;
+  const isLocal = hostname === "localhost" || hostname === "127.0.0.1";
+  const isLovablePreview =
+    hostname.includes("lovable.app") || hostname.includes("lovableproject.com");
+
+  const baseOrigin = isLocal ? origin : isLovablePreview ? fallbackOrigin : origin;
+  return `${baseOrigin}/auth/callback`;
 }
