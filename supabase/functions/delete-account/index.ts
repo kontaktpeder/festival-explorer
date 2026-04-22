@@ -6,6 +6,12 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+const jsonResponse = (body: Record<string, unknown>) =>
+  new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
 Deno.serve(async (req) => {
   // CORS preflight
   if (req.method === "OPTIONS") {
@@ -16,10 +22,7 @@ Deno.serve(async (req) => {
     // Get user from JWT
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing authorization" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResponse({ ok: false, error: "Missing authorization" });
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -39,9 +42,10 @@ Deno.serve(async (req) => {
 
     if (userError || !user) {
       console.error("Auth error:", userError);
-      return new Response(JSON.stringify({ error: "Not authenticated" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return jsonResponse({
+        ok: false,
+        error: "Not authenticated",
+        diagnostics: { stage: "auth", details: userError?.message ?? null },
       });
     }
 
@@ -61,16 +65,16 @@ Deno.serve(async (req) => {
         console.log("Profile already deleted, continuing to delete auth user");
       } else {
         console.error("delete_user_safely RPC error:", rpcError);
-        return new Response(
-          JSON.stringify({
-            error: "Failed to delete user data",
-            details: rpcError.message,
-          }),
-          {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
+        return jsonResponse({
+          ok: false,
+          error: "Failed to delete user data",
+          details: rpcError.message,
+          diagnostics: {
+            stage: "delete_user_safely",
+            code: rpcError.code ?? null,
+            hint: rpcError.hint ?? null,
+          },
+        });
       }
     } else {
       rpcResult = data;
@@ -91,42 +95,25 @@ Deno.serve(async (req) => {
 
     if (deleteAuthError) {
       console.error("Failed to delete auth user:", deleteAuthError);
-      // Profile data is already deleted - we should still report success
-      // but note that auth user remains (edge case)
-      return new Response(
-        JSON.stringify({
-          success: true,
-          warning: "Profile deleted but auth user could not be removed",
-          details: deleteAuthError.message,
-          ...rpcResult,
-        }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      return jsonResponse({
+        ok: true,
+        success: true,
+        warning: "Profile deleted but auth user could not be removed",
+        details: deleteAuthError.message,
+        ...rpcResult,
+      });
     }
 
     console.log(`Successfully deleted auth user: ${user.id}`);
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        ...rpcResult,
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return jsonResponse({ ok: true, success: true, ...rpcResult });
   } catch (err) {
     console.error("Unexpected error:", err);
-    return new Response(
-      JSON.stringify({ error: "Internal server error", details: String(err) }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return jsonResponse({
+      ok: false,
+      error: "Internal server error",
+      details: String(err),
+      diagnostics: { stage: "unexpected" },
+    });
   }
 });
