@@ -182,7 +182,9 @@ export default function AccountCenter() {
       if (!session?.user) throw new Error("Not authenticated");
       const { data, error } = await supabase.functions.invoke('delete-account');
       if (error) throw error;
-      if (data?.error) throw new Error(data.details || data.error);
+      if (data?.ok === false || data?.error) {
+        throw new Error(data?.details || data?.error || "Kunne ikke slette konto.");
+      }
       await supabase.auth.signOut();
       return data;
     },
@@ -405,7 +407,7 @@ export default function AccountCenter() {
                 </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+              <AlertDialogFooter>
               <AlertDialogCancel onClick={() => setConfirmDeleteText("")} className="w-full sm:w-auto">Avbryt</AlertDialogCancel>
               <AlertDialogAction onClick={handleDeleteAccount} className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={deleteAccountMutation.isPending}>
                 {deleteAccountMutation.isPending ? "Sletter..." : "Ja, slett kontoen min"}
