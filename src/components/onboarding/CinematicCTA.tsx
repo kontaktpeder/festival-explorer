@@ -21,6 +21,21 @@ export const CinematicCTA = React.forwardRef<HTMLButtonElement, Props>(
     ref,
   ) => {
     const Comp: React.ElementType = asChild ? Slot : "button";
+    const content = asChild ? (
+      children
+    ) : (
+      <>
+        {variant === "primary" && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-white/25 to-transparent"
+          />
+        )}
+        <span className="relative z-10 inline-flex items-center gap-2">
+          {children}
+        </span>
+      </>
+    );
 
     const base =
       "group relative inline-flex items-center justify-center gap-2 font-medium tracking-tight " +
@@ -49,16 +64,7 @@ export const CinematicCTA = React.forwardRef<HTMLButtonElement, Props>(
         className={cn(base, sizes[size], variants[variant], className)}
         {...rest}
       >
-        {/* Shimmer for primary */}
-        {variant === "primary" && (
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-white/25 to-transparent"
-          />
-        )}
-        <span className="relative z-10 inline-flex items-center gap-2">
-          {children}
-        </span>
+        {content}
       </Comp>
     );
   },
