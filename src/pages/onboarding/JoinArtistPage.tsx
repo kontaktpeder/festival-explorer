@@ -157,23 +157,19 @@ export default function JoinArtistPage() {
     return `${getPublicUrl().replace(/\/$/, "")}/project/${result.entitySlug}`;
   }, [result]);
 
-  const handleOAuth = async (provider: "google" | "apple") => {
-    setAuthError(null);
-    setAuthBusy(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: getAuthCallbackUrl(),
-          queryParams: { next: "/join/artist" },
-        },
-      });
-      if (error) throw error;
-    } catch (err) {
-      setAuthError(err instanceof Error ? err.message : "Innlogging feilet.");
-      setAuthBusy(false);
-    }
-  };
+  const emailApps = useMemo(
+    () => [
+      {
+        label: "Åpne Gmail",
+        href: "https://mail.google.com/mail/u/0/#inbox",
+      },
+      {
+        label: "Åpne Apple Mail",
+        href: "message://",
+      },
+    ],
+    [],
+  );
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -342,53 +338,33 @@ export default function JoinArtistPage() {
 
       {step === "auth" && !hasSession && (
         <section className="flex-1 flex flex-col pt-6">
-          <div className="space-y-2 mb-6">
+            <div className="space-y-2 mb-6">
             <h1 className="font-display text-3xl font-semibold tracking-tight">
               {authMode === "signup" ? "Opprett konto" : "Logg inn"}
             </h1>
             <p className="text-sm text-foreground/65">
-              Bruk Google, Apple eller e-post. Vi sender deg rett hit tilbake.
+                Bruk e-post for å komme i gang. Vi sender deg rett tilbake til artistflyten.
             </p>
           </div>
 
           <div className="rounded-3xl border border-foreground/10 bg-foreground/[0.04] backdrop-blur-2xl p-5 space-y-4 shadow-[0_20px_60px_-20px_hsl(0_0%_0%/0.6)]">
-            <div className="grid gap-2">
-              <CinematicCTA
-                variant="glass"
-                size="lg"
-                disabled={authBusy}
-                onClick={() => handleOAuth("google")}
-                className="w-full justify-center"
-              >
-                <GoogleIcon className="h-4 w-4" />
-                Fortsett med Google
-              </CinematicCTA>
-              <CinematicCTA
-                variant="glass"
-                size="lg"
-                disabled={authBusy}
-                onClick={() => handleOAuth("apple")}
-                className="w-full justify-center"
-              >
-                <AppleIcon className="h-4 w-4" />
-                Fortsett med Apple
-              </CinematicCTA>
-            </div>
-
-            <div className="flex items-center gap-3 text-[11px] uppercase tracking-wider text-foreground/40">
-              <div className="h-px bg-foreground/10 flex-1" />
-              eller med e-post
-              <div className="h-px bg-foreground/10 flex-1" />
-            </div>
-
             {emailSent ? (
-              <div className="rounded-2xl border border-accent/30 bg-accent/5 p-4 text-sm space-y-2">
+              <div className="rounded-2xl border border-accent/30 bg-accent/5 p-4 text-sm space-y-3">
                 <div className="flex items-center gap-2 font-medium text-foreground">
                   <Mail className="h-4 w-4 text-accent" /> Sjekk e-posten din
                 </div>
                 <p className="text-foreground/70">
-                  Vi sendte en bekreftelseslenke til {email}. Klikk lenken for å fullføre.
+                  Vi sendte en bekreftelseslenke til {email}. Åpne mailappen din og trykk på lenken for å fullføre.
                 </p>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {emailApps.map((app) => (
+                    <CinematicCTA asChild key={app.label} variant="glass" size="md" className="w-full">
+                      <a href={app.href} target="_blank" rel="noreferrer">
+                        {app.label}
+                      </a>
+                    </CinematicCTA>
+                  ))}
+                </div>
               </div>
             ) : (
               <form onSubmit={handleEmailSubmit} className="space-y-3">
@@ -641,22 +617,5 @@ export default function JoinArtistPage() {
         </section>
       )}
     </OnboardingShell>
-  );
-}
-
-/* ---------- Inline brand icons (kept local — small, single-use) ---------- */
-function GoogleIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden>
-      <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6.2s2.7-6.2 6-6.2c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.3 14.6 2.3 12 2.3 6.5 2.3 2 6.7 2 12.2s4.5 9.9 10 9.9c5.8 0 9.6-4.1 9.6-9.8 0-.7-.07-1.2-.16-1.7H12z"/>
-    </svg>
-  );
-}
-
-function AppleIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M16.365 1.43c0 1.14-.46 2.23-1.21 3.04-.79.85-2.07 1.5-3.13 1.42-.13-1.1.41-2.25 1.14-3.06.81-.9 2.18-1.55 3.2-1.4zM20.7 17.4c-.55 1.27-.82 1.83-1.53 2.95-.99 1.56-2.39 3.5-4.13 3.51-1.55.02-1.95-1.01-4.05-1-2.1.01-2.54 1.02-4.09 1-1.74-.01-3.07-1.76-4.06-3.32C.4 16.3-.07 11.34 1.86 8.7c1.36-1.86 3.5-2.95 5.52-2.95 2.05 0 3.34 1.13 5.04 1.13 1.65 0 2.65-1.13 5.02-1.13 1.79 0 3.69.98 5.04 2.66-4.43 2.43-3.71 8.76-1.78 8.99z"/>
-    </svg>
   );
 }

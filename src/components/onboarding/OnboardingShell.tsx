@@ -38,7 +38,7 @@ export const OnboardingShell: React.FC<Props> = ({
           <img
             src={giggenLogo}
             alt="Giggen"
-            className="h-12 w-auto sm:h-14"
+            className={stepKey === "intro" ? "h-20 w-auto sm:h-24" : "h-12 w-auto sm:h-14"}
           />
           {progress && (
             <div className="mt-4 flex items-center justify-center gap-1.5">
