@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowRight, Check, ExternalLink, Mail, Music, Pencil, Sparkles, Users } from "lucide-react";
+import { ArrowRight, Check, ExternalLink, Mail, Music, Pencil, Users } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -274,14 +274,6 @@ export default function JoinArtistPage() {
             }}
             className="space-y-5 pb-2"
           >
-            <motion.div
-              variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
-              className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-xs text-accent backdrop-blur-md"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              For artister og band
-            </motion.div>
-
             <motion.h1
               variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
               className="font-display text-[2.5rem] leading-[1.05] sm:text-5xl font-semibold tracking-tight text-foreground"
