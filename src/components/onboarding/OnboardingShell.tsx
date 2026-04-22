@@ -1,6 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { OnboardingBackground } from "./OnboardingBackground";
+import giggenLogo from "@/assets/giggen-logo-final.png";
 
 type Intensity = "light" | "medium" | "heavy";
 
@@ -33,13 +34,14 @@ export const OnboardingShell: React.FC<Props> = ({
           paddingBottom: "max(env(safe-area-inset-bottom), 1rem)",
         }}
       >
-        {/* Top bar */}
-        <header className="flex items-center justify-between px-5 pt-2">
-          <span className="font-display text-sm tracking-[0.25em] text-foreground/80 uppercase">
-            giggen
-          </span>
+        <header className="flex flex-col items-center px-5 pt-3 text-center">
+          <img
+            src={giggenLogo}
+            alt="Giggen"
+            className="h-12 w-auto sm:h-14"
+          />
           {progress && (
-            <div className="flex items-center gap-1.5">
+            <div className="mt-4 flex items-center justify-center gap-1.5">
               {Array.from({ length: progress.total }).map((_, i) => (
                 <span
                   key={i}
