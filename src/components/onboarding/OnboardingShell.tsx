@@ -24,11 +24,11 @@ export const OnboardingShell: React.FC<Props> = ({
   children,
 }) => {
   return (
-    <div className="relative min-h-[100dvh] w-full overflow-hidden text-foreground">
+    <div className="relative h-[100dvh] min-h-[100dvh] w-full overflow-hidden text-foreground">
       <OnboardingBackground intensity={overlayIntensity} />
 
       <div
-        className="relative z-10 flex min-h-[100dvh] flex-col"
+        className="relative z-10 flex h-[100dvh] min-h-[100dvh] flex-col overflow-hidden"
         style={{
           paddingTop: "max(env(safe-area-inset-top), 1rem)",
           paddingBottom: "max(env(safe-area-inset-bottom), 1rem)",
@@ -57,7 +57,7 @@ export const OnboardingShell: React.FC<Props> = ({
         </header>
 
         {/* Animated step content */}
-        <main className="relative flex-1 flex flex-col">
+        <main className="relative flex min-h-0 flex-1 flex-col">
           <AnimatePresence mode="wait">
             <motion.div
               key={stepKey}
@@ -65,7 +65,7 @@ export const OnboardingShell: React.FC<Props> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="flex-1 flex flex-col w-full max-w-md mx-auto px-5 lg:max-w-6xl lg:px-10"
+              className="mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col px-5 lg:max-w-6xl lg:px-10"
             >
               {children}
             </motion.div>
