@@ -257,7 +257,7 @@ export default function JoinArtistPage() {
       progress={{ current: progressMap[step], total: 4 }}
     >
       {step === "intro" && (
-        <section className="relative flex flex-1 flex-col justify-end pb-2 lg:grid lg:min-h-0 lg:grid-cols-[minmax(0,1.2fr)_minmax(26rem,28rem)] lg:items-end lg:gap-12 lg:pb-8 lg:pt-2">
+        <section className="relative flex flex-1 flex-col justify-end pb-2 lg:grid lg:min-h-0 lg:grid-cols-[minmax(0,1.2fr)_minmax(26rem,28rem)] lg:items-end lg:gap-12 lg:pb-10 lg:pt-4">
           {!hasSession && (
             <CinematicCTA
               variant="ghost-light"
@@ -281,11 +281,11 @@ export default function JoinArtistPage() {
               hidden: {},
               show: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
             }}
-            className="space-y-4 pb-2 lg:max-w-2xl lg:self-end lg:pb-6"
+            className="relative z-10 space-y-5 pb-2 lg:max-w-2xl lg:self-end lg:pb-8"
           >
             <motion.h1
               variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
-              className="font-display text-[2.5rem] leading-[1.02] sm:text-5xl lg:max-w-3xl lg:text-[4.7rem] font-semibold tracking-tight text-foreground"
+              className="font-display text-[2.5rem] leading-[1.02] sm:text-5xl lg:max-w-3xl lg:text-[5.35rem] font-semibold tracking-tight text-foreground"
             >
               Ikke bare post på Instagram.<br />
               <span className="text-accent">Bygg en base.</span>
@@ -293,7 +293,7 @@ export default function JoinArtistPage() {
 
             <motion.p
               variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
-              className="text-foreground/70 text-base leading-relaxed max-w-sm lg:max-w-lg lg:text-lg"
+              className="max-w-sm text-base leading-relaxed text-foreground/80 lg:max-w-xl lg:text-xl"
             >
               Profesjonell artistprofil på 60 sekunder. Lag en delbar side
               for deg eller bandet — og bli enklere å booke.
@@ -301,7 +301,7 @@ export default function JoinArtistPage() {
 
             <motion.ul
               variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}
-              className="space-y-2 pt-1 lg:max-w-md"
+              className="space-y-2 pt-2 lg:max-w-lg"
             >
               {[
                 "Egen offentlig side med eget navn",
@@ -319,7 +319,7 @@ export default function JoinArtistPage() {
 
             <motion.div
               variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
-              className="hidden lg:grid lg:grid-cols-3 lg:gap-3 lg:pt-3"
+              className="hidden lg:grid lg:grid-cols-3 lg:gap-4 lg:pt-5"
             >
               {[
                 { value: '60 sek', label: 'til første profil' },
@@ -328,10 +328,10 @@ export default function JoinArtistPage() {
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="border-l border-foreground/15 pl-4"
+                  className="border-l-2 border-foreground/15 pl-4"
                 >
-                  <div className="text-lg font-semibold text-foreground">{item.value}</div>
-                  <div className="mt-1 text-sm text-foreground/55">{item.label}</div>
+                  <div className="text-xl font-semibold text-foreground">{item.value}</div>
+                  <div className="mt-1 text-sm text-foreground/60">{item.label}</div>
                 </div>
               ))}
             </motion.div>
