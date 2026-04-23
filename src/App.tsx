@@ -117,7 +117,8 @@ const App = () => (
         <ScrollRestorationManager />
         <PublicErrorBoundary>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<JoinArtistPage />} />
+          <Route path="/landing" element={<LandingPage />} />
           <Route path="/festival" element={<Navigate to="/" replace />} />
           <Route path="/festival/program" element={<PublicChrome footerVariant="festival"><FestivalProgramPage /></PublicChrome>} />
           <Route path="/festival/:slug" element={<PublicChrome footerVariant="festival"><FestivalTemplatePage /></PublicChrome>} />
@@ -147,6 +148,7 @@ const App = () => (
               CreateProfileWizard is kept in source temporarily for rollback. */}
           <Route path="/onboarding/create-profile" element={<Navigate to="/join/artist" replace />} />
           <Route path="/join/artist" element={<JoinArtistPage />} />
+          <Route path="/join-artist" element={<Navigate to="/join/artist" replace />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/dashboard" element={<Dashboard />} />
