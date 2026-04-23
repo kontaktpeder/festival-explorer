@@ -1,10 +1,12 @@
 import React from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type Intensity = "light" | "medium" | "heavy";
 
 interface Props {
   intensity?: Intensity;
   vimeoId?: string;
+  desktopVimeoId?: string;
 }
 
 /**
@@ -15,7 +17,9 @@ interface Props {
 export const OnboardingBackground: React.FC<Props> = ({
   intensity = "medium",
   vimeoId = "1185124572",
+  desktopVimeoId = "1185852804",
 }) => {
+  const isMobile = useIsMobile();
   const overlayClass =
     intensity === "light"
       ? "bg-[radial-gradient(ellipse_at_center,hsl(0_0%_4%/0.25)_0%,hsl(0_0%_4%/0.75)_100%)]"
@@ -36,6 +40,8 @@ export const OnboardingBackground: React.FC<Props> = ({
     dnt: "1",
   }).toString();
 
+  const activeVimeoId = isMobile ? vimeoId : desktopVimeoId;
+
   return (
     <div
       aria-hidden
@@ -44,7 +50,7 @@ export const OnboardingBackground: React.FC<Props> = ({
       {/* Video — scaled up so the 9:16 portrait fills any viewport without bars */}
       <div className="absolute inset-0 scale-150 sm:scale-110 origin-center">
         <iframe
-          src={`https://player.vimeo.com/video/${vimeoId}?${params}`}
+          src={`https://player.vimeo.com/video/${activeVimeoId}?${params}`}
           allow="autoplay; fullscreen; picture-in-picture"
           className="absolute inset-0 w-full h-full"
           title=""
