@@ -257,7 +257,7 @@ export default function JoinArtistPage() {
       progress={{ current: progressMap[step], total: 4 }}
     >
       {step === "intro" && (
-        <section className="flex-1 flex flex-col lg:grid lg:min-h-0 lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,28rem)] lg:items-end lg:gap-10 lg:pb-8">
+        <section className="flex-1 flex flex-col lg:grid lg:min-h-0 lg:grid-cols-[minmax(0,1.15fr)_minmax(24rem,30rem)] lg:items-end lg:gap-14 lg:pb-10 lg:pt-4">
           {/* Push hero copy down so it sits in the lower third — story-style */}
           <div className="hidden lg:block" />
 
@@ -268,11 +268,11 @@ export default function JoinArtistPage() {
               hidden: {},
               show: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
             }}
-            className="space-y-5 pb-2 lg:pb-0 lg:max-w-xl lg:self-end"
+            className="space-y-5 pb-2 lg:max-w-2xl lg:self-end lg:pb-8"
           >
             <motion.h1
               variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
-              className="font-display text-[2.5rem] leading-[1.05] sm:text-5xl lg:text-[4.5rem] font-semibold tracking-tight text-foreground"
+              className="font-display text-[2.5rem] leading-[1.05] sm:text-5xl lg:max-w-3xl lg:text-[5rem] font-semibold tracking-tight text-foreground"
             >
               Ikke bare post på Instagram.<br />
               <span className="text-accent">Bygg en base.</span>
@@ -280,7 +280,7 @@ export default function JoinArtistPage() {
 
             <motion.p
               variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
-              className="text-foreground/70 text-base leading-relaxed max-w-sm lg:max-w-md lg:text-lg"
+              className="text-foreground/70 text-base leading-relaxed max-w-sm lg:max-w-xl lg:text-lg"
             >
               Profesjonell artistprofil på 60 sekunder. Lag en delbar side
               for deg eller bandet — og bli enklere å booke.
@@ -288,7 +288,7 @@ export default function JoinArtistPage() {
 
             <motion.ul
               variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}
-              className="space-y-2 pt-1"
+              className="space-y-2 pt-1 lg:max-w-lg"
             >
               {[
                 "Egen offentlig side med eget navn",
@@ -303,13 +303,32 @@ export default function JoinArtistPage() {
                 </li>
               ))}
             </motion.ul>
+
+            <motion.div
+              variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
+              className="hidden lg:grid lg:grid-cols-3 lg:gap-3 lg:pt-4"
+            >
+              {[
+                { value: '60 sek', label: 'til første profil' },
+                { value: 'Delbar', label: 'offentlig artistside' },
+                { value: 'Bandklar', label: 'inviter medlemmer senere' },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-2xl border border-foreground/10 bg-foreground/[0.05] px-4 py-4 backdrop-blur-xl"
+                >
+                  <div className="text-lg font-semibold text-foreground">{item.value}</div>
+                  <div className="mt-1 text-sm text-foreground/55">{item.label}</div>
+                </div>
+              ))}
+            </motion.div>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="mt-8 flex flex-col gap-2.5 lg:mt-0 lg:self-end lg:w-full lg:max-w-md lg:rounded-[2rem] lg:border lg:border-foreground/10 lg:bg-foreground/[0.05] lg:p-6 lg:backdrop-blur-2xl lg:shadow-[0_30px_80px_-30px_hsl(0_0%_0%/0.75)]"
+            className="mt-8 flex flex-col gap-2.5 lg:mt-0 lg:self-end lg:w-full lg:max-w-md lg:rounded-[2rem] lg:border lg:border-foreground/10 lg:bg-foreground/[0.05] lg:p-7 lg:backdrop-blur-2xl lg:shadow-[0_30px_80px_-30px_hsl(0_0%_0%/0.75)]"
           >
             <div className="hidden lg:block lg:space-y-1 lg:pb-2">
               <p className="text-xs uppercase tracking-[0.24em] text-foreground/45">Artist onboarding</p>
@@ -336,6 +355,12 @@ export default function JoinArtistPage() {
                 Jeg har allerede konto
               </CinematicCTA>
             )}
+            <CinematicCTA asChild variant="glass" size="md" className="w-full lg:mt-2">
+              <Link to="/utforsk">
+                <ExternalLink className="h-4 w-4" />
+                Utforsk Giggen
+              </Link>
+            </CinematicCTA>
           </motion.div>
         </section>
       )}
