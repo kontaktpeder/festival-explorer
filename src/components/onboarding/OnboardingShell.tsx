@@ -34,14 +34,14 @@ export const OnboardingShell: React.FC<Props> = ({
           paddingBottom: "max(env(safe-area-inset-bottom), 1rem)",
         }}
       >
-        <header className="flex flex-col items-center px-5 pt-3 text-center">
+        <header className="flex flex-col items-center px-5 pt-3 text-center lg:px-10 lg:pt-5">
           <img
             src={giggenLogo}
             alt="Giggen"
-            className={stepKey === "intro" ? "h-20 w-auto sm:h-24" : "h-12 w-auto sm:h-14"}
+            className={stepKey === "intro" ? "h-24 w-auto sm:h-28 lg:h-32" : "h-12 w-auto sm:h-14 lg:h-16"}
           />
           {progress && (
-            <div className="mt-4 flex items-center justify-center gap-1.5">
+            <div className="mt-4 flex items-center justify-center gap-1.5 lg:mt-5">
               {Array.from({ length: progress.total }).map((_, i) => (
                 <span
                   key={i}
@@ -65,7 +65,7 @@ export const OnboardingShell: React.FC<Props> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="flex-1 flex flex-col w-full max-w-md mx-auto px-5"
+              className="flex-1 flex flex-col w-full max-w-md mx-auto px-5 lg:max-w-6xl lg:px-10"
             >
               {children}
             </motion.div>
