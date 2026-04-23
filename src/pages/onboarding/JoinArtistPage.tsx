@@ -257,9 +257,9 @@ export default function JoinArtistPage() {
       progress={{ current: progressMap[step], total: 4 }}
     >
       {step === "intro" && (
-        <section className="flex-1 flex flex-col">
+        <section className="flex-1 flex flex-col lg:grid lg:min-h-0 lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,28rem)] lg:items-end lg:gap-10 lg:pb-8">
           {/* Push hero copy down so it sits in the lower third — story-style */}
-          <div className="flex-1" />
+          <div className="hidden lg:block" />
 
           <motion.div
             initial="hidden"
@@ -268,11 +268,11 @@ export default function JoinArtistPage() {
               hidden: {},
               show: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
             }}
-            className="space-y-5 pb-2"
+            className="space-y-5 pb-2 lg:pb-0 lg:max-w-xl lg:self-end"
           >
             <motion.h1
               variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
-              className="font-display text-[2.5rem] leading-[1.05] sm:text-5xl font-semibold tracking-tight text-foreground"
+              className="font-display text-[2.5rem] leading-[1.05] sm:text-5xl lg:text-[4.5rem] font-semibold tracking-tight text-foreground"
             >
               Ikke bare post på Instagram.<br />
               <span className="text-accent">Bygg en base.</span>
@@ -280,7 +280,7 @@ export default function JoinArtistPage() {
 
             <motion.p
               variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
-              className="text-foreground/70 text-base leading-relaxed max-w-sm"
+              className="text-foreground/70 text-base leading-relaxed max-w-sm lg:max-w-md lg:text-lg"
             >
               Profesjonell artistprofil på 60 sekunder. Lag en delbar side
               for deg eller bandet — og bli enklere å booke.
@@ -309,8 +309,12 @@ export default function JoinArtistPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="mt-8 flex flex-col gap-2.5"
+            className="mt-8 flex flex-col gap-2.5 lg:mt-0 lg:self-end lg:w-full lg:max-w-md lg:rounded-[2rem] lg:border lg:border-foreground/10 lg:bg-foreground/[0.05] lg:p-6 lg:backdrop-blur-2xl lg:shadow-[0_30px_80px_-30px_hsl(0_0%_0%/0.75)]"
           >
+            <div className="hidden lg:block lg:space-y-1 lg:pb-2">
+              <p className="text-xs uppercase tracking-[0.24em] text-foreground/45">Artist onboarding</p>
+              <p className="text-sm text-foreground/65">Bygg offentlig profil og kom raskt videre til redigering.</p>
+            </div>
             <CinematicCTA
               size="lg"
               onClick={() => setStep(hasSession ? "create" : "auth")}
@@ -337,7 +341,7 @@ export default function JoinArtistPage() {
       )}
 
       {step === "auth" && !hasSession && (
-        <section className="flex-1 flex flex-col pt-6">
+        <section className="flex-1 flex flex-col pt-6 lg:mx-auto lg:w-full lg:max-w-5xl lg:flex-row lg:items-center lg:gap-12 lg:pt-10">
             <div className="space-y-2 mb-6">
             <h1 className="font-display text-3xl font-semibold tracking-tight">
               {authMode === "signup" ? "Opprett konto" : "Logg inn"}
@@ -347,7 +351,16 @@ export default function JoinArtistPage() {
             </p>
           </div>
 
-          <div className="rounded-3xl border border-foreground/10 bg-foreground/[0.04] backdrop-blur-2xl p-5 space-y-4 shadow-[0_20px_60px_-20px_hsl(0_0%_0%/0.6)]">
+          <div className="space-y-2 mb-6 lg:mb-0 lg:max-w-sm">
+            <div className="hidden lg:flex h-12 w-12 items-center justify-center rounded-full border border-foreground/10 bg-foreground/[0.05] text-accent">
+              <Mail className="h-5 w-5" />
+            </div>
+            <p className="hidden lg:block text-sm text-foreground/55">
+              E-post først, så rett videre til oppsett av artistprofilen. Samme flyt, bare mer fokusert på større skjermer.
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-foreground/10 bg-foreground/[0.04] backdrop-blur-2xl p-5 space-y-4 shadow-[0_20px_60px_-20px_hsl(0_0%_0%/0.6)] lg:flex-1 lg:max-w-xl lg:p-7">
             {emailSent ? (
               <div className="rounded-2xl border border-accent/30 bg-accent/5 p-4 text-sm space-y-3">
                 <div className="flex items-center gap-2 font-medium text-foreground">
@@ -423,7 +436,7 @@ export default function JoinArtistPage() {
       )}
 
       {step === "create" && hasSession && (
-        <section className="flex-1 flex flex-col pt-6">
+        <section className="flex-1 flex flex-col pt-6 lg:mx-auto lg:w-full lg:max-w-5xl lg:flex-row lg:items-start lg:gap-12 lg:pt-10">
           <div className="space-y-2 mb-6">
             <h1 className="font-display text-3xl font-semibold tracking-tight">
               Sett opp profilen
@@ -433,7 +446,7 @@ export default function JoinArtistPage() {
             </p>
           </div>
 
-          <form onSubmit={handleCreate} className="space-y-5 flex-1 flex flex-col">
+          <form onSubmit={handleCreate} className="space-y-5 flex-1 flex flex-col rounded-3xl border border-foreground/10 bg-foreground/[0.04] p-5 backdrop-blur-2xl shadow-[0_20px_60px_-20px_hsl(0_0%_0%/0.6)] lg:max-w-2xl lg:p-7">
             <div className="space-y-2">
               <Label className="text-foreground/70 text-xs uppercase tracking-wider">Hva passer best?</Label>
               <RadioGroup
@@ -506,7 +519,7 @@ export default function JoinArtistPage() {
       )}
 
       {step === "done" && result && (
-        <section className="flex-1 flex flex-col items-center text-center pt-8">
+        <section className="flex-1 flex flex-col items-center text-center pt-8 lg:mx-auto lg:w-full lg:max-w-4xl lg:pt-10">
           {/* Hero avatar with glow ring */}
           <motion.div
             initial={{ scale: 0.6, opacity: 0 }}
@@ -569,7 +582,7 @@ export default function JoinArtistPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.5 }}
-            className="w-full space-y-2.5 mt-auto"
+            className="w-full space-y-2.5 mt-auto lg:max-w-md"
           >
             <CinematicCTA asChild className="w-full">
               <Link to={`/dashboard/entities/${result.entityId}/edit`}>
