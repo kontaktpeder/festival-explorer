@@ -344,7 +344,7 @@ export default function UtforskPage() {
                     Artister & spillesteder
                   </h2>
                 )}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 sm:gap-3 lg:gap-4">
                   {entities.map((entity, i) => (
                     <div
                       key={entity.id}
