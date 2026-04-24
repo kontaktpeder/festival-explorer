@@ -55,6 +55,9 @@ export const OnboardingBackground: React.FC<Props> = ({
           className="absolute inset-0 w-full h-full"
           title=""
           tabIndex={-1}
+          loading="eager"
+          // @ts-expect-error - fetchpriority is a valid HTML attribute not yet in React types
+          fetchpriority="high"
         />
       </div>
 
