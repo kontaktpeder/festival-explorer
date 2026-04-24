@@ -97,46 +97,49 @@ function EntityGridCard({ entity }: { entity: Entity }) {
 
   return (
     <Link to={route} className="group block">
-      <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
+      <div className="relative aspect-[4/5] overflow-hidden bg-secondary rounded-sm sm:rounded-none ring-1 ring-border/30 group-hover:ring-accent/40 transition-all duration-500">
         {imageUrl ? (
           <>
             <CroppedImage
               src={imageUrl}
               alt={entity.name}
               imageSettings={entity.hero_image_settings}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.08]"
               containerClassName="w-full h-full"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent opacity-60" />
           </>
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="text-4xl font-bold text-muted-foreground/15">
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-secondary to-background">
+            <span className="text-5xl font-display font-bold text-muted-foreground/20">
               {entity.name.charAt(0)}
             </span>
           </div>
         )}
 
-        {/* Type badge */}
+        {/* Type badge — editorial, top-right */}
         {typeInfo && (
-          <span className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2 py-0.5 text-[10px] uppercase tracking-wider font-medium bg-black/50 text-white/70 backdrop-blur-sm">
+          <span className="absolute top-2 right-2 inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] uppercase tracking-[0.15em] font-medium text-white/80 bg-black/40 backdrop-blur-md rounded-sm">
             {typeInfo.icon}
-            {typeInfo.label}
+            <span className="hidden sm:inline">{typeInfo.label}</span>
           </span>
         )}
 
-        {/* Bottom info overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-3">
-          <h3 className="text-sm font-semibold text-white leading-tight truncate group-hover:text-accent transition-colors duration-300">
+        {/* Bottom info — editorial typography */}
+        <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 transition-transform duration-500 group-hover:translate-y-[-2px]">
+          <h3 className="font-display text-base sm:text-lg font-semibold text-white leading-[1.1] tracking-tight line-clamp-2 group-hover:text-accent transition-colors duration-300">
             {entity.name}
           </h3>
-          {entity.tagline && (
-            <p className="text-[11px] text-white/50 truncate mt-0.5">{entity.tagline}</p>
-          )}
           {entity.city && (
-            <p className="text-[11px] text-white/35 flex items-center gap-1 mt-1">
+            <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-white/55 flex items-center gap-1 mt-1.5 font-medium">
               <MapPin className="w-2.5 h-2.5" />
               {entity.city}
+            </p>
+          )}
+          {entity.tagline && (
+            <p className="text-[11px] sm:text-xs text-white/45 line-clamp-1 mt-1 italic hidden sm:block">
+              {entity.tagline}
             </p>
           )}
         </div>
@@ -341,7 +344,7 @@ export default function UtforskPage() {
                     Artister & spillesteder
                   </h2>
                 )}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 sm:gap-3 lg:gap-4">
                   {entities.map((entity, i) => (
                     <div
                       key={entity.id}
