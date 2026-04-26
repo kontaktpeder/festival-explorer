@@ -82,6 +82,9 @@ export default function JoinArtistPage() {
   const [sessionChecked, setSessionChecked] = useState(false);
   const [hasSession, setHasSession] = useState(false);
   const [resolving, setResolving] = useState(false);
+  // Existing artist project for the logged-in user (if any). Used to render a
+  // "Welcome back" shortcut on the intro screen instead of force-jumping.
+  const [existingProject, setExistingProject] = useState<ExistingArtistProject | null>(null);
 
   // Auth form
   const [authMode, setAuthMode] = useState<AuthMode>("signup");
@@ -111,29 +114,19 @@ export default function JoinArtistPage() {
       setHasSession(loggedIn);
       setSessionChecked(true);
       if (loggedIn) {
-        // Smart resume: if the user already has a solo/band project, jump to
-        // the success panel instead of forcing them through "create" again.
+        // Look up an existing artist project so we can offer a shortcut on the
+        // intro screen — but never force-jump. Instagram / ad traffic should
+        // always see the full intro first.
         setResolving(true);
         try {
           const existing = await findExistingArtistProject();
           if (cancelled) return;
-          if (existing) {
-            setKind(existing.type);
-            setName(existing.name);
-            setHeroUrl(existing.heroImageUrl ?? "");
-            setResult({
-              entityId: existing.id,
-              entitySlug: existing.slug,
-              personaId: "",
-            });
-            setResumed(true);
-            setStep("done");
-          } else {
-            setStep((prev) => (prev === "intro" || prev === "auth" ? "create" : prev));
-          }
+          setExistingProject(existing);
         } finally {
           if (!cancelled) setResolving(false);
         }
+      } else {
+        setExistingProject(null);
       }
     };
     supabase.auth.getSession().then(({ data }) => void apply(!!data.session));
@@ -145,6 +138,21 @@ export default function JoinArtistPage() {
       sub.subscription.unsubscribe();
     };
   }, []);
+  /** Jump from the intro shortcut into the existing-profile success panel. */
+  const handleResumeExisting = () => {
+    if (!existingProject) return;
+    setKind(existingProject.type);
+    setName(existingProject.name);
+    setHeroUrl(existingProject.heroImageUrl ?? "");
+    setResult({
+      entityId: existingProject.id,
+      entitySlug: existingProject.slug,
+      personaId: "",
+    });
+    setResumed(true);
+    setStep("done");
+  };
+
 
   // Allow ?step=auth deep link (e.g. from a "logg inn" CTA).
   useEffect(() => {
