@@ -402,7 +402,15 @@ export default function JoinArtistPage() {
             </div>
             <CinematicCTA
               size="lg"
-              onClick={() => setStep(hasSession ? "create" : "auth")}
+              onClick={() => {
+                if (hasSession && existingProject) {
+                  handleResumeExisting();
+                } else if (hasSession) {
+                  setStep("create");
+                } else {
+                  setStep("auth");
+                }
+              }}
               className="w-full"
             >
               Kom i gang
