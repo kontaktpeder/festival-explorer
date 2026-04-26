@@ -82,6 +82,9 @@ export default function JoinArtistPage() {
   const [sessionChecked, setSessionChecked] = useState(false);
   const [hasSession, setHasSession] = useState(false);
   const [resolving, setResolving] = useState(false);
+  // Existing artist project for the logged-in user (if any). Used to render a
+  // "Welcome back" shortcut on the intro screen instead of force-jumping.
+  const [existingProject, setExistingProject] = useState<ExistingArtistProject | null>(null);
 
   // Auth form
   const [authMode, setAuthMode] = useState<AuthMode>("signup");
@@ -111,29 +114,19 @@ export default function JoinArtistPage() {
       setHasSession(loggedIn);
       setSessionChecked(true);
       if (loggedIn) {
-        // Smart resume: if the user already has a solo/band project, jump to
-        // the success panel instead of forcing them through "create" again.
+        // Look up an existing artist project so we can offer a shortcut on the
+        // intro screen — but never force-jump. Instagram / ad traffic should
+        // always see the full intro first.
         setResolving(true);
         try {
           const existing = await findExistingArtistProject();
           if (cancelled) return;
-          if (existing) {
-            setKind(existing.type);
-            setName(existing.name);
-            setHeroUrl(existing.heroImageUrl ?? "");
-            setResult({
-              entityId: existing.id,
-              entitySlug: existing.slug,
-              personaId: "",
-            });
-            setResumed(true);
-            setStep("done");
-          } else {
-            setStep((prev) => (prev === "intro" || prev === "auth" ? "create" : prev));
-          }
+          setExistingProject(existing);
         } finally {
           if (!cancelled) setResolving(false);
         }
+      } else {
+        setExistingProject(null);
       }
     };
     supabase.auth.getSession().then(({ data }) => void apply(!!data.session));
@@ -145,6 +138,21 @@ export default function JoinArtistPage() {
       sub.subscription.unsubscribe();
     };
   }, []);
+  /** Jump from the intro shortcut into the existing-profile success panel. */
+  const handleResumeExisting = () => {
+    if (!existingProject) return;
+    setKind(existingProject.type);
+    setName(existingProject.name);
+    setHeroUrl(existingProject.heroImageUrl ?? "");
+    setResult({
+      entityId: existingProject.id,
+      entitySlug: existingProject.slug,
+      personaId: "",
+    });
+    setResumed(true);
+    setStep("done");
+  };
+
 
   // Allow ?step=auth deep link (e.g. from a "logg inn" CTA).
   useEffect(() => {
@@ -272,6 +280,51 @@ export default function JoinArtistPage() {
             </CinematicCTA>
           )}
 
+          {hasSession && existingProject && (
+            <motion.button
+              type="button"
+              onClick={handleResumeExisting}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="group absolute right-0 top-0 z-10 flex items-center gap-2.5 rounded-full border border-accent/40 bg-background/40 px-3 py-1.5 text-sm text-foreground backdrop-blur-xl shadow-[0_0_24px_hsl(24_100%_55%/0.18)] hover:bg-background/60 hover:border-accent/70 transition-all lg:px-4 lg:py-2"
+            >
+              <span className="relative h-7 w-7 overflow-hidden rounded-full border border-accent/40 bg-foreground/10">
+                {existingProject.heroImageUrl ? (
+                  <img
+                    src={existingProject.heroImageUrl}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center text-accent">
+                    <Music className="h-3.5 w-3.5" />
+                  </span>
+                )}
+              </span>
+              <span className="flex flex-col items-start leading-tight">
+                <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/55">
+                  Logget inn som
+                </span>
+                <span className="text-sm font-medium text-foreground">
+                  {existingProject.name}
+                </span>
+              </span>
+              <ArrowRight className="h-4 w-4 text-accent transition-transform group-hover:translate-x-0.5" />
+            </motion.button>
+          )}
+
+          {hasSession && !existingProject && (
+            <CinematicCTA
+              variant="ghost-light"
+              size="md"
+              onClick={() => setStep("create")}
+              className="absolute right-0 top-0 z-10 h-10 px-0 text-sm lg:h-11"
+            >
+              Fullfør profilen din
+            </CinematicCTA>
+          )}
+
           <div className="hidden lg:block" />
 
           <motion.div
@@ -349,7 +402,15 @@ export default function JoinArtistPage() {
             </div>
             <CinematicCTA
               size="lg"
-              onClick={() => setStep(hasSession ? "create" : "auth")}
+              onClick={() => {
+                if (hasSession && existingProject) {
+                  handleResumeExisting();
+                } else if (hasSession) {
+                  setStep("create");
+                } else {
+                  setStep("auth");
+                }
+              }}
               className="w-full"
             >
               Kom i gang

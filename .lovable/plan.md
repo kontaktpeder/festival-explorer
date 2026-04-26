@@ -1,34 +1,39 @@
+## Problem
 
+Når du klikker linken fra Instagram blir du sendt rett til Maja Strela sitt prosjekt. Det er fordi Supabase-sessionen din fortsatt er aktiv (lagret i `localStorage`, varer i ~1 år), og `JoinArtistPage` har en "smart resume"-logikk som automatisk hopper til `step="done"` med din eksisterende artistprofil.
 
-## Fiks: Google/Apple OAuth "Invalid Origin"
+Sessionen blir bevisst **ikke** nullstilt mellom besøk – det er Supabase sitt standardoppsett.
 
-### Problem
-`getAuthCallbackUrl()` returnerer `/auth/callback?next=/join/artist` som `redirectTo`, men Google/Apple krever ren origin (kun domene, ingen path).
+## Løsning: Behold intro, legg til snarvei øverst
 
-### Løsning
-Endre `getAuthCallbackUrl` i `src/lib/artistJoinOnboarding.ts` til å returnere kun origin for OAuth. Bruk `options.queryParams` for å sende `next` state.
+Vi endrer `JoinArtistPage` slik at intro-siden alltid vises først, men innloggede brukere får en tydelig banner/snarvei øverst.
 
-### Filendringer
+### Endringer i `src/pages/onboarding/JoinArtistPage.tsx`
 
-**`src/lib/artistJoinOnboarding.ts`**
-- Endre `getAuthCallbackUrl` til å returnere kun origin (f.eks. `https://giggen.org`)
-- Fjern path og query params fra returverdi
-- AuthCallbackPage håndterer allerede `next` fra searchParams
+1. **Fjern auto-hopp til `done`** i `useEffect` (linje 107-147):
+   - Fortsatt sjekk session og kall `findExistingArtistProject()` for å vite om brukeren har en profil
+   - Lagre resultatet i en ny state `existingProject` (i stedet for å sette `step="done"`)
+   - La `step` forbli `"intro"` ved første lasting, uansett innloggingsstatus
 
-**`src/pages/onboarding/JoinArtistPage.tsx`**
-- I `handleOAuth`: bruk `options.queryParams` for å sende `next` state til callback:
-```typescript
-await supabase.auth.signInWithOAuth({
-  provider,
-  options: { 
-    redirectTo: getAuthCallbackUrl(), // nå kun origin
-    queryParams: { next: "/join/artist" }
-  }
-});
-```
+2. **Snarvei-banner i intro-steget** (øverst, både mobil og desktop):
+   - Hvis `existingProject` finnes:
+     - Vis en kompakt banner: "Logget inn som **{name}**" + knapp "Gå til profilen din →"
+     - Knappen setter `step="done"` (gjenbruker eksisterende success-panel) eller navigerer til `/project/{slug}`
+   - Hvis innlogget men uten artistprofil: vis "Logget inn – fullfør profilen din" som hopper til `step="create"`
+   - Hvis ikke innlogget: ingen banner (ren intro som i dag)
 
-### Etter fiks
-1. Google/Apple mottar ren origin som `redirectTo` → ingen "Invalid Origin" feil
-2. `next` state sendes via `queryParams` og plukkes opp av AuthCallbackPage
-3. Bruker redirectes korrekt til `/join/artist` etter OAuth-login
+3. **Plassering**:
+   - Mobil: under topp-logoen, over hero-teksten – diskret men synlig
+   - Desktop: øverst til høyre i hero-griden, ved siden av "Jeg har allerede konto"-knappen (eller erstatter den når innlogget)
 
+4. **Stil**: 
+   - Glass-pill med backdrop-blur for å matche eksisterende onboarding-estetikk
+   - Liten avatar (hvis `heroImageUrl` finnes) + navn + pil-ikon
+   - Subtil pulse/glow så den fanger blikket uten å stjele showet
+
+### Resultat
+
+- Instagram-linken viser alltid den fulle wow-intro-opplevelsen
+- Returnerende brukere ser umiddelbart at de er gjenkjent og har én klikk til profilen
+- Helt nye brukere får uforstyrret intro → "Kom i gang" som før
+- Ingen bruker blir "kidnappet" til ferdig-skjermen for et prosjekt de ikke forventet
