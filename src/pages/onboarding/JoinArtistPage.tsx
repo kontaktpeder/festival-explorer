@@ -280,6 +280,51 @@ export default function JoinArtistPage() {
             </CinematicCTA>
           )}
 
+          {hasSession && existingProject && (
+            <motion.button
+              type="button"
+              onClick={handleResumeExisting}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="group absolute right-0 top-0 z-10 flex items-center gap-2.5 rounded-full border border-accent/40 bg-background/40 px-3 py-1.5 text-sm text-foreground backdrop-blur-xl shadow-[0_0_24px_hsl(24_100%_55%/0.18)] hover:bg-background/60 hover:border-accent/70 transition-all lg:px-4 lg:py-2"
+            >
+              <span className="relative h-7 w-7 overflow-hidden rounded-full border border-accent/40 bg-foreground/10">
+                {existingProject.heroImageUrl ? (
+                  <img
+                    src={existingProject.heroImageUrl}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center text-accent">
+                    <Music className="h-3.5 w-3.5" />
+                  </span>
+                )}
+              </span>
+              <span className="flex flex-col items-start leading-tight">
+                <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/55">
+                  Logget inn som
+                </span>
+                <span className="text-sm font-medium text-foreground">
+                  {existingProject.name}
+                </span>
+              </span>
+              <ArrowRight className="h-4 w-4 text-accent transition-transform group-hover:translate-x-0.5" />
+            </motion.button>
+          )}
+
+          {hasSession && !existingProject && (
+            <CinematicCTA
+              variant="ghost-light"
+              size="md"
+              onClick={() => setStep("create")}
+              className="absolute right-0 top-0 z-10 h-10 px-0 text-sm lg:h-11"
+            >
+              Fullfør profilen din
+            </CinematicCTA>
+          )}
+
           <div className="hidden lg:block" />
 
           <motion.div
