@@ -263,22 +263,33 @@ export default function JoinArtistPage() {
       stepKey={step}
       overlayIntensity={intensity}
       progress={{ current: progressMap[step], total: 4 }}
-    >
-      {step === "intro" && (
-        <section className="relative flex flex-1 flex-col justify-end pb-2 pt-10 lg:pt-0 lg:grid lg:min-h-0 lg:grid-cols-[minmax(0,1.5fr)_minmax(22rem,24rem)] lg:items-center lg:gap-14 lg:pb-8">
-          {!hasSession && (
-            <CinematicCTA
-              variant="ghost-light"
-              size="md"
+      topBarRight={
+        step === "intro" ? (
+          !hasSession ? (
+            <button
+              type="button"
               onClick={() => {
                 setAuthMode("signin");
                 setStep("auth");
               }}
-              className="absolute right-0 top-0 z-10 h-9 rounded-full border border-foreground/15 bg-background/40 px-3.5 text-xs backdrop-blur-xl shadow-[0_4px_20px_-8px_hsl(0_0%_0%/0.6)] lg:h-10 lg:-top-6 lg:rounded-none lg:border-0 lg:bg-transparent lg:px-0 lg:text-sm lg:backdrop-blur-0 lg:shadow-none"
+              className="text-xs sm:text-sm font-medium text-foreground/75 hover:text-foreground transition-colors"
             >
-              Jeg har allerede konto
-            </CinematicCTA>
-          )}
+              Logg inn
+            </button>
+          ) : !existingProject ? (
+            <button
+              type="button"
+              onClick={() => setStep("create")}
+              className="text-xs sm:text-sm font-medium text-foreground/75 hover:text-foreground transition-colors"
+            >
+              Fullfør profilen
+            </button>
+          ) : null
+        ) : null
+      }
+    >
+      {step === "intro" && (
+        <section className="relative flex flex-1 flex-col justify-end pb-2 lg:grid lg:min-h-0 lg:grid-cols-[minmax(0,1.5fr)_minmax(22rem,24rem)] lg:items-center lg:gap-14 lg:pb-8 lg:pt-4">
 
           {hasSession && existingProject && (
             <motion.button
@@ -312,17 +323,6 @@ export default function JoinArtistPage() {
               </span>
               <ArrowRight className="h-4 w-4 text-accent transition-transform group-hover:translate-x-0.5" />
             </motion.button>
-          )}
-
-          {hasSession && !existingProject && (
-            <CinematicCTA
-              variant="ghost-light"
-              size="md"
-              onClick={() => setStep("create")}
-              className="absolute right-0 top-0 z-10 h-9 rounded-full border border-foreground/15 bg-background/40 px-3.5 text-xs backdrop-blur-xl shadow-[0_4px_20px_-8px_hsl(0_0%_0%/0.6)] lg:h-10 lg:-top-6 lg:rounded-none lg:border-0 lg:bg-transparent lg:px-0 lg:text-sm lg:backdrop-blur-0 lg:shadow-none"
-            >
-              Fullfør profilen din
-            </CinematicCTA>
           )}
 
           <motion.div
@@ -671,7 +671,7 @@ export default function JoinArtistPage() {
             className="w-full space-y-2.5 mt-auto lg:max-w-lg lg:mt-0"
           >
             <CinematicCTA asChild className="w-full lg:h-14 lg:text-base">
-              <Link to={`/dashboard/entities/${result.entityId}/edit`}>
+              <Link to={`/dashboard/entities/${result.entityId}/edit?from=onboarding`}>
                 <Pencil className="h-4 w-4" />
                 {kind === "band" ? "Fullfør bandprofil" : "Fullfør artistprofil"}
               </Link>

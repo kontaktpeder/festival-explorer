@@ -1,4 +1,4 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
@@ -89,6 +89,8 @@ export default function EntityEdit() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const fromOnboarding = searchParams.get("from") === "onboarding";
 
   const [formData, setFormData] = useState({
     name: "",
@@ -396,36 +398,37 @@ export default function EntityEdit() {
         className="sticky top-0 z-50 bg-background/60 backdrop-blur-xl border-b border-border/20"
         style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
       >
-        <div className="w-full px-4 sm:px-8 lg:px-12 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="w-full px-3 sm:px-8 lg:px-12 py-2.5 sm:py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
-              onClick={() => navigate("/dashboard")}
-              className="text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => navigate(fromOnboarding ? "/dashboard" : -1 as any)}
+              className="text-muted-foreground hover:text-foreground transition-colors shrink-0 -ml-1 p-1.5"
+              aria-label="Tilbake"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <span className="text-sm font-semibold tracking-tight text-foreground">
-              BACKSTAGE
+            <span className="text-xs sm:text-sm font-semibold tracking-tight text-foreground truncate">
+              {fromOnboarding ? "Min profil" : "BACKSTAGE"}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {entityWithAccess.is_published && (
-              <Button asChild variant="outline" size="sm" className="text-xs border-border/30 hover:border-accent/40">
-                <a href={`${getPublicUrl()}${typeConfig[entityWithAccess.type as EntityType].route}/${entityWithAccess.slug}`} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                  Se live
+              <Button asChild variant="outline" size="sm" className="h-8 px-2.5 text-xs border-border/30 hover:border-accent/40">
+                <a href={`${getPublicUrl()}${typeConfig[entityWithAccess.type as EntityType].route}/${entityWithAccess.slug}`} target="_blank" rel="noopener noreferrer" aria-label="Se live">
+                  <ExternalLink className="h-3.5 w-3.5 sm:mr-1.5" />
+                  <span className="hidden sm:inline">Se live</span>
                 </a>
               </Button>
             )}
             {canInvite && (
-              <Button asChild variant="outline" size="sm" className="text-xs border-border/30 hover:border-accent/40">
-                <Link to={`/dashboard/entities/${entityWithAccess.id}/invite`}>
-                  <UserPlus className="h-3.5 w-3.5 mr-1.5" />
-                  Inviter
+              <Button asChild variant="outline" size="sm" className="h-8 px-2.5 text-xs border-border/30 hover:border-accent/40">
+                <Link to={`/dashboard/entities/${entityWithAccess.id}/invite`} aria-label="Inviter">
+                  <UserPlus className="h-3.5 w-3.5 sm:mr-1.5" />
+                  <span className="hidden sm:inline">Inviter</span>
                 </Link>
               </Button>
             )}
-            <img src={gIcon} alt="" className="h-8 w-8 object-contain" />
+            <img src={gIcon} alt="" className="h-7 w-7 sm:h-8 sm:w-8 object-contain" />
           </div>
         </div>
       </header>
@@ -436,8 +439,14 @@ export default function EntityEdit() {
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4" />
         <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-accent-warm/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/4" />
         
-        <div className="relative w-full px-4 sm:px-8 lg:px-12 py-6 sm:py-8">
+        <div className="relative w-full px-4 sm:px-8 lg:px-12 py-5 sm:py-8">
           <div className="max-w-5xl">
+            {fromOnboarding && (
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-accent">
+                <Check className="h-3 w-3" />
+                Profil opprettet — fyll på her
+              </div>
+            )}
             <div className="flex items-center gap-3 mb-2">
               <Badge
                 variant={entityWithAccess.is_published ? "default" : "secondary"}
@@ -449,7 +458,7 @@ export default function EntityEdit() {
                 {TYPE_LABELS[entityWithAccess.type as EntityType]} · {ACCESS_LABELS[userAccess]}
               </span>
             </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.1]">
+            <h1 className="text-[1.75rem] sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.1]">
               {entityWithAccess.name}
             </h1>
             {entityWithAccess.tagline && (
