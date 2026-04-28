@@ -671,7 +671,7 @@ export default function JoinArtistPage() {
             className="w-full space-y-2.5 mt-auto lg:max-w-lg lg:mt-0"
           >
             <CinematicCTA asChild className="w-full lg:h-14 lg:text-base">
-              <Link to={`/dashboard/entities/${result.entityId}/edit`}>
+              <Link to={`/dashboard/entities/${result.entityId}/edit?from=onboarding`}>
                 <Pencil className="h-4 w-4" />
                 {kind === "band" ? "Fullfør bandprofil" : "Fullfør artistprofil"}
               </Link>
