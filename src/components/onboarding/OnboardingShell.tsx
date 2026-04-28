@@ -9,6 +9,8 @@ interface Props {
   stepKey: string;
   overlayIntensity?: Intensity;
   progress?: { current: number; total: number };
+  /** Optional slot rendered on the right side of the top bar (e.g. "Jeg har allerede konto"). */
+  topBarRight?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -21,6 +23,7 @@ export const OnboardingShell: React.FC<Props> = ({
   stepKey,
   overlayIntensity = "medium",
   progress,
+  topBarRight,
   children,
 }) => {
   return (
@@ -30,24 +33,29 @@ export const OnboardingShell: React.FC<Props> = ({
       <div
         className="relative z-10 flex h-[100dvh] min-h-[100dvh] flex-col overflow-hidden"
         style={{
-          paddingTop: "max(env(safe-area-inset-top), 1rem)",
+          paddingTop: "max(env(safe-area-inset-top), 0.75rem)",
           paddingBottom: "max(env(safe-area-inset-bottom), 1rem)",
         }}
       >
-        <header className="flex flex-col items-center px-5 pt-2 text-center lg:px-10 lg:pt-5">
-          <img
-            src={giggenLogo}
-            alt="Giggen"
-            className={stepKey === "intro" ? "h-14 w-auto sm:h-20 lg:h-28" : "h-10 w-auto sm:h-12 lg:h-14"}
-          />
+        <header className="flex flex-col gap-3 px-4 pt-1 sm:px-6 lg:px-10 lg:pt-3 lg:gap-4">
+          {/* Top bar: logo left, action right */}
+          <div className="flex items-center justify-between gap-3">
+            <img
+              src={giggenLogo}
+              alt="Giggen"
+              className="h-9 w-auto sm:h-11 lg:h-14"
+            />
+            <div className="flex items-center">{topBarRight}</div>
+          </div>
+          {/* Step bar — full-width under the top bar */}
           {progress && (
-            <div className="mt-4 flex items-center justify-center gap-1.5 lg:mt-4">
+            <div className="flex items-center justify-center gap-1.5">
               {Array.from({ length: progress.total }).map((_, i) => (
                 <span
                   key={i}
                   className={`h-1 rounded-full transition-all duration-500 ${
                     i < progress.current
-                      ? "w-6 bg-accent"
+                      ? "w-7 bg-accent"
                       : "w-3 bg-foreground/20"
                   }`}
                 />
