@@ -34,11 +34,11 @@ export const OnboardingShell: React.FC<Props> = ({
           paddingBottom: "max(env(safe-area-inset-bottom), 1rem)",
         }}
       >
-        <header className="flex flex-col items-center px-5 pt-3 text-center lg:px-10 lg:pt-5">
+        <header className="flex flex-col items-center px-5 pt-2 text-center lg:px-10 lg:pt-5">
           <img
             src={giggenLogo}
             alt="Giggen"
-            className={stepKey === "intro" ? "h-24 w-auto sm:h-28 lg:h-28" : "h-12 w-auto sm:h-14 lg:h-14"}
+            className={stepKey === "intro" ? "h-14 w-auto sm:h-20 lg:h-28" : "h-10 w-auto sm:h-12 lg:h-14"}
           />
           {progress && (
             <div className="mt-4 flex items-center justify-center gap-1.5 lg:mt-4">
