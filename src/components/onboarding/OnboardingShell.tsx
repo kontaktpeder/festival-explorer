@@ -38,10 +38,10 @@ export const OnboardingShell: React.FC<Props> = ({
           <img
             src={giggenLogo}
             alt="Giggen"
-            className={stepKey === "intro" ? "h-24 w-auto sm:h-28 lg:h-32" : "h-12 w-auto sm:h-14 lg:h-16"}
+            className={stepKey === "intro" ? "h-24 w-auto sm:h-28 lg:h-28" : "h-12 w-auto sm:h-14 lg:h-14"}
           />
           {progress && (
-            <div className="mt-4 flex items-center justify-center gap-1.5 lg:mt-5">
+            <div className="mt-4 flex items-center justify-center gap-1.5 lg:mt-4">
               {Array.from({ length: progress.total }).map((_, i) => (
                 <span
                   key={i}
@@ -65,7 +65,7 @@ export const OnboardingShell: React.FC<Props> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col px-5 lg:max-w-6xl lg:px-10"
+              className="mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col px-5 lg:max-w-7xl lg:px-12"
             >
               {children}
             </motion.div>
