@@ -265,7 +265,7 @@ export default function JoinArtistPage() {
       progress={{ current: progressMap[step], total: 4 }}
     >
       {step === "intro" && (
-        <section className="relative flex flex-1 flex-col justify-end pb-2 lg:grid lg:min-h-0 lg:grid-cols-[minmax(0,1.35fr)_minmax(24rem,26rem)] lg:items-end lg:gap-16 lg:pb-12 lg:pt-2">
+        <section className="relative flex flex-1 flex-col justify-end pb-2 lg:grid lg:min-h-0 lg:grid-cols-[minmax(0,1.5fr)_minmax(22rem,24rem)] lg:items-center lg:gap-14 lg:pb-8 lg:pt-4">
           {!hasSession && (
             <CinematicCTA
               variant="ghost-light"
@@ -274,7 +274,7 @@ export default function JoinArtistPage() {
                 setAuthMode("signin");
                 setStep("auth");
               }}
-              className="absolute right-0 -top-2 z-10 h-10 px-0 text-sm lg:h-11 lg:-top-4"
+              className="absolute right-0 -top-2 z-10 h-10 px-0 text-sm lg:h-10 lg:-top-6"
             >
               Jeg har allerede konto
             </CinematicCTA>
@@ -319,13 +319,11 @@ export default function JoinArtistPage() {
               variant="ghost-light"
               size="md"
               onClick={() => setStep("create")}
-              className="absolute right-0 -top-2 z-10 h-10 px-0 text-sm lg:h-11 lg:-top-4"
+              className="absolute right-0 -top-2 z-10 h-10 px-0 text-sm lg:h-10 lg:-top-6"
             >
               Fullfør profilen din
             </CinematicCTA>
           )}
-
-          <div className="hidden lg:block" />
 
           <motion.div
             initial="hidden"
@@ -334,19 +332,19 @@ export default function JoinArtistPage() {
               hidden: {},
               show: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
             }}
-            className="relative z-10 space-y-5 pb-2 lg:max-w-2xl lg:self-end lg:pb-8"
+            className="relative z-10 space-y-5 pb-2 lg:max-w-none lg:self-center lg:pb-0 lg:space-y-7"
           >
             <motion.h1
               variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
-              className="font-display text-[2.5rem] leading-[1.02] sm:text-5xl lg:max-w-4xl lg:text-[6rem] xl:text-[6.75rem] lg:leading-[0.98] font-semibold tracking-tight text-foreground"
+              className="font-display text-[2.5rem] leading-[1.02] sm:text-5xl lg:text-[4.25rem] xl:text-[5rem] lg:leading-[0.98] font-semibold tracking-tight text-foreground"
             >
-              Ikke bare post på Instagram.<br />
+              Ikke bare post<br className="hidden lg:block" /> på Instagram.<br />
               <span className="text-accent">Bygg en base.</span>
             </motion.h1>
 
             <motion.p
               variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
-              className="max-w-sm text-base leading-relaxed text-foreground/80 lg:max-w-xl lg:text-xl lg:pt-2"
+              className="max-w-sm text-base leading-relaxed text-foreground/80 lg:max-w-lg lg:text-lg"
             >
               Profesjonell artistprofil på 60 sekunder. Lag en delbar side
               for deg eller bandet — og bli enklere å booke.
@@ -372,7 +370,7 @@ export default function JoinArtistPage() {
 
             <motion.div
               variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
-              className="hidden lg:grid lg:grid-cols-3 lg:gap-6 lg:pt-8"
+              className="hidden lg:grid lg:grid-cols-3 lg:gap-5 lg:pt-4 lg:max-w-xl"
             >
               {[
                 { value: '60 sek', label: 'til første profil' },
@@ -383,8 +381,8 @@ export default function JoinArtistPage() {
                   key={item.label}
                   className="border-l-2 border-accent/40 pl-4"
                 >
-                  <div className="text-2xl font-semibold text-foreground tracking-tight">{item.value}</div>
-                  <div className="mt-1 text-sm text-foreground/60">{item.label}</div>
+                  <div className="text-xl font-semibold text-foreground tracking-tight">{item.value}</div>
+                  <div className="mt-1 text-xs text-foreground/60 leading-snug">{item.label}</div>
                 </div>
               ))}
             </motion.div>
@@ -394,11 +392,11 @@ export default function JoinArtistPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="mt-6 flex flex-col gap-2.5 lg:mt-0 lg:self-end lg:w-full lg:max-w-md lg:rounded-3xl lg:border lg:border-foreground/10 lg:bg-background/30 lg:backdrop-blur-2xl lg:p-7 lg:shadow-[0_20px_60px_-20px_hsl(0_0%_0%/0.6)]"
+            className="mt-6 flex flex-col gap-2.5 lg:mt-0 lg:self-center lg:w-full lg:max-w-sm lg:rounded-3xl lg:border lg:border-foreground/10 lg:bg-background/40 lg:backdrop-blur-2xl lg:p-6 lg:shadow-[0_20px_60px_-20px_hsl(0_0%_0%/0.6)]"
           >
-            <div className="hidden lg:block lg:space-y-2 lg:pb-3">
+            <div className="hidden lg:block lg:space-y-1.5 lg:pb-3">
               <p className="text-[11px] uppercase tracking-[0.28em] text-accent/80">Artist onboarding</p>
-              <p className="font-display text-2xl font-semibold tracking-tight text-foreground">Start din artistside</p>
+              <p className="font-display text-xl font-semibold tracking-tight text-foreground leading-tight">Start din artistside</p>
               <p className="text-sm text-foreground/65 leading-relaxed">Profil, bilder og lenker — klart på under et minutt.</p>
             </div>
             <CinematicCTA
@@ -412,18 +410,18 @@ export default function JoinArtistPage() {
                   setStep("auth");
                 }
               }}
-              className="w-full lg:h-14 lg:text-base"
+              className="w-full lg:h-13 lg:text-base"
             >
               Kom i gang
               <ArrowRight className="h-4 w-4" />
             </CinematicCTA>
-            <CinematicCTA asChild variant="glass" size="md" className="w-full lg:mt-2">
+            <CinematicCTA asChild variant="glass" size="md" className="w-full lg:mt-1">
               <Link to="/utforsk">
                 <ExternalLink className="h-4 w-4" />
                 Utforsk Giggen nå
               </Link>
             </CinematicCTA>
-            <p className="hidden lg:block pt-2 text-xs text-foreground/50 leading-relaxed">
+            <p className="hidden lg:block pt-1 text-xs text-foreground/50 leading-relaxed">
               Se profiler, prosjekter og uttrykk som allerede lever på Giggen.
             </p>
           </motion.div>
