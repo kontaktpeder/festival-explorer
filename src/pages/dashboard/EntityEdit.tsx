@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
-import gIcon from "@/assets/giggen-g-icon-red.png";
+import giggenLogo from "@/assets/giggen-logo-final.png";
 import { UnifiedTimelineManager } from "@/components/dashboard/UnifiedTimelineManager";
 import { PERSONA_EVENT_TYPE_OPTIONS, VENUE_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
 import { useUpdateTeamMember, useSetEntityTeamPersona, useTransferEntityOwnership, useLeaveEntity, useRemoveTeamMember } from "@/hooks/useEntityMutations";
@@ -419,56 +419,69 @@ export default function EntityEdit() {
 
   return (
     <div className="min-h-[100svh] bg-background">
-      {/* Sticky header – matching FestivalRoom */}
+      {/* Sticky header – matching onboarding shell */}
       <header
         className="sticky top-0 z-50 bg-background/60 backdrop-blur-xl border-b border-border/20"
-        style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0px)" }}
+        style={{ paddingTop: "max(env(safe-area-inset-top), 0.5rem)" }}
       >
-        <div className="w-full px-3 sm:px-8 lg:px-12 py-2.5 sm:py-3 flex items-center justify-between gap-3">
+        <div className="w-full px-4 sm:px-8 lg:px-12 py-2.5 sm:py-3 flex items-center justify-between gap-3">
+          {/* Left: Logo + back */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               onClick={() => navigate(fromOnboarding ? "/dashboard" : -1 as any)}
-              className="text-muted-foreground hover:text-foreground transition-colors shrink-0 -ml-1 p-1.5"
+              className="text-muted-foreground hover:text-foreground transition-colors shrink-0 -ml-1.5 p-1.5 rounded-full hover:bg-foreground/5"
               aria-label="Tilbake"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <span className="text-xs sm:text-sm font-semibold tracking-tight text-foreground truncate">
-              {fromOnboarding ? "Min profil" : "BACKSTAGE"}
-            </span>
+            <Link to="/dashboard" aria-label="Til dashboard" className="shrink-0">
+              <img src={giggenLogo} alt="Giggen" className="h-8 w-auto sm:h-10" />
+            </Link>
           </div>
+
+          {/* Right: Quick actions */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {canInvite && (
-              <label className="flex items-center gap-1.5 sm:gap-2 px-2 h-8 rounded-md border border-border/30 bg-background/40 cursor-pointer">
-                <Switch
-                  checked={!!entityWithAccess.is_published}
-                  disabled={togglePublished.isPending}
-                  onCheckedChange={(v) => togglePublished.mutate(v)}
-                  aria-label="Publisert"
-                  className="scale-75"
+              <button
+                type="button"
+                onClick={() => togglePublished.mutate(!entityWithAccess.is_published)}
+                disabled={togglePublished.isPending}
+                aria-label={entityWithAccess.is_published ? "Skjul profil" : "Publiser profil"}
+                className={`inline-flex items-center gap-1.5 h-9 px-3 rounded-full border text-xs font-medium transition-colors ${
+                  entityWithAccess.is_published
+                    ? "border-accent/40 bg-accent/10 text-accent hover:bg-accent/15"
+                    : "border-border/40 bg-background/40 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    entityWithAccess.is_published ? "bg-accent animate-pulse" : "bg-muted-foreground/50"
+                  }`}
                 />
-                <span className="text-[11px] sm:text-xs font-medium text-foreground/80 select-none">
-                  {entityWithAccess.is_published ? "Live" : "Skjult"}
-                </span>
-              </label>
+                {entityWithAccess.is_published ? "Live" : "Skjult"}
+              </button>
             )}
             {entityWithAccess.is_published && (
-              <Button asChild variant="outline" size="sm" className="h-8 px-2.5 text-xs border-border/30 hover:border-accent/40">
-                <a href={`${getPublicUrl()}${typeConfig[entityWithAccess.type as EntityType].route}/${entityWithAccess.slug}`} target="_blank" rel="noopener noreferrer" aria-label="Se live">
-                  <ExternalLink className="h-3.5 w-3.5 sm:mr-1.5" />
-                  <span className="hidden sm:inline">Se live</span>
-                </a>
-              </Button>
+              <a
+                href={`${getPublicUrl()}${typeConfig[entityWithAccess.type as EntityType].route}/${entityWithAccess.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Se live"
+                className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-border/40 bg-background/40 text-foreground/80 hover:text-foreground hover:border-accent/40 transition-colors"
+              >
+                <ExternalLink className="h-4 w-4" />
+              </a>
             )}
             {canInvite && (
-              <Button asChild variant="outline" size="sm" className="h-8 px-2.5 text-xs border-border/30 hover:border-accent/40">
-                <Link to={`/dashboard/entities/${entityWithAccess.id}/invite`} aria-label="Inviter">
-                  <UserPlus className="h-3.5 w-3.5 sm:mr-1.5" />
-                  <span className="hidden sm:inline">Inviter</span>
-                </Link>
-              </Button>
+              <Link
+                to={`/dashboard/entities/${entityWithAccess.id}/invite`}
+                aria-label="Inviter"
+                className="inline-flex items-center gap-1.5 h-9 px-3 sm:px-3.5 rounded-full bg-accent text-accent-foreground text-xs font-semibold hover:bg-accent/90 transition-colors shadow-sm"
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Inviter</span>
+              </Link>
             )}
-            <img src={gIcon} alt="" className="h-7 w-7 sm:h-8 sm:w-8 object-contain" />
           </div>
         </div>
       </header>
@@ -757,7 +770,7 @@ export default function EntityEdit() {
             <Button
               onClick={() => saveMutation.mutate()}
               disabled={saveMutation.isPending}
-              className="bg-accent hover:bg-accent/90 text-accent-foreground"
+              className="w-full sm:w-auto h-11 sm:h-10 rounded-full px-6 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold shadow-sm"
             >
               {saveMutation.isPending ? "Lagrer..." : "Lagre endringer"}
             </Button>
