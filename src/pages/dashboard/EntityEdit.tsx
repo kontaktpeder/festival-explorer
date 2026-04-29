@@ -438,6 +438,20 @@ export default function EntityEdit() {
             </span>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {canInvite && (
+              <label className="flex items-center gap-1.5 sm:gap-2 px-2 h-8 rounded-md border border-border/30 bg-background/40 cursor-pointer">
+                <Switch
+                  checked={!!entityWithAccess.is_published}
+                  disabled={togglePublished.isPending}
+                  onCheckedChange={(v) => togglePublished.mutate(v)}
+                  aria-label="Publisert"
+                  className="scale-75"
+                />
+                <span className="text-[11px] sm:text-xs font-medium text-foreground/80 select-none">
+                  {entityWithAccess.is_published ? "Live" : "Skjult"}
+                </span>
+              </label>
+            )}
             {entityWithAccess.is_published && (
               <Button asChild variant="outline" size="sm" className="h-8 px-2.5 text-xs border-border/30 hover:border-accent/40">
                 <a href={`${getPublicUrl()}${typeConfig[entityWithAccess.type as EntityType].route}/${entityWithAccess.slug}`} target="_blank" rel="noopener noreferrer" aria-label="Se live">
@@ -755,8 +769,10 @@ export default function EntityEdit() {
           <Alert className="bg-muted/50 border-border/30">
             <Info className="h-4 w-4 text-muted-foreground" />
             <AlertDescription className="text-sm text-muted-foreground">
-              <strong>Utkast:</strong> Dette prosjektet er ikke publisert ennå.
-              Kontakt en administrator for å få det publisert.
+              <strong>Skjult:</strong>{" "}
+              {canInvite
+                ? "Profilen er ikke synlig for andre. Slå på \"Live\" øverst når du er klar."
+                : "Profilen er ikke synlig for andre ennå."}
             </AlertDescription>
           </Alert>
         )}
