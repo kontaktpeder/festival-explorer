@@ -492,30 +492,30 @@ export default function EntityEdit() {
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/4" />
         <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-accent-warm/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/4" />
         
-        <div className="relative w-full px-4 sm:px-8 lg:px-12 py-5 sm:py-8">
+        <div className="relative w-full px-4 sm:px-8 lg:px-12 py-4 sm:py-8">
           <div className="max-w-5xl">
             {fromOnboarding && (
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-accent">
-                <Check className="h-3 w-3" />
+              <div className="mb-2.5 inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-accent">
+                <Check className="h-2.5 w-2.5" />
                 Profil opprettet — fyll på her
               </div>
             )}
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex flex-wrap items-center gap-2 mb-1.5">
               <Badge
                 variant={entityWithAccess.is_published ? "default" : "secondary"}
-                className="text-[10px] uppercase tracking-widest"
+                className="text-[9px] uppercase tracking-widest px-1.5 py-0"
               >
                 {entityWithAccess.is_published ? "Publisert" : "Utkast"}
               </Badge>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-[11px] sm:text-xs text-muted-foreground">
                 {TYPE_LABELS[entityWithAccess.type as EntityType]} · {ACCESS_LABELS[userAccess]}
               </span>
             </div>
-            <h1 className="text-[1.75rem] sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.1]">
+            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.1]">
               {entityWithAccess.name}
             </h1>
             {entityWithAccess.tagline && (
-              <p className="text-sm sm:text-base text-muted-foreground mt-2 max-w-xl">
+              <p className="text-[13px] sm:text-base text-muted-foreground mt-1.5 sm:mt-2 max-w-xl leading-snug">
                 {entityWithAccess.tagline}
               </p>
             )}
@@ -525,16 +525,16 @@ export default function EntityEdit() {
 
       {/* Main content */}
       <main
-        className="w-full px-4 sm:px-8 lg:px-12 py-5 sm:py-6 space-y-6 sm:space-y-8"
+        className="w-full px-4 sm:px-8 lg:px-12 py-4 sm:py-6 space-y-5 sm:space-y-8"
         style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 2rem)" }}
       >
         {/* Team – always visible at the top */}
         {teamMembers && teamMembers.length > 0 && (
-          <section className="space-y-3">
-            <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+          <section className="space-y-2 sm:space-y-3">
+            <h2 className="text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
               Team
             </h2>
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               {teamMembers.map((member) => {
                 const persona = member.persona as { id: string; name: string; avatar_url?: string; slug?: string } | null;
                 const isCurrentUser = member.user_id === currentUser?.id;
@@ -545,39 +545,39 @@ export default function EntityEdit() {
                 return (
                   <div
                     key={member.id}
-                    className="group relative rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm p-4 transition-all duration-300"
+                    className="group relative rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm p-2.5 sm:p-4 transition-all duration-300"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-9 w-9 rounded-lg bg-accent/10 flex items-center justify-center overflow-hidden shrink-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                        <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-accent/10 flex items-center justify-center overflow-hidden shrink-0">
                           {avatarUrl ? (
                             <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
                           ) : (
-                            <span className="text-xs font-medium text-accent">
+                            <span className="text-[11px] font-medium text-accent">
                               {displayName.charAt(0).toUpperCase()}
                             </span>
                           )}
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-foreground truncate">{displayName}</p>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[13px] sm:text-sm font-semibold text-foreground truncate leading-tight">{displayName}</p>
+                          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mt-0.5">
+                            <span className="text-[11px] text-muted-foreground">
                               {ACCESS_LABELS[member.access as AccessLevel]}
                             </span>
-                            {roleLabel && <span className="text-xs text-accent">{roleLabel}</span>}
+                            {roleLabel && <span className="text-[11px] text-accent truncate">{roleLabel}</span>}
                             {isCurrentUser && (
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0">deg</Badge>
+                              <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 leading-none">deg</Badge>
                             )}
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 shrink-0">
                         {canManagePersonas && !isCurrentUser && member.access !== 'owner' && (
                           <Select
                             value={member.access}
                             onValueChange={(value) => updateTeamMember.mutate({ id: member.id, access: value as AccessLevel })}
                           >
-                            <SelectTrigger className="w-[110px] h-8 text-xs bg-background border-border/50">
+                            <SelectTrigger className="w-[96px] sm:w-[110px] h-8 text-[11px] sm:text-xs rounded-full bg-background border-border/40">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -601,8 +601,8 @@ export default function EntityEdit() {
                     </div>
 
                     {isCurrentUser && myPersonas && myPersonas.length > 0 && id && (
-                      <div className="mt-3 ml-12 flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">Representert som:</span>
+                      <div className="mt-2.5 sm:mt-3 ml-[42px] sm:ml-12 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <span className="text-[11px] text-muted-foreground/70 whitespace-nowrap">Representert som</span>
                         <Select
                           value={member.persona_id || ""}
                           onValueChange={(personaId) => {
@@ -611,12 +611,12 @@ export default function EntityEdit() {
                             }
                           }}
                         >
-                          <SelectTrigger className="h-8 text-xs bg-background border-border/50 flex-1 max-w-[240px] gap-2">
+                          <SelectTrigger className="h-8 text-[11px] sm:text-xs rounded-full bg-background border-border/40 flex-1 min-w-0 max-w-[240px] gap-2 px-2.5">
                             {(() => {
                               const selected = myPersonas.find((p) => p.id === (member.persona_id || ""));
                               return selected ? (
                                 <span className="flex items-center gap-2 min-w-0">
-                                  <span className="h-5 w-5 rounded-lg bg-accent/10 flex items-center justify-center overflow-hidden shrink-0">
+                                  <span className="h-5 w-5 rounded-full bg-accent/10 flex items-center justify-center overflow-hidden shrink-0">
                                     {selected.avatar_url ? (
                                       <img src={selected.avatar_url} alt={selected.name} className="h-full w-full object-cover" />
                                     ) : (
@@ -634,7 +634,7 @@ export default function EntityEdit() {
                             {myPersonas.map((p) => (
                               <SelectItem key={p.id} value={p.id}>
                                 <span className="flex items-center gap-2">
-                                  <span className="h-5 w-5 rounded-lg bg-accent/10 flex items-center justify-center overflow-hidden shrink-0">
+                                  <span className="h-5 w-5 rounded-full bg-accent/10 flex items-center justify-center overflow-hidden shrink-0">
                                     {p.avatar_url ? (
                                       <img src={p.avatar_url} alt={p.name} className="h-full w-full object-cover" />
                                     ) : (
@@ -658,35 +658,32 @@ export default function EntityEdit() {
 
         {/* Event invitations */}
         {eventInvitations.length > 0 && (
-          <section className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-accent" />
-              <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+          <section className="space-y-2 sm:space-y-3">
+            <div className="flex items-center gap-1.5">
+              <Mail className="h-3.5 w-3.5 text-accent" />
+              <h2 className="text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
                 Invitasjoner til events
               </h2>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {eventInvitations.map((inv: any) => (
                 <div
                   key={inv.id}
-                  className="flex items-center justify-between p-3 rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm"
+                  className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm"
                 >
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] sm:text-sm font-medium text-foreground truncate leading-tight">
                       {inv.event?.title ?? "Event"}
                     </p>
-                    <p className="text-[10px] text-muted-foreground/60">
+                    <p className="text-[10px] text-muted-foreground/60 mt-0.5 line-clamp-2">
                       {inv.inviter_persona?.name
                         ? `Invitert av ${inv.inviter_persona.name}`
                         : "Invitert til å delta"}
-                      {" · Ved godkjenning får arrangør leser-tilgang."}
                     </p>
                   </div>
-                  <div className="flex gap-2 shrink-0">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0"
+                  <div className="flex gap-1 shrink-0">
+                    <button
+                      type="button"
                       onClick={() => {
                         declineEventInvitation.mutateAsync(inv.id).then(() => {
                           toast({ title: "Invitasjon avslått" });
@@ -695,13 +692,13 @@ export default function EntityEdit() {
                         });
                       }}
                       disabled={declineEventInvitation.isPending}
-                      title="Avslå"
+                      aria-label="Avslå"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/40 bg-background/40 text-muted-foreground hover:text-foreground hover:border-border transition-colors disabled:opacity-50"
                     >
                       <X className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="h-8"
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => {
                         acceptEventInvitation.mutateAsync(inv.id).then(() => {
                           toast({ title: `Invitasjon godtatt – arrangør har fått tilgang` });
@@ -711,10 +708,11 @@ export default function EntityEdit() {
                         });
                       }}
                       disabled={acceptEventInvitation.isPending}
+                      className="inline-flex h-9 items-center justify-center gap-1 rounded-full bg-accent px-3.5 text-xs font-semibold text-accent-foreground hover:bg-accent/90 transition-colors shadow-sm disabled:opacity-50"
                     >
-                      <Check className="h-4 w-4 mr-1" />
+                      <Check className="h-3.5 w-3.5" />
                       Godta
-                    </Button>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -723,39 +721,39 @@ export default function EntityEdit() {
         )}
 
         {/* Module grid */}
-        <section className="space-y-3">
-          <h2 className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+        <section className="space-y-2 sm:space-y-3">
+          <h2 className="text-[10px] sm:text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
             {isVenue ? "Innstillinger" : "Profilinnhold"}
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
             {modules.map((mod) => {
               const Icon = mod.icon;
               return (
                 <button
                   key={mod.key}
                   onClick={() => setActivePanel(mod.key)}
-                  className={`group relative rounded-xl border bg-card/60 backdrop-blur-sm p-4 text-left transition-all duration-300 cursor-pointer ${
+                  className={`group relative rounded-xl border bg-card/60 backdrop-blur-sm p-3 sm:p-4 text-left transition-all duration-300 cursor-pointer ${
                     mod.danger
                       ? "border-destructive/20 hover:border-destructive/40 hover:bg-card/80"
                       : "border-border/30 hover:border-accent/30 hover:bg-card/80 hover:shadow-lg hover:shadow-accent/5"
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className={`h-9 w-9 rounded-lg flex items-center justify-center transition-colors duration-300 ${
+                  <div className="flex items-start justify-between mb-2 sm:mb-3">
+                    <div className={`h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center transition-colors duration-300 ${
                       mod.danger
                         ? "bg-destructive/10 group-hover:bg-destructive/20"
                         : "bg-accent/10 group-hover:bg-accent/20"
                     }`}>
-                      <Icon className={`h-5 w-5 transition-colors duration-300 ${
+                      <Icon className={`h-4 w-4 sm:h-5 sm:w-5 transition-colors duration-300 ${
                         mod.danger ? "text-destructive/70" : "text-accent"
                       }`} />
                     </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
+                    <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground/30 group-hover:text-accent/60 group-hover:translate-x-0.5 transition-all duration-300" />
                   </div>
-                  <h3 className={`text-sm font-semibold mb-1 ${mod.danger ? "text-destructive/70" : "text-foreground"}`}>
+                  <h3 className={`text-[13px] sm:text-sm font-semibold mb-0.5 sm:mb-1 leading-tight ${mod.danger ? "text-destructive/70" : "text-foreground"}`}>
                     {mod.title}
                   </h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
+                  <p className="text-[11px] sm:text-xs text-muted-foreground leading-snug line-clamp-2">
                     {mod.description}
                   </p>
                 </button>
