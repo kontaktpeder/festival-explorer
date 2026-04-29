@@ -770,7 +770,7 @@ export default function EntityEdit() {
             <Button
               onClick={() => saveMutation.mutate()}
               disabled={saveMutation.isPending}
-              className="bg-accent hover:bg-accent/90 text-accent-foreground"
+              className="w-full sm:w-auto h-11 sm:h-10 rounded-full px-6 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold shadow-sm"
             >
               {saveMutation.isPending ? "Lagrer..." : "Lagre endringer"}
             </Button>
