@@ -161,6 +161,15 @@ export default function JoinArtistPage() {
     if (s === "create" && hasSession && !existingProject) setStep("create");
   }, [searchParams, hasSession, existingProject]);
 
+  // If the user signs in (from the "Logg inn" step) and already has an artist
+  // project, send them straight to edit — they shouldn't land on any onboarding
+  // step. Only triggers when leaving the auth step with a fresh session.
+  useEffect(() => {
+    if (step === "auth" && hasSession && existingProject) {
+      navigate(`/dashboard/entities/${existingProject.id}/edit`, { replace: true });
+    }
+  }, [step, hasSession, existingProject, navigate]);
+
   const publicProjectUrl = useMemo(() => {
     if (!result) return "";
     return `${getPublicUrl().replace(/\/$/, "")}/project/${result.entitySlug}`;
