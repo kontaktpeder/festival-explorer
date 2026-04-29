@@ -308,6 +308,32 @@ export default function EntityEdit() {
     },
   });
 
+  const togglePublished = useMutation({
+    mutationFn: async (next: boolean) => {
+      const { data, error } = await supabase
+        .from("entities")
+        .update({ is_published: next })
+        .eq("id", id!)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard-entity", id] });
+      queryClient.invalidateQueries({ queryKey: ["entity", data?.id] });
+      queryClient.invalidateQueries({ queryKey: ["entity-by-slug"] });
+      queryClient.invalidateQueries({ queryKey: ["my-entities"] });
+      queryClient.invalidateQueries({ queryKey: ["my-entities-filtered"] });
+      toast({
+        title: data?.is_published ? "Profilen er publisert" : "Profilen er skjult",
+      });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Feil", description: err.message, variant: "destructive" });
+    },
+  });
+
   useEffect(() => {
     if (error) {
       toast({ title: "Ingen tilgang", description: "Du har ikke tilgang til dette prosjektet.", variant: "destructive" });
