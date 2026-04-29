@@ -154,11 +154,12 @@ export default function JoinArtistPage() {
   };
 
 
-  // Allow ?step=auth deep link (e.g. from a "logg inn" CTA).
+  // Allow ?step=auth / ?step=create deep links (used by email confirmation).
   useEffect(() => {
     const s = searchParams.get("step");
     if (s === "auth" && !hasSession) setStep("auth");
-  }, [searchParams, hasSession]);
+    if (s === "create" && hasSession && !existingProject) setStep("create");
+  }, [searchParams, hasSession, existingProject]);
 
   const publicProjectUrl = useMemo(() => {
     if (!result) return "";
@@ -189,7 +190,7 @@ export default function JoinArtistPage() {
           email,
           password,
           options: {
-            emailRedirectTo: `${getAuthCallbackUrl()}?next=${encodeURIComponent("/join/artist")}`,
+            emailRedirectTo: `${getAuthCallbackUrl()}?next=${encodeURIComponent("/join/artist?step=create")}`,
           },
         });
         if (error) throw error;
@@ -620,7 +621,7 @@ export default function JoinArtistPage() {
                   src={heroUrl}
                   alt={name}
                   imageSettings={heroSettings}
-                  aspect="hero"
+                  aspect="avatar"
                   className="w-full h-full"
                 />
               ) : (
