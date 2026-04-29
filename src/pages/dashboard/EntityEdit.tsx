@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { InlineMediaPickerWithCrop } from "@/components/admin/InlineMediaPickerWithCrop";
 import { LoadingState } from "@/components/ui/LoadingState";
-import gIcon from "@/assets/giggen-g-icon-red.png";
+import giggenLogo from "@/assets/giggen-logo-final.png";
 import { UnifiedTimelineManager } from "@/components/dashboard/UnifiedTimelineManager";
 import { PERSONA_EVENT_TYPE_OPTIONS, VENUE_EVENT_TYPE_OPTIONS } from "@/lib/timeline-config";
 import { useUpdateTeamMember, useSetEntityTeamPersona, useTransferEntityOwnership, useLeaveEntity, useRemoveTeamMember } from "@/hooks/useEntityMutations";
