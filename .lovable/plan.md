@@ -1,39 +1,34 @@
-## Problem
+## Tre fikser etter onboarding-test
 
-Når du klikker linken fra Instagram blir du sendt rett til Maja Strela sitt prosjekt. Det er fordi Supabase-sessionen din fortsatt er aktiv (lagret i `localStorage`, varer i ~1 år), og `JoinArtistPage` har en "smart resume"-logikk som automatisk hopper til `step="done"` med din eksisterende artistprofil.
+### 1. E-postbekreftelse lander på "Kom i gang" i stedet for å fortsette flyten
 
-Sessionen blir bevisst **ikke** nullstilt mellom besøk – det er Supabase sitt standardoppsett.
+**Problem**: Når brukeren klikker bekreftelseslenken i e-posten havner de på `/auth/callback?next=/join/artist`, som sender dem tilbake til **intro**-skjermen ("Kom i gang"). De får ingen indikasjon på at de skal trykke seg videre — "Fullfør profilen" ligger som en liten lenke øverst til høyre. Brukeren får aldri satt navn/profilbilde.
 
-## Løsning: Behold intro, legg til snarvei øverst
+**Fiks**:
+- Endre `emailRedirectTo` i `signUp` (i `JoinArtistPage.tsx`) til `next=/join/artist?step=create`, slik at bekreftelseslenken hopper rett til steg 2 (sett opp profil).
+- Utvide `useEffect` som leser `?step=` til også å akseptere `step=create` når brukeren har session.
+- Som ekstra trygghet: Hvis brukeren havner på intro etter nylig auth (har session, men ingen `existingProject`) — hopp automatisk videre til `create`-steget. Det forhindrer at confirm-lenken viser intro på nytt.
 
-Vi endrer `JoinArtistPage` slik at intro-siden alltid vises først, men innloggede brukere får en tydelig banner/snarvei øverst.
+### 2. Forhåndsvisning av prosjekt viser avkuttet avatar (ferdig-steget)
 
-### Endringer i `src/pages/onboarding/JoinArtistPage.tsx`
+**Problem**: I `step === "done"` brukes en rund container (`h-32 w-32 rounded-full`) med `<CroppedImage aspect="hero" />`. `CroppedImage` setter `aspectRatio: 2.5` på indre wrapper — bildet blir tvunget til 2.5:1 inni en sirkel og ser strukket/avkuttet ut.
 
-1. **Fjern auto-hopp til `done`** i `useEffect` (linje 107-147):
-   - Fortsatt sjekk session og kall `findExistingArtistProject()` for å vite om brukeren har en profil
-   - Lagre resultatet i en ny state `existingProject` (i stedet for å sette `step="done"`)
-   - La `step` forbli `"intro"` ved første lasting, uansett innloggingsstatus
+**Fiks**: Endre `aspect="hero"` til `aspect="avatar"` i `done`-bildet i `JoinArtistPage.tsx` (samme rendring som "Logget inn som"-pillen som bruker `<img object-cover>` direkte). Da fyller bildet sirkelen riktig med focal point bevart.
 
-2. **Snarvei-banner i intro-steget** (øverst, både mobil og desktop):
-   - Hvis `existingProject` finnes:
-     - Vis en kompakt banner: "Logget inn som **{name}**" + knapp "Gå til profilen din →"
-     - Knappen setter `step="done"` (gjenbruker eksisterende success-panel) eller navigerer til `/project/{slug}`
-   - Hvis innlogget men uten artistprofil: vis "Logget inn – fullfør profilen din" som hopper til `step="create"`
-   - Hvis ikke innlogget: ingen banner (ren intro som i dag)
+### 3. Bruker må enkelt kunne av-/publisere prosjektet i edit
 
-3. **Plassering**:
-   - Mobil: under topp-logoen, over hero-teksten – diskret men synlig
-   - Desktop: øverst til høyre i hero-griden, ved siden av "Jeg har allerede konto"-knappen (eller erstatter den når innlogget)
+**Problem**: I `EntityEdit.tsx` finnes kun en lese-badge ("Publisert/Utkast"), og en alert som sier "Kontakt en administrator for å få det publisert". Brukeren har ikke selvbetjent kontroll. `completeArtistJoin` setter `is_published: true` automatisk, så nye brukere kan ikke skjule profilen mens de jobber.
 
-4. **Stil**: 
-   - Glass-pill med backdrop-blur for å matche eksisterende onboarding-estetikk
-   - Liten avatar (hvis `heroImageUrl` finnes) + navn + pil-ikon
-   - Subtil pulse/glow så den fanger blikket uten å stjele showet
+**Fiks**:
+- Legg til en publiser-bryter i headeren i `EntityEdit.tsx`, ved siden av "Se live"-knappen — synlig kun for `admin`/`owner`. Bruker `Switch`-komponenten med label "Publisert".
+- Mutation som oppdaterer `entities.is_published` direkte og invaliderer queries (`dashboard-entity`, `entity`, `entity-by-slug`, `my-entities`).
+- Erstatt den nåværende "Kontakt en administrator"-alerten med en vennligere melding: "Profilen er skjult. Slå på 'Publisert' øverst når du er klar." (kun synlig hvis brukeren har rettigheter).
+- Når av-publisert: skjul "Se live"-knappen (allerede betinget av `is_published`).
 
-### Resultat
+### Tekniske detaljer
 
-- Instagram-linken viser alltid den fulle wow-intro-opplevelsen
-- Returnerende brukere ser umiddelbart at de er gjenkjent og har én klikk til profilen
-- Helt nye brukere får uforstyrret intro → "Kom i gang" som før
-- Ingen bruker blir "kidnappet" til ferdig-skjermen for et prosjekt de ikke forventet
+**Filer som endres**:
+- `src/pages/onboarding/JoinArtistPage.tsx` — endre `emailRedirectTo` next-param, utvid `step=create` deep-link, fiks `aspect="avatar"` i done-steget.
+- `src/pages/dashboard/EntityEdit.tsx` — ny publish-toggle i header, mutation, oppdater alert-tekst.
+
+**Ingen DB-endringer** — `is_published` finnes allerede på `entities`. RLS for update på entities krever admin/owner, som matcher UI-betingelsen.
